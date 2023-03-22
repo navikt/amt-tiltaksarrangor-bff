@@ -9,7 +9,7 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			path = "/api/tiltaksarrangor/ansatt/meg/roller",
 			MockResponse()
 				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(listOf("KOORDINATOR", "VEILEDER")))
+				.setBody(JsonUtils.objectMapper.writeValueAsString(listOf("KOORDINATOR", "VEILEDER", "KOORDINATOR", "VEILEDER", "VEILEDER")))
 		)
 	}
 }

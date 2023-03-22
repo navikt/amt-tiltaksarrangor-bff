@@ -27,9 +27,9 @@ class AmtTiltakClient(
 			}
 			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
-			log.info(body)
+			val roller = fromJsonString<List<String>>(body)
 
-			return fromJsonString<List<String>>(body)
+			return roller.distinct()
 		}
 	}
 }
