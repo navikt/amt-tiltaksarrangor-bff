@@ -35,3 +35,15 @@ spec:
     requests:
       cpu: 250m
       memory: 512Mi
+  tokenx:
+    enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: amt-tiltaksarrangor-flate
+    outbound:
+      rules:
+        - application: amt-tiltak
+  env:
+    - name: AMT_TILTAK_TOKENX_CLIENT_ID
+      value: dev-gcp:amt:amt-tiltak
