@@ -7,11 +7,7 @@ import java.util.UUID
 
 data class EndringsmeldingDto(
 	val id: UUID,
-	val innhold: Innhold,
-	val type: String
-) {
-
-	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
 	@JsonSubTypes(
 		JsonSubTypes.Type(value = Innhold.LeggTilOppstartsdatoInnhold::class, name = "LEGG_TIL_OPPSTARTSDATO"),
 		JsonSubTypes.Type(value = Innhold.EndreOppstartsdatoInnhold::class, name = "ENDRE_OPPSTARTSDATO"),
@@ -20,6 +16,9 @@ data class EndringsmeldingDto(
 		JsonSubTypes.Type(value = Innhold.DeltakerIkkeAktuellInnhold::class, name = "DELTAKER_IKKE_AKTUELL"),
 		JsonSubTypes.Type(value = Innhold.EndreDeltakelseProsentInnhold::class, name = "ENDRE_DELTAKELSE_PROSENT")
 	)
+	val innhold: Innhold,
+	val type: String
+) {
 	sealed class Innhold {
 		data class LeggTilOppstartsdatoInnhold(
 			val oppstartsdato: LocalDate
