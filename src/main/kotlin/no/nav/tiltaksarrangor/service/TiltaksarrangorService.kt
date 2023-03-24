@@ -24,7 +24,11 @@ class TiltaksarrangorService(
 
 		return Deltaker(
 			id = deltaker.id,
-			deltakerlisteId = deltaker.gjennomforing.id,
+			deltakerliste = Deltaker.Deltakerliste(
+				id = deltaker.gjennomforing.id,
+				startDato = deltaker.gjennomforing.startDato,
+				sluttDato = deltaker.gjennomforing.sluttDato
+			),
 			fornavn = deltaker.fornavn,
 			mellomnavn = deltaker.mellomnavn,
 			etternavn = deltaker.etternavn,
@@ -45,8 +49,8 @@ class TiltaksarrangorService(
 				navVeileder = deltaker.navVeileder?.let {
 					NavVeileder(
 						navn = it.navn,
-						epostadresse = it.epost,
-						telefonnummer = it.telefon
+						epost = it.epost,
+						telefon = it.telefon
 					)
 				}
 			),

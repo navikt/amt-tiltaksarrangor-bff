@@ -6,7 +6,7 @@ import java.util.UUID
 
 data class Deltaker(
 	val id: UUID,
-	val deltakerlisteId: UUID,
+	val deltakerliste: Deltakerliste,
 	val fornavn: String,
 	val mellomnavn: String?,
 	val etternavn: String,
@@ -24,4 +24,10 @@ data class Deltaker(
 	val fjernesDato: LocalDateTime?,
 	val navInformasjon: NavInformasjon,
 	val aktiveEndringsmeldinger: List<Endringsmelding>
-)
+) {
+	data class Deltakerliste(
+		val id: UUID,
+		val startDato: LocalDate?,
+		val sluttDato: LocalDate?
+	)
+}
