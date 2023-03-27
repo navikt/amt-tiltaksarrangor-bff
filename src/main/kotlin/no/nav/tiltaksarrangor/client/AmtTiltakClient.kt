@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.client
 
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
+import no.nav.tiltaksarrangor.client.dto.VeilederDto
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import okhttp3.OkHttpClient
@@ -58,6 +59,30 @@ class AmtTiltakClient(
 			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
 			return fromJsonString<DeltakerDetaljerDto>(body)
+		}
+	}
+
+	fun getVeiledere(deltakerId: UUID): List<VeilederDto> {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/veiledere?deltakerId=$deltakerId")
+			.get()
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				when (response.code) {
+					401 -> throw UnauthorizedException("Ikke tilgang til å hente veileder for deltaker")
+					403 -> throw UnauthorizedException("Ikke tilgang til å hente veileder for deltaker")
+					404 -> throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+					else -> {
+						log.error("Kunne ikke hente veileder for deltaker med id $deltakerId fra amt-tiltak, responsekode: ${response.code}")
+						throw RuntimeException("Kunne ikke hente veileder for deltaker")
+					}
+				}
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return fromJsonString<List<VeilederDto>>(body)
 		}
 	}
 

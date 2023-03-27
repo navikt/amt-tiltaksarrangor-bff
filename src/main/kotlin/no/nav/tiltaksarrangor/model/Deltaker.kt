@@ -23,6 +23,7 @@ data class Deltaker(
 	val bestillingTekst: String?,
 	val fjernesDato: LocalDateTime?,
 	val navInformasjon: NavInformasjon,
+	val veiledere: List<Veileder>,
 	val aktiveEndringsmeldinger: List<Endringsmelding>
 ) {
 	data class Deltakerliste(
