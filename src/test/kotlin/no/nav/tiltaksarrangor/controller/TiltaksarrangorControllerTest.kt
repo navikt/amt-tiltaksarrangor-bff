@@ -79,4 +79,32 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
 	}
+
+	@Test
+	fun `getAktiveEndringsmeldinger - ikke autentisert - returnerer 401`() {
+		val response = sendRequest(
+			method = "GET",
+			path = "/tiltaksarrangor/deltaker/${UUID.randomUUID()}/endringsmeldinger"
+		)
+
+		response.code shouldBe 401
+	}
+
+	@Test
+	fun `getAktiveEndringsmeldinger - autentisert - returnerer 200`() {
+		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")
+		mockAmtTiltakServer.addAktiveEndringsmeldingerResponse(deltakerId)
+
+		val response = sendRequest(
+			method = "GET",
+			path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmeldinger",
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+		)
+
+		val expectedJson = """
+			[{"id":"27446cc8-30ad-4030-94e3-de438c2af3c6","innhold":{"sluttdato":"2023-03-30","aarsak":"SYK","beskrivelse":"har blitt syk"},"type":"AVSLUTT_DELTAKELSE"}]
+		""".trimIndent()
+		response.code shouldBe 200
+		response.body?.string() shouldBe expectedJson
+	}
 }

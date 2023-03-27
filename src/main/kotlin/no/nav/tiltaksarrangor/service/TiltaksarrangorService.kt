@@ -62,6 +62,10 @@ class TiltaksarrangorService(
 			aktiveEndringsmeldinger = aktiveEndringsmeldinger.map { it.toEndringsmelding() }
 		)
 	}
+
+	fun getAktiveEndringsmeldinger(deltakerId: UUID): List<Endringsmelding> {
+		return amtTiltakClient.getAktiveEndringsmeldinger(deltakerId).map { it.toEndringsmelding() }
+	}
 }
 
 private fun VeilederDto.toVeileder(): Veileder {
