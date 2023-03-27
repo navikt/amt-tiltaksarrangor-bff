@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.client
 
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
+import no.nav.tiltaksarrangor.client.dto.VeiledersDeltakerDto
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import okhttp3.OkHttpClient
@@ -82,6 +83,29 @@ class AmtTiltakClient(
 			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
 			return fromJsonString<List<EndringsmeldingDto>>(body)
+		}
+	}
+
+	fun getVeiledersDeltakere(): List<VeiledersDeltakerDto> {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/veileder/deltakerliste")
+			.get()
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				when (response.code) {
+					401 -> throw UnauthorizedException("Ikke tilgang til mine deltakere")
+					403 -> throw UnauthorizedException("Ikke tilgang til mine deltakere")
+					else -> {
+						log.error("Kunne ikke hente mine deltakere fra amt-tiltak, responsekode: ${response.code}")
+						throw RuntimeException("Kunne ikke hente mine deltakere")
+					}
+				}
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return fromJsonString<List<VeiledersDeltakerDto>>(body)
 		}
 	}
 }
