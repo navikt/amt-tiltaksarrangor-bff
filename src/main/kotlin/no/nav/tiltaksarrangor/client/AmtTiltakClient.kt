@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.client
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
+import no.nav.tiltaksarrangor.client.dto.VeiledersDeltakerDto
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import okhttp3.OkHttpClient
@@ -46,15 +47,7 @@ class AmtTiltakClient(
 
 		amtTiltakHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
-				when (response.code) {
-					401 -> throw UnauthorizedException("Ikke tilgang til deltaker")
-					403 -> throw UnauthorizedException("Ikke tilgang til deltaker")
-					404 -> throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
-					else -> {
-						log.error("Kunne ikke hente deltaker med id $deltakerId fra amt-tiltak, responsekode: ${response.code}")
-						throw RuntimeException("Kunne ikke hente deltaker")
-					}
-				}
+				handleUnsuccessfulResponse(response.code, "deltaker med id $deltakerId")
 			}
 			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
@@ -70,15 +63,7 @@ class AmtTiltakClient(
 
 		amtTiltakHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
-				when (response.code) {
-					401 -> throw UnauthorizedException("Ikke tilgang til å hente veileder for deltaker")
-					403 -> throw UnauthorizedException("Ikke tilgang til å hente veileder for deltaker")
-					404 -> throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
-					else -> {
-						log.error("Kunne ikke hente veileder for deltaker med id $deltakerId fra amt-tiltak, responsekode: ${response.code}")
-						throw RuntimeException("Kunne ikke hente veileder for deltaker")
-					}
-				}
+				handleUnsuccessfulResponse(response.code, "veileder for deltaker med id $deltakerId")
 			}
 			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
@@ -94,19 +79,39 @@ class AmtTiltakClient(
 
 		amtTiltakHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
-				when (response.code) {
-					401 -> throw UnauthorizedException("Ikke tilgang til deltaker")
-					403 -> throw UnauthorizedException("Ikke tilgang til deltaker")
-					404 -> throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
-					else -> {
-						log.error("Kunne ikke hente endringsmeldinger for deltaker med id $deltakerId fra amt-tiltak, responsekode: ${response.code}")
-						throw RuntimeException("Kunne ikke hente endringsmeldinger for deltaker")
-					}
-				}
+				handleUnsuccessfulResponse(response.code, "endringsmeldinger for deltaker med id $deltakerId")
 			}
 			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
 			return fromJsonString<List<EndringsmeldingDto>>(body)
+		}
+	}
+
+	fun getVeiledersDeltakere(): List<VeiledersDeltakerDto> {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/veileder/deltakerliste")
+			.get()
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulResponse(response.code, "mine deltakere")
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return fromJsonString<List<VeiledersDeltakerDto>>(body)
+		}
+	}
+
+	private fun handleUnsuccessfulResponse(responseCode: Int, requestedResource: String) {
+		when (responseCode) {
+			401 -> throw UnauthorizedException("Ikke tilgang til $requestedResource")
+			403 -> throw UnauthorizedException("Ikke tilgang til $requestedResource")
+			404 -> throw NoSuchElementException("Fant ikke $requestedResource")
+			else -> {
+				log.error("Kunne ikke hente $requestedResource fra amt-tiltak, responsekode: $responseCode")
+				throw RuntimeException("Kunne ikke hente $requestedResource")
+			}
 		}
 	}
 }

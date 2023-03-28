@@ -1,8 +1,8 @@
 package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.AmtTiltakClient
-import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
+import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.NavInformasjon
@@ -81,38 +81,4 @@ private fun VeilederDto.toVeileder(): Veileder {
 		mellomnavn = mellomnavn,
 		etternavn = etternavn
 	)
-}
-
-private fun EndringsmeldingDto.toEndringsmelding(): Endringsmelding {
-	return Endringsmelding(
-		id = id,
-		innhold = innhold.toEndringsmeldingInnhold()
-	)
-}
-
-private fun EndringsmeldingDto.Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold {
-	return when (this) {
-		is EndringsmeldingDto.Innhold.LeggTilOppstartsdatoInnhold -> Endringsmelding.Innhold.LeggTilOppstartsdatoInnhold(
-			this.oppstartsdato
-		)
-
-		is EndringsmeldingDto.Innhold.EndreOppstartsdatoInnhold -> Endringsmelding.Innhold.EndreOppstartsdatoInnhold(
-			this.oppstartsdato
-		)
-
-		is EndringsmeldingDto.Innhold.ForlengDeltakelseInnhold -> Endringsmelding.Innhold.ForlengDeltakelseInnhold(this.sluttdato)
-		is EndringsmeldingDto.Innhold.EndreDeltakelseProsentInnhold -> Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(
-			this.deltakelseProsent,
-			this.gyldigFraDato
-		)
-
-		is EndringsmeldingDto.Innhold.AvsluttDeltakelseInnhold -> Endringsmelding.Innhold.AvsluttDeltakelseInnhold(
-			this.sluttdato,
-			this.aarsak
-		)
-
-		is EndringsmeldingDto.Innhold.DeltakerIkkeAktuellInnhold -> Endringsmelding.Innhold.DeltakerIkkeAktuellInnhold(
-			this.aarsak
-		)
-	}
 }
