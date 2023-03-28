@@ -3,7 +3,15 @@ package no.nav.tiltaksarrangor.service
 import no.nav.tiltaksarrangor.client.AmtTiltakClient
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
 import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
+import no.nav.tiltaksarrangor.client.request.AvsluttDeltakelseRequest
+import no.nav.tiltaksarrangor.client.request.DeltakerIkkeAktuellRequest
+import no.nav.tiltaksarrangor.client.request.EndreDeltakelsesprosentRequest
+import no.nav.tiltaksarrangor.client.request.EndreOppstartsdatoRequest
+import no.nav.tiltaksarrangor.client.request.ForlengDeltakelseRequest
+import no.nav.tiltaksarrangor.client.request.LeggTilOppstartsdatoRequest
+import no.nav.tiltaksarrangor.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.model.Deltaker
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
@@ -64,6 +72,17 @@ class TiltaksarrangorService(
 
 	fun getAktiveEndringsmeldinger(deltakerId: UUID): List<Endringsmelding> {
 		return amtTiltakClient.getAktiveEndringsmeldinger(deltakerId).map { it.toEndringsmelding() }
+	}
+
+	fun opprettEndringsmelding(deltakerId: UUID, request: EndringsmeldingRequest) {
+		when (request.innhold) {
+			is EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold -> amtTiltakClient.leggTilOppstartsdato(deltakerId, LeggTilOppstartsdatoRequest(request.innhold.oppstartsdato))
+			is EndringsmeldingRequest.Innhold.EndreOppstartsdatoInnhold -> amtTiltakClient.endreOppstartsdato(deltakerId, EndreOppstartsdatoRequest(request.innhold.oppstartsdato))
+			is EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold -> amtTiltakClient.avsluttDeltakelse(deltakerId, AvsluttDeltakelseRequest(request.innhold.sluttdato, DeltakerStatusAarsak(request.innhold.aarsak, request.innhold.beskrivelse)))
+			is EndringsmeldingRequest.Innhold.ForlengDeltakelseInnhold -> amtTiltakClient.forlengDeltakelse(deltakerId, ForlengDeltakelseRequest(request.innhold.sluttdato))
+			is EndringsmeldingRequest.Innhold.EndreDeltakelseProsentInnhold -> amtTiltakClient.endreDeltakelsesprosent(deltakerId, EndreDeltakelsesprosentRequest(request.innhold.deltakelseProsent, request.innhold.gyldigFraDato))
+			is EndringsmeldingRequest.Innhold.DeltakerIkkeAktuellInnhold -> amtTiltakClient.deltakerIkkeAktuell(deltakerId, DeltakerIkkeAktuellRequest(DeltakerStatusAarsak(request.innhold.aarsak, request.innhold.beskrivelse)))
+		}
 	}
 }
 
