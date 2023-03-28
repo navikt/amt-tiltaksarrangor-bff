@@ -22,6 +22,7 @@ private fun VeiledersDeltakerDto.toDeltaker(): Deltaker {
 		id = id,
 		deltakerliste = Deltaker.Deltakerliste(
 			id = deltakerliste.id,
+			type = deltakerliste.type,
 			navn = deltakerliste.navn
 		),
 		fornavn = fornavn,
@@ -31,11 +32,7 @@ private fun VeiledersDeltakerDto.toDeltaker(): Deltaker {
 		status = status,
 		startDato = startDato,
 		sluttDato = sluttDato,
-		veiledertype = if (erMedveilederFor) {
-			Veiledertype.MEDVEILEDER
-		} else {
-			Veiledertype.VEILEDER
-		},
+		veiledertype = if (erMedveilederFor) Veiledertype.MEDVEILEDER else Veiledertype.VEILEDER,
 		aktiveEndringsmeldinger = aktiveEndringsmeldinger.map { it.toEndringsmelding() }
 	)
 }

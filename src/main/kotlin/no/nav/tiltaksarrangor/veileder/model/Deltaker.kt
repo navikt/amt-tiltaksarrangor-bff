@@ -8,19 +8,20 @@ import java.util.UUID
 
 data class Deltaker(
 	val id: UUID,
-	val deltakerliste: Deltakerliste,
 	val fornavn: String,
 	val mellomnavn: String?,
 	val etternavn: String,
 	val fodselsnummer: String,
-	val status: DeltakerStatus,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
+	val status: DeltakerStatus,
+	val deltakerliste: Deltakerliste,
 	val veiledertype: Veiledertype,
 	val aktiveEndringsmeldinger: List<Endringsmelding>
 ) {
 	data class Deltakerliste(
 		val id: UUID,
+		val type: String,
 		val navn: String
 	)
 }
