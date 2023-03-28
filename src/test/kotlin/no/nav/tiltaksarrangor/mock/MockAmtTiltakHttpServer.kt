@@ -2,13 +2,14 @@ package no.nav.tiltaksarrangor.mock
 
 import no.nav.tiltaksarrangor.client.dto.ArrangorDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
-import no.nav.tiltaksarrangor.client.dto.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.dto.GjennomforingDto
 import no.nav.tiltaksarrangor.client.dto.NavEnhetDto
 import no.nav.tiltaksarrangor.client.dto.NavVeilederDto
 import no.nav.tiltaksarrangor.client.dto.TiltakDto
+import no.nav.tiltaksarrangor.client.dto.VeilederDto
 import no.nav.tiltaksarrangor.model.DeltakerStatus
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.mockwebserver.MockResponse
@@ -38,6 +39,38 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId",
 			MockResponse().setResponseCode(403)
+		)
+	}
+
+	fun addVeilederResponse(deltakerId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/veiledere?deltakerId=$deltakerId",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(
+					JsonUtils.objectMapper.writeValueAsString(
+						listOf(
+							VeilederDto(
+								id = UUID.fromString("4f2fb9a7-69c7-4524-bc52-2d00344675ab"),
+								ansattId = UUID.fromString("2d5fc2f7-a9e6-4830-a987-4ff135a70c10"),
+								deltakerId = deltakerId,
+								erMedveileder = false,
+								fornavn = "Fornavn",
+								mellomnavn = null,
+								etternavn = "Etternavn"
+							),
+							VeilederDto(
+								id = UUID.fromString("d8e1af61-0c5e-4843-8bca-ecd9b55c44bc"),
+								ansattId = UUID.fromString("7c43b43b-43be-4d4b-8057-d907c5f1e5c5"),
+								deltakerId = deltakerId,
+								erMedveileder = true,
+								fornavn = "Per",
+								mellomnavn = null,
+								etternavn = "Person"
+							)
+						)
+					)
+				)
 		)
 	}
 

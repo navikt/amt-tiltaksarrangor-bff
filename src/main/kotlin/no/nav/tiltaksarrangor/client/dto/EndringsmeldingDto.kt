@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.client.dto
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import java.time.LocalDate
 import java.util.UUID
 
