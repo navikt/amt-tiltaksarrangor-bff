@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.veileder.model
 
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Veiledertype
 import java.time.LocalDate
 import java.util.UUID
 

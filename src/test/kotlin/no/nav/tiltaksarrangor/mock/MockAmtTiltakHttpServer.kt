@@ -2,12 +2,14 @@ package no.nav.tiltaksarrangor.mock
 
 import no.nav.tiltaksarrangor.client.dto.ArrangorDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
+import no.nav.tiltaksarrangor.client.dto.DeltakerlisteDto
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.dto.GjennomforingDto
 import no.nav.tiltaksarrangor.client.dto.NavEnhetDto
 import no.nav.tiltaksarrangor.client.dto.NavVeilederDto
 import no.nav.tiltaksarrangor.client.dto.TiltakDto
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
+import no.nav.tiltaksarrangor.client.dto.VeiledersDeltakerDto
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.StatusType
@@ -83,6 +85,15 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
+	fun addMineDeltakereResponse(deltakerId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/veileder/deltakerliste",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(JsonUtils.objectMapper.writeValueAsString(getVeiledersDeltakerliste(deltakerId)))
+		)
+	}
+
 	private fun getDeltaker(deltakerId: UUID): DeltakerDetaljerDto {
 		return DeltakerDetaljerDto(
 			id = deltakerId,
@@ -141,6 +152,31 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 					)
 				),
 				type = "AVSLUTT_DELTAKELSE"
+			)
+		)
+	}
+
+	private fun getVeiledersDeltakerliste(deltakerId: UUID): List<VeiledersDeltakerDto> {
+		return listOf(
+			VeiledersDeltakerDto(
+				id = deltakerId,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				fodselsnummer = "10987654321",
+				startDato = LocalDate.of(2023, 2, 15),
+				sluttDato = null,
+				status = DeltakerStatus(
+					type = StatusType.DELTAR,
+					endretDato = LocalDate.of(2023, 2, 1).atStartOfDay()
+				),
+				deltakerliste = DeltakerlisteDto(
+					id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
+					navn = "Gjennomføring 1",
+					type = "ARBFORB"
+				),
+				erMedveilederFor = false,
+				aktiveEndringsmeldinger = emptyList()
 			)
 		)
 	}

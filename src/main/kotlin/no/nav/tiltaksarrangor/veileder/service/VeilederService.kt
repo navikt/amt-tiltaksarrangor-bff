@@ -3,8 +3,8 @@ package no.nav.tiltaksarrangor.veileder.service
 import no.nav.tiltaksarrangor.client.AmtTiltakClient
 import no.nav.tiltaksarrangor.client.dto.VeiledersDeltakerDto
 import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.veileder.model.Deltaker
-import no.nav.tiltaksarrangor.veileder.model.Veiledertype
 import org.springframework.stereotype.Component
 
 @Component
