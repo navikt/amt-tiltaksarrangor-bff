@@ -44,7 +44,7 @@ class IntegrationTest {
 		@DynamicPropertySource
 		fun registerProperties(registry: DynamicPropertyRegistry) {
 			mockAmtTiltakServer.start()
-			registry.add("amttiltak.url", mockAmtTiltakServer::serverUrl)
+			registry.add("amt-tiltak.url", mockAmtTiltakServer::serverUrl)
 		}
 	}
 
