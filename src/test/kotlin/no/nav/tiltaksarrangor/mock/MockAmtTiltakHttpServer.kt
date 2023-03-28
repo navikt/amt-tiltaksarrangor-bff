@@ -2,7 +2,6 @@ package no.nav.tiltaksarrangor.mock
 
 import no.nav.tiltaksarrangor.client.dto.ArrangorDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
-import no.nav.tiltaksarrangor.client.dto.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.dto.GjennomforingDto
 import no.nav.tiltaksarrangor.client.dto.NavEnhetDto
@@ -10,6 +9,7 @@ import no.nav.tiltaksarrangor.client.dto.NavVeilederDto
 import no.nav.tiltaksarrangor.client.dto.TiltakDto
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
 import no.nav.tiltaksarrangor.model.DeltakerStatus
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.mockwebserver.MockResponse

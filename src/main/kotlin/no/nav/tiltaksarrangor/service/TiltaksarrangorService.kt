@@ -4,7 +4,6 @@ import no.nav.tiltaksarrangor.client.AmtTiltakClient
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
 import no.nav.tiltaksarrangor.model.Deltaker
-import no.nav.tiltaksarrangor.model.DeltakerSluttAarsak
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
@@ -109,13 +108,11 @@ private fun EndringsmeldingDto.Innhold.toEndringsmeldingInnhold(): Endringsmeldi
 
 		is EndringsmeldingDto.Innhold.AvsluttDeltakelseInnhold -> Endringsmelding.Innhold.AvsluttDeltakelseInnhold(
 			this.sluttdato,
-			DeltakerSluttAarsak.valueOf(this.aarsak.type.name),
-			this.aarsak.beskrivelse
+			this.aarsak
 		)
 
 		is EndringsmeldingDto.Innhold.DeltakerIkkeAktuellInnhold -> Endringsmelding.Innhold.DeltakerIkkeAktuellInnhold(
-			DeltakerSluttAarsak.valueOf(this.aarsak.type.name),
-			this.aarsak.beskrivelse
+			this.aarsak
 		)
 	}
 }

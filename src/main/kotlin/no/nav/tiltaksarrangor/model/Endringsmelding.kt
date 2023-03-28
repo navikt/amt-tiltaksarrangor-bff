@@ -38,13 +38,11 @@ data class Endringsmelding(
 
 		data class AvsluttDeltakelseInnhold(
 			val sluttdato: LocalDate,
-			val aarsak: DeltakerSluttAarsak,
-			val beskrivelse: String?
+			val aarsak: DeltakerStatusAarsak
 		) : Innhold()
 
 		data class DeltakerIkkeAktuellInnhold(
-			val aarsak: DeltakerSluttAarsak,
-			val beskrivelse: String?
+			val aarsak: DeltakerStatusAarsak
 		) : Innhold()
 
 		fun type(): Type {
@@ -58,17 +56,4 @@ data class Endringsmelding(
 			}
 		}
 	}
-}
-
-enum class DeltakerSluttAarsak {
-	SYK,
-	FATT_JOBB,
-	TRENGER_ANNEN_STOTTE,
-	FIKK_IKKE_PLASS,
-	UTDANNING,
-	FERDIG,
-	AVLYST_KONTRAKT,
-	IKKE_MOTT,
-	FEILREGISTRERT,
-	ANNET
 }
