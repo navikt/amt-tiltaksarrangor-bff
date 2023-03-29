@@ -6,6 +6,7 @@ import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.service.TiltaksarrangorService
 import no.nav.tiltaksarrangor.utils.Issuer
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -44,5 +45,13 @@ class TiltaksarrangorController(
 		@RequestBody request: EndringsmeldingRequest
 	) {
 		tiltaksarrangorService.opprettEndringsmelding(deltakerId, request)
+	}
+
+	@DeleteMapping("/endringsmelding/{endringsmeldingId}")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun slettEndringsmelding(
+		@PathVariable endringsmeldingId: UUID
+	) {
+		tiltaksarrangorService.slettEndringsmelding(endringsmeldingId)
 	}
 }

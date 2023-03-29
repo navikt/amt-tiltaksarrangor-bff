@@ -16,6 +16,7 @@ import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -191,6 +192,19 @@ class AmtTiltakClient(
 		}
 	}
 
+	fun tilbakekallEndringsmelding(endringsmeldingId: UUID) {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/endringsmelding/$endringsmeldingId/tilbakekall")
+			.patch(emptyRequest())
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulUpdateResponse(response.code, "tilbakekalle endringsmelding med id $endringsmeldingId")
+			}
+		}
+	}
+
 	private fun handleUnsuccessfulResponse(responseCode: Int, requestedResource: String) {
 		when (responseCode) {
 			401 -> throw UnauthorizedException("Ikke tilgang til $requestedResource")
@@ -213,5 +227,10 @@ class AmtTiltakClient(
 				throw RuntimeException("Kunne ikke $requestedResource")
 			}
 		}
+	}
+
+	private fun emptyRequest(): RequestBody {
+		val mediaTypeHtml = "text/html".toMediaType()
+		return "".toRequestBody(mediaTypeHtml)
 	}
 }
