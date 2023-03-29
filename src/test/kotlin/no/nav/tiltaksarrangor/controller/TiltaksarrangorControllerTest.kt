@@ -2,11 +2,20 @@ package no.nav.tiltaksarrangor.controller
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.IntegrationTest
+import no.nav.tiltaksarrangor.controller.request.EndringsmeldingRequest
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.utils.JsonUtils
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import java.util.UUID
 
 class TiltaksarrangorControllerTest : IntegrationTest() {
+
+	private val mediaTypeJson = "application/json".toMediaType()
+
 	@AfterEach
 	internal fun tearDown() {
 		mockAmtTiltakServer.resetHttpServer()
@@ -106,5 +115,43 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
+	}
+
+	@Test
+	fun `opprettEndringsmelding - ikke autentisert - returnerer 401`() {
+		val requestBody = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
+				sluttdato = LocalDate.now(),
+				aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.FATT_JOBB, null)
+			)
+		)
+		val response = sendRequest(
+			method = "POST",
+			path = "/tiltaksarrangor/deltaker/${UUID.randomUUID()}/endringsmelding",
+			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson)
+		)
+
+		response.code shouldBe 401
+	}
+
+	@Test
+	fun `opprettEndringsmelding - autentisert, avslutt deltakelse - returnerer 200`() {
+		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
+		mockAmtTiltakServer.addAvsluttDeltakelseResponse(deltakerId)
+		val requestBody = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
+				sluttdato = LocalDate.now(),
+				aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.FATT_JOBB, null)
+			)
+		)
+
+		val response = sendRequest(
+			method = "POST",
+			path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
+			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+		)
+
+		response.code shouldBe 200
 	}
 }
