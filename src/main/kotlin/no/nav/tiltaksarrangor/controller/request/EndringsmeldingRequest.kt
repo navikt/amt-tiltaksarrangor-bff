@@ -51,14 +51,12 @@ data class EndringsmeldingRequest(
 		data class AvsluttDeltakelseInnhold(
 			val type: EndringsmeldingType = EndringsmeldingType.AVSLUTT_DELTAKELSE,
 			val sluttdato: LocalDate,
-			val aarsak: DeltakerStatusAarsak.Type,
-			val beskrivelse: String?
+			val aarsak: DeltakerStatusAarsak
 		) : Innhold()
 
 		data class DeltakerIkkeAktuellInnhold(
 			val type: EndringsmeldingType = EndringsmeldingType.DELTAKER_IKKE_AKTUELL,
-			val aarsak: DeltakerStatusAarsak.Type,
-			val beskrivelse: String?
+			val aarsak: DeltakerStatusAarsak
 		) : Innhold()
 	}
 }
