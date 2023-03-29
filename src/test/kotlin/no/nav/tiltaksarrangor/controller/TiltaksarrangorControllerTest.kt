@@ -122,8 +122,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		val requestBody = EndringsmeldingRequest(
 			innhold = EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
 				sluttdato = LocalDate.now(),
-				aarsak = DeltakerStatusAarsak.Type.FATT_JOBB,
-				beskrivelse = null
+				aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.FATT_JOBB, null)
 			)
 		)
 		val response = sendRequest(
@@ -142,8 +141,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		val requestBody = EndringsmeldingRequest(
 			innhold = EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
 				sluttdato = LocalDate.now(),
-				aarsak = DeltakerStatusAarsak.Type.FATT_JOBB,
-				beskrivelse = null
+				aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.FATT_JOBB, null)
 			)
 		)
 
