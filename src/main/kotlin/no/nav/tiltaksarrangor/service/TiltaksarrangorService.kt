@@ -83,6 +83,10 @@ class TiltaksarrangorService(
 			is EndringsmeldingRequest.Innhold.DeltakerIkkeAktuellInnhold -> amtTiltakClient.deltakerIkkeAktuell(deltakerId, DeltakerIkkeAktuellRequest(request.innhold.aarsak))
 		}
 	}
+
+	fun slettEndringsmelding(endringsmeldingId: UUID) {
+		amtTiltakClient.tilbakekallEndringsmelding(endringsmeldingId)
+	}
 }
 
 private fun VeilederDto.toVeileder(): Veileder {

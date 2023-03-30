@@ -102,6 +102,14 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
+	fun addTilbakekallEndringsmeldingResponse(endringsmeldingId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/endringsmelding/$endringsmeldingId/tilbakekall",
+			MockResponse()
+				.setResponseCode(200)
+		)
+	}
+
 	private fun getDeltaker(deltakerId: UUID): DeltakerDetaljerDto {
 		return DeltakerDetaljerDto(
 			id = deltakerId,
