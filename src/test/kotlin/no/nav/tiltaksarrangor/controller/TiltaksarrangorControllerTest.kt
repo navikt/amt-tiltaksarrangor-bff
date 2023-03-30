@@ -178,4 +178,28 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 
 		response.code shouldBe 200
 	}
+
+	@Test
+	fun `fjernDeltaker - ikke autentisert - returnerer 401`() {
+		val response = sendRequest(
+			method = "DELETE",
+			path = "/tiltaksarrangor/deltaker/${UUID.randomUUID()}"
+		)
+
+		response.code shouldBe 401
+	}
+
+	@Test
+	fun `fjernDeltaker - autentisert - returnerer 200`() {
+		val deltakerId = UUID.fromString("27446cc8-30ad-4030-94e3-de438c2af3c6")
+		mockAmtTiltakServer.addSkjulDeltakerResponse(deltakerId)
+
+		val response = sendRequest(
+			method = "DELETE",
+			path = "/tiltaksarrangor/deltaker/$deltakerId",
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+		)
+
+		response.code shouldBe 200
+	}
 }

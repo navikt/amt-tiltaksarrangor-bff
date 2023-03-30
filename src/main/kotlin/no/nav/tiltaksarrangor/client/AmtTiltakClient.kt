@@ -253,6 +253,19 @@ class AmtTiltakClient(
 		}
 	}
 
+	fun skjulDeltakerForTiltaksarrangor(deltakerId: UUID) {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/skjul")
+			.patch(emptyRequest())
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulUpdateResponse(response.code, "fjerne deltaker med id $deltakerId")
+			}
+		}
+	}
+
 	private fun handleUnsuccessfulResponse(responseCode: Int, requestedResource: String) {
 		when (responseCode) {
 			401 -> throw UnauthorizedException("Ikke tilgang til $requestedResource")
