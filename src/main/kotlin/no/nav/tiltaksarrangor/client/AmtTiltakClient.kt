@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.client
 
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
+import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
 import no.nav.tiltaksarrangor.client.dto.VeiledersDeltakerDto
@@ -202,6 +203,22 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "tilbakekalle endringsmelding med id $endringsmeldingId")
 			}
+		}
+	}
+
+	fun getMineDeltakerlister(): DeltakeroversiktDto {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/deltakeroversikt")
+			.get()
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulResponse(response.code, "mine deltakerlister")
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return fromJsonString<DeltakeroversiktDto>(body)
 		}
 	}
 
