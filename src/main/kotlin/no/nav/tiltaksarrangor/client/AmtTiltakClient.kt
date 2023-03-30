@@ -12,6 +12,7 @@ import no.nav.tiltaksarrangor.client.request.EndreDeltakelsesprosentRequest
 import no.nav.tiltaksarrangor.client.request.EndreOppstartsdatoRequest
 import no.nav.tiltaksarrangor.client.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.request.LeggTilOppstartsdatoRequest
+import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
@@ -236,6 +237,19 @@ class AmtTiltakClient(
 			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
 			return fromJsonString<List<TilgjengeligVeilederDto>>(body)
+		}
+	}
+
+	fun tildelVeiledereForDeltaker(deltakerId: UUID, leggTilVeiledereRequest: LeggTilVeiledereRequest) {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/veiledere?deltakerId=$deltakerId")
+			.patch(objectMapper.writeValueAsString(leggTilVeiledereRequest).toRequestBody(mediaTypeJson))
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulUpdateResponse(response.code, "legge til veiledere for deltaker med id $deltakerId")
+			}
 		}
 	}
 

@@ -5,6 +5,7 @@ import no.nav.tiltaksarrangor.client.dto.DeltakerlisteDto
 import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
 import no.nav.tiltaksarrangor.client.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.koordinator.model.KoordinatorFor
+import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
 import no.nav.tiltaksarrangor.koordinator.model.TilgjengeligVeileder
 import no.nav.tiltaksarrangor.koordinator.model.VeilederFor
@@ -21,6 +22,10 @@ class KoordinatorService(
 
 	fun getTilgjengeligeVeiledere(deltakerlisteId: UUID): List<TilgjengeligVeileder> {
 		return amtTiltakClient.getTilgjengeligeVeiledere(deltakerlisteId).map { it.toTilgjengeligVeileder() }
+	}
+
+	fun tildelVeiledereForDeltaker(deltakerId: UUID, request: LeggTilVeiledereRequest) {
+		amtTiltakClient.tildelVeiledereForDeltaker(deltakerId, request)
 	}
 }
 

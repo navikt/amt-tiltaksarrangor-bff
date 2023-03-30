@@ -2,11 +2,18 @@ package no.nav.tiltaksarrangor.koordinator.controller
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.IntegrationTest
+import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
+import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
+import no.nav.tiltaksarrangor.utils.JsonUtils
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class KoordinatorControllerTest : IntegrationTest() {
+	private val mediaTypeJson = "application/json".toMediaType()
+
 	@AfterEach
 	internal fun tearDown() {
 		mockAmtTiltakServer.resetHttpServer()
@@ -65,5 +72,55 @@ class KoordinatorControllerTest : IntegrationTest() {
 		""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
+	}
+
+	@Test
+	fun `tildelVeiledereForDeltaker - ikke autentisert - returnerer 401`() {
+		val requestBody = LeggTilVeiledereRequest(
+			listOf(
+				VeilederRequest(
+					ansattId = UUID.randomUUID(),
+					erMedveileder = false
+				),
+				VeilederRequest(
+					ansattId = UUID.randomUUID(),
+					erMedveileder = true
+				)
+			)
+		)
+		val response = sendRequest(
+			method = "POST",
+			path = "/tiltaksarrangor/koordinator/veiledere?deltakerId=${UUID.randomUUID()}",
+			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson)
+		)
+
+		response.code shouldBe 401
+	}
+
+	@Test
+	fun `tildelVeiledereForDeltaker - autentisert, avslutt deltakelse - returnerer 200`() {
+		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
+		mockAmtTiltakServer.addTildelVeiledereForDeltakerResponse(deltakerId)
+		val requestBody = LeggTilVeiledereRequest(
+			listOf(
+				VeilederRequest(
+					ansattId = UUID.randomUUID(),
+					erMedveileder = false
+				),
+				VeilederRequest(
+					ansattId = UUID.randomUUID(),
+					erMedveileder = true
+				)
+			)
+		)
+
+		val response = sendRequest(
+			method = "POST",
+			path = "/tiltaksarrangor/koordinator/veiledere?deltakerId=$deltakerId",
+			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+		)
+
+		response.code shouldBe 200
 	}
 }
