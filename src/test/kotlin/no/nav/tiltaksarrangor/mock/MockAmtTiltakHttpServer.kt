@@ -9,6 +9,7 @@ import no.nav.tiltaksarrangor.client.dto.GjennomforingDto
 import no.nav.tiltaksarrangor.client.dto.KoordinatorInfoDto
 import no.nav.tiltaksarrangor.client.dto.NavEnhetDto
 import no.nav.tiltaksarrangor.client.dto.NavVeilederDto
+import no.nav.tiltaksarrangor.client.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.dto.TiltakDto
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
 import no.nav.tiltaksarrangor.client.dto.VeilederInfoDto
@@ -122,6 +123,15 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
+	fun addTilgjengeligeVeiledereResponse(deltakerlisteId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/veiledere/tilgjengelig?gjennomforingId=$deltakerlisteId",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(JsonUtils.objectMapper.writeValueAsString(getTilgjengeligeVeiledere()))
+		)
+	}
+
 	private fun getDeltaker(deltakerId: UUID): DeltakerDetaljerDto {
 		return DeltakerDetaljerDto(
 			id = deltakerId,
@@ -223,6 +233,23 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 						navn = "Gjennomføring 1"
 					)
 				)
+			)
+		)
+	}
+
+	private fun getTilgjengeligeVeiledere(): List<TilgjengeligVeilederDto> {
+		return listOf(
+			TilgjengeligVeilederDto(
+				ansattId = UUID.fromString("29bf6799-bb56-4a86-857b-99b529b3dfc4"),
+				fornavn = "Fornavn1",
+				mellomnavn = null,
+				etternavn = "Etternavn1"
+			),
+			TilgjengeligVeilederDto(
+				ansattId = UUID.fromString("e824dbfe-5317-491b-82ed-03b870eed963"),
+				fornavn = "Fornavn2",
+				mellomnavn = null,
+				etternavn = "Etternavn2"
 			)
 		)
 	}

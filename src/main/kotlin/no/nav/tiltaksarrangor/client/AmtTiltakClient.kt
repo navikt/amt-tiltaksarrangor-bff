@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.client
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
 import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
+import no.nav.tiltaksarrangor.client.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
 import no.nav.tiltaksarrangor.client.dto.VeiledersDeltakerDto
 import no.nav.tiltaksarrangor.client.request.AvsluttDeltakelseRequest
@@ -219,6 +220,22 @@ class AmtTiltakClient(
 			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
 			return fromJsonString<DeltakeroversiktDto>(body)
+		}
+	}
+
+	fun getTilgjengeligeVeiledere(deltakerlisteId: UUID): List<TilgjengeligVeilederDto> {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/veiledere/tilgjengelig?gjennomforingId=$deltakerlisteId")
+			.get()
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulResponse(response.code, "tilgjengelige veiledere for deltakerliste med id $deltakerlisteId")
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return fromJsonString<List<TilgjengeligVeilederDto>>(body)
 		}
 	}
 
