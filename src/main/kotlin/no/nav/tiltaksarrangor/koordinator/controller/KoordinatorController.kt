@@ -15,7 +15,7 @@ class KoordinatorController(
 ) {
 	@GetMapping("/mine-deltakerlister")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
-	fun getMineDeltakere(): MineDeltakerlister {
+	fun getMineDeltakerlister(): MineDeltakerlister {
 		return koordinatorService.getMineDeltakerlister()
 	}
 }
