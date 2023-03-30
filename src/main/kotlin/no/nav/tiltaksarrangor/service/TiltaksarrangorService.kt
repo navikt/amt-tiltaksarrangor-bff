@@ -69,6 +69,10 @@ class TiltaksarrangorService(
 		)
 	}
 
+	fun fjernDeltaker(deltakerId: UUID) {
+		amtTiltakClient.skjulDeltakerForTiltaksarrangor(deltakerId)
+	}
+
 	fun getAktiveEndringsmeldinger(deltakerId: UUID): List<Endringsmelding> {
 		return amtTiltakClient.getAktiveEndringsmeldinger(deltakerId).map { it.toEndringsmelding() }
 	}

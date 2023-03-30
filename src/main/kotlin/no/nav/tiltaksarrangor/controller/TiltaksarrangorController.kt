@@ -32,6 +32,14 @@ class TiltaksarrangorController(
 		return tiltaksarrangorService.getDeltaker(deltakerId)
 	}
 
+	@DeleteMapping("/deltaker/{deltakerId}")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun fjernDeltaker(
+		@PathVariable deltakerId: UUID
+	) {
+		tiltaksarrangorService.fjernDeltaker(deltakerId)
+	}
+
 	@GetMapping("/deltaker/{deltakerId}/endringsmeldinger")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getAktiveEndringsmeldinger(@PathVariable deltakerId: UUID): List<Endringsmelding> {
