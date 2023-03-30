@@ -3,12 +3,15 @@ package no.nav.tiltaksarrangor.mock
 import no.nav.tiltaksarrangor.client.dto.ArrangorDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerlisteDto
+import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.dto.GjennomforingDto
+import no.nav.tiltaksarrangor.client.dto.KoordinatorInfoDto
 import no.nav.tiltaksarrangor.client.dto.NavEnhetDto
 import no.nav.tiltaksarrangor.client.dto.NavVeilederDto
 import no.nav.tiltaksarrangor.client.dto.TiltakDto
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
+import no.nav.tiltaksarrangor.client.dto.VeilederInfoDto
 import no.nav.tiltaksarrangor.client.dto.VeiledersDeltakerDto
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
@@ -110,6 +113,15 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
+	fun addMineDeltakerlisterResponse() {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/deltakeroversikt",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(JsonUtils.objectMapper.writeValueAsString(getMineDeltakerlister()))
+		)
+	}
+
 	private fun getDeltaker(deltakerId: UUID): DeltakerDetaljerDto {
 		return DeltakerDetaljerDto(
 			id = deltakerId,
@@ -193,6 +205,24 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 				),
 				erMedveilederFor = false,
 				aktiveEndringsmeldinger = emptyList()
+			)
+		)
+	}
+
+	private fun getMineDeltakerlister(): DeltakeroversiktDto {
+		return DeltakeroversiktDto(
+			veilederInfo = VeilederInfoDto(
+				veilederFor = 4,
+				medveilederFor = 7
+			),
+			koordinatorInfo = KoordinatorInfoDto(
+				deltakerlister = listOf(
+					DeltakerlisteDto(
+						id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
+						type = "ARBFORB",
+						navn = "Gjennomføring 1"
+					)
+				)
 			)
 		)
 	}
