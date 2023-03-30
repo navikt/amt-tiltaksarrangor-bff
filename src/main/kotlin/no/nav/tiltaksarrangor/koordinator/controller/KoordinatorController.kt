@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.koordinator.controller
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
+import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
 import no.nav.tiltaksarrangor.koordinator.model.TilgjengeligVeileder
@@ -24,6 +25,14 @@ class KoordinatorController(
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getMineDeltakerlister(): MineDeltakerlister {
 		return koordinatorService.getMineDeltakerlister()
+	}
+
+	@GetMapping("/deltakerliste/{deltakerlisteId}")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun getDeltakerliste(
+		@PathVariable deltakerlisteId: UUID
+	): Deltakerliste {
+		return koordinatorService.getDeltakerliste(deltakerlisteId)
 	}
 
 	@GetMapping("/{deltakerlisteId}/veiledere")

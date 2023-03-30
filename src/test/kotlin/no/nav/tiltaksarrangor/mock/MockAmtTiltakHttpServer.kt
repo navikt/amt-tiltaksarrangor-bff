@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.mock
 
 import no.nav.tiltaksarrangor.client.dto.ArrangorDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
+import no.nav.tiltaksarrangor.client.dto.DeltakerDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerlisteDto
 import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
@@ -14,6 +15,7 @@ import no.nav.tiltaksarrangor.client.dto.TiltakDto
 import no.nav.tiltaksarrangor.client.dto.VeilederDto
 import no.nav.tiltaksarrangor.client.dto.VeilederInfoDto
 import no.nav.tiltaksarrangor.client.dto.VeiledersDeltakerDto
+import no.nav.tiltaksarrangor.koordinator.model.Koordinator
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.StatusType
@@ -148,6 +150,33 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
+	fun addKoordinatorerResponse(deltakerlisteId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/gjennomforing/$deltakerlisteId/koordinatorer",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(JsonUtils.objectMapper.writeValueAsString(getKoordinatorer()))
+		)
+	}
+
+	fun addGjennomforingResponse(deltakerlisteId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/gjennomforing/$deltakerlisteId",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(JsonUtils.objectMapper.writeValueAsString(getGjennomforing(deltakerlisteId)))
+		)
+	}
+
+	fun addDeltakerePaGjennomforingResponse(deltakerlisteId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/deltaker?gjennomforingId=$deltakerlisteId",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(JsonUtils.objectMapper.writeValueAsString(getDeltakerePaGjennomforing()))
+		)
+	}
+
 	private fun getDeltaker(deltakerId: UUID): DeltakerDetaljerDto {
 		return DeltakerDetaljerDto(
 			id = deltakerId,
@@ -266,6 +295,61 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 				fornavn = "Fornavn2",
 				mellomnavn = null,
 				etternavn = "Etternavn2"
+			)
+		)
+	}
+
+	private fun getKoordinatorer(): List<Koordinator> {
+		return listOf(
+			Koordinator(
+				fornavn = "Fornavn1",
+				mellomnavn = null,
+				etternavn = "Etternavn1"
+			),
+			Koordinator(
+				fornavn = "Fornavn2",
+				mellomnavn = null,
+				etternavn = "Etternavn2"
+			)
+		)
+	}
+
+	private fun getGjennomforing(deltakerlisteId: UUID): GjennomforingDto {
+		return GjennomforingDto(
+			id = deltakerlisteId,
+			navn = "Gjennomføring 1",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			status = GjennomforingDto.Status.GJENNOMFORES,
+			tiltak = TiltakDto(
+				tiltakskode = "ARBFORB",
+				tiltaksnavn = "Navn på tiltak"
+			),
+			arrangor = ArrangorDto(
+				virksomhetNavn = "Arrangør AS",
+				organisasjonNavn = null,
+				virksomhetOrgnr = "88888888"
+			)
+		)
+	}
+
+	private fun getDeltakerePaGjennomforing(): List<DeltakerDto> {
+		return listOf(
+			DeltakerDto(
+				id = UUID.fromString("252428ac-37a6-4341-bb17-5bad412c9409"),
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				fodselsnummer = "10987654321",
+				startDato = LocalDate.of(2023, 2, 1),
+				sluttDato = null,
+				registrertDato = LocalDate.of(2023, 1, 15).atStartOfDay(),
+				status = DeltakerStatus(
+					type = StatusType.DELTAR,
+					endretDato = LocalDate.of(2023, 2, 1).atStartOfDay()
+				),
+				aktiveEndringsmeldinger = emptyList(),
+				aktiveVeiledere = emptyList()
 			)
 		)
 	}
