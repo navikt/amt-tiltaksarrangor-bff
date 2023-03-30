@@ -13,7 +13,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `getMineDeltakere - ikke autentisert - returnerer 401`() {
+	fun `getMineDeltakerlister - ikke autentisert - returnerer 401`() {
 		val response = sendRequest(
 			method = "GET",
 			path = "/tiltaksarrangor/koordinator/mine-deltakerlister"
@@ -23,7 +23,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `getMineDeltakere - autentisert - returnerer 200`() {
+	fun `getMineDeltakerlister - autentisert - returnerer 200`() {
 		mockAmtTiltakServer.addMineDeltakerlisterResponse()
 
 		val response = sendRequest(
