@@ -177,6 +177,24 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
+	fun addGetDeltakerlisterLagtTilResponse(deltakerlisteId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/gjennomforing",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(JsonUtils.objectMapper.writeValueAsString(listOf(getGjennomforing(deltakerlisteId))))
+		)
+	}
+
+	fun addGetTilgjengeligeDeltakerlisterResponse(deltakerlisteId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/gjennomforing/tilgjengelig",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(JsonUtils.objectMapper.writeValueAsString(getGjennomforinger(deltakerlisteId)))
+		)
+	}
+
 	private fun getDeltaker(deltakerId: UUID): DeltakerDetaljerDto {
 		return DeltakerDetaljerDto(
 			id = deltakerId,
@@ -329,6 +347,28 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 				virksomhetNavn = "Arrangør AS",
 				organisasjonNavn = null,
 				virksomhetOrgnr = "88888888"
+			)
+		)
+	}
+
+	private fun getGjennomforinger(deltakerlisteId: UUID): List<GjennomforingDto> {
+		return listOf(
+			getGjennomforing(deltakerlisteId),
+			GjennomforingDto(
+				id = UUID.fromString("fd70758a-44c5-4868-bdcb-b1ddd26cb5e9"),
+				navn = "Gjennomføring 2",
+				startDato = LocalDate.of(2023, 5, 1),
+				sluttDato = LocalDate.of(2023, 6, 1),
+				status = GjennomforingDto.Status.GJENNOMFORES,
+				tiltak = TiltakDto(
+					tiltakskode = "INDOPPFAG",
+					tiltaksnavn = "Annet tiltak"
+				),
+				arrangor = ArrangorDto(
+					virksomhetNavn = "Arrangør AS",
+					organisasjonNavn = null,
+					virksomhetOrgnr = "88888888"
+				)
 			)
 		)
 	}

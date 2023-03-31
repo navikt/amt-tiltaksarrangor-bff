@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.koordinator.controller
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
+import no.nav.tiltaksarrangor.koordinator.model.AdminDeltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
@@ -50,5 +51,11 @@ class KoordinatorController(
 		@RequestBody request: LeggTilVeiledereRequest
 	) {
 		koordinatorService.tildelVeiledereForDeltaker(deltakerId, request)
+	}
+
+	@GetMapping("/admin/deltakerlister")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun getAlleDeltakerlister(): List<AdminDeltakerliste> {
+		return koordinatorService.getAlleDeltakerlister()
 	}
 }
