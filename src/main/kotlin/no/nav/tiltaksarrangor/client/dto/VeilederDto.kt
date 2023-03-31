@@ -1,5 +1,7 @@
 package no.nav.tiltaksarrangor.client.dto
 
+import no.nav.tiltaksarrangor.model.Veileder
+import no.nav.tiltaksarrangor.model.Veiledertype
 import java.util.UUID
 
 data class VeilederDto(
@@ -11,3 +13,19 @@ data class VeilederDto(
 	val mellomnavn: String?,
 	val etternavn: String
 )
+
+fun VeilederDto.toVeileder(): Veileder {
+	return Veileder(
+		id = id,
+		ansattId = ansattId,
+		deltakerId = deltakerId,
+		veiledertype = if (erMedveileder) {
+			Veiledertype.MEDVEILEDER
+		} else {
+			Veiledertype.VEILEDER
+		},
+		fornavn = fornavn,
+		mellomnavn = mellomnavn,
+		etternavn = etternavn
+	)
+}

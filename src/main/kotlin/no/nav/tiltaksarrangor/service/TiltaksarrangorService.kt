@@ -1,8 +1,8 @@
 package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.AmtTiltakClient
-import no.nav.tiltaksarrangor.client.dto.VeilederDto
 import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
+import no.nav.tiltaksarrangor.client.dto.toVeileder
 import no.nav.tiltaksarrangor.client.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.request.DeltakerIkkeAktuellRequest
 import no.nav.tiltaksarrangor.client.request.EndreDeltakelsesprosentRequest
@@ -14,8 +14,6 @@ import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
-import no.nav.tiltaksarrangor.model.Veileder
-import no.nav.tiltaksarrangor.model.Veiledertype
 import org.springframework.stereotype.Component
 import java.util.UUID
 
@@ -91,20 +89,4 @@ class TiltaksarrangorService(
 	fun slettEndringsmelding(endringsmeldingId: UUID) {
 		amtTiltakClient.tilbakekallEndringsmelding(endringsmeldingId)
 	}
-}
-
-private fun VeilederDto.toVeileder(): Veileder {
-	return Veileder(
-		id = id,
-		ansattId = ansattId,
-		deltakerId = deltakerId,
-		veiledertype = if (erMedveileder) {
-			Veiledertype.MEDVEILEDER
-		} else {
-			Veiledertype.VEILEDER
-		},
-		fornavn = fornavn,
-		mellomnavn = mellomnavn,
-		etternavn = etternavn
-	)
 }

@@ -123,4 +123,34 @@ class KoordinatorControllerTest : IntegrationTest() {
 
 		response.code shouldBe 200
 	}
+
+	@Test
+	fun `getDeltakerliste - ikke autentisert - returnerer 401`() {
+		val response = sendRequest(
+			method = "GET",
+			path = "/tiltaksarrangor/koordinator/deltakerliste/${UUID.randomUUID()}"
+		)
+
+		response.code shouldBe 401
+	}
+
+	@Test
+	fun `getDeltakerliste - autentisert - returnerer 200`() {
+		val deltakerlisteId = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a")
+		mockAmtTiltakServer.addKoordinatorerResponse(deltakerlisteId)
+		mockAmtTiltakServer.addGjennomforingResponse(deltakerlisteId)
+		mockAmtTiltakServer.addDeltakerePaGjennomforingResponse(deltakerlisteId)
+
+		val response = sendRequest(
+			method = "GET",
+			path = "/tiltaksarrangor/koordinator/deltakerliste/$deltakerlisteId",
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+		)
+
+		val expectedJson = """
+			{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","navn":"Gjennomføring 1","tiltaksnavn":"Navn på tiltak","arrangorNavn":"Arrangør AS","startDato":"2023-02-01","sluttDato":null,"status":"GJENNOMFORES","koordinatorer":[{"fornavn":"Fornavn1","mellomnavn":null,"etternavn":"Etternavn1"},{"fornavn":"Fornavn2","mellomnavn":null,"etternavn":"Etternavn2"}],"deltakere":[{"id":"252428ac-37a6-4341-bb17-5bad412c9409","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","soktInnDato":"2023-01-15T00:00:00","startDato":"2023-02-01","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00"},"veiledere":[],"aktiveEndringsmeldinger":[]}]}
+		""".trimIndent()
+		response.code shouldBe 200
+		response.body?.string() shouldBe expectedJson
+	}
 }

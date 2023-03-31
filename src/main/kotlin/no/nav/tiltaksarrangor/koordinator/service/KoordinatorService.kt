@@ -1,9 +1,14 @@
 package no.nav.tiltaksarrangor.koordinator.service
 
 import no.nav.tiltaksarrangor.client.AmtTiltakClient
+import no.nav.tiltaksarrangor.client.dto.DeltakerDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerlisteDto
 import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
 import no.nav.tiltaksarrangor.client.dto.TilgjengeligVeilederDto
+import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
+import no.nav.tiltaksarrangor.client.dto.toVeileder
+import no.nav.tiltaksarrangor.koordinator.model.Deltaker
+import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.KoordinatorFor
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
@@ -26,6 +31,24 @@ class KoordinatorService(
 
 	fun tildelVeiledereForDeltaker(deltakerId: UUID, request: LeggTilVeiledereRequest) {
 		amtTiltakClient.tildelVeiledereForDeltaker(deltakerId, request)
+	}
+
+	fun getDeltakerliste(deltakerlisteId: UUID): Deltakerliste {
+		val gjennomforing = amtTiltakClient.getGjennomforing(deltakerlisteId)
+		val deltakere = amtTiltakClient.getDeltakerePaGjennomforing(deltakerlisteId)
+		val koordinatorer = amtTiltakClient.getKoordinatorer(deltakerlisteId)
+
+		return Deltakerliste(
+			id = gjennomforing.id,
+			navn = gjennomforing.navn,
+			tiltaksnavn = gjennomforing.tiltak.tiltaksnavn,
+			arrangorNavn = if (gjennomforing.arrangor.organisasjonNavn.isNullOrEmpty()) gjennomforing.arrangor.virksomhetNavn else gjennomforing.arrangor.organisasjonNavn,
+			startDato = gjennomforing.startDato,
+			sluttDato = gjennomforing.sluttDato,
+			status = Deltakerliste.Status.valueOf(gjennomforing.status.name),
+			koordinatorer = koordinatorer,
+			deltakere = deltakere.map { it.toDeltaker() }
+		)
 	}
 }
 
@@ -59,5 +82,21 @@ fun TilgjengeligVeilederDto.toTilgjengeligVeileder(): TilgjengeligVeileder {
 		fornavn = fornavn,
 		mellomnavn = mellomnavn,
 		etternavn = etternavn
+	)
+}
+
+fun DeltakerDto.toDeltaker(): Deltaker {
+	return Deltaker(
+		id = id,
+		fornavn = fornavn,
+		mellomnavn = mellomnavn,
+		etternavn = etternavn,
+		fodselsnummer = fodselsnummer,
+		soktInnDato = registrertDato,
+		startDato = startDato,
+		sluttDato = sluttDato,
+		status = status,
+		veiledere = aktiveVeiledere.map { it.toVeileder() },
+		aktiveEndringsmeldinger = aktiveEndringsmeldinger.map { it.toEndringsmelding() }
 	)
 }
