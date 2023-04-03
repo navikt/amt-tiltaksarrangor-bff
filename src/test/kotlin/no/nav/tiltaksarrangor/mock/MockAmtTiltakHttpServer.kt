@@ -195,6 +195,14 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
+	fun addOpprettEllerFjernTilgangTilGjennomforingResponse(deltakerlisteId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/gjennomforing/$deltakerlisteId/tilgang",
+			MockResponse()
+				.setResponseCode(200)
+		)
+	}
+
 	private fun getDeltaker(deltakerId: UUID): DeltakerDetaljerDto {
 		return DeltakerDetaljerDto(
 			id = deltakerId,

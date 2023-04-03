@@ -6,6 +6,7 @@ import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -182,4 +183,59 @@ class KoordinatorControllerTest : IntegrationTest() {
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
 	}
+
+	@Test
+	fun `leggTilDeltakerliste - ikke autentisert - returnerer 401`() {
+		val response = sendRequest(
+			method = "POST",
+			path = "/tiltaksarrangor/koordinator/admin/deltakerliste/${UUID.randomUUID()}",
+			body = emptyRequest()
+		)
+
+		response.code shouldBe 401
+	}
+
+	@Test
+	fun `leggTilDeltakerliste - autentisert - returnerer 200`() {
+		val deltakerlisteId = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a")
+		mockAmtTiltakServer.addOpprettEllerFjernTilgangTilGjennomforingResponse(deltakerlisteId)
+
+		val response = sendRequest(
+			method = "POST",
+			path = "/tiltaksarrangor/koordinator/admin/deltakerliste/$deltakerlisteId",
+			body = emptyRequest(),
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+		)
+
+		response.code shouldBe 200
+	}
+
+	@Test
+	fun `fjernDeltakerliste - ikke autentisert - returnerer 401`() {
+		val response = sendRequest(
+			method = "DELETE",
+			path = "/tiltaksarrangor/koordinator/admin/deltakerliste/${UUID.randomUUID()}"
+		)
+
+		response.code shouldBe 401
+	}
+
+	@Test
+	fun `fjernDeltakerliste - autentisert - returnerer 200`() {
+		val deltakerlisteId = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a")
+		mockAmtTiltakServer.addOpprettEllerFjernTilgangTilGjennomforingResponse(deltakerlisteId)
+
+		val response = sendRequest(
+			method = "DELETE",
+			path = "/tiltaksarrangor/koordinator/admin/deltakerliste/$deltakerlisteId",
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+		)
+
+		response.code shouldBe 200
+	}
+}
+
+private fun emptyRequest(): RequestBody {
+	val mediaTypeHtml = "text/html".toMediaType()
+	return "".toRequestBody(mediaTypeHtml)
 }
