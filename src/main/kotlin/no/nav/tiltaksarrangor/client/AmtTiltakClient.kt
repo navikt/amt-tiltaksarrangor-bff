@@ -349,6 +349,32 @@ class AmtTiltakClient(
 		}
 	}
 
+	fun opprettTilgangTilGjennomforing(deltakerlisteId: UUID) {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/gjennomforing/$deltakerlisteId/tilgang")
+			.post(emptyRequest())
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulUpdateResponse(response.code, "legge til deltakerliste med id $deltakerlisteId")
+			}
+		}
+	}
+
+	fun fjernTilgangTilGjennomforing(deltakerlisteId: UUID) {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/gjennomforing/$deltakerlisteId/tilgang")
+			.delete()
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulUpdateResponse(response.code, "fjerne deltakerliste med id $deltakerlisteId")
+			}
+		}
+	}
+
 	private fun handleUnsuccessfulResponse(responseCode: Int, requestedResource: String) {
 		when (responseCode) {
 			401 -> throw UnauthorizedException("Ikke tilgang til $requestedResource")

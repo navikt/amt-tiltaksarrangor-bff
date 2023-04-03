@@ -70,6 +70,14 @@ class KoordinatorService(
 			)
 		}
 	}
+
+	fun leggTilDeltakerliste(deltakerlisteId: UUID) {
+		amtTiltakClient.opprettTilgangTilGjennomforing(deltakerlisteId)
+	}
+
+	fun fjernDeltakerliste(deltakerlisteId: UUID) {
+		amtTiltakClient.fjernTilgangTilGjennomforing(deltakerlisteId)
+	}
 }
 
 fun DeltakeroversiktDto.toMineDeltakerlister(): MineDeltakerlister {
