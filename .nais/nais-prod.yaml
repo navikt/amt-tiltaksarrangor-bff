@@ -7,6 +7,18 @@ metadata:
     team: amt
 spec:
   image: {{image}}
+  gcp:
+    sqlInstances:
+      - name: amt-tiltaksarrangor-bff
+        type: POSTGRES_14
+        tier: db-custom-2-5120
+        databases:
+          - name: amt-tiltaksarrangor-bff
+            envVarPrefix: DB
+        diskAutoresize: true
+        highAvailability: true
+        insights:
+          enabled: true
   port: 8080
   ingresses:
     - https://amt-tiltaksarrangor-bff.intern.nav.no
