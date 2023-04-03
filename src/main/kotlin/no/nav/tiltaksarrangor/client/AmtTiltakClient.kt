@@ -317,6 +317,38 @@ class AmtTiltakClient(
 		}
 	}
 
+	fun getDeltakerlisterLagtTil(): List<GjennomforingDto> {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/gjennomforing")
+			.get()
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulResponse(response.code, "deltakerlister som er lagt til")
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return fromJsonString<List<GjennomforingDto>>(body)
+		}
+	}
+
+	fun getTilgjengeligeDeltakerlister(): List<GjennomforingDto> {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/gjennomforing/tilgjengelig")
+			.get()
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulResponse(response.code, "alle tilgjengelige deltakerlister")
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return fromJsonString<List<GjennomforingDto>>(body)
+		}
+	}
+
 	private fun handleUnsuccessfulResponse(responseCode: Int, requestedResource: String) {
 		when (responseCode) {
 			401 -> throw UnauthorizedException("Ikke tilgang til $requestedResource")

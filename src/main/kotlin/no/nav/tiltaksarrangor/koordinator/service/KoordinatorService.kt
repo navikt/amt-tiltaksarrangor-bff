@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
 import no.nav.tiltaksarrangor.client.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
 import no.nav.tiltaksarrangor.client.dto.toVeileder
+import no.nav.tiltaksarrangor.koordinator.model.AdminDeltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.KoordinatorFor
@@ -49,6 +50,25 @@ class KoordinatorService(
 			koordinatorer = koordinatorer,
 			deltakere = deltakere.map { it.toDeltaker() }
 		)
+	}
+
+	fun getAlleDeltakerlister(): List<AdminDeltakerliste> {
+		val deltakerlisterLagtTil = amtTiltakClient.getDeltakerlisterLagtTil()
+		val tilgjengeligeDeltakerlister = amtTiltakClient.getTilgjengeligeDeltakerlister()
+
+		return tilgjengeligeDeltakerlister.map {
+			AdminDeltakerliste(
+				id = it.id,
+				navn = it.navn,
+				tiltaksnavn = it.tiltak.tiltaksnavn,
+				arrangorNavn = if (it.arrangor.organisasjonNavn.isNullOrEmpty()) it.arrangor.virksomhetNavn else it.arrangor.organisasjonNavn,
+				arrangorOrgnummer = it.arrangor.virksomhetOrgnr,
+				arrangorParentNavn = it.arrangor.virksomhetNavn,
+				startDato = it.startDato,
+				sluttDato = it.sluttDato,
+				lagtTil = deltakerlisterLagtTil.find { gjennomforingDto -> gjennomforingDto.id == it.id } != null
+			)
+		}
 	}
 }
 
