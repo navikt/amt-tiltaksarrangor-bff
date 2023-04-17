@@ -36,6 +36,11 @@ class GlobalExceptionHandler(
 		status: HttpStatus,
 		exception: Throwable
 	): ResponseEntity<Response> {
+		if (status.is4xxClientError) {
+			log.warn("Noe er feil med request: ${exception.message}, statuskode ${status.value()}", exception)
+		} else {
+			log.error("Noe gikk galt: ${exception.message}, statuskode ${status.value()}", exception)
+		}
 		return ResponseEntity
 			.status(status)
 			.body(
