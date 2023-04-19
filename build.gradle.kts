@@ -18,9 +18,11 @@ repositories {
 }
 
 val logstashEncoderVersion = "7.3"
-val tokenSupportVersion = "3.0.8"
+val kafkaClientsVersion = "3.4.0"
+val tokenSupportVersion = "3.0.10"
 val okHttpVersion = "4.10.0"
 val kotestVersion = "5.5.5"
+val testcontainersVersion = "1.17.6"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -28,22 +30,35 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-logging")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
+    implementation("org.flywaydb:flyway-core")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
+
+    implementation("org.springframework.kafka:spring-kafka")
+    implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
 
     implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
     implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    runtimeOnly("org.postgresql:postgresql")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude("com.vaadin.external.google", "android-json")
+    }
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
+    testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
+    testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
+    testImplementation("org.testcontainers:kafka:$testcontainersVersion")
+    testImplementation("org.awaitility:awaitility")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
