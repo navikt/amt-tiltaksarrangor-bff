@@ -1,7 +1,8 @@
 package no.nav.tiltaksarrangor.ingest.repositories
 
 import no.nav.tiltaksarrangor.ingest.repositories.model.ArrangorDbo
-import no.nav.tiltaksarrangor.utils.DatabaseUtils.sqlParameters
+import no.nav.tiltaksarrangor.utils.getNullableUUID
+import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
@@ -16,25 +17,21 @@ class ArrangorRepository(
 			id = UUID.fromString(rs.getString("id")),
 			navn = rs.getString("navn"),
 			organisasjonsnummer = rs.getString("organisasjonsnummer"),
-			overordnetEnhetNavn = rs.getString("overordnet_enhet_navn"),
-			overordnetEnhetOrganisasjonsnummer = rs.getString("overordnet_enhet_organisasjonsnummer")
+			overordnetArrangorId = rs.getNullableUUID("overordnet_arrangor_id")
 		)
 	}
 
 	fun insertOrUpdateArrangor(arrangorDbo: ArrangorDbo) {
 		val sql = """
-			INSERT INTO arrangor(id, navn, organisasjonsnummer, overordnet_enhet_navn, overordnet_enhet_organisasjonsnummer)
+			INSERT INTO arrangor(id, navn, organisasjonsnummer, overordnet_arrangor_id)
 			VALUES (:id,
 					:navn,
 					:organisasjonsnummer,
-					:overordnet_enhet_navn,
-					:overordnet_enhet_organisasjonsnummer)
-			ON CONFLICT (id) DO UPDATE SET
+					:overordnet_arrangor_id)
+			ON CONFLICT (organisasjonsnummer) DO UPDATE SET
 					navn     							 = :navn,
 					organisasjonsnummer					 = :organisasjonsnummer,
-					overordnet_enhet_navn 			     = :overordnet_enhet_navn,
-					overordnet_enhet_organisasjonsnummer = :overordnet_enhet_organisasjonsnummer
-
+					overordnet_arrangor_id 			     = :overordnet_arrangor_id
 		""".trimIndent()
 
 		template.update(
@@ -43,22 +40,15 @@ class ArrangorRepository(
 				"id" to arrangorDbo.id,
 				"navn" to arrangorDbo.navn,
 				"organisasjonsnummer" to arrangorDbo.organisasjonsnummer,
-				"overordnet_enhet_navn" to arrangorDbo.overordnetEnhetNavn,
-				"overordnet_enhet_organisasjonsnummer" to arrangorDbo.overordnetEnhetOrganisasjonsnummer
+				"overordnet_arrangor_id" to arrangorDbo.overordnetArrangorId
 			)
 		)
 	}
 
 	fun deleteArrangor(arrangorId: UUID): Int {
-		val sql = """
-			DELETE FROM arrangor WHERE id = :id
-		""".trimIndent()
-
 		return template.update(
-			sql,
-			sqlParameters(
-				"id" to arrangorId
-			)
+			"DELETE FROM arrangor WHERE id = :id",
+			sqlParameters("id" to arrangorId)
 		)
 	}
 

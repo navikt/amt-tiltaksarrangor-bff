@@ -5,22 +5,17 @@ import java.util.UUID
 
 data class ArrangorDto(
 	val id: UUID,
-	val organisasjon: OrganisasjonDto,
-	val overordnetOrganisasjon: OrganisasjonDto?,
+	val navn: String,
+	val organisasjonsnummer: String,
+	val overordnetArrangorId: UUID?,
 	val deltakerlister: List<UUID>
-)
-
-data class OrganisasjonDto(
-	val nummer: String,
-	val navn: String
 )
 
 fun ArrangorDto.toArrangorDbo(): ArrangorDbo {
 	return ArrangorDbo(
 		id = id,
-		navn = organisasjon.navn,
-		organisasjonsnummer = organisasjon.nummer,
-		overordnetEnhetNavn = overordnetOrganisasjon?.navn,
-		overordnetEnhetOrganisasjonsnummer = overordnetOrganisasjon?.nummer
+		navn = navn,
+		organisasjonsnummer = organisasjonsnummer,
+		overordnetArrangorId = overordnetArrangorId
 	)
 }

@@ -2,7 +2,6 @@ package no.nav.tiltaksarrangor.ingest
 
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
-import no.nav.tiltaksarrangor.ingest.model.OrganisasjonDto
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
@@ -46,14 +45,9 @@ class KafkaListenerTest : IntegrationTest() {
 		val arrangorId = UUID.randomUUID()
 		val arrangorDto = ArrangorDto(
 			id = arrangorId,
-			organisasjon = OrganisasjonDto(
-				nummer = "88888888",
-				navn = "Arrangør AS"
-			),
-			overordnetOrganisasjon = OrganisasjonDto(
-				nummer = "99999999",
-				navn = "Overordnet enhet AS"
-			),
+			navn = "Arrangør AS",
+			organisasjonsnummer = "88888888",
+			overordnetArrangorId = UUID.randomUUID(),
 			deltakerlister = emptyList()
 		)
 		testKafkaProducer.send(
@@ -75,14 +69,9 @@ class KafkaListenerTest : IntegrationTest() {
 		val arrangorId = UUID.randomUUID()
 		val arrangorDto = ArrangorDto(
 			id = arrangorId,
-			organisasjon = OrganisasjonDto(
-				nummer = "77777777",
-				navn = "Arrangør AS"
-			),
-			overordnetOrganisasjon = OrganisasjonDto(
-				nummer = "99999999",
-				navn = "Overordnet enhet AS"
-			),
+			navn = "Arrangør AS",
+			organisasjonsnummer = "77777777",
+			overordnetArrangorId = null,
 			deltakerlister = emptyList()
 		)
 		arrangorRepository.insertOrUpdateArrangor(arrangorDto.toArrangorDbo())

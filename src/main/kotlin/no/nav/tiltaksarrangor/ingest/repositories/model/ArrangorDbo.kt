@@ -6,6 +6,5 @@ data class ArrangorDbo(
 	val id: UUID,
 	val navn: String,
 	val organisasjonsnummer: String,
-	val overordnetEnhetNavn: String?,
-	val overordnetEnhetOrganisasjonsnummer: String?
+	val overordnetArrangorId: UUID?
 )
