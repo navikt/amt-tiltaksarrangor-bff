@@ -15,6 +15,6 @@ data class Deltakerliste(
 	val deltakere: List<Deltaker>
 ) {
 	enum class Status {
-		APENT_FOR_INNSOK, IKKE_STARTET, GJENNOMFORES, AVSLUTTET
+		APENT_FOR_INNSOK, GJENNOMFORES, AVSLUTTET
 	}
 }
