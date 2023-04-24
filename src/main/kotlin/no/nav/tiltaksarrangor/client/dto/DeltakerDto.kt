@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.client.dto
 
-import no.nav.tiltaksarrangor.model.DeltakerStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -13,7 +12,7 @@ data class DeltakerDto(
 	val fodselsnummer: String,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
-	val status: DeltakerStatus,
+	val status: DeltakerStatusDto,
 	val registrertDato: LocalDateTime,
 	val aktiveEndringsmeldinger: List<EndringsmeldingDto>,
 	val aktiveVeiledere: List<VeilederDto>
