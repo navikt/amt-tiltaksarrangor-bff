@@ -13,6 +13,6 @@ data class GjennomforingDto(
 	val arrangor: ArrangorDto
 ) {
 	enum class Status {
-		IKKE_STARTET, APENT_FOR_INNSOK, GJENNOMFORES, AVSLUTTET
+		APENT_FOR_INNSOK, GJENNOMFORES, AVSLUTTET
 	}
 }
