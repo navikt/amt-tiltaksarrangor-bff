@@ -46,6 +46,8 @@ spec:
     requests:
       cpu: 250m
       memory: 512Mi
+  kafka:
+    pool: nav-dev
   tokenx:
     enabled: true
   accessPolicy:
