@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.mock
 import no.nav.tiltaksarrangor.client.dto.ArrangorDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerDetaljerDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerDto
+import no.nav.tiltaksarrangor.client.dto.DeltakerStatusDto
 import no.nav.tiltaksarrangor.client.dto.DeltakerlisteDto
 import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
 import no.nav.tiltaksarrangor.client.dto.EndringsmeldingDto
@@ -242,7 +243,8 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 					virksomhetNavn = "Arrangør AS",
 					organisasjonNavn = null,
 					virksomhetOrgnr = "88888888"
-				)
+				),
+				erKurs = false
 			),
 			fjernesDato = null,
 			innsokBegrunnelse = "Tror deltakeren vil ha nytte av dette"
@@ -355,7 +357,8 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 				virksomhetNavn = "Arrangør AS",
 				organisasjonNavn = null,
 				virksomhetOrgnr = "88888888"
-			)
+			),
+			erKurs = false
 		)
 	}
 
@@ -376,7 +379,8 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 					virksomhetNavn = "Arrangør AS",
 					organisasjonNavn = null,
 					virksomhetOrgnr = "88888888"
-				)
+				),
+				erKurs = false
 			)
 		)
 	}
@@ -392,8 +396,8 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				registrertDato = LocalDate.of(2023, 1, 15).atStartOfDay(),
-				status = DeltakerStatus(
-					type = StatusType.DELTAR,
+				status = DeltakerStatusDto(
+					type = no.nav.tiltaksarrangor.client.dto.StatusType.DELTAR,
 					endretDato = LocalDate.of(2023, 2, 1).atStartOfDay()
 				),
 				aktiveEndringsmeldinger = emptyList(),

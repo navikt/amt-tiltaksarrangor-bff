@@ -6,6 +6,7 @@ import no.nav.tiltaksarrangor.client.dto.DeltakerlisteDto
 import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
 import no.nav.tiltaksarrangor.client.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
+import no.nav.tiltaksarrangor.client.dto.toStatus
 import no.nav.tiltaksarrangor.client.dto.toVeileder
 import no.nav.tiltaksarrangor.koordinator.model.AdminDeltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
@@ -15,6 +16,7 @@ import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
 import no.nav.tiltaksarrangor.koordinator.model.TilgjengeligVeileder
 import no.nav.tiltaksarrangor.koordinator.model.VeilederFor
+import no.nav.tiltaksarrangor.model.StatusType
 import org.springframework.stereotype.Component
 import java.util.UUID
 
@@ -48,7 +50,10 @@ class KoordinatorService(
 			sluttDato = gjennomforing.sluttDato,
 			status = Deltakerliste.Status.valueOf(gjennomforing.status.name),
 			koordinatorer = koordinatorer,
-			deltakere = deltakere.map { it.toDeltaker() }
+			deltakere = deltakere
+				.map { it.toDeltaker(gjennomforing.erKurs) }
+				.filter { !gjennomforing.erKurs || it.status.type != StatusType.IKKE_AKTUELL },
+			erKurs = gjennomforing.erKurs
 		)
 	}
 
@@ -113,7 +118,7 @@ fun TilgjengeligVeilederDto.toTilgjengeligVeileder(): TilgjengeligVeileder {
 	)
 }
 
-fun DeltakerDto.toDeltaker(): Deltaker {
+fun DeltakerDto.toDeltaker(erKurs: Boolean): Deltaker {
 	return Deltaker(
 		id = id,
 		fornavn = fornavn,
@@ -123,7 +128,7 @@ fun DeltakerDto.toDeltaker(): Deltaker {
 		soktInnDato = registrertDato,
 		startDato = startDato,
 		sluttDato = sluttDato,
-		status = status,
+		status = status.toStatus(erKurs),
 		veiledere = aktiveVeiledere.map { it.toVeileder() },
 		aktiveEndringsmeldinger = aktiveEndringsmeldinger.map { it.toEndringsmelding() }
 	)
