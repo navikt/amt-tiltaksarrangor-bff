@@ -4,15 +4,21 @@ import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.ingest.model.AnsattDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteArrangorDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.PersonaliaDto
 import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
+import no.nav.tiltaksarrangor.ingest.model.TiltakDto
 import no.nav.tiltaksarrangor.ingest.model.VeilederDto
 import no.nav.tiltaksarrangor.ingest.model.Veiledertype
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
+import no.nav.tiltaksarrangor.ingest.model.toDeltakerlisteDbo
 import no.nav.tiltaksarrangor.ingest.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.ingest.repositories.ArrangorRepository
+import no.nav.tiltaksarrangor.ingest.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
@@ -26,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -34,6 +41,7 @@ class KafkaListenerTest : IntegrationTest() {
 	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val arrangorRepository = ArrangorRepository(template)
 	private val ansattRepository = AnsattRepository(template)
+	private val deltakerlisteRepository = DeltakerlisteRepository(template)
 
 	@Autowired
 	lateinit var testKafkaProducer: KafkaProducer<String, String>
@@ -43,7 +51,7 @@ class KafkaListenerTest : IntegrationTest() {
 
 	@BeforeEach
 	internal fun subscribe() {
-		testKafkaConsumer.subscribeHvisIkkeSubscribed(ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC)
+		testKafkaConsumer.subscribeHvisIkkeSubscribed(ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC)
 	}
 
 	@AfterEach
@@ -176,6 +184,73 @@ class KafkaListenerTest : IntegrationTest() {
 				ansattRepository.getKoordinatorDeltakerlisteDboListe(ansattId).isEmpty() &&
 				ansattRepository.getVeilederDeltakerDboListe(ansattId).isEmpty() &&
 				ansattRepository.getAnsatt(ansattId) == null
+		}
+	}
+
+	@Test
+	fun `listen - melding pa deltakerliste-topic - lagres i database`() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteDto(
+			id = deltakerlisteId,
+			navn = "Gjennomføring av tiltak",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangor = DeltakerlisteArrangorDto(
+				id = UUID.randomUUID(),
+				organisasjonsnummer = "88888888",
+				navn = "Arrangør AS"
+			),
+			tiltak = TiltakDto(
+				navn = "Det flotte tiltaket",
+				type = "AMO"
+			),
+			startDato = LocalDate.of(2023, 5, 2),
+			sluttDato = null
+		)
+		testKafkaProducer.send(
+			ProducerRecord(
+				DELTAKERLISTE_TOPIC,
+				null,
+				deltakerlisteId.toString(),
+				JsonUtils.objectMapper.writeValueAsString(deltakerlisteDto)
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) != null
+		}
+	}
+
+	@Test
+	fun `listen - tombstonemelding pa deltakerliste-topic - slettes i database`() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteDto(
+			id = deltakerlisteId,
+			navn = "Gjennomføring av tiltak",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangor = DeltakerlisteArrangorDto(
+				id = UUID.randomUUID(),
+				organisasjonsnummer = "88888888",
+				navn = "Arrangør AS"
+			),
+			tiltak = TiltakDto(
+				navn = "Det flotte tiltaket",
+				type = "AMO"
+			),
+			startDato = LocalDate.of(2023, 5, 2),
+			sluttDato = null
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDto.toDeltakerlisteDbo())
+		testKafkaProducer.send(
+			ProducerRecord(
+				DELTAKERLISTE_TOPIC,
+				null,
+				deltakerlisteId.toString(),
+				null
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) == null
 		}
 	}
 }
