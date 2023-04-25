@@ -10,7 +10,8 @@ data class GjennomforingDto(
 	val sluttDato: LocalDate?,
 	val status: Status,
 	val tiltak: TiltakDto,
-	val arrangor: ArrangorDto
+	val arrangor: ArrangorDto,
+	val erKurs: Boolean
 ) {
 	enum class Status {
 		APENT_FOR_INNSOK, GJENNOMFORES, AVSLUTTET
