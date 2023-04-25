@@ -12,7 +12,7 @@ import java.util.UUID
 class ArrangorRepository(
 	private val template: NamedParameterJdbcTemplate
 ) {
-	private val rowMapper = RowMapper { rs, _ ->
+	private val arrangorRowMapper = RowMapper { rs, _ ->
 		ArrangorDbo(
 			id = UUID.fromString(rs.getString("id")),
 			navn = rs.getString("navn"),
@@ -28,7 +28,7 @@ class ArrangorRepository(
 					:navn,
 					:organisasjonsnummer,
 					:overordnet_arrangor_id)
-			ON CONFLICT (organisasjonsnummer) DO UPDATE SET
+			ON CONFLICT (id) DO UPDATE SET
 					navn     							 = :navn,
 					organisasjonsnummer					 = :organisasjonsnummer,
 					overordnet_arrangor_id 			     = :overordnet_arrangor_id
@@ -56,7 +56,7 @@ class ArrangorRepository(
 		return template.query(
 			"SELECT * FROM arrangor WHERE id = :id",
 			sqlParameters("id" to arrangorId),
-			rowMapper
+			arrangorRowMapper
 		).firstOrNull()
 	}
 }
