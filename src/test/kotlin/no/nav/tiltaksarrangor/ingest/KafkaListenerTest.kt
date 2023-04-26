@@ -255,4 +255,40 @@ class KafkaListenerTest : IntegrationTest() {
 			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) == null
 		}
 	}
+
+	@Test
+	fun `listen - avsluttet deltakerliste-melding pa deltakerliste-topic og deltakerliste finnes i db - sletter deltakerliste fra db`() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteDto(
+			id = deltakerlisteId,
+			navn = "Gjennomføring av tiltak",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangor = DeltakerlisteArrangorDto(
+				id = UUID.randomUUID(),
+				organisasjonsnummer = "88888888",
+				navn = "Arrangør AS"
+			),
+			tiltak = TiltakDto(
+				navn = "Avsluttet tiltak",
+				type = "AMO"
+			),
+			startDato = LocalDate.now().minusYears(2),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDto.toDeltakerlisteDbo())
+		val avsluttetDeltakerlisteDto = deltakerlisteDto.copy(status = DeltakerlisteStatus.AVSLUTTET, sluttDato = LocalDate.now().minusWeeks(4))
+		testKafkaProducer.send(
+			ProducerRecord(
+				DELTAKERLISTE_TOPIC,
+				null,
+				deltakerlisteId.toString(),
+				JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerlisteDto)
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) == null
+		}
+	}
 }

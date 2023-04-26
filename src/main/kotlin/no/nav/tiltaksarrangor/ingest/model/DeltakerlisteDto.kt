@@ -28,3 +28,14 @@ fun DeltakerlisteDto.toDeltakerlisteDbo(): DeltakerlisteDbo {
 		erKurs = erKurs
 	)
 }
+
+fun DeltakerlisteDto.skalLagres(): Boolean {
+	if (status == DeltakerlisteStatus.GJENNOMFORES) {
+		return true
+	} else if (status == DeltakerlisteStatus.AVSLUTTET && sluttDato != null && LocalDate.now()
+		.isBefore(sluttDato.plusDays(15))
+	) {
+		return true
+	}
+	return false
+}

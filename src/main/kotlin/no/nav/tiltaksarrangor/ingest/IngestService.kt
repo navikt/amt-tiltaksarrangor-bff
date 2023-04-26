@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.ingest
 import no.nav.tiltaksarrangor.ingest.model.AnsattDto
 import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
+import no.nav.tiltaksarrangor.ingest.model.skalLagres
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerlisteDbo
@@ -44,10 +45,17 @@ class IngestService(
 	fun lagreDeltakerliste(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteDto?) {
 		if (deltakerlisteDto == null) {
 			deltakerlisteRepository.deleteDeltakerliste(deltakerlisteId)
-			log.info("Slettet deltakerliste med id $deltakerlisteId")
-		} else {
+			log.info("Slettet tombstonet deltakerliste med id $deltakerlisteId")
+		} else if (deltakerlisteDto.skalLagres()) {
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDto.toDeltakerlisteDbo())
 			log.info("Lagret deltakerliste med id $deltakerlisteId")
+		} else {
+			val antallSlettedeDeltakerlister = deltakerlisteRepository.deleteDeltakerliste(deltakerlisteId)
+			if (antallSlettedeDeltakerlister > 0) {
+				log.info("Slettet deltakerliste med id $deltakerlisteId")
+			} else {
+				log.info("Ignorert deltakerliste med id $deltakerlisteId")
+			}
 		}
 	}
 }

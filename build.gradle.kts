@@ -23,6 +23,7 @@ val tokenSupportVersion = "3.0.10"
 val okHttpVersion = "4.10.0"
 val kotestVersion = "5.5.5"
 val testcontainersVersion = "1.17.6"
+val mockkVersion = "1.13.5"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -59,6 +60,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
     testImplementation("org.testcontainers:kafka:$testcontainersVersion")
     testImplementation("org.awaitility:awaitility")
+    testImplementation("io.mockk:mockk:$mockkVersion")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
