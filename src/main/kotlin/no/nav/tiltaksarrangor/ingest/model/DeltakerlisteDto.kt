@@ -11,7 +11,8 @@ data class DeltakerlisteDto(
 	val arrangor: DeltakerlisteArrangorDto,
 	val tiltak: TiltakDto,
 	val startDato: LocalDate?,
-	val sluttDato: LocalDate?
+	val sluttDato: LocalDate?,
+	val erKurs: Boolean
 )
 
 fun DeltakerlisteDto.toDeltakerlisteDbo(): DeltakerlisteDbo {
@@ -23,6 +24,7 @@ fun DeltakerlisteDto.toDeltakerlisteDbo(): DeltakerlisteDbo {
 		tiltakNavn = tiltak.navn,
 		tiltakType = tiltak.type,
 		startDato = startDato,
-		sluttDato = sluttDato
+		sluttDato = sluttDato,
+		erKurs = erKurs
 	)
 }

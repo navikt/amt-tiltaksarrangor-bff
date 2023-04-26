@@ -12,5 +12,6 @@ data class DeltakerlisteDbo(
 	val tiltakNavn: String,
 	val tiltakType: String,
 	val startDato: LocalDate?,
-	val sluttDato: LocalDate?
+	val sluttDato: LocalDate?,
+	val erKurs: Boolean
 )

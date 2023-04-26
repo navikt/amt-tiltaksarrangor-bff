@@ -22,13 +22,14 @@ class DeltakerlisteRepository(
 			tiltakNavn = rs.getString("tiltak_navn"),
 			tiltakType = rs.getString("tiltak_type"),
 			startDato = rs.getNullableLocalDate("start_dato"),
-			sluttDato = rs.getNullableLocalDate("slutt_dato")
+			sluttDato = rs.getNullableLocalDate("slutt_dato"),
+			erKurs = rs.getBoolean("er_kurs")
 		)
 	}
 
 	fun insertOrUpdateDeltakerliste(deltakerlisteDbo: DeltakerlisteDbo) {
 		val sql = """
-			INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltak_navn, tiltak_type, start_dato, slutt_dato)
+			INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltak_navn, tiltak_type, start_dato, slutt_dato, er_kurs)
 			VALUES (:id,
 					:navn,
 					:status,
@@ -36,7 +37,8 @@ class DeltakerlisteRepository(
 					:tiltak_navn,
 					:tiltak_type,
 					:start_dato,
-					:slutt_dato)
+					:slutt_dato,
+					:er_kurs)
 			ON CONFLICT (id) DO UPDATE SET
 					navn     				= :navn,
 					status					= :status,
@@ -44,7 +46,8 @@ class DeltakerlisteRepository(
 					tiltak_navn				= :tiltak_navn,
 					tiltak_type				= :tiltak_type,
 					start_dato				= :start_dato,
-					slutt_dato				= :slutt_dato
+					slutt_dato				= :slutt_dato,
+					er_kurs					= :er_kurs
 		""".trimIndent()
 
 		template.update(
@@ -57,7 +60,8 @@ class DeltakerlisteRepository(
 				"tiltak_navn" to deltakerlisteDbo.tiltakNavn,
 				"tiltak_type" to deltakerlisteDbo.tiltakType,
 				"start_dato" to deltakerlisteDbo.startDato,
-				"slutt_dato" to deltakerlisteDbo.sluttDato
+				"slutt_dato" to deltakerlisteDbo.sluttDato,
+				"er_kurs" to deltakerlisteDbo.erKurs
 			)
 		)
 	}

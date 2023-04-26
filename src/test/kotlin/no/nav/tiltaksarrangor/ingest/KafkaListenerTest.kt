@@ -204,7 +204,8 @@ class KafkaListenerTest : IntegrationTest() {
 				type = "AMO"
 			),
 			startDato = LocalDate.of(2023, 5, 2),
-			sluttDato = null
+			sluttDato = null,
+			erKurs = false
 		)
 		testKafkaProducer.send(
 			ProducerRecord(
@@ -237,7 +238,8 @@ class KafkaListenerTest : IntegrationTest() {
 				type = "AMO"
 			),
 			startDato = LocalDate.of(2023, 5, 2),
-			sluttDato = null
+			sluttDato = null,
+			erKurs = false
 		)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDto.toDeltakerlisteDbo())
 		testKafkaProducer.send(
