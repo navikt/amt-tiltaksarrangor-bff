@@ -2,22 +2,30 @@ package no.nav.tiltaksarrangor.ingest
 
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.ingest.model.AnsattDto
+import no.nav.tiltaksarrangor.ingest.model.AnsattPersonaliaDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerKontaktinformasjonDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerNavVeilederDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerPersonaliaDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
+import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
-import no.nav.tiltaksarrangor.ingest.model.PersonaliaDto
 import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.TiltakDto
 import no.nav.tiltaksarrangor.ingest.model.VeilederDto
 import no.nav.tiltaksarrangor.ingest.model.Veiledertype
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
+import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerlisteDbo
 import no.nav.tiltaksarrangor.ingest.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.ingest.repositories.ArrangorRepository
+import no.nav.tiltaksarrangor.ingest.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.ingest.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
@@ -33,6 +41,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -42,6 +51,7 @@ class KafkaListenerTest : IntegrationTest() {
 	private val arrangorRepository = ArrangorRepository(template)
 	private val ansattRepository = AnsattRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template)
+	private val deltakerRepository = DeltakerRepository(template)
 
 	@Autowired
 	lateinit var testKafkaProducer: KafkaProducer<String, String>
@@ -51,7 +61,7 @@ class KafkaListenerTest : IntegrationTest() {
 
 	@BeforeEach
 	internal fun subscribe() {
-		testKafkaConsumer.subscribeHvisIkkeSubscribed(ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC)
+		testKafkaConsumer.subscribeHvisIkkeSubscribed(ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC)
 	}
 
 	@AfterEach
@@ -113,7 +123,7 @@ class KafkaListenerTest : IntegrationTest() {
 		val ansattId = UUID.randomUUID()
 		val ansattDto = AnsattDto(
 			id = ansattId,
-			personalia = PersonaliaDto(
+			personalia = AnsattPersonaliaDto(
 				personident = "12345678910",
 				navn = NavnDto(
 					fornavn = "Fornavn",
@@ -152,7 +162,7 @@ class KafkaListenerTest : IntegrationTest() {
 		val ansattId = UUID.randomUUID()
 		val ansattDto = AnsattDto(
 			id = ansattId,
-			personalia = PersonaliaDto(
+			personalia = AnsattPersonaliaDto(
 				personident = "12345678910",
 				navn = NavnDto(
 					fornavn = "Fornavn",
@@ -289,6 +299,138 @@ class KafkaListenerTest : IntegrationTest() {
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
 			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) == null
+		}
+	}
+
+	@Test
+	fun `listen - melding pa deltaker-topic - lagres i database`() {
+		val deltakerId = UUID.randomUUID()
+		val deltakerDto = DeltakerDto(
+			id = deltakerId,
+			deltakerlisteId = UUID.randomUUID(),
+			personalia = DeltakerPersonaliaDto(
+				personident = "10987654321",
+				navn = NavnDto("Fornavn", null, "Etternavn"),
+				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+				skjermet = false
+			),
+			status = DeltakerStatusDto(
+				type = DeltakerStatus.DELTAR,
+				gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+				opprettetDato = LocalDateTime.now().minusWeeks(6)
+			),
+			dagerPerUke = null,
+			prosentStilling = null,
+			oppstartsdato = LocalDate.now().minusWeeks(5),
+			sluttdato = null,
+			innsoktDato = LocalDate.now().minusMonths(2),
+			bestillingTekst = "Bestilling",
+			navKontor = "NAV Oslo",
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			skjult = null
+		)
+		testKafkaProducer.send(
+			ProducerRecord(
+				DELTAKER_TOPIC,
+				null,
+				deltakerId.toString(),
+				JsonUtils.objectMapper.writeValueAsString(deltakerDto)
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			deltakerRepository.getDeltaker(deltakerId) != null
+		}
+	}
+
+	@Test
+	fun `listen - tombstonemelding pa deltaker-topic - slettes i database`() {
+		val deltakerId = UUID.randomUUID()
+		val deltakerDto = DeltakerDto(
+			id = deltakerId,
+			deltakerlisteId = UUID.randomUUID(),
+			personalia = DeltakerPersonaliaDto(
+				personident = "10987654321",
+				navn = NavnDto("Fornavn", null, "Etternavn"),
+				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+				skjermet = false
+			),
+			status = DeltakerStatusDto(
+				type = DeltakerStatus.DELTAR,
+				gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+				opprettetDato = LocalDateTime.now().minusWeeks(6)
+			),
+			dagerPerUke = null,
+			prosentStilling = null,
+			oppstartsdato = LocalDate.now().minusWeeks(5),
+			sluttdato = null,
+			innsoktDato = LocalDate.now().minusMonths(2),
+			bestillingTekst = "Bestilling",
+			navKontor = "NAV Oslo",
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			skjult = null
+		)
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
+		testKafkaProducer.send(
+			ProducerRecord(
+				DELTAKER_TOPIC,
+				null,
+				deltakerId.toString(),
+				null
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			deltakerRepository.getDeltaker(deltakerId) == null
+		}
+	}
+
+	@Test
+	fun `listen - avsluttet deltaker-melding pa deltaker-topic og deltaker finnes i db - sletter deltaker fra db`() {
+		val deltakerId = UUID.randomUUID()
+		val deltakerDto = DeltakerDto(
+			id = deltakerId,
+			deltakerlisteId = UUID.randomUUID(),
+			personalia = DeltakerPersonaliaDto(
+				personident = "10987654321",
+				navn = NavnDto("Fornavn", null, "Etternavn"),
+				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+				skjermet = false
+			),
+			status = DeltakerStatusDto(
+				type = DeltakerStatus.DELTAR,
+				gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+				opprettetDato = LocalDateTime.now().minusWeeks(6)
+			),
+			dagerPerUke = null,
+			prosentStilling = null,
+			oppstartsdato = LocalDate.now().minusWeeks(5),
+			sluttdato = null,
+			innsoktDato = LocalDate.now().minusMonths(2),
+			bestillingTekst = "Bestilling",
+			navKontor = "NAV Oslo",
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			skjult = null
+		)
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
+		val avsluttetDeltakerDto = deltakerDto.copy(
+			status = DeltakerStatusDto(
+				type = DeltakerStatus.HAR_SLUTTET,
+				gyldigFra = LocalDateTime.now().minusWeeks(4),
+				opprettetDato = LocalDateTime.now().minusWeeks(4)
+			)
+		)
+		testKafkaProducer.send(
+			ProducerRecord(
+				DELTAKER_TOPIC,
+				null,
+				deltakerId.toString(),
+				JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerDto)
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			deltakerRepository.getDeltaker(deltakerId) == null
 		}
 	}
 }

@@ -8,7 +8,7 @@ import java.util.UUID
 
 data class AnsattDto(
 	val id: UUID,
-	val personalia: PersonaliaDto,
+	val personalia: AnsattPersonaliaDto,
 	val arrangorer: List<TilknyttetArrangorDto>
 )
 
