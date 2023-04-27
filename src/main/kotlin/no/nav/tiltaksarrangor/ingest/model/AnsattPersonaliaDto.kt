@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.ingest.model
 
-data class PersonaliaDto(
+data class AnsattPersonaliaDto(
 	val personident: String,
 	val navn: NavnDto
 )
