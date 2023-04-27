@@ -35,7 +35,8 @@ class TiltaksarrangorService(
 			deltakerliste = Deltaker.Deltakerliste(
 				id = deltaker.gjennomforing.id,
 				startDato = deltaker.gjennomforing.startDato,
-				sluttDato = deltaker.gjennomforing.sluttDato
+				sluttDato = deltaker.gjennomforing.sluttDato,
+				erKurs = deltaker.gjennomforing.erKurs
 			),
 			fornavn = deltaker.fornavn,
 			mellomnavn = deltaker.mellomnavn,
