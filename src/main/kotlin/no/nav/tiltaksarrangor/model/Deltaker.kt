@@ -29,6 +29,7 @@ data class Deltaker(
 	data class Deltakerliste(
 		val id: UUID,
 		val startDato: LocalDate?,
-		val sluttDato: LocalDate?
+		val sluttDato: LocalDate?,
+		val erKurs: Boolean
 	)
 }
