@@ -5,7 +5,8 @@ import no.nav.tiltaksarrangor.model.Endringsmelding
 fun EndringsmeldingDto.toEndringsmelding(): Endringsmelding {
 	return Endringsmelding(
 		id = id,
-		innhold = innhold.toEndringsmeldingInnhold()
+		innhold = innhold.toEndringsmeldingInnhold(),
+		type = Endringsmelding.Type.valueOf(type)
 	)
 }
 

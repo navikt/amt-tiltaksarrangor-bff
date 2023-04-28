@@ -109,6 +109,29 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
+	fun addTilbyPlassResponse(deltakerId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/deltaker/$deltakerId/tilby-plass",
+			MockResponse()
+				.setResponseCode(200)
+		)
+	}
+	fun addSettPaaVentelisteResponse(deltakerId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/deltaker/$deltakerId/sett-paa-venteliste",
+			MockResponse()
+				.setResponseCode(200)
+		)
+	}
+
+	fun addEndreSluttdatoResponse(deltakerId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/deltaker/$deltakerId/endre-sluttdato",
+			MockResponse()
+				.setResponseCode(200)
+		)
+	}
+
 	fun addTilbakekallEndringsmeldingResponse(endringsmeldingId: UUID) {
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/endringsmelding/$endringsmeldingId/tilbakekall",

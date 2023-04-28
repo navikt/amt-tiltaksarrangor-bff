@@ -5,9 +5,9 @@ import java.util.UUID
 
 data class Endringsmelding(
 	val id: UUID,
-	val innhold: Innhold
+	val innhold: Innhold,
+	val type: Type
 ) {
-	val type = innhold.type()
 
 	enum class Type {
 		LEGG_TIL_OPPSTARTSDATO,
@@ -44,16 +44,5 @@ data class Endringsmelding(
 		data class DeltakerIkkeAktuellInnhold(
 			val aarsak: DeltakerStatusAarsak
 		) : Innhold()
-
-		fun type(): Type {
-			return when (this) {
-				is LeggTilOppstartsdatoInnhold -> Type.LEGG_TIL_OPPSTARTSDATO
-				is EndreOppstartsdatoInnhold -> Type.ENDRE_OPPSTARTSDATO
-				is ForlengDeltakelseInnhold -> Type.FORLENG_DELTAKELSE
-				is AvsluttDeltakelseInnhold -> Type.AVSLUTT_DELTAKELSE
-				is DeltakerIkkeAktuellInnhold -> Type.DELTAKER_IKKE_AKTUELL
-				is EndreDeltakelseProsentInnhold -> Type.ENDRE_DELTAKELSE_PROSENT
-			}
-		}
 	}
 }
