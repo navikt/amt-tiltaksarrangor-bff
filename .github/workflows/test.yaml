@@ -5,6 +5,8 @@ on:
       - main
 jobs:
   test:
+    permissions:
+      contents: "write"
     name: Run tests
     runs-on: ubuntu-latest
     steps:

@@ -17,11 +17,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Dependency submission (for dependabot)
-        uses: mikepenz/gradle-dependency-submission@v0.8.6
-        with:
-          fail-on-error: true
-          gradle-dependency-path: "build.gradle.kts"
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
@@ -31,6 +26,11 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Build artifacts
         run: ./gradlew build
+      - name: Dependency submission (for dependabot)
+        uses: mikepenz/gradle-dependency-submission@v0.8.6
+        with:
+          fail-on-error: true
+          gradle-dependency-path: "build.gradle.kts"
       - name: docker-build-push
         uses: nais/docker-build-push@v0
         id: docker-build-push
