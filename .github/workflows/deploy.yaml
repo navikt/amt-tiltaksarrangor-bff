@@ -10,7 +10,7 @@ env:
 jobs:
   test-build-and-push:
     permissions:
-      contents: "read"
+      contents: "write"
       id-token: "write"
       security-events: "write"
     name: Test, build and push
