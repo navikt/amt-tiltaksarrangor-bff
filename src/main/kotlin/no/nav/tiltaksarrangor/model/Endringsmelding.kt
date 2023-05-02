@@ -5,7 +5,7 @@ import java.util.UUID
 
 data class Endringsmelding(
 	val id: UUID,
-	val innhold: Innhold,
+	val innhold: Innhold?,
 	val type: Type
 ) {
 
@@ -15,7 +15,10 @@ data class Endringsmelding(
 		FORLENG_DELTAKELSE,
 		AVSLUTT_DELTAKELSE,
 		DELTAKER_IKKE_AKTUELL,
-		ENDRE_DELTAKELSE_PROSENT
+		ENDRE_DELTAKELSE_PROSENT,
+		TILBY_PLASS,
+		SETT_PAA_VENTELISTE,
+		ENDRE_SLUTTDATO
 	}
 
 	sealed class Innhold {
@@ -43,6 +46,10 @@ data class Endringsmelding(
 
 		data class DeltakerIkkeAktuellInnhold(
 			val aarsak: DeltakerStatusAarsak
+		) : Innhold()
+
+		data class EndreSluttdatoInnhold(
+			val sluttdato: LocalDate
 		) : Innhold()
 	}
 }

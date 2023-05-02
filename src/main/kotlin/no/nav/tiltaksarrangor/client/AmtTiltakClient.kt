@@ -186,6 +186,7 @@ class AmtTiltakClient(
 	fun tilbyPlass(deltakerId: UUID) {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/tilby-plass")
+			.patch("".toRequestBody(mediaTypeJson))
 			.build()
 
 		amtTiltakHttpClient.newCall(request).execute().use { response ->
@@ -197,6 +198,7 @@ class AmtTiltakClient(
 	fun settPaaVenteliste(deltakerId: UUID) {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/sett-paa-venteliste")
+			.patch("".toRequestBody(mediaTypeJson))
 			.build()
 
 		amtTiltakHttpClient.newCall(request).execute().use { response ->

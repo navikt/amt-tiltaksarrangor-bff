@@ -15,11 +15,10 @@ data class EndringsmeldingRequest(
 		JsonSubTypes.Type(value = Innhold.DeltakerIkkeAktuellInnhold::class, name = "DELTAKER_IKKE_AKTUELL"),
 		JsonSubTypes.Type(value = Innhold.EndreDeltakelseProsentInnhold::class, name = "ENDRE_DELTAKELSE_PROSENT"),
 		JsonSubTypes.Type(value = Innhold.EndreSluttdatoInnhold::class, name = "ENDRE_SLUTTDATO"),
-		JsonSubTypes.Type(value = Innhold::class, name = "TILBY_PLASS"),
-		JsonSubTypes.Type(value = Innhold::class, name = "SETT_PAA_VENTELISTE")
+		JsonSubTypes.Type(value = Innhold.TilbyPlassInnhold::class, name = "TILBY_PLASS"),
+		JsonSubTypes.Type(value = Innhold.SettPaaVentelisteInnhold::class, name = "SETT_PAA_VENTELISTE")
 	)
-	val innhold: Innhold?,
-	val type: EndringsmeldingType
+	val innhold: Innhold
 ) {
 	enum class EndringsmeldingType {
 		LEGG_TIL_OPPSTARTSDATO,
@@ -33,42 +32,39 @@ data class EndringsmeldingRequest(
 		ENDRE_SLUTTDATO
 	}
 
-	sealed class Innhold {
+	sealed class Innhold(val type: EndringsmeldingType) {
+
 		data class LeggTilOppstartsdatoInnhold(
-			val type: EndringsmeldingType = EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO,
 			val oppstartsdato: LocalDate
-		) : Innhold()
+		) : Innhold(EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO)
 
 		data class EndreOppstartsdatoInnhold(
-			val type: EndringsmeldingType = EndringsmeldingType.ENDRE_OPPSTARTSDATO,
 			val oppstartsdato: LocalDate
-		) : Innhold()
+		) : Innhold(EndringsmeldingType.ENDRE_OPPSTARTSDATO)
 
 		data class EndreDeltakelseProsentInnhold(
-			val type: EndringsmeldingType = EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT,
 			val deltakelseProsent: Int,
 			val gyldigFraDato: LocalDate?
-		) : Innhold()
+		) : Innhold(EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT)
 
 		data class ForlengDeltakelseInnhold(
-			val type: EndringsmeldingType = EndringsmeldingType.FORLENG_DELTAKELSE,
 			val sluttdato: LocalDate
-		) : Innhold()
+		) : Innhold(EndringsmeldingType.FORLENG_DELTAKELSE)
 
 		data class AvsluttDeltakelseInnhold(
-			val type: EndringsmeldingType = EndringsmeldingType.AVSLUTT_DELTAKELSE,
 			val sluttdato: LocalDate,
 			val aarsak: DeltakerStatusAarsak
-		) : Innhold()
+		) : Innhold(EndringsmeldingType.AVSLUTT_DELTAKELSE)
 
 		data class DeltakerIkkeAktuellInnhold(
-			val type: EndringsmeldingType = EndringsmeldingType.DELTAKER_IKKE_AKTUELL,
 			val aarsak: DeltakerStatusAarsak
-		) : Innhold()
+		) : Innhold(EndringsmeldingType.DELTAKER_IKKE_AKTUELL)
 
 		data class EndreSluttdatoInnhold(
-			val type: EndringsmeldingType = EndringsmeldingType.ENDRE_SLUTTDATO,
 			val sluttdato: LocalDate
-		) : Innhold()
+		) : Innhold(EndringsmeldingType.ENDRE_SLUTTDATO)
+
+		class TilbyPlassInnhold : Innhold(EndringsmeldingType.TILBY_PLASS)
+		class SettPaaVentelisteInnhold : Innhold(EndringsmeldingType.SETT_PAA_VENTELISTE)
 	}
 }

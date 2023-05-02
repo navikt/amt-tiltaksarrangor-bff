@@ -10,7 +10,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 class TiltaksarrangorControllerTest : IntegrationTest() {
 
@@ -123,8 +123,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 			innhold = EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
 				sluttdato = LocalDate.now(),
 				aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.FATT_JOBB, null)
-			),
-			type = EndringsmeldingRequest.EndringsmeldingType.AVSLUTT_DELTAKELSE
+			)
 		)
 		val response = sendRequest(
 			method = "POST",
@@ -143,8 +142,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 			innhold = EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
 				sluttdato = LocalDate.now(),
 				aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.FATT_JOBB, null)
-			),
-			type = EndringsmeldingRequest.EndringsmeldingType.AVSLUTT_DELTAKELSE
+			)
 
 		)
 
@@ -163,9 +161,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
 		mockAmtTiltakServer.addTilbyPlassResponse(deltakerId)
 		val requestBody = EndringsmeldingRequest(
-			innhold = null,
-			type = EndringsmeldingRequest.EndringsmeldingType.TILBY_PLASS
-
+			innhold = EndringsmeldingRequest.Innhold.TilbyPlassInnhold()
 		)
 
 		val response = sendRequest(
@@ -183,8 +179,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
 		mockAmtTiltakServer.addSettPaaVentelisteResponse(deltakerId)
 		val requestBody = EndringsmeldingRequest(
-			innhold = null,
-			type = EndringsmeldingRequest.EndringsmeldingType.SETT_PAA_VENTELISTE
+			innhold = EndringsmeldingRequest.Innhold.SettPaaVentelisteInnhold()
 		)
 
 		val response = sendRequest(
@@ -202,8 +197,9 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
 		mockAmtTiltakServer.addEndreSluttdatoResponse(deltakerId)
 		val requestBody = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now()),
-			type = EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTDATO
+			innhold = EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold(
+				sluttdato = LocalDate.now()
+			)
 		)
 
 		val response = sendRequest(

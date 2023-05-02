@@ -78,7 +78,7 @@ class TiltaksarrangorService(
 	}
 
 	fun opprettEndringsmelding(deltakerId: UUID, request: EndringsmeldingRequest) {
-		when (request.type) {
+		when (request.innhold.type) {
 			EndringsmeldingRequest.EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO ->
 				amtTiltakClient.leggTilOppstartsdato(deltakerId, LeggTilOppstartsdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold).oppstartsdato))
 
