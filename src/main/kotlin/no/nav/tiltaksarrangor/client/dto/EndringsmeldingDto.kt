@@ -15,9 +15,12 @@ data class EndringsmeldingDto(
 		JsonSubTypes.Type(value = Innhold.ForlengDeltakelseInnhold::class, name = "FORLENG_DELTAKELSE"),
 		JsonSubTypes.Type(value = Innhold.AvsluttDeltakelseInnhold::class, name = "AVSLUTT_DELTAKELSE"),
 		JsonSubTypes.Type(value = Innhold.DeltakerIkkeAktuellInnhold::class, name = "DELTAKER_IKKE_AKTUELL"),
-		JsonSubTypes.Type(value = Innhold.EndreDeltakelseProsentInnhold::class, name = "ENDRE_DELTAKELSE_PROSENT")
+		JsonSubTypes.Type(value = Innhold.EndreDeltakelseProsentInnhold::class, name = "ENDRE_DELTAKELSE_PROSENT"),
+		JsonSubTypes.Type(value = Innhold.EndreSluttdatoInnhold::class, name = "ENDRE_SLUTTDATO"),
+		JsonSubTypes.Type(value = Innhold.TilbyPlassInnhold::class, name = "TILBY_PLASS"),
+		JsonSubTypes.Type(value = Innhold.SettPaaVentelisteInnhold::class, name = "SETT_PAA_VENTELISTE")
 	)
-	val innhold: Innhold,
+	val innhold: Innhold?,
 	val type: String
 ) {
 	sealed class Innhold {
@@ -46,5 +49,12 @@ data class EndringsmeldingDto(
 		data class DeltakerIkkeAktuellInnhold(
 			val aarsak: DeltakerStatusAarsak
 		) : Innhold()
+
+		data class EndreSluttdatoInnhold(
+			val sluttdato: LocalDate
+		) : Innhold()
+
+		class TilbyPlassInnhold : Innhold()
+		class SettPaaVentelisteInnhold : Innhold()
 	}
 }

@@ -12,6 +12,7 @@ import no.nav.tiltaksarrangor.client.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.request.DeltakerIkkeAktuellRequest
 import no.nav.tiltaksarrangor.client.request.EndreDeltakelsesprosentRequest
 import no.nav.tiltaksarrangor.client.request.EndreOppstartsdatoRequest
+import no.nav.tiltaksarrangor.client.request.EndreSluttdatoRequest
 import no.nav.tiltaksarrangor.client.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.koordinator.model.Koordinator
@@ -178,6 +179,43 @@ class AmtTiltakClient(
 		amtTiltakHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "sette deltaker med id $deltakerId som ikke aktuell")
+			}
+		}
+	}
+
+	fun tilbyPlass(deltakerId: UUID) {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/tilby-plass")
+			.patch("".toRequestBody(mediaTypeJson))
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulUpdateResponse(response.code, "opprett TILBY_PLASS endringsmelding på deltaker med id $deltakerId ")
+			}
+		}
+	}
+	fun settPaaVenteliste(deltakerId: UUID) {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/sett-paa-venteliste")
+			.patch("".toRequestBody(mediaTypeJson))
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulUpdateResponse(response.code, "opprett SETT_PAA_VENTELISTE endringsmelding på deltaker med id $deltakerId ")
+			}
+		}
+	}
+	fun endreSluttdato(deltakerId: UUID, endreSluttdatoRequest: EndreSluttdatoRequest) {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/endre-sluttdato")
+			.patch(objectMapper.writeValueAsString(endreSluttdatoRequest).toRequestBody(mediaTypeJson))
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulUpdateResponse(response.code, "opprett ENDRE_SLUTTDATO endringsmelding på deltaker med id $deltakerId sluttdato: ${endreSluttdatoRequest.sluttdato}")
 			}
 		}
 	}

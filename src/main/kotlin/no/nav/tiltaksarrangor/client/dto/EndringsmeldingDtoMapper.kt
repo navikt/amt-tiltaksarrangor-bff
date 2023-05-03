@@ -5,11 +5,12 @@ import no.nav.tiltaksarrangor.model.Endringsmelding
 fun EndringsmeldingDto.toEndringsmelding(): Endringsmelding {
 	return Endringsmelding(
 		id = id,
-		innhold = innhold.toEndringsmeldingInnhold()
+		innhold = innhold?.toEndringsmeldingInnhold(),
+		type = Endringsmelding.Type.valueOf(type)
 	)
 }
 
-fun EndringsmeldingDto.Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold {
+fun EndringsmeldingDto.Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold? {
 	return when (this) {
 		is EndringsmeldingDto.Innhold.LeggTilOppstartsdatoInnhold -> Endringsmelding.Innhold.LeggTilOppstartsdatoInnhold(this.oppstartsdato)
 		is EndringsmeldingDto.Innhold.EndreOppstartsdatoInnhold -> Endringsmelding.Innhold.EndreOppstartsdatoInnhold(this.oppstartsdato)
@@ -17,5 +18,8 @@ fun EndringsmeldingDto.Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innho
 		is EndringsmeldingDto.Innhold.EndreDeltakelseProsentInnhold -> Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(this.deltakelseProsent, this.gyldigFraDato)
 		is EndringsmeldingDto.Innhold.AvsluttDeltakelseInnhold -> Endringsmelding.Innhold.AvsluttDeltakelseInnhold(this.sluttdato, this.aarsak)
 		is EndringsmeldingDto.Innhold.DeltakerIkkeAktuellInnhold -> Endringsmelding.Innhold.DeltakerIkkeAktuellInnhold(this.aarsak)
+		is EndringsmeldingDto.Innhold.TilbyPlassInnhold -> null
+		is EndringsmeldingDto.Innhold.SettPaaVentelisteInnhold -> null
+		is EndringsmeldingDto.Innhold.EndreSluttdatoInnhold -> Endringsmelding.Innhold.EndreSluttdatoInnhold(this.sluttdato)
 	}
 }
