@@ -15,12 +15,15 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
+import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.TiltakDto
 import no.nav.tiltaksarrangor.ingest.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.ingest.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.ingest.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.ingest.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.ingest.repositories.EndringsmeldingRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -32,15 +35,18 @@ class IngestServiceTest {
 	private val ansattRepository = mockk<AnsattRepository>()
 	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
 	private val deltakerRepository = mockk<DeltakerRepository>()
-	private val ingestService = IngestService(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository)
+	private val endringsmeldingRepository = mockk<EndringsmeldingRepository>()
+	private val ingestService = IngestService(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository)
 
 	@BeforeEach
 	internal fun resetMocks() {
-		clearMocks(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository)
+		clearMocks(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository)
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
 		every { deltakerlisteRepository.deleteDeltakerliste(any()) } returns 1
 		every { deltakerRepository.insertOrUpdateDeltaker(any()) } just Runs
 		every { deltakerRepository.deleteDeltaker(any()) } returns 1
+		every { endringsmeldingRepository.insertOrUpdateEndringsmelding(any()) } just Runs
+		every { endringsmeldingRepository.deleteEndringsmelding(any()) } returns 1
 	}
 
 	@Test
@@ -281,5 +287,46 @@ class IngestServiceTest {
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
 
 		verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+	}
+
+	@Test
+	internal fun `lagreEndringsmelding - status AKTIV - lagres i db `() {
+		val endringsmeldingId = UUID.randomUUID()
+		val endringsmeldingDto = EndringsmeldingDto(
+			id = endringsmeldingId,
+			deltakerId = UUID.randomUUID(),
+			utfortAvNavAnsattId = null,
+			opprettetAvArrangorAnsattId = UUID.randomUUID(),
+			utfortTidspunkt = null,
+			status = "AKTIV",
+			type = EndringsmeldingType.TILBY_PLASS,
+			innhold = null,
+			createdAt = LocalDateTime.now()
+		)
+
+		ingestService.lagreEndringsmelding(endringsmeldingId, endringsmeldingDto)
+
+		verify(exactly = 1) { endringsmeldingRepository.insertOrUpdateEndringsmelding(any()) }
+	}
+
+	@Test
+	internal fun `lagreEndringsmelding - status UTDATERT - lagres ikke i db `() {
+		val endringsmeldingId = UUID.randomUUID()
+		val endringsmeldingDto = EndringsmeldingDto(
+			id = endringsmeldingId,
+			deltakerId = UUID.randomUUID(),
+			utfortAvNavAnsattId = null,
+			opprettetAvArrangorAnsattId = UUID.randomUUID(),
+			utfortTidspunkt = null,
+			status = "UTDATERT",
+			type = EndringsmeldingType.TILBY_PLASS,
+			innhold = null,
+			createdAt = LocalDateTime.now()
+		)
+
+		ingestService.lagreEndringsmelding(endringsmeldingId, endringsmeldingDto)
+
+		verify(exactly = 0) { endringsmeldingRepository.insertOrUpdateEndringsmelding(any()) }
+		verify(exactly = 1) { endringsmeldingRepository.deleteEndringsmelding(endringsmeldingId) }
 	}
 }
