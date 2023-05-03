@@ -49,7 +49,7 @@ dependencies {
     implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
 
-    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude("com.vaadin.external.google", "android-json")

@@ -6,15 +6,18 @@ import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.SKJULES_ALLTID_STATUSER
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerlisteDbo
+import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.ingest.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.ingest.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.ingest.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.ingest.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.ingest.repositories.EndringsmeldingRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -26,7 +29,8 @@ class IngestService(
 	private val arrangorRepository: ArrangorRepository,
 	private val ansattRepository: AnsattRepository,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
-	private val deltakerRepository: DeltakerRepository
+	private val deltakerRepository: DeltakerRepository,
+	private val endringsmeldingRepository: EndringsmeldingRepository
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -83,6 +87,23 @@ class IngestService(
 			}
 		}
 	}
+
+	fun lagreEndringsmelding(endringsmeldingId: UUID, endringsmeldingDto: EndringsmeldingDto?) {
+		if (endringsmeldingDto == null) {
+			endringsmeldingRepository.deleteEndringsmelding(endringsmeldingId)
+			log.info("Slettet tombstonet endringsmelding med id $endringsmeldingId")
+		} else if (endringsmeldingDto.skalLagres()) {
+			endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDto.toEndringsmeldingDbo())
+			log.info("Lagret endringsmelding med id $endringsmeldingId")
+		} else {
+			val antallSlettedeEndringsmeldinger = endringsmeldingRepository.deleteEndringsmelding(endringsmeldingId)
+			if (antallSlettedeEndringsmeldinger > 0) {
+				log.info("Slettet endringsmelding med id $endringsmeldingId")
+			} else {
+				log.info("Ignorert endringsmelding med id $endringsmeldingId")
+			}
+		}
+	}
 }
 
 fun DeltakerlisteDto.skalLagres(): Boolean {
@@ -103,4 +124,8 @@ fun DeltakerDto.skalLagres(): Boolean {
 		return !LocalDateTime.now().isAfter(status.gyldigFra.plusWeeks(2))
 	}
 	return true
+}
+
+fun EndringsmeldingDto.skalLagres(): Boolean {
+	return status == "AKTIV"
 }

@@ -11,6 +11,7 @@ const val ARRANGOR_TOPIC = "amt.arrangor-v1"
 const val ARRANGOR_ANSATT_TOPIC = "amt.arrangor-ansatt-v1"
 const val DELTAKERLISTE_TOPIC = "amt.deltakerliste-v1"
 const val DELTAKER_TOPIC = "amt.deltaker-v2"
+const val ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
 
 @Component
 class KafkaListener(
@@ -18,7 +19,7 @@ class KafkaListener(
 ) {
 
 	@KafkaListener(
-		topics = [ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC],
+		topics = [ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC],
 		properties = ["auto.offset.reset = earliest"],
 		containerFactory = "kafkaListenerContainerFactory"
 	)
@@ -28,6 +29,7 @@ class KafkaListener(
 			ARRANGOR_ANSATT_TOPIC -> ingestService.lagreAnsatt(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			DELTAKERLISTE_TOPIC -> ingestService.lagreDeltakerliste(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			DELTAKER_TOPIC -> ingestService.lagreDeltaker(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
+			ENDRINGSMELDING_TOPIC -> ingestService.lagreEndringsmelding(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			else -> throw IllegalStateException("Mottok melding på ukjent topic: ${cr.topic()}")
 		}
 		acknowledgment.acknowledge()

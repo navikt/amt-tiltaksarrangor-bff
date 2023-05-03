@@ -14,6 +14,9 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
+import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
+import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.TiltakDto
@@ -23,10 +26,12 @@ import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerlisteDbo
+import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.ingest.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.ingest.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.ingest.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.ingest.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.ingest.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
@@ -52,6 +57,7 @@ class KafkaListenerTest : IntegrationTest() {
 	private val ansattRepository = AnsattRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template)
 	private val deltakerRepository = DeltakerRepository(template)
+	private val endringsmeldingRepository = EndringsmeldingRepository(template)
 
 	@Autowired
 	lateinit var testKafkaProducer: KafkaProducer<String, String>
@@ -61,7 +67,7 @@ class KafkaListenerTest : IntegrationTest() {
 
 	@BeforeEach
 	internal fun subscribe() {
-		testKafkaConsumer.subscribeHvisIkkeSubscribed(ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC)
+		testKafkaConsumer.subscribeHvisIkkeSubscribed(ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC)
 	}
 
 	@AfterEach
@@ -431,6 +437,103 @@ class KafkaListenerTest : IntegrationTest() {
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
 			deltakerRepository.getDeltaker(deltakerId) == null
+		}
+	}
+
+	@Test
+	fun `listen - melding pa endringsmelding-topic - lagres i database`() {
+		val endringsmeldingId = UUID.randomUUID()
+		val endringsmeldingDto = EndringsmeldingDto(
+			id = endringsmeldingId,
+			deltakerId = UUID.randomUUID(),
+			utfortAvNavAnsattId = null,
+			opprettetAvArrangorAnsattId = UUID.randomUUID(),
+			utfortTidspunkt = null,
+			status = "AKTIV",
+			type = EndringsmeldingType.ENDRE_SLUTTDATO,
+			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
+			createdAt = LocalDateTime.now()
+		)
+		testKafkaProducer.send(
+			ProducerRecord(
+				ENDRINGSMELDING_TOPIC,
+				null,
+				endringsmeldingId.toString(),
+				JsonUtils.objectMapper.writeValueAsString(endringsmeldingDto)
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			endringsmeldingRepository.getEndringsmelding(endringsmeldingId) != null
+		}
+	}
+
+	@Test
+	fun `listen - tombstonemelding pa endringsmelding-topic - slettes i database`() {
+		val endringsmeldingId = UUID.randomUUID()
+		val endringsmeldingDto = EndringsmeldingDto(
+			id = endringsmeldingId,
+			deltakerId = UUID.randomUUID(),
+			utfortAvNavAnsattId = null,
+			opprettetAvArrangorAnsattId = UUID.randomUUID(),
+			utfortTidspunkt = null,
+			status = "AKTIV",
+			type = EndringsmeldingType.ENDRE_SLUTTDATO,
+			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
+			createdAt = LocalDateTime.now()
+		)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDto.toEndringsmeldingDbo())
+		testKafkaProducer.send(
+			ProducerRecord(
+				ENDRINGSMELDING_TOPIC,
+				null,
+				endringsmeldingId.toString(),
+				null
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			endringsmeldingRepository.getEndringsmelding(endringsmeldingId) == null
+		}
+	}
+
+	@Test
+	fun `listen - utfort endringsmelding-melding pa endringmelding-topic og endringsmelding finnes i db - sletter endringsmelding fra db`() {
+		val endringsmeldingId = UUID.randomUUID()
+		val endringsmeldingDto = EndringsmeldingDto(
+			id = endringsmeldingId,
+			deltakerId = UUID.randomUUID(),
+			utfortAvNavAnsattId = null,
+			opprettetAvArrangorAnsattId = UUID.randomUUID(),
+			utfortTidspunkt = null,
+			status = "AKTIV",
+			type = EndringsmeldingType.TILBY_PLASS,
+			innhold = null,
+			createdAt = LocalDateTime.now()
+		)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDto.toEndringsmeldingDbo())
+		val utfortEndringsmeldingDto = EndringsmeldingDto(
+			id = endringsmeldingId,
+			deltakerId = UUID.randomUUID(),
+			utfortAvNavAnsattId = null,
+			opprettetAvArrangorAnsattId = UUID.randomUUID(),
+			utfortTidspunkt = null,
+			status = "UTFORT",
+			type = EndringsmeldingType.TILBY_PLASS,
+			innhold = null,
+			createdAt = LocalDateTime.now()
+		)
+		testKafkaProducer.send(
+			ProducerRecord(
+				ENDRINGSMELDING_TOPIC,
+				null,
+				endringsmeldingId.toString(),
+				JsonUtils.objectMapper.writeValueAsString(utfortEndringsmeldingDto)
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			endringsmeldingRepository.getEndringsmelding(endringsmeldingId) == null
 		}
 	}
 }
