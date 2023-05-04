@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.veileder.service
 import no.nav.tiltaksarrangor.client.AmtTiltakClient
 import no.nav.tiltaksarrangor.client.dto.VeiledersDeltakerDto
 import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
+import no.nav.tiltaksarrangor.client.dto.toStatus
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.veileder.model.Deltaker
 import org.springframework.stereotype.Component
@@ -29,7 +30,7 @@ private fun VeiledersDeltakerDto.toDeltaker(): Deltaker {
 		mellomnavn = mellomnavn,
 		etternavn = etternavn,
 		fodselsnummer = fodselsnummer,
-		status = status,
+		status = status.toStatus(deltakerliste.erKurs),
 		startDato = startDato,
 		sluttDato = sluttDato,
 		veiledertype = if (erMedveilederFor) Veiledertype.MEDVEILEDER else Veiledertype.VEILEDER,
