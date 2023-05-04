@@ -300,7 +300,7 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			EndringsmeldingDto(
 				id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),
 				innhold = EndringsmeldingDto.Innhold.EndreSluttdatoInnhold(
-					sluttdato = LocalDate.now()
+					sluttdato = LocalDate.of(2023, 5, 3)
 				),
 				type = "ENDRE_SLUTTDATO"
 			)
@@ -324,7 +324,9 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 				deltakerliste = DeltakerlisteDto(
 					id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
 					navn = "Gjennomføring 1",
-					type = "ARBFORB"
+					type = "ARBFORB",
+					startdato = null,
+					sluttdato = null
 				),
 				erMedveilederFor = false,
 				aktiveEndringsmeldinger = emptyList()
@@ -343,7 +345,9 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 					DeltakerlisteDto(
 						id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
 						type = "ARBFORB",
-						navn = "Gjennomføring 1"
+						navn = "Gjennomføring 1",
+						startdato = null,
+						sluttdato = null
 					)
 				)
 			)

@@ -105,7 +105,9 @@ fun DeltakerlisteDto.toDeltakerliste(): KoordinatorFor.Deltakerliste {
 	return KoordinatorFor.Deltakerliste(
 		id = id,
 		type = type,
-		navn = navn
+		navn = navn,
+		startdato = startdato,
+		sluttdato = sluttdato
 	)
 }
 
