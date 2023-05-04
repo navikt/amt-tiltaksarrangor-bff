@@ -324,9 +324,7 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 				deltakerliste = DeltakerlisteDto(
 					id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
 					navn = "Gjennomføring 1",
-					type = "ARBFORB",
-					startdato = null,
-					sluttdato = null
+					type = "ARBFORB"
 				),
 				erMedveilederFor = false,
 				aktiveEndringsmeldinger = emptyList()
@@ -342,12 +340,13 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			),
 			koordinatorInfo = KoordinatorInfoDto(
 				deltakerlister = listOf(
-					DeltakerlisteDto(
+					KoordinatorInfoDto.DeltakerlisteDto(
 						id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
 						type = "ARBFORB",
 						navn = "Gjennomføring 1",
 						startdato = null,
-						sluttdato = null
+						sluttdato = null,
+						erKurs = false
 					)
 				)
 			)

@@ -21,6 +21,7 @@ data class KoordinatorFor(
 		val type: String,
 		val navn: String,
 		val startdato: LocalDate?,
-		val sluttdato: LocalDate?
+		val sluttdato: LocalDate?,
+		val erKurs: Boolean
 	)
 }
