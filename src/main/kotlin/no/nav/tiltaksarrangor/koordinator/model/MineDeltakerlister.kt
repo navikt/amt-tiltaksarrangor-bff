@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.koordinator.model
 
+import java.time.LocalDate
 import java.util.UUID
 
 data class MineDeltakerlister(
@@ -18,6 +19,9 @@ data class KoordinatorFor(
 	data class Deltakerliste(
 		val id: UUID,
 		val type: String,
-		val navn: String
+		val navn: String,
+		val startdato: LocalDate?,
+		val sluttdato: LocalDate?,
+		val erKurs: Boolean
 	)
 }

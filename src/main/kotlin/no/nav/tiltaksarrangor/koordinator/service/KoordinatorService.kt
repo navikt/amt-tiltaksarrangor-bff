@@ -2,8 +2,8 @@ package no.nav.tiltaksarrangor.koordinator.service
 
 import no.nav.tiltaksarrangor.client.AmtTiltakClient
 import no.nav.tiltaksarrangor.client.dto.DeltakerDto
-import no.nav.tiltaksarrangor.client.dto.DeltakerlisteDto
 import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
+import no.nav.tiltaksarrangor.client.dto.KoordinatorInfoDto
 import no.nav.tiltaksarrangor.client.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
 import no.nav.tiltaksarrangor.client.dto.toStatus
@@ -101,11 +101,14 @@ fun DeltakeroversiktDto.toMineDeltakerlister(): MineDeltakerlister {
 	)
 }
 
-fun DeltakerlisteDto.toDeltakerliste(): KoordinatorFor.Deltakerliste {
+fun KoordinatorInfoDto.DeltakerlisteDto.toDeltakerliste(): KoordinatorFor.Deltakerliste {
 	return KoordinatorFor.Deltakerliste(
 		id = id,
 		type = type,
-		navn = navn
+		navn = navn,
+		startdato = startdato,
+		sluttdato = sluttdato,
+		erKurs = erKurs
 	)
 }
 
