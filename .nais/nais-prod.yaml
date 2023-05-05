@@ -58,6 +58,7 @@ spec:
     outbound:
       rules:
         - application: amt-tiltak
+  leaderElection: true
   env:
     - name: AMT_TILTAK_TOKENX_CLIENT_ID
       value: prod-gcp:amt:amt-tiltak
