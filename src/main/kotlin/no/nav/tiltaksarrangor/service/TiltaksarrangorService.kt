@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.AmtTiltakClient
 import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
+import no.nav.tiltaksarrangor.client.dto.toStatus
 import no.nav.tiltaksarrangor.client.dto.toVeileder
 import no.nav.tiltaksarrangor.client.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.request.DeltakerIkkeAktuellRequest
@@ -45,7 +46,7 @@ class TiltaksarrangorService(
 			fodselsnummer = deltaker.fodselsnummer,
 			telefonnummer = deltaker.telefonnummer,
 			epost = deltaker.epost,
-			status = deltaker.status,
+			status = deltaker.status.toStatus(deltaker.gjennomforing.erKurs),
 			startDato = deltaker.startDato,
 			sluttDato = deltaker.sluttDato,
 			deltakelseProsent = deltaker.deltakelseProsent,
