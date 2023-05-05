@@ -22,10 +22,19 @@ class HttpClientConfig {
 		val clientProperties = clientConfigurationProperties.registration[registrationName]
 			?: throw RuntimeException("Fant ikke config for $registrationName")
 		return OkHttpClient.Builder()
-			.connectTimeout(10, TimeUnit.SECONDS)
-			.readTimeout(15, TimeUnit.SECONDS)
+			.connectTimeout(5, TimeUnit.SECONDS)
+			.readTimeout(5, TimeUnit.SECONDS)
 			.followRedirects(false)
 			.addInterceptor(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
+			.build()
+	}
+
+	@Bean
+	fun simpleHttpClient(): OkHttpClient {
+		return OkHttpClient.Builder()
+			.connectTimeout(5, TimeUnit.SECONDS)
+			.readTimeout(5, TimeUnit.SECONDS)
+			.followRedirects(false)
 			.build()
 	}
 

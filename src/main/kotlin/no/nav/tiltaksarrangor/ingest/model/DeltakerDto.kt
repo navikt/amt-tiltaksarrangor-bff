@@ -58,5 +58,6 @@ val SKJULES_ALLTID_STATUSER = listOf(
 
 val AVSLUTTENDE_STATUSER = listOf(
 	DeltakerStatus.HAR_SLUTTET,
-	DeltakerStatus.IKKE_AKTUELL
+	DeltakerStatus.IKKE_AKTUELL,
+	DeltakerStatus.AVBRUTT
 )

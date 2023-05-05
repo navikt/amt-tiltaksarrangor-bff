@@ -56,13 +56,13 @@ class IngestService(
 
 	fun lagreDeltakerliste(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteDto?) {
 		if (deltakerlisteDto == null) {
-			deltakerlisteRepository.deleteDeltakerliste(deltakerlisteId)
+			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
 			log.info("Slettet tombstonet deltakerliste med id $deltakerlisteId")
 		} else if (deltakerlisteDto.skalLagres()) {
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDto.toDeltakerlisteDbo())
 			log.info("Lagret deltakerliste med id $deltakerlisteId")
 		} else {
-			val antallSlettedeDeltakerlister = deltakerlisteRepository.deleteDeltakerliste(deltakerlisteId)
+			val antallSlettedeDeltakerlister = deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
 			if (antallSlettedeDeltakerlister > 0) {
 				log.info("Slettet deltakerliste med id $deltakerlisteId")
 			} else {

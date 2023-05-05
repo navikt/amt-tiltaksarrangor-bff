@@ -42,7 +42,7 @@ class IngestServiceTest {
 	internal fun resetMocks() {
 		clearMocks(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository)
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
-		every { deltakerlisteRepository.deleteDeltakerliste(any()) } returns 1
+		every { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(any()) } returns 1
 		every { deltakerRepository.insertOrUpdateDeltaker(any()) } just Runs
 		every { deltakerRepository.deleteDeltaker(any()) } returns 1
 		every { endringsmeldingRepository.insertOrUpdateEndringsmelding(any()) } just Runs
@@ -99,7 +99,7 @@ class IngestServiceTest {
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
 		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerliste(deltakerlisteId) }
+		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId) }
 	}
 
 	@Test
@@ -126,7 +126,7 @@ class IngestServiceTest {
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
 		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerliste(deltakerlisteId) }
+		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId) }
 	}
 
 	@Test
