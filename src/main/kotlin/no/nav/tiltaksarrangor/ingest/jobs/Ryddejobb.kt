@@ -17,7 +17,7 @@ class Ryddejobb(
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	// @Scheduled(cron = "0 0 3 * * *") // kl 03.00 hver natt
-	@Scheduled(cron = "0 0 12 * * *") // kun for å teste i dev
+	@Scheduled(cron = "0 20 * * * *") // kun for å teste i dev
 	fun slettUtdaterteDeltakerlisterOgDeltakere() {
 		if (leaderElection.isLeader()) {
 			val slettesDato = LocalDate.now().minusDays(14)
