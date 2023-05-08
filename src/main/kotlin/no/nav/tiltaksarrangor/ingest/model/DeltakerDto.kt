@@ -17,7 +17,8 @@ data class DeltakerDto(
 	val bestillingTekst: String?,
 	val navKontor: String?,
 	val navVeileder: DeltakerNavVeilederDto?,
-	val skjult: DeltakerSkjultDto?
+	val skjult: DeltakerSkjultDto?,
+	val deltarPaKurs: Boolean
 )
 
 fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
