@@ -55,8 +55,8 @@ class KafkaListenerTest : IntegrationTest() {
 	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val arrangorRepository = ArrangorRepository(template)
 	private val ansattRepository = AnsattRepository(template)
-	private val deltakerlisteRepository = DeltakerlisteRepository(template)
 	private val deltakerRepository = DeltakerRepository(template)
+	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
 
 	@Autowired
@@ -273,7 +273,7 @@ class KafkaListenerTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `listen - avsluttet deltakerliste-melding pa deltakerliste-topic og deltakerliste finnes i db - sletter deltakerliste fra db`() {
+	fun `listen - avsluttet deltakerliste-melding pa deltakerliste-topic og deltakerliste finnes i db - sletter deltakerliste og deltaker fra db`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
@@ -293,6 +293,33 @@ class KafkaListenerTest : IntegrationTest() {
 			erKurs = false
 		)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDto.toDeltakerlisteDbo())
+		val deltakerId = UUID.randomUUID()
+		val deltakerDto = DeltakerDto(
+			id = deltakerId,
+			deltakerlisteId = deltakerlisteId,
+			personalia = DeltakerPersonaliaDto(
+				personident = "10987654321",
+				navn = NavnDto("Fornavn", null, "Etternavn"),
+				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+				skjermet = false
+			),
+			status = DeltakerStatusDto(
+				type = DeltakerStatus.DELTAR,
+				gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+				opprettetDato = LocalDateTime.now().minusWeeks(6)
+			),
+			dagerPerUke = null,
+			prosentStilling = null,
+			oppstartsdato = LocalDate.now().minusWeeks(5),
+			sluttdato = null,
+			innsoktDato = LocalDate.now().minusMonths(2),
+			bestillingTekst = "Bestilling",
+			navKontor = "NAV Oslo",
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			skjult = null,
+			deltarPaKurs = false
+		)
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
 		val avsluttetDeltakerlisteDto = deltakerlisteDto.copy(status = DeltakerlisteStatus.AVSLUTTET, sluttDato = LocalDate.now().minusWeeks(4))
 		testKafkaProducer.send(
 			ProducerRecord(
@@ -304,7 +331,8 @@ class KafkaListenerTest : IntegrationTest() {
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) == null
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) == null &&
+				deltakerRepository.getDeltaker(deltakerId) == null
 		}
 	}
 
@@ -333,7 +361,8 @@ class KafkaListenerTest : IntegrationTest() {
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
-			skjult = null
+			skjult = null,
+			deltarPaKurs = false
 		)
 		testKafkaProducer.send(
 			ProducerRecord(
@@ -374,7 +403,8 @@ class KafkaListenerTest : IntegrationTest() {
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
-			skjult = null
+			skjult = null,
+			deltarPaKurs = false
 		)
 		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
 		testKafkaProducer.send(
@@ -416,7 +446,8 @@ class KafkaListenerTest : IntegrationTest() {
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
-			skjult = null
+			skjult = null,
+			deltarPaKurs = false
 		)
 		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
 		val avsluttetDeltakerDto = deltakerDto.copy(

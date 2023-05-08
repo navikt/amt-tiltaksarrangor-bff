@@ -9,6 +9,7 @@ import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
+import java.time.LocalDate
 import java.util.UUID
 
 @Component
@@ -132,6 +133,14 @@ class DeltakerRepository(
 	}
 
 	fun deleteDeltaker(deltakerId: UUID): Int {
+		template.update(
+			"DELETE FROM veileder_deltaker WHERE deltaker_id = :deltaker_id",
+			sqlParameters("deltaker_id" to deltakerId)
+		)
+		template.update(
+			"DELETE FROM endringsmelding WHERE deltaker_id = :deltaker_id",
+			sqlParameters("deltaker_id" to deltakerId)
+		)
 		return template.update(
 			"DELETE FROM deltaker WHERE id = :id",
 			sqlParameters("id" to deltakerId)
@@ -144,5 +153,25 @@ class DeltakerRepository(
 			sqlParameters("id" to deltakerId),
 			deltakerRowMapper
 		).firstOrNull()
+	}
+
+	fun deleteDeltakereForDeltakerliste(deltakerlisteId: UUID): Int {
+		val deltakereSomSkalSlettes = template.query(
+			"SELECT id FROM deltaker WHERE deltakerliste_id = :deltakerliste_id",
+			sqlParameters("deltakerliste_id" to deltakerlisteId)
+		) { rs, _ ->
+			UUID.fromString(rs.getString("id"))
+		}
+		deltakereSomSkalSlettes.forEach { deleteDeltaker(it) }
+		return deltakereSomSkalSlettes.size
+	}
+
+	fun getDeltakereSomSkalSlettes(slettesDato: LocalDate): List<UUID> {
+		return template.query(
+			"SELECT id FROM deltaker WHERE skjult_dato IS NOT NULL OR (status IN ('HAR_SLUTTET','IKKE_AKTUELL','AVBRUTT') AND status_gyldig_fra < :slettesDato)",
+			sqlParameters("slettesDato" to slettesDato)
+		) { rs, _ ->
+			UUID.fromString(rs.getString("id"))
+		}
 	}
 }

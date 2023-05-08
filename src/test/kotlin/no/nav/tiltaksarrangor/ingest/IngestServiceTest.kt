@@ -42,7 +42,7 @@ class IngestServiceTest {
 	internal fun resetMocks() {
 		clearMocks(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository)
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
-		every { deltakerlisteRepository.deleteDeltakerliste(any()) } returns 1
+		every { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(any()) } returns 1
 		every { deltakerRepository.insertOrUpdateDeltaker(any()) } just Runs
 		every { deltakerRepository.deleteDeltaker(any()) } returns 1
 		every { endringsmeldingRepository.insertOrUpdateEndringsmelding(any()) } just Runs
@@ -99,7 +99,7 @@ class IngestServiceTest {
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
 		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerliste(deltakerlisteId) }
+		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId) }
 	}
 
 	@Test
@@ -126,7 +126,7 @@ class IngestServiceTest {
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
 		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerliste(deltakerlisteId) }
+		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId) }
 	}
 
 	@Test
@@ -180,7 +180,8 @@ class IngestServiceTest {
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
-			skjult = null
+			skjult = null,
+			deltarPaKurs = false
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -213,7 +214,8 @@ class IngestServiceTest {
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
-			skjult = null
+			skjult = null,
+			deltarPaKurs = false
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -247,7 +249,8 @@ class IngestServiceTest {
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
-			skjult = null
+			skjult = null,
+			deltarPaKurs = false
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -281,12 +284,48 @@ class IngestServiceTest {
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
-			skjult = null
+			skjult = null,
+			deltarPaKurs = false
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
 
 		verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+	}
+
+	@Test
+	internal fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs - lagres ikke i db `() {
+		val deltakerId = UUID.randomUUID()
+		val deltakerDto = DeltakerDto(
+			id = deltakerId,
+			deltakerlisteId = UUID.randomUUID(),
+			personalia = DeltakerPersonaliaDto(
+				personident = "10987654321",
+				navn = NavnDto("Fornavn", null, "Etternavn"),
+				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+				skjermet = false
+			),
+			status = DeltakerStatusDto(
+				type = DeltakerStatus.IKKE_AKTUELL,
+				gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
+				opprettetDato = LocalDateTime.now().minusWeeks(6)
+			),
+			dagerPerUke = null,
+			prosentStilling = null,
+			oppstartsdato = LocalDate.now().minusWeeks(5),
+			sluttdato = null,
+			innsoktDato = LocalDate.now().minusMonths(2),
+			bestillingTekst = "Bestilling",
+			navKontor = "NAV Oslo",
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			skjult = null,
+			deltarPaKurs = true
+		)
+
+		ingestService.lagreDeltaker(deltakerId, deltakerDto)
+
+		verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+		verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerId) }
 	}
 
 	@Test

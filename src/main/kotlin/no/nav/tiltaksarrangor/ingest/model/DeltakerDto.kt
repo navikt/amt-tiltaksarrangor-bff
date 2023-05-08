@@ -17,7 +17,8 @@ data class DeltakerDto(
 	val bestillingTekst: String?,
 	val navKontor: String?,
 	val navVeileder: DeltakerNavVeilederDto?,
-	val skjult: DeltakerSkjultDto?
+	val skjult: DeltakerSkjultDto?,
+	val deltarPaKurs: Boolean
 )
 
 fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
@@ -58,5 +59,6 @@ val SKJULES_ALLTID_STATUSER = listOf(
 
 val AVSLUTTENDE_STATUSER = listOf(
 	DeltakerStatus.HAR_SLUTTET,
-	DeltakerStatus.IKKE_AKTUELL
+	DeltakerStatus.IKKE_AKTUELL,
+	DeltakerStatus.AVBRUTT
 )

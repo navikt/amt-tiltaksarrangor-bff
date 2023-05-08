@@ -4,6 +4,7 @@ import no.nav.tiltaksarrangor.ingest.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.ingest.model.AnsattDto
 import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
@@ -56,13 +57,13 @@ class IngestService(
 
 	fun lagreDeltakerliste(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteDto?) {
 		if (deltakerlisteDto == null) {
-			deltakerlisteRepository.deleteDeltakerliste(deltakerlisteId)
+			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
 			log.info("Slettet tombstonet deltakerliste med id $deltakerlisteId")
 		} else if (deltakerlisteDto.skalLagres()) {
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDto.toDeltakerlisteDbo())
 			log.info("Lagret deltakerliste med id $deltakerlisteId")
 		} else {
-			val antallSlettedeDeltakerlister = deltakerlisteRepository.deleteDeltakerliste(deltakerlisteId)
+			val antallSlettedeDeltakerlister = deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
 			if (antallSlettedeDeltakerlister > 0) {
 				log.info("Slettet deltakerliste med id $deltakerlisteId")
 			} else {
@@ -119,6 +120,8 @@ fun DeltakerlisteDto.skalLagres(): Boolean {
 
 fun DeltakerDto.skalLagres(): Boolean {
 	if (status.type in SKJULES_ALLTID_STATUSER) {
+		return false
+	} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs) {
 		return false
 	} else if (status.type in AVSLUTTENDE_STATUSER) {
 		return !LocalDateTime.now().isAfter(status.gyldigFra.plusWeeks(2))
