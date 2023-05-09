@@ -13,6 +13,7 @@ data class DeltakerDetaljerDto(
 	val telefonnummer: String?,
 	val epost: String?,
 	val deltakelseProsent: Int?,
+	val dagerPerUke: Int?,
 	val navEnhet: NavEnhetDto?,
 	val navVeileder: NavVeilederDto?,
 	val startDato: LocalDate?,

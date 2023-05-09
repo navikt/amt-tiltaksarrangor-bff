@@ -236,6 +236,7 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			telefonnummer = "90909090",
 			epost = "mail@test.no",
 			deltakelseProsent = null,
+			dagerPerUke = 5,
 			navEnhet = NavEnhetDto(
 				navn = "Nav Oslo"
 			),
