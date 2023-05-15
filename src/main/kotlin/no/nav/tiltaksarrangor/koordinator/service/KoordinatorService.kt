@@ -133,6 +133,7 @@ fun DeltakerDto.toDeltaker(erKurs: Boolean): Deltaker {
 		sluttDato = sluttDato,
 		status = status.toStatus(erKurs),
 		veiledere = aktiveVeiledere.map { it.toVeileder() },
+		navKontor = navKontor,
 		aktiveEndringsmeldinger = aktiveEndringsmeldinger.map { it.toEndringsmelding() }
 	)
 }

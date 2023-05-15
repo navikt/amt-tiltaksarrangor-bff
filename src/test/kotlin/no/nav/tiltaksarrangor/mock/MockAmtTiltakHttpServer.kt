@@ -445,7 +445,8 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 					endretDato = LocalDate.of(2023, 2, 1).atStartOfDay()
 				),
 				aktiveEndringsmeldinger = emptyList(),
-				aktiveVeiledere = emptyList()
+				aktiveVeiledere = emptyList(),
+				navKontor = "NAV Testheim"
 			)
 		)
 	}

@@ -15,5 +15,6 @@ data class DeltakerDto(
 	val status: DeltakerStatusDto,
 	val registrertDato: LocalDateTime,
 	val aktiveEndringsmeldinger: List<EndringsmeldingDto>,
-	val aktiveVeiledere: List<VeilederDto>
+	val aktiveVeiledere: List<VeilederDto>,
+	val navKontor: String?
 )
