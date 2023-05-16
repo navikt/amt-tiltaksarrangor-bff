@@ -18,5 +18,6 @@ data class Deltaker(
 	val sluttDato: LocalDate?,
 	val status: DeltakerStatus,
 	val veiledere: List<Veileder>,
+	val navKontor: String?,
 	val aktiveEndringsmeldinger: List<Endringsmelding>
 )
