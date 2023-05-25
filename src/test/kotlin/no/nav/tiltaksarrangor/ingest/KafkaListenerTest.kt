@@ -82,8 +82,7 @@ class KafkaListenerTest : IntegrationTest() {
 			id = arrangorId,
 			navn = "Arrangør AS",
 			organisasjonsnummer = "88888888",
-			overordnetArrangorId = UUID.randomUUID(),
-			deltakerlister = emptyList()
+			overordnetArrangorId = UUID.randomUUID()
 		)
 		testKafkaProducer.send(
 			ProducerRecord(
@@ -106,8 +105,7 @@ class KafkaListenerTest : IntegrationTest() {
 			id = arrangorId,
 			navn = "Arrangør AS",
 			organisasjonsnummer = "77777777",
-			overordnetArrangorId = null,
-			deltakerlister = emptyList()
+			overordnetArrangorId = null
 		)
 		arrangorRepository.insertOrUpdateArrangor(arrangorDto.toArrangorDbo())
 		testKafkaProducer.send(
