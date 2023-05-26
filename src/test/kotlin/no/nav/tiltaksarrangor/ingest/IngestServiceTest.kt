@@ -338,7 +338,7 @@ class IngestServiceTest {
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
 			status = "AKTIV",
-			type = EndringsmeldingType.TILBY_PLASS,
+			type = EndringsmeldingType.DELTAKER_ER_AKTUELL,
 			innhold = null,
 			createdAt = LocalDateTime.now()
 		)
@@ -358,7 +358,7 @@ class IngestServiceTest {
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
 			status = "UTDATERT",
-			type = EndringsmeldingType.TILBY_PLASS,
+			type = EndringsmeldingType.DELTAKER_ER_AKTUELL,
 			innhold = null,
 			createdAt = LocalDateTime.now()
 		)

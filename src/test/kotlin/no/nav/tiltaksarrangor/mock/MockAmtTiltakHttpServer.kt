@@ -108,16 +108,9 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
-	fun addTilbyPlassResponse(deltakerId: UUID) {
+	fun addDeltakerErAktuellResponse(deltakerId: UUID) {
 		addResponseHandler(
-			path = "/api/tiltaksarrangor/deltaker/$deltakerId/tilby-plass",
-			MockResponse()
-				.setResponseCode(200)
-		)
-	}
-	fun addSettPaaVentelisteResponse(deltakerId: UUID) {
-		addResponseHandler(
-			path = "/api/tiltaksarrangor/deltaker/$deltakerId/sett-paa-venteliste",
+			path = "/api/tiltaksarrangor/deltaker/$deltakerId/er-aktuell",
 			MockResponse()
 				.setResponseCode(200)
 		)
@@ -289,8 +282,8 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			),
 			EndringsmeldingDto(
 				id = UUID.fromString("5029689f-3de6-4d97-9cfa-552f75625ef2"),
-				innhold = EndringsmeldingDto.Innhold.TilbyPlassInnhold(),
-				type = "TILBY_PLASS"
+				innhold = EndringsmeldingDto.Innhold.DeltakerErAktuellInnhold(),
+				type = "DELTAKER_ER_AKTUELL"
 			),
 			EndringsmeldingDto(
 				id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),

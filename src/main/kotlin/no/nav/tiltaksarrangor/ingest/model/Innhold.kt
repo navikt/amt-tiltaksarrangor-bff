@@ -35,7 +35,5 @@ sealed class Innhold {
 		val sluttdato: LocalDate
 	) : Innhold()
 
-	class TilbyPlassInnhold : Innhold()
-
-	class SettPaaVentelisteInnhold : Innhold()
+	class DeltakerErAktuellInnhold : Innhold()
 }

@@ -17,7 +17,7 @@ data class EndringsmeldingDto(
 		JsonSubTypes.Type(value = Innhold.DeltakerIkkeAktuellInnhold::class, name = "DELTAKER_IKKE_AKTUELL"),
 		JsonSubTypes.Type(value = Innhold.EndreDeltakelseProsentInnhold::class, name = "ENDRE_DELTAKELSE_PROSENT"),
 		JsonSubTypes.Type(value = Innhold.EndreSluttdatoInnhold::class, name = "ENDRE_SLUTTDATO"),
-		JsonSubTypes.Type(value = Innhold.TilbyPlassInnhold::class, name = "TILBY_PLASS")
+		JsonSubTypes.Type(value = Innhold.DeltakerErAktuellInnhold::class, name = "DELTAKER_ER_AKTUELL")
 	)
 	val innhold: Innhold?,
 	val type: String
@@ -54,6 +54,6 @@ data class EndringsmeldingDto(
 			val sluttdato: LocalDate
 		) : Innhold()
 
-		class TilbyPlassInnhold : Innhold()
+		class DeltakerErAktuellInnhold : Innhold()
 	}
 }
