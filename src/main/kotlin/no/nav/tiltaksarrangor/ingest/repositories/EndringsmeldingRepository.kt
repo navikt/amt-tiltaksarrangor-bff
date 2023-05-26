@@ -96,8 +96,7 @@ class EndringsmeldingRepository(
 			EndringsmeldingType.ENDRE_SLUTTDATO ->
 				innholdJson?.let { fromJsonString<Innhold.EndreSluttdatoInnhold>(it) }
 
-			EndringsmeldingType.TILBY_PLASS,
-			EndringsmeldingType.SETT_PAA_VENTELISTE -> null
+			EndringsmeldingType.TILBY_PLASS -> null
 		}
 	}
 }

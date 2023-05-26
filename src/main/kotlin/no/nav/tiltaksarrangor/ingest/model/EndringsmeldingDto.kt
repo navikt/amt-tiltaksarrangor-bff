@@ -23,8 +23,7 @@ data class EndringsmeldingDto(
 		JsonSubTypes.Type(value = Innhold.DeltakerIkkeAktuellInnhold::class, name = "DELTAKER_IKKE_AKTUELL"),
 		JsonSubTypes.Type(value = Innhold.EndreDeltakelseProsentInnhold::class, name = "ENDRE_DELTAKELSE_PROSENT"),
 		JsonSubTypes.Type(value = Innhold.EndreSluttdatoInnhold::class, name = "ENDRE_SLUTTDATO"),
-		JsonSubTypes.Type(value = Innhold.TilbyPlassInnhold::class, name = "TILBY_PLASS"),
-		JsonSubTypes.Type(value = Innhold.SettPaaVentelisteInnhold::class, name = "SETT_PAA_VENTELISTE")
+		JsonSubTypes.Type(value = Innhold.TilbyPlassInnhold::class, name = "TILBY_PLASS")
 	)
 	val innhold: Innhold?,
 	val createdAt: LocalDateTime

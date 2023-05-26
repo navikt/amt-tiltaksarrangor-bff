@@ -293,11 +293,6 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 				type = "TILBY_PLASS"
 			),
 			EndringsmeldingDto(
-				id = UUID.fromString("51fcf41a-115c-4a14-bfa9-bee70e86b240"),
-				innhold = EndringsmeldingDto.Innhold.SettPaaVentelisteInnhold(),
-				type = "SETT_PAA_VENTELISTE"
-			),
-			EndringsmeldingDto(
 				id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),
 				innhold = EndringsmeldingDto.Innhold.EndreSluttdatoInnhold(
 					sluttdato = LocalDate.of(2023, 5, 3)

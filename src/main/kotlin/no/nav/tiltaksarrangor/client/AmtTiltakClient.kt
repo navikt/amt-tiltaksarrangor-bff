@@ -195,18 +195,7 @@ class AmtTiltakClient(
 			}
 		}
 	}
-	fun settPaaVenteliste(deltakerId: UUID) {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/sett-paa-venteliste")
-			.patch("".toRequestBody(mediaTypeJson))
-			.build()
 
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulUpdateResponse(response.code, "opprett SETT_PAA_VENTELISTE endringsmelding på deltaker med id $deltakerId ")
-			}
-		}
-	}
 	fun endreSluttdato(deltakerId: UUID, endreSluttdatoRequest: EndreSluttdatoRequest) {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/endre-sluttdato")

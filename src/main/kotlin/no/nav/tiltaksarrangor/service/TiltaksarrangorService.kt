@@ -99,7 +99,6 @@ class TiltaksarrangorService(
 			EndringsmeldingRequest.EndringsmeldingType.DELTAKER_IKKE_AKTUELL -> amtTiltakClient.deltakerIkkeAktuell(deltakerId, DeltakerIkkeAktuellRequest((request.innhold as EndringsmeldingRequest.Innhold.DeltakerIkkeAktuellInnhold).aarsak))
 			EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTDATO -> amtTiltakClient.endreSluttdato(deltakerId, EndreSluttdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold).sluttdato))
 			EndringsmeldingRequest.EndringsmeldingType.TILBY_PLASS -> amtTiltakClient.tilbyPlass(deltakerId)
-			EndringsmeldingRequest.EndringsmeldingType.SETT_PAA_VENTELISTE -> amtTiltakClient.settPaaVenteliste(deltakerId)
 		}
 	}
 

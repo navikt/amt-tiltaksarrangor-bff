@@ -19,7 +19,6 @@ fun EndringsmeldingDto.Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innho
 		is EndringsmeldingDto.Innhold.AvsluttDeltakelseInnhold -> Endringsmelding.Innhold.AvsluttDeltakelseInnhold(this.sluttdato, this.aarsak)
 		is EndringsmeldingDto.Innhold.DeltakerIkkeAktuellInnhold -> Endringsmelding.Innhold.DeltakerIkkeAktuellInnhold(this.aarsak)
 		is EndringsmeldingDto.Innhold.TilbyPlassInnhold -> null
-		is EndringsmeldingDto.Innhold.SettPaaVentelisteInnhold -> null
 		is EndringsmeldingDto.Innhold.EndreSluttdatoInnhold -> Endringsmelding.Innhold.EndreSluttdatoInnhold(this.sluttdato)
 	}
 }
