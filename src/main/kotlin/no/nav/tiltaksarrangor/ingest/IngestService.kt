@@ -56,6 +56,10 @@ class IngestService(
 	}
 
 	fun lagreDeltakerliste(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteDto?) {
+		if (IgnoredDeltakerlister.deltakerlisteIds.contains(deltakerlisteId)) {
+			return
+		}
+
 		if (deltakerlisteDto == null) {
 			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
 			log.info("Slettet tombstonet deltakerliste med id $deltakerlisteId")
@@ -73,6 +77,10 @@ class IngestService(
 	}
 
 	fun lagreDeltaker(deltakerId: UUID, deltakerDto: DeltakerDto?) {
+		if (IgnoredDeltakerlister.deltakerlisteIds.contains(deltakerDto?.deltakerlisteId)) {
+			return
+		}
+
 		if (deltakerDto == null) {
 			deltakerRepository.deleteDeltaker(deltakerId)
 			log.info("Slettet tombstonet deltaker med id $deltakerId")
