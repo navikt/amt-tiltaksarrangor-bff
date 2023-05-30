@@ -7,12 +7,10 @@ enum class EndringsmeldingType {
 	FORLENG_DELTAKELSE,
 	AVSLUTT_DELTAKELSE,
 	DELTAKER_IKKE_AKTUELL,
-	TILBY_PLASS,
-	SETT_PAA_VENTELISTE,
+	DELTAKER_ER_AKTUELL,
 	ENDRE_SLUTTDATO
 }
 
 val typerUtenInnhold = listOf<EndringsmeldingType>(
-	EndringsmeldingType.TILBY_PLASS,
-	EndringsmeldingType.SETT_PAA_VENTELISTE
+	EndringsmeldingType.DELTAKER_ER_AKTUELL
 )

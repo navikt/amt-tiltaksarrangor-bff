@@ -536,7 +536,7 @@ class KafkaListenerTest : IntegrationTest() {
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
 			status = "AKTIV",
-			type = EndringsmeldingType.TILBY_PLASS,
+			type = EndringsmeldingType.DELTAKER_ER_AKTUELL,
 			innhold = null,
 			createdAt = LocalDateTime.now()
 		)
@@ -548,7 +548,7 @@ class KafkaListenerTest : IntegrationTest() {
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
 			status = "UTFORT",
-			type = EndringsmeldingType.TILBY_PLASS,
+			type = EndringsmeldingType.DELTAKER_ER_AKTUELL,
 			innhold = null,
 			createdAt = LocalDateTime.now()
 		)

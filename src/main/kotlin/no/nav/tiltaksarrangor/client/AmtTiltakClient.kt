@@ -183,30 +183,19 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun tilbyPlass(deltakerId: UUID) {
+	fun deltakerErAktuell(deltakerId: UUID) {
 		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/tilby-plass")
+			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/er-aktuell")
 			.patch("".toRequestBody(mediaTypeJson))
 			.build()
 
 		amtTiltakHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
-				handleUnsuccessfulUpdateResponse(response.code, "opprett TILBY_PLASS endringsmelding på deltaker med id $deltakerId ")
+				handleUnsuccessfulUpdateResponse(response.code, "opprett DELTAKER_ER_AKTUELL endringsmelding på deltaker med id $deltakerId ")
 			}
 		}
 	}
-	fun settPaaVenteliste(deltakerId: UUID) {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/sett-paa-venteliste")
-			.patch("".toRequestBody(mediaTypeJson))
-			.build()
 
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulUpdateResponse(response.code, "opprett SETT_PAA_VENTELISTE endringsmelding på deltaker med id $deltakerId ")
-			}
-		}
-	}
 	fun endreSluttdato(deltakerId: UUID, endreSluttdatoRequest: EndreSluttdatoRequest) {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/endre-sluttdato")
