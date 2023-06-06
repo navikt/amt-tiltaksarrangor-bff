@@ -22,7 +22,7 @@ val kafkaClientsVersion = "3.4.0"
 val tokenSupportVersion = "3.1.0"
 val okHttpVersion = "4.11.0"
 val kotestVersion = "5.6.2"
-val testcontainersVersion = "1.18.2"
+val testcontainersVersion = "1.18.3"
 val mockkVersion = "1.13.5"
 
 dependencies {
