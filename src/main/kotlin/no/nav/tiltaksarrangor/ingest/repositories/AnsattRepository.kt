@@ -75,7 +75,7 @@ class AnsattRepository(
 
 		insertOrUpdateAnsattRolle(ansattDbo.id, ansattDbo.roller)
 		insertOrUpdateKoordinatorDeltakerliste(ansattDbo.id, ansattDbo.deltakerlister)
-		insertOrUpdateVeilederDeltaker(ansattDbo.id, ansattDbo.veilederDeltakere)
+		insertOrUpdateVeilederDeltaker(ansattDbo.id, ansattDbo.veilederDeltakere.distinct())
 	}
 
 	private fun insertOrUpdateAnsattRolle(ansattId: UUID, roller: List<AnsattRolleDbo>) {
