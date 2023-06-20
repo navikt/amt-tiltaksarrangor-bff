@@ -2,7 +2,7 @@ package no.nav.tiltaksarrangor.ingest.model
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import no.nav.tiltaksarrangor.ingest.repositories.model.EndringsmeldingDbo
+import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import java.time.LocalDateTime
 import java.util.UUID
 

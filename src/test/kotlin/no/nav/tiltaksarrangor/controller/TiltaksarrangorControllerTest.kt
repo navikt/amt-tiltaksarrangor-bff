@@ -19,6 +19,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 	@AfterEach
 	internal fun tearDown() {
 		mockAmtTiltakServer.resetHttpServer()
+		mockAmtArrangorServer.resetHttpServer()
 	}
 
 	@Test
@@ -33,12 +34,13 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 
 	@Test
 	fun `getMineRoller - autentisert - returnerer 200`() {
-		mockAmtTiltakServer.addMineRollerResponse()
+		val personIdent = "12345678910"
+		mockAmtArrangorServer.addAnsattResponse(personIdent = personIdent)
 
 		val response = sendRequest(
 			method = "GET",
 			path = "/tiltaksarrangor/meg/roller",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		response.code shouldBe 200

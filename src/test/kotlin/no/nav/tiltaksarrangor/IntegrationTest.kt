@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
+import no.nav.tiltaksarrangor.mock.MockAmtArrangorHttpServer
 import no.nav.tiltaksarrangor.mock.MockAmtTiltakHttpServer
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
@@ -49,6 +50,7 @@ class IntegrationTest {
 
 	companion object {
 		val mockAmtTiltakServer = MockAmtTiltakHttpServer()
+		val mockAmtArrangorServer = MockAmtArrangorHttpServer()
 		val postgresDataSource = SingletonPostgresContainer.getDataSource()
 
 		@JvmStatic
@@ -56,6 +58,8 @@ class IntegrationTest {
 		fun registerProperties(registry: DynamicPropertyRegistry) {
 			mockAmtTiltakServer.start()
 			registry.add("amt-tiltak.url", mockAmtTiltakServer::serverUrl)
+			mockAmtArrangorServer.start()
+			registry.add("amt-arrangor.url", mockAmtArrangorServer::serverUrl)
 
 			val container = SingletonPostgresContainer.getContainer()
 			val kafkaContainer = KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.0.1")).apply {

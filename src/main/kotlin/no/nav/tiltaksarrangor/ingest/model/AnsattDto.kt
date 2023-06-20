@@ -1,9 +1,9 @@
 package no.nav.tiltaksarrangor.ingest.model
 
-import no.nav.tiltaksarrangor.ingest.repositories.model.AnsattDbo
-import no.nav.tiltaksarrangor.ingest.repositories.model.AnsattRolleDbo
-import no.nav.tiltaksarrangor.ingest.repositories.model.KoordinatorDeltakerlisteDbo
-import no.nav.tiltaksarrangor.ingest.repositories.model.VeilederDeltakerDbo
+import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
+import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import java.util.UUID
 
 data class AnsattDto(

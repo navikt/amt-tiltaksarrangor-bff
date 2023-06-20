@@ -5,6 +5,7 @@ import no.nav.tiltaksarrangor.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.service.TiltaksarrangorService
+import no.nav.tiltaksarrangor.service.TokenService
 import no.nav.tiltaksarrangor.utils.Issuer
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,12 +19,14 @@ import java.util.UUID
 @RestController
 @RequestMapping("/tiltaksarrangor")
 class TiltaksarrangorController(
+	private val tokenService: TokenService,
 	private val tiltaksarrangorService: TiltaksarrangorService
 ) {
 	@GetMapping("/meg/roller")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getMineRoller(): List<String> {
-		return tiltaksarrangorService.getMineRoller()
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		return tiltaksarrangorService.getMineRoller(personIdent)
 	}
 
 	@GetMapping("/deltaker/{deltakerId}")

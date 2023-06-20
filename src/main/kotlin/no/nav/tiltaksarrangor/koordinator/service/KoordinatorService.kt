@@ -1,13 +1,13 @@
 package no.nav.tiltaksarrangor.koordinator.service
 
-import no.nav.tiltaksarrangor.client.AmtTiltakClient
-import no.nav.tiltaksarrangor.client.dto.DeltakerDto
-import no.nav.tiltaksarrangor.client.dto.DeltakeroversiktDto
-import no.nav.tiltaksarrangor.client.dto.KoordinatorInfoDto
-import no.nav.tiltaksarrangor.client.dto.TilgjengeligVeilederDto
-import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
-import no.nav.tiltaksarrangor.client.dto.toStatus
-import no.nav.tiltaksarrangor.client.dto.toVeileder
+import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
+import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDto
+import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakeroversiktDto
+import no.nav.tiltaksarrangor.client.amttiltak.dto.KoordinatorInfoDto
+import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
+import no.nav.tiltaksarrangor.client.amttiltak.dto.toEndringsmelding
+import no.nav.tiltaksarrangor.client.amttiltak.dto.toStatus
+import no.nav.tiltaksarrangor.client.amttiltak.dto.toVeileder
 import no.nav.tiltaksarrangor.koordinator.model.AdminDeltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
