@@ -15,6 +15,7 @@ import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.VeilederDto
 import no.nav.tiltaksarrangor.ingest.model.Veiledertype
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
+import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
@@ -99,11 +100,21 @@ class TilgangServiceTest : IntegrationTest() {
 	}
 
 	@Test
+	fun `oppdaterOgHentMineRoller - ansatt har ingen roller - lagres ikke i database og returnerer feilmelding`() {
+		val personIdent = "1234"
+		coEvery { amtArrangorClient.getAnsatt(any()) } returns null
+
+		tilgangService.oppdaterOgHentMineRoller(personIdent)
+
+		ansattFinnes(personIdent) shouldBe false
+	}
+
+	@Test
 	fun `oppdaterOgHentMineRoller - amt-arrangor svarer med feilmelding - lagres ikke i database og returnerer feilmelding`() {
 		val personIdent = "1234"
-		coEvery { amtArrangorClient.getAnsatt(any()) } throws NoSuchElementException("Fant ikke ansatt")
+		coEvery { amtArrangorClient.getAnsatt(any()) } throws UnauthorizedException("Fant ikke ansatt")
 
-		assertThrows<NoSuchElementException> {
+		assertThrows<UnauthorizedException> {
 			tilgangService.oppdaterOgHentMineRoller(personIdent)
 		}
 

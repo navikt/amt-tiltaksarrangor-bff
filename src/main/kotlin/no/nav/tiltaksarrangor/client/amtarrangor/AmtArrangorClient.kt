@@ -23,8 +23,8 @@ class AmtArrangorClient(
 		.expireAfterWrite(Duration.ofHours(1))
 		.build<String, AnsattDto>()
 
-	fun getAnsatt(personIdent: String): AnsattDto {
-		return CacheUtils.tryCacheFirstNotNull(personidentToAnsattCache, personIdent) {
+	fun getAnsatt(personIdent: String): AnsattDto? {
+		return CacheUtils.tryCacheFirstNullable(personidentToAnsattCache, personIdent) {
 			val request = Request.Builder()
 				.url("$amtArrangorUrl/api/ansatt")
 				.get()
@@ -35,7 +35,7 @@ class AmtArrangorClient(
 					when (response.code) {
 						401 -> throw UnauthorizedException("Ikke tilgang til å hente ansatt")
 						403 -> throw UnauthorizedException("Ikke tilgang til å hente ansatt")
-						404 -> throw NoSuchElementException("Fant ikke ansatt")
+						404 -> return@tryCacheFirstNullable null
 						else -> {
 							log.error("Kunne ikke hente ansatt fra amt-arrangør, responsekode: ${response.code}")
 							throw RuntimeException("Kunne ikke hente ansatt")
@@ -44,7 +44,7 @@ class AmtArrangorClient(
 				}
 				val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
-				return@tryCacheFirstNotNull JsonUtils.fromJsonString<AnsattDto>(body)
+				return@tryCacheFirstNullable JsonUtils.fromJsonString<AnsattDto>(body)
 			}
 		}
 	}

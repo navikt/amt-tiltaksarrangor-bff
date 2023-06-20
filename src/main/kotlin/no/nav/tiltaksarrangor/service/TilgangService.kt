@@ -14,7 +14,9 @@ class TilgangService(
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	fun oppdaterOgHentMineRoller(personIdent: String): List<String> {
-		val ansatt = amtArrangorClient.getAnsatt(personIdent)
+		val ansatt = amtArrangorClient.getAnsatt(personIdent) ?: return emptyList<String>().also {
+			log.info("Bruker uten tilganger har logget inn")
+		}
 		log.info("Hentet ansatt med id ${ansatt.id} fra amt-arrangør")
 
 		ansattRepository.insertOrUpdateAnsatt(ansatt.toAnsattDbo())
