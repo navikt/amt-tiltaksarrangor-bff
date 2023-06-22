@@ -99,7 +99,7 @@ class TilgangServiceTest {
 	}
 
 	@Test
-	fun `oppdaterOgHentMineRoller - ansatt har ingen roller - lagres ikke i database og returnerer feilmelding`() {
+	fun `oppdaterOgHentMineRoller - ansatt har ingen roller - lagres ikke i database og returnerer tom liste`() {
 		val personIdent = "1234"
 		coEvery { amtArrangorClient.getAnsatt(any()) } returns null
 
