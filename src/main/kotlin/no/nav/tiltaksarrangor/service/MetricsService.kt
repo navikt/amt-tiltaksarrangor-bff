@@ -1,7 +1,6 @@
 package no.nav.tiltaksarrangor.service
 
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Tags
 import org.springframework.stereotype.Service
 
 private const val innlogging_metric = "tiltaksarrangorbff_innlogging"
@@ -12,20 +11,25 @@ class MetricsService(
 ) {
 	private val reg = registry
 
-	fun incInnloggetAnsatt(count: Int = 1, roller: List<String>) {
+	private val innloggetKoordinatorCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.KOORDINATOR.name)
+	private val innloggetVeilederCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.VEILEDER.name)
+	private val innloggetKoordinatorOgVeilederCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.KOORDINATOR_OG_VEILEDER.name)
+	private val innloggetTotaltCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.TOTALT.name)
+
+	fun incInnloggetAnsatt(roller: List<String>) {
 		if (roller.isEmpty()) {
 			return
 		}
 		if (roller.size == 1) {
 			if (roller.contains("KOORDINATOR")) {
-				reg.gauge(innlogging_metric, Tags.of("rolle", RollePermutasjon.KOORDINATOR.name), count.toDouble())
+				innloggetKoordinatorCounter.increment()
 			} else {
-				reg.gauge(innlogging_metric, Tags.of("rolle", RollePermutasjon.VEILEDER.name), count.toDouble())
+				innloggetVeilederCounter.increment()
 			}
 		} else {
-			reg.gauge(innlogging_metric, Tags.of("rolle", RollePermutasjon.KOORDINATOR_OG_VEILEDER.name), count.toDouble())
+			innloggetKoordinatorOgVeilederCounter.increment()
 		}
-		reg.gauge(innlogging_metric, Tags.of("rolle", RollePermutasjon.TOTALT.name), count.toDouble())
+		innloggetTotaltCounter.increment()
 	}
 
 	enum class RollePermutasjon {
