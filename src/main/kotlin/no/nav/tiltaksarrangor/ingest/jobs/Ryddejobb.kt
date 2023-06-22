@@ -1,8 +1,8 @@
 package no.nav.tiltaksarrangor.ingest.jobs
 
 import no.nav.tiltaksarrangor.ingest.jobs.leaderelection.LeaderElection
-import no.nav.tiltaksarrangor.ingest.repositories.DeltakerRepository
-import no.nav.tiltaksarrangor.ingest.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component

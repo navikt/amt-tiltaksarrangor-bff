@@ -1,9 +1,9 @@
 package no.nav.tiltaksarrangor.veileder.service
 
-import no.nav.tiltaksarrangor.client.AmtTiltakClient
-import no.nav.tiltaksarrangor.client.dto.VeiledersDeltakerDto
-import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
-import no.nav.tiltaksarrangor.client.dto.toStatus
+import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
+import no.nav.tiltaksarrangor.client.amttiltak.dto.VeiledersDeltakerDto
+import no.nav.tiltaksarrangor.client.amttiltak.dto.toEndringsmelding
+import no.nav.tiltaksarrangor.client.amttiltak.dto.toStatus
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.veileder.model.Deltaker
 import org.springframework.stereotype.Component

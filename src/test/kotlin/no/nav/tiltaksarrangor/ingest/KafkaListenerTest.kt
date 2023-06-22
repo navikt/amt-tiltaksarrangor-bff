@@ -27,12 +27,12 @@ import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerlisteDbo
 import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
-import no.nav.tiltaksarrangor.ingest.repositories.AnsattRepository
-import no.nav.tiltaksarrangor.ingest.repositories.ArrangorRepository
-import no.nav.tiltaksarrangor.ingest.repositories.DeltakerRepository
-import no.nav.tiltaksarrangor.ingest.repositories.DeltakerlisteRepository
-import no.nav.tiltaksarrangor.ingest.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
+import no.nav.tiltaksarrangor.repositories.AnsattRepository
+import no.nav.tiltaksarrangor.repositories.ArrangorRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.utils.JsonUtils

@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.ingest.model
 
-import no.nav.tiltaksarrangor.ingest.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import java.time.LocalDate
 import java.util.UUID
 

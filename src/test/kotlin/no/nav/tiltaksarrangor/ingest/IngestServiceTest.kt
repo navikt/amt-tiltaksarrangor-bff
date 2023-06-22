@@ -19,11 +19,11 @@ import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.TiltakDto
-import no.nav.tiltaksarrangor.ingest.repositories.AnsattRepository
-import no.nav.tiltaksarrangor.ingest.repositories.ArrangorRepository
-import no.nav.tiltaksarrangor.ingest.repositories.DeltakerRepository
-import no.nav.tiltaksarrangor.ingest.repositories.DeltakerlisteRepository
-import no.nav.tiltaksarrangor.ingest.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.AnsattRepository
+import no.nav.tiltaksarrangor.repositories.ArrangorRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate

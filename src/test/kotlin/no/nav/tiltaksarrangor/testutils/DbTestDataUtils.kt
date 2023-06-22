@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldNotBe
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import java.time.Duration
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import javax.sql.DataSource
 
@@ -14,7 +15,12 @@ object DbTestDataUtils {
 
 	private const val FLYWAY_SCHEMA_HISTORY_TABLE_NAME = "flyway_schema_history"
 
-	infix fun ZonedDateTime.shouldBeEqualTo(expected: ZonedDateTime?) {
+	infix fun ZonedDateTime.shouldBeCloseTo(expected: ZonedDateTime?) {
+		expected shouldNotBe null
+		expected!!.shouldBeWithin(Duration.ofSeconds(1), this)
+	}
+
+	infix fun LocalDateTime.shouldBeCloseTo(expected: LocalDateTime?) {
 		expected shouldNotBe null
 		expected!!.shouldBeWithin(Duration.ofSeconds(1), this)
 	}

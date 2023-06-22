@@ -1,16 +1,16 @@
 package no.nav.tiltaksarrangor.service
 
-import no.nav.tiltaksarrangor.client.AmtTiltakClient
-import no.nav.tiltaksarrangor.client.dto.toEndringsmelding
-import no.nav.tiltaksarrangor.client.dto.toStatus
-import no.nav.tiltaksarrangor.client.dto.toVeileder
-import no.nav.tiltaksarrangor.client.request.AvsluttDeltakelseRequest
-import no.nav.tiltaksarrangor.client.request.DeltakerIkkeAktuellRequest
-import no.nav.tiltaksarrangor.client.request.EndreDeltakelsesprosentRequest
-import no.nav.tiltaksarrangor.client.request.EndreOppstartsdatoRequest
-import no.nav.tiltaksarrangor.client.request.EndreSluttdatoRequest
-import no.nav.tiltaksarrangor.client.request.ForlengDeltakelseRequest
-import no.nav.tiltaksarrangor.client.request.LeggTilOppstartsdatoRequest
+import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
+import no.nav.tiltaksarrangor.client.amttiltak.dto.toEndringsmelding
+import no.nav.tiltaksarrangor.client.amttiltak.dto.toStatus
+import no.nav.tiltaksarrangor.client.amttiltak.dto.toVeileder
+import no.nav.tiltaksarrangor.client.amttiltak.request.AvsluttDeltakelseRequest
+import no.nav.tiltaksarrangor.client.amttiltak.request.DeltakerIkkeAktuellRequest
+import no.nav.tiltaksarrangor.client.amttiltak.request.EndreDeltakelsesprosentRequest
+import no.nav.tiltaksarrangor.client.amttiltak.request.EndreOppstartsdatoRequest
+import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttdatoRequest
+import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
+import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.Endringsmelding
@@ -21,10 +21,11 @@ import java.util.UUID
 
 @Component
 class TiltaksarrangorService(
-	private val amtTiltakClient: AmtTiltakClient
+	private val amtTiltakClient: AmtTiltakClient,
+	private val tilgangService: TilgangService
 ) {
-	fun getMineRoller(): List<String> {
-		return amtTiltakClient.getMineRoller()
+	fun getMineRoller(personIdent: String): List<String> {
+		return tilgangService.oppdaterOgHentMineRoller(personIdent)
 	}
 
 	fun getDeltaker(deltakerId: UUID): Deltaker {

@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.ingest.model
 
-import no.nav.tiltaksarrangor.ingest.repositories.model.ArrangorDbo
+import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import java.util.UUID
 
 data class ArrangorDto(

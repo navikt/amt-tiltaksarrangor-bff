@@ -48,6 +48,7 @@ dependencies {
     implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
     implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
+    implementation("com.github.ben-manes.caffeine:caffeine")
 
     implementation("org.postgresql:postgresql")
 

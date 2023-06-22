@@ -30,6 +30,22 @@ class HttpClientConfig {
 	}
 
 	@Bean
+	fun amtArrangorHttpClient(
+		clientConfigurationProperties: ClientConfigurationProperties,
+		oAuth2AccessTokenService: OAuth2AccessTokenService
+	): OkHttpClient {
+		val registrationName = "amt-arrangor-tokenx"
+		val clientProperties = clientConfigurationProperties.registration[registrationName]
+			?: throw RuntimeException("Fant ikke config for $registrationName")
+		return OkHttpClient.Builder()
+			.connectTimeout(5, TimeUnit.SECONDS)
+			.readTimeout(5, TimeUnit.SECONDS)
+			.followRedirects(false)
+			.addInterceptor(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
+			.build()
+	}
+
+	@Bean
 	fun simpleHttpClient(): OkHttpClient {
 		return OkHttpClient.Builder()
 			.connectTimeout(5, TimeUnit.SECONDS)
