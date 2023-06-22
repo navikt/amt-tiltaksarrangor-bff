@@ -6,10 +6,8 @@ import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toEndringsmelding
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toStatus
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toVeileder
-import no.nav.tiltaksarrangor.erPilot
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.Veiledertype
-import no.nav.tiltaksarrangor.isDev
 import no.nav.tiltaksarrangor.koordinator.model.AdminDeltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
@@ -23,6 +21,8 @@ import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.service.AnsattService
+import no.nav.tiltaksarrangor.utils.erPilot
+import no.nav.tiltaksarrangor.utils.isDev
 import org.springframework.stereotype.Component
 import java.util.UUID
 

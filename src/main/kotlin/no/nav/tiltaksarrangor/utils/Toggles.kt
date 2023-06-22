@@ -1,4 +1,4 @@
-package no.nav.tiltaksarrangor
+package no.nav.tiltaksarrangor.utils
 
 import java.util.UUID
 
