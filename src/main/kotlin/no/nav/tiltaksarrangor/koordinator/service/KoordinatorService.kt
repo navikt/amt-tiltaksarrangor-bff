@@ -20,6 +20,8 @@ import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.utils.erPilot
 import no.nav.tiltaksarrangor.utils.isDev
@@ -34,22 +36,16 @@ class KoordinatorService(
 ) {
 	fun getMineDeltakerlister(personIdent: String): MineDeltakerlister {
 		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
-		val unikeRoller = ansatt.roller.map { it.rolle.name }.distinct()
+		val unikeRoller = ansatt.roller.map { it.rolle }.distinct()
 		if (unikeRoller.isEmpty()) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator")
 		}
-		val veilederFor = unikeRoller.find { it == AnsattRolle.VEILEDER.name }
-			?.let {
-				VeilederFor(
-					veilederFor = ansatt.veilederDeltakere.filter { it.veilederType == Veiledertype.VEILEDER }.size,
-					medveilederFor = ansatt.veilederDeltakere.filter { it.veilederType == Veiledertype.MEDVEILEDER }.size
-				)
-			}
-		val koordinatorFor = unikeRoller.find { it == AnsattRolle.KOORDINATOR.name }
-			?.let {
-				val deltakerlister = deltakerlisteRepository.getDeltakerlister(ansatt.deltakerlister.map { it.deltakerlisteId }).toDeltakerliste()
-				KoordinatorFor(deltakerlister = deltakerlister.filter { !it.erKurs || isDev() || erPilot(it.id) })
-			}
+		val veilederFor = unikeRoller.find { it == AnsattRolle.VEILEDER }?.let {
+			getVeilederFor(ansatt.veilederDeltakere)
+		}
+		val koordinatorFor = unikeRoller.find { it == AnsattRolle.KOORDINATOR }?.let {
+			getKoordinatorFor(ansatt.deltakerlister)
+		}
 		return MineDeltakerlister(
 			veilederFor = veilederFor,
 			koordinatorFor = koordinatorFor
@@ -110,6 +106,18 @@ class KoordinatorService(
 
 	fun fjernDeltakerliste(deltakerlisteId: UUID) {
 		amtTiltakClient.fjernTilgangTilGjennomforing(deltakerlisteId)
+	}
+
+	private fun getVeilederFor(veilederDeltakere: List<VeilederDeltakerDbo>): VeilederFor {
+		return VeilederFor(
+			veilederFor = veilederDeltakere.filter { it.veilederType == Veiledertype.VEILEDER }.size,
+			medveilederFor = veilederDeltakere.filter { it.veilederType == Veiledertype.MEDVEILEDER }.size
+		)
+	}
+
+	private fun getKoordinatorFor(koordinatorsDeltakerlister: List<KoordinatorDeltakerlisteDbo>): KoordinatorFor {
+		val deltakerlister = deltakerlisteRepository.getDeltakerlister(koordinatorsDeltakerlister.map { it.deltakerlisteId }).toDeltakerliste()
+		return KoordinatorFor(deltakerlister = deltakerlister.filter { !it.erKurs || isDev() || erPilot(it.id) })
 	}
 }
 

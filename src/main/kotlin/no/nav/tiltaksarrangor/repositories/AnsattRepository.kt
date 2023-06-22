@@ -186,11 +186,11 @@ class AnsattRepository(
 	fun getAnsatt(personIdent: String): AnsattDbo? {
 		val ansattPersonaliaDbo = getAnsattPersonaliaDbo(personIdent) ?: return null
 		val ansattRolleListe = getAnsattRolleListe(ansattPersonaliaDbo.id)
-		val unikeRoller = ansattRolleListe.map { it.rolle.name }.distinct()
+		val unikeRoller = ansattRolleListe.map { it.rolle }.distinct()
 
-		val koordinatorDeltakerlisteDboListe = unikeRoller.find { it == AnsattRolle.KOORDINATOR.name }
+		val koordinatorDeltakerlisteDboListe = unikeRoller.find { it == AnsattRolle.KOORDINATOR }
 			?.let { getKoordinatorDeltakerlisteDboListe(ansattPersonaliaDbo.id) } ?: emptyList()
-		val veilederDeltakerDboListe = unikeRoller.find { it == AnsattRolle.VEILEDER.name }
+		val veilederDeltakerDboListe = unikeRoller.find { it == AnsattRolle.VEILEDER }
 			?.let { getVeilederDeltakerDboListe(ansattPersonaliaDbo.id) } ?: emptyList()
 
 		return AnsattDbo(
