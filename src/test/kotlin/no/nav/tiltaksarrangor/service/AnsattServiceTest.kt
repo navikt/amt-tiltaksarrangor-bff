@@ -27,12 +27,12 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDateTime
 import java.util.UUID
 
-class TilgangServiceTest {
+class AnsattServiceTest {
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val ansattRepository = AnsattRepository(template)
-	private val tilgangService = TilgangService(amtArrangorClient, ansattRepository)
+	private val ansattService = AnsattService(amtArrangorClient, ansattRepository)
 
 	@AfterEach
 	internal fun tearDown() {
@@ -46,7 +46,7 @@ class TilgangServiceTest {
 		val personIdent = "12345678910"
 		coEvery { amtArrangorClient.getAnsatt(any()) } returns getAnsatt(ansattId, personIdent)
 
-		val roller = tilgangService.oppdaterOgHentMineRoller(personIdent)
+		val roller = ansattService.oppdaterOgHentMineRoller(personIdent)
 
 		roller.size shouldBe 2
 		roller.find { it == AnsattRolle.VEILEDER.name } shouldNotBe null
@@ -82,7 +82,7 @@ class TilgangServiceTest {
 		)
 		coEvery { amtArrangorClient.getAnsatt(any()) } returns getAnsatt(ansattId, personIdent).copy(arrangorer = oppdaterteArrangorer)
 
-		val roller = tilgangService.oppdaterOgHentMineRoller(personIdent)
+		val roller = ansattService.oppdaterOgHentMineRoller(personIdent)
 
 		roller.size shouldBe 1
 		roller.find { it == AnsattRolle.KOORDINATOR.name } shouldNotBe null
@@ -103,7 +103,7 @@ class TilgangServiceTest {
 		val personIdent = "1234"
 		coEvery { amtArrangorClient.getAnsatt(any()) } returns null
 
-		tilgangService.oppdaterOgHentMineRoller(personIdent)
+		ansattService.oppdaterOgHentMineRoller(personIdent)
 
 		ansattFinnes(personIdent) shouldBe false
 	}
@@ -114,7 +114,7 @@ class TilgangServiceTest {
 		coEvery { amtArrangorClient.getAnsatt(any()) } throws UnauthorizedException("Fant ikke ansatt")
 
 		assertThrows<UnauthorizedException> {
-			tilgangService.oppdaterOgHentMineRoller(personIdent)
+			ansattService.oppdaterOgHentMineRoller(personIdent)
 		}
 
 		ansattFinnes(personIdent) shouldBe false

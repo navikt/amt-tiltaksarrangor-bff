@@ -92,6 +92,17 @@ class DeltakerlisteRepository(
 		).firstOrNull()
 	}
 
+	fun getDeltakerlister(deltakerlisteIder: List<UUID>): List<DeltakerlisteDbo> {
+		if (deltakerlisteIder.isEmpty()) {
+			return emptyList()
+		}
+		return template.query(
+			"SELECT * FROM deltakerliste WHERE id in(:ids)",
+			sqlParameters("ids" to deltakerlisteIder),
+			deltakerlisteRowMapper
+		)
+	}
+
 	fun getDeltakerlisterSomSkalSlettes(slettesDato: LocalDate): List<UUID> {
 		return template.query(
 			"SELECT id from deltakerliste WHERE status='AVSLUTTET' AND slutt_dato is not NULL AND slutt_dato < :slettesDato",

@@ -22,10 +22,10 @@ import java.util.UUID
 @Component
 class TiltaksarrangorService(
 	private val amtTiltakClient: AmtTiltakClient,
-	private val tilgangService: TilgangService
+	private val ansattService: AnsattService
 ) {
 	fun getMineRoller(personIdent: String): List<String> {
-		return tilgangService.oppdaterOgHentMineRoller(personIdent)
+		return ansattService.oppdaterOgHentMineRoller(personIdent)
 	}
 
 	fun getDeltaker(deltakerId: UUID): Deltaker {

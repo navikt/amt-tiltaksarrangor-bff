@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
 import no.nav.tiltaksarrangor.koordinator.model.TilgjengeligVeileder
 import no.nav.tiltaksarrangor.koordinator.service.KoordinatorService
+import no.nav.tiltaksarrangor.service.TokenService
 import no.nav.tiltaksarrangor.utils.Issuer
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,12 +22,14 @@ import java.util.UUID
 @RestController
 @RequestMapping("/tiltaksarrangor/koordinator")
 class KoordinatorController(
+	private val tokenService: TokenService,
 	private val koordinatorService: KoordinatorService
 ) {
 	@GetMapping("/mine-deltakerlister")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getMineDeltakerlister(): MineDeltakerlister {
-		return koordinatorService.getMineDeltakerlister()
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		return koordinatorService.getMineDeltakerlister(personIdent)
 	}
 
 	@GetMapping("/deltakerliste/{deltakerlisteId}")

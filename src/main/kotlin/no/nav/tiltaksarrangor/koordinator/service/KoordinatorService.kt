@@ -2,12 +2,14 @@ package no.nav.tiltaksarrangor.koordinator.service
 
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakeroversiktDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.KoordinatorInfoDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toEndringsmelding
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toStatus
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toVeileder
+import no.nav.tiltaksarrangor.erPilot
+import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
+import no.nav.tiltaksarrangor.ingest.model.Veiledertype
+import no.nav.tiltaksarrangor.isDev
 import no.nav.tiltaksarrangor.koordinator.model.AdminDeltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
@@ -17,15 +19,41 @@ import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
 import no.nav.tiltaksarrangor.koordinator.model.TilgjengeligVeileder
 import no.nav.tiltaksarrangor.koordinator.model.VeilederFor
 import no.nav.tiltaksarrangor.model.StatusType
+import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.service.AnsattService
 import org.springframework.stereotype.Component
 import java.util.UUID
 
 @Component
 class KoordinatorService(
-	private val amtTiltakClient: AmtTiltakClient
+	private val amtTiltakClient: AmtTiltakClient,
+	private val ansattService: AnsattService,
+	private val deltakerlisteRepository: DeltakerlisteRepository
 ) {
-	fun getMineDeltakerlister(): MineDeltakerlister {
-		return amtTiltakClient.getMineDeltakerlister().toMineDeltakerlister()
+	fun getMineDeltakerlister(personIdent: String): MineDeltakerlister {
+		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
+		val unikeRoller = ansatt.roller.map { it.rolle.name }.distinct()
+		if (unikeRoller.isEmpty()) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator")
+		}
+		val veilederFor = unikeRoller.find { it == AnsattRolle.VEILEDER.name }
+			?.let {
+				VeilederFor(
+					veilederFor = ansatt.veilederDeltakere.filter { it.veilederType == Veiledertype.VEILEDER }.size,
+					medveilederFor = ansatt.veilederDeltakere.filter { it.veilederType == Veiledertype.MEDVEILEDER }.size
+				)
+			}
+		val koordinatorFor = unikeRoller.find { it == AnsattRolle.KOORDINATOR.name }
+			?.let {
+				val deltakerlister = deltakerlisteRepository.getDeltakerlister(ansatt.deltakerlister.map { it.deltakerlisteId }).toDeltakerliste()
+				KoordinatorFor(deltakerlister = deltakerlister.filter { !it.erKurs || isDev() || erPilot(it.id) })
+			}
+		return MineDeltakerlister(
+			veilederFor = veilederFor,
+			koordinatorFor = koordinatorFor
+		)
 	}
 
 	fun getTilgjengeligeVeiledere(deltakerlisteId: UUID): List<TilgjengeligVeileder> {
@@ -85,31 +113,17 @@ class KoordinatorService(
 	}
 }
 
-fun DeltakeroversiktDto.toMineDeltakerlister(): MineDeltakerlister {
-	return MineDeltakerlister(
-		veilederFor = veilederInfo?.let {
-			VeilederFor(
-				veilederFor = it.veilederFor,
-				medveilederFor = it.medveilederFor
-			)
-		},
-		koordinatorFor = koordinatorInfo?.let {
-			KoordinatorFor(
-				deltakerlister = it.deltakerlister.map { deltakerlisteDto -> deltakerlisteDto.toDeltakerliste() }
-			)
-		}
-	)
-}
-
-fun KoordinatorInfoDto.DeltakerlisteDto.toDeltakerliste(): KoordinatorFor.Deltakerliste {
-	return KoordinatorFor.Deltakerliste(
-		id = id,
-		type = type,
-		navn = navn,
-		startdato = startdato,
-		sluttdato = sluttdato,
-		erKurs = erKurs
-	)
+fun List<DeltakerlisteDbo>.toDeltakerliste(): List<KoordinatorFor.Deltakerliste> {
+	return this.map {
+		KoordinatorFor.Deltakerliste(
+			id = it.id,
+			navn = it.navn,
+			type = it.tiltakType,
+			startdato = it.startDato,
+			sluttdato = it.sluttDato,
+			erKurs = it.erKurs
+		)
+	}
 }
 
 fun TilgjengeligVeilederDto.toTilgjengeligVeileder(): TilgjengeligVeileder {
