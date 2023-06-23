@@ -1,7 +1,10 @@
 package no.nav.tiltaksarrangor.repositories
 
-import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.utils.getNullableLocalDate
 import no.nav.tiltaksarrangor.utils.getNullableLocalDateTime
 import no.nav.tiltaksarrangor.utils.getNullableUUID
@@ -27,7 +30,7 @@ class DeltakerRepository(
 			telefonnummer = rs.getString("telefonnummer"),
 			epost = rs.getString("epost"),
 			erSkjermet = rs.getBoolean("er_skjermet"),
-			status = DeltakerStatus.valueOf(rs.getString("status")),
+			status = StatusType.valueOf(rs.getString("status")),
 			statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 			statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
 			dagerPerUke = rs.getInt("dager_per_uke"),
@@ -42,6 +45,48 @@ class DeltakerRepository(
 			navVeilederEpost = rs.getString("navveileder_epost"),
 			skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 			skjultDato = rs.getNullableLocalDateTime("skjult_dato")
+		)
+	}
+
+	private val deltakerMedDeltakerlisteRowMapper = RowMapper { rs, _ ->
+		DeltakerMedDeltakerlisteDbo(
+			deltaker = DeltakerDbo(
+				id = UUID.fromString(rs.getString("d.id")),
+				deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
+				personident = rs.getString("personident"),
+				fornavn = rs.getString("fornavn"),
+				mellomnavn = rs.getString("mellomnavn"),
+				etternavn = rs.getString("etternavn"),
+				telefonnummer = rs.getString("telefonnummer"),
+				epost = rs.getString("epost"),
+				erSkjermet = rs.getBoolean("er_skjermet"),
+				status = StatusType.valueOf(rs.getString("d.status")),
+				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
+				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
+				dagerPerUke = rs.getInt("dager_per_uke"),
+				prosentStilling = rs.getDouble("prosent_stilling"),
+				startdato = rs.getNullableLocalDate("d.start_dato"),
+				sluttdato = rs.getNullableLocalDate("d.slutt_dato"),
+				innsoktDato = rs.getDate("innsokt_dato").toLocalDate(),
+				bestillingstekst = rs.getString("bestillingstekst"),
+				navKontor = rs.getString("navkontor"),
+				navVeilederId = rs.getNullableUUID("navveileder_id"),
+				navVeilederNavn = rs.getString("navveileder_navn"),
+				navVeilederEpost = rs.getString("navveileder_epost"),
+				skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
+				skjultDato = rs.getNullableLocalDateTime("skjult_dato")
+			),
+			deltakerliste = DeltakerlisteDbo(
+				id = UUID.fromString(rs.getString("dl.id")),
+				navn = rs.getString("navn"),
+				status = DeltakerlisteStatus.valueOf(rs.getString("dl.status")),
+				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
+				tiltakNavn = rs.getString("tiltak_navn"),
+				tiltakType = rs.getString("tiltak_type"),
+				startDato = rs.getNullableLocalDate("dl.start_dato"),
+				sluttDato = rs.getNullableLocalDate("dl.slutt_dato"),
+				erKurs = rs.getBoolean("er_kurs")
+			)
 		)
 	}
 
@@ -153,6 +198,19 @@ class DeltakerRepository(
 			sqlParameters("id" to deltakerId),
 			deltakerRowMapper
 		).firstOrNull()
+	}
+
+	fun getDeltakereMedDeltakerliste(deltakerIder: List<UUID>): List<DeltakerMedDeltakerlisteDbo> {
+		return template.query(
+			"""
+				SELECT *
+				FROM deltaker d
+						 INNER JOIN deltakerliste dl ON dl.id = d.deltakerliste_id
+				WHERE d.id IN (:ids);
+			""".trimIndent(),
+			sqlParameters("ids" to deltakerIder),
+			deltakerMedDeltakerlisteRowMapper
+		)
 	}
 
 	fun deleteDeltakereForDeltakerliste(deltakerlisteId: UUID): Int {

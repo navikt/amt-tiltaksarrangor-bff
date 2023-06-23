@@ -21,7 +21,7 @@ data class DeltakerDto(
 	val deltarPaKurs: Boolean
 )
 
-fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
+fun DeltakerDto.toDeltakerDbo(erKurs: Boolean): DeltakerDbo {
 	return DeltakerDbo(
 		id = id,
 		deltakerlisteId = deltakerlisteId,
@@ -32,7 +32,7 @@ fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
 		telefonnummer = personalia.kontaktinformasjon.telefonnummer,
 		epost = personalia.kontaktinformasjon.epost,
 		erSkjermet = personalia.skjermet,
-		status = status.type,
+		status = status.type.toStatusType(erKurs),
 		statusOpprettetDato = status.opprettetDato,
 		statusGyldigFraDato = status.gyldigFra,
 		dagerPerUke = dagerPerUke,

@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.repositories
 
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.Veiledertype
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattPersonaliaDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo

@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.ingest.model
 
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import java.time.LocalDate
 
 sealed class Innhold {
@@ -36,4 +37,17 @@ sealed class Innhold {
 	) : Innhold()
 
 	class DeltakerErAktuellInnhold : Innhold()
+}
+
+fun Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold? {
+	return when (this) {
+		is Innhold.LeggTilOppstartsdatoInnhold -> Endringsmelding.Innhold.LeggTilOppstartsdatoInnhold(this.oppstartsdato)
+		is Innhold.EndreOppstartsdatoInnhold -> Endringsmelding.Innhold.EndreOppstartsdatoInnhold(this.oppstartsdato)
+		is Innhold.ForlengDeltakelseInnhold -> Endringsmelding.Innhold.ForlengDeltakelseInnhold(this.sluttdato)
+		is Innhold.EndreDeltakelseProsentInnhold -> Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(this.nyDeltakelseProsent, this.dagerPerUke, this.gyldigFraDato)
+		is Innhold.AvsluttDeltakelseInnhold -> Endringsmelding.Innhold.AvsluttDeltakelseInnhold(this.sluttdato, this.aarsak)
+		is Innhold.DeltakerIkkeAktuellInnhold -> Endringsmelding.Innhold.DeltakerIkkeAktuellInnhold(this.aarsak)
+		is Innhold.DeltakerErAktuellInnhold -> null
+		is Innhold.EndreSluttdatoInnhold -> Endringsmelding.Innhold.EndreSluttdatoInnhold(this.sluttdato)
+	}
 }

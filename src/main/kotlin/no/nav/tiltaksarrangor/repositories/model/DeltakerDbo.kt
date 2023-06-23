@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.repositories.model
 
-import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
+import no.nav.tiltaksarrangor.model.StatusType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -15,7 +15,7 @@ data class DeltakerDbo(
 	val telefonnummer: String?,
 	val epost: String?,
 	val erSkjermet: Boolean,
-	val status: DeltakerStatus,
+	val status: StatusType,
 	val statusOpprettetDato: LocalDateTime,
 	val statusGyldigFraDato: LocalDateTime,
 	val dagerPerUke: Int?,

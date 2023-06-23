@@ -4,7 +4,6 @@ import no.nav.tiltaksarrangor.client.amttiltak.dto.ArrangorDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDetaljerDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerStatusDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerlisteDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.GjennomforingDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.NavEnhetDto
@@ -13,7 +12,6 @@ import no.nav.tiltaksarrangor.client.amttiltak.dto.StatusType
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TiltakDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.VeilederDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.VeiledersDeltakerDto
 import no.nav.tiltaksarrangor.koordinator.model.Koordinator
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.utils.JsonUtils
@@ -77,15 +75,6 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			MockResponse()
 				.setResponseCode(200)
 				.setBody(JsonUtils.objectMapper.writeValueAsString(getAktiveEndringsmeldinger()))
-		)
-	}
-
-	fun addMineDeltakereResponse(deltakerId: UUID) {
-		addResponseHandler(
-			path = "/api/tiltaksarrangor/veileder/deltakerliste",
-			MockResponse()
-				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(getVeiledersDeltakerliste(deltakerId)))
 		)
 	}
 
@@ -271,32 +260,6 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 					sluttdato = LocalDate.of(2023, 5, 3)
 				),
 				type = "ENDRE_SLUTTDATO"
-			)
-		)
-	}
-
-	private fun getVeiledersDeltakerliste(deltakerId: UUID): List<VeiledersDeltakerDto> {
-		return listOf(
-			VeiledersDeltakerDto(
-				id = deltakerId,
-				fornavn = "Fornavn",
-				mellomnavn = null,
-				etternavn = "Etternavn",
-				fodselsnummer = "10987654321",
-				startDato = LocalDate.of(2023, 2, 15),
-				sluttDato = null,
-				status = DeltakerStatusDto(
-					type = StatusType.DELTAR,
-					endretDato = LocalDate.of(2023, 2, 1).atStartOfDay()
-				),
-				deltakerliste = DeltakerlisteDto(
-					id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
-					navn = "Gjennomføring 1",
-					type = "ARBFORB",
-					erKurs = false
-				),
-				erMedveilederFor = false,
-				aktiveEndringsmeldinger = emptyList()
 			)
 		)
 	}

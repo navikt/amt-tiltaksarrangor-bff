@@ -6,8 +6,6 @@ import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toEndringsmelding
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toStatus
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toVeileder
-import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.Veiledertype
 import no.nav.tiltaksarrangor.koordinator.model.AdminDeltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
@@ -17,6 +15,7 @@ import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
 import no.nav.tiltaksarrangor.koordinator.model.TilgjengeligVeileder
 import no.nav.tiltaksarrangor.koordinator.model.VeilederFor
 import no.nav.tiltaksarrangor.model.StatusType
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -36,15 +35,18 @@ class KoordinatorService(
 ) {
 	fun getMineDeltakerlister(personIdent: String): MineDeltakerlister {
 		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
-		val unikeRoller = ansatt.roller.map { it.rolle }.distinct()
-		if (unikeRoller.isEmpty()) {
+		if (!ansattService.harRoller(ansatt.roller)) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator")
 		}
-		val veilederFor = unikeRoller.find { it == AnsattRolle.VEILEDER }?.let {
+		val veilederFor = if (ansattService.erVeileder(ansatt.roller)) {
 			getVeilederFor(ansatt.veilederDeltakere)
+		} else {
+			null
 		}
-		val koordinatorFor = unikeRoller.find { it == AnsattRolle.KOORDINATOR }?.let {
+		val koordinatorFor = if(ansattService.erKoordinator(ansatt.roller)) {
 			getKoordinatorFor(ansatt.deltakerlister)
+		} else {
+			null
 		}
 		return MineDeltakerlister(
 			veilederFor = veilederFor,
