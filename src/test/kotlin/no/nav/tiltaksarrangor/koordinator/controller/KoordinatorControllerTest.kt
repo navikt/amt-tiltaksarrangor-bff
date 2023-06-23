@@ -2,22 +2,39 @@ package no.nav.tiltaksarrangor.koordinator.controller
 
 import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.IntegrationTest
+import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.ingest.model.Veiledertype
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
+import no.nav.tiltaksarrangor.repositories.AnsattRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
+import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.util.UUID
 
 class KoordinatorControllerTest : IntegrationTest() {
 	private val mediaTypeJson = "application/json".toMediaType()
+	private val template = NamedParameterJdbcTemplate(postgresDataSource)
+	private val ansattRepository = AnsattRepository(template)
+	private val deltakerRepository = DeltakerRepository(template)
+	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 
 	@AfterEach
 	internal fun tearDown() {
 		mockAmtTiltakServer.resetHttpServer()
+		cleanDatabase()
 	}
 
 	@Test
@@ -32,16 +49,47 @@ class KoordinatorControllerTest : IntegrationTest() {
 
 	@Test
 	fun `getMineDeltakerlister - autentisert - returnerer 200`() {
-		mockAmtTiltakServer.addMineDeltakerlisterResponse()
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Tiltaksnavnet",
+			tiltakType = "ARBFORB",
+			startDato = null,
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR), AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = listOf(
+					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER),
+					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER),
+					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER),
+					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER),
+					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER)
+				)
+			)
+		)
 
 		val response = sendRequest(
 			method = "GET",
 			path = "/tiltaksarrangor/koordinator/mine-deltakerlister",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		val expectedJson = """
-			{"veilederFor":{"veilederFor":4,"medveilederFor":7},"koordinatorFor":{"deltakerlister":[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"ARBFORB","navn":"Gjennomføring 1","startdato":null,"sluttdato":null,"erKurs":false}]}}
+			{"veilederFor":{"veilederFor":2,"medveilederFor":3},"koordinatorFor":{"deltakerlister":[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"ARBFORB","navn":"Gjennomføring 1","startdato":null,"sluttdato":null,"erKurs":false}]}}
 		""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson

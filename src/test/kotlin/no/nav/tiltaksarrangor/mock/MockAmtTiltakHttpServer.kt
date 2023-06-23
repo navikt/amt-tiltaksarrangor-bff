@@ -5,17 +5,14 @@ import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDetaljerDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerStatusDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerlisteDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakeroversiktDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.GjennomforingDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.KoordinatorInfoDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.NavEnhetDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.NavVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.StatusType
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TiltakDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.VeilederDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.VeilederInfoDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.VeiledersDeltakerDto
 import no.nav.tiltaksarrangor.koordinator.model.Koordinator
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
@@ -25,14 +22,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") {
-	fun addMineRollerResponse() {
-		addResponseHandler(
-			path = "/api/tiltaksarrangor/ansatt/meg/roller",
-			MockResponse()
-				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(listOf("KOORDINATOR", "VEILEDER", "KOORDINATOR", "VEILEDER", "VEILEDER")))
-		)
-	}
 
 	fun addDeltakerResponse(deltakerId: UUID) {
 		addResponseHandler(
@@ -129,15 +118,6 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			path = "/api/tiltaksarrangor/endringsmelding/$endringsmeldingId/tilbakekall",
 			MockResponse()
 				.setResponseCode(200)
-		)
-	}
-
-	fun addMineDeltakerlisterResponse() {
-		addResponseHandler(
-			path = "/api/tiltaksarrangor/deltakeroversikt",
-			MockResponse()
-				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(getMineDeltakerlister()))
 		)
 	}
 
@@ -317,27 +297,6 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 				),
 				erMedveilederFor = false,
 				aktiveEndringsmeldinger = emptyList()
-			)
-		)
-	}
-
-	private fun getMineDeltakerlister(): DeltakeroversiktDto {
-		return DeltakeroversiktDto(
-			veilederInfo = VeilederInfoDto(
-				veilederFor = 4,
-				medveilederFor = 7
-			),
-			koordinatorInfo = KoordinatorInfoDto(
-				deltakerlister = listOf(
-					KoordinatorInfoDto.DeltakerlisteDto(
-						id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
-						type = "ARBFORB",
-						navn = "Gjennomføring 1",
-						startdato = null,
-						sluttdato = null,
-						erKurs = false
-					)
-				)
 			)
 		)
 	}

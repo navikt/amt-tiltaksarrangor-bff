@@ -3,11 +3,12 @@ package no.nav.tiltaksarrangor.service
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
+import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class TilgangService(
+class AnsattService(
 	private val amtArrangorClient: AmtArrangorClient,
 	private val ansattRepository: AnsattRepository
 ) {
@@ -24,5 +25,9 @@ class TilgangService(
 		ansattRepository.updateSistInnlogget(ansatt.id)
 
 		return ansatt.arrangorer.flatMap { it.roller }.map { it.name }.distinct()
+	}
+
+	fun getAnsatt(personIdent: String): AnsattDbo? {
+		return ansattRepository.getAnsatt(personIdent)
 	}
 }

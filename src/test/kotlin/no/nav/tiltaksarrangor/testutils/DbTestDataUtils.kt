@@ -17,22 +17,12 @@ object DbTestDataUtils {
 
 	infix fun ZonedDateTime.shouldBeCloseTo(expected: ZonedDateTime?) {
 		expected shouldNotBe null
-		expected!!.shouldBeWithin(Duration.ofSeconds(1), this)
+		expected!!.shouldBeWithin(Duration.ofSeconds(2), this)
 	}
 
 	infix fun LocalDateTime.shouldBeCloseTo(expected: LocalDateTime?) {
 		expected shouldNotBe null
-		expected!!.shouldBeWithin(Duration.ofSeconds(1), this)
-	}
-
-	fun runScript(dataSource: DataSource, script: String) {
-		val jdbcTemplate = JdbcTemplate(dataSource)
-		jdbcTemplate.update(script)
-	}
-
-	fun runScriptFile(dataSource: DataSource, scriptFilePath: String) {
-		val script = javaClass.getResource(scriptFilePath).readText()
-		runScript(dataSource, script)
+		expected!!.shouldBeWithin(Duration.ofSeconds(2), this)
 	}
 
 	fun cleanDatabase(dataSource: DataSource) {

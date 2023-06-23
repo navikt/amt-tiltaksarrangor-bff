@@ -183,6 +183,28 @@ class AnsattRepository(
 		}
 	}
 
+	fun getAnsatt(personIdent: String): AnsattDbo? {
+		val ansattPersonaliaDbo = getAnsattPersonaliaDbo(personIdent) ?: return null
+		val ansattRolleListe = getAnsattRolleListe(ansattPersonaliaDbo.id)
+		val unikeRoller = ansattRolleListe.map { it.rolle }.distinct()
+
+		val koordinatorDeltakerlisteDboListe = unikeRoller.find { it == AnsattRolle.KOORDINATOR }
+			?.let { getKoordinatorDeltakerlisteDboListe(ansattPersonaliaDbo.id) } ?: emptyList()
+		val veilederDeltakerDboListe = unikeRoller.find { it == AnsattRolle.VEILEDER }
+			?.let { getVeilederDeltakerDboListe(ansattPersonaliaDbo.id) } ?: emptyList()
+
+		return AnsattDbo(
+			id = ansattPersonaliaDbo.id,
+			personIdent = ansattPersonaliaDbo.personIdent,
+			fornavn = ansattPersonaliaDbo.fornavn,
+			mellomnavn = ansattPersonaliaDbo.mellomnavn,
+			etternavn = ansattPersonaliaDbo.etternavn,
+			roller = ansattRolleListe,
+			deltakerlister = koordinatorDeltakerlisteDboListe,
+			veilederDeltakere = veilederDeltakerDboListe
+		)
+	}
+
 	fun getAnsattRolleListe(ansattId: UUID): List<AnsattRolleDbo> {
 		return template.query(
 			"SELECT * FROM ansatt_rolle WHERE ansatt_id = :ansatt_id",
@@ -205,6 +227,14 @@ class AnsattRepository(
 			sqlParameters("ansatt_id" to ansattId),
 			veilederDeltakerRowMapper
 		)
+	}
+
+	private fun getAnsattPersonaliaDbo(personIdent: String): AnsattPersonaliaDbo? {
+		return template.query(
+			"SELECT * FROM ansatt WHERE personident = :personIdent",
+			sqlParameters("personIdent" to personIdent),
+			ansattPersonaliaRowMapper
+		).firstOrNull()
 	}
 
 	private fun getAnsattPersonaliaDbo(ansattId: UUID): AnsattPersonaliaDbo? {
