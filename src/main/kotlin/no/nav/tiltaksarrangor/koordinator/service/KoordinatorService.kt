@@ -126,7 +126,7 @@ fun List<DeltakerlisteDbo>.toDeltakerliste(): List<KoordinatorFor.Deltakerliste>
 		KoordinatorFor.Deltakerliste(
 			id = it.id,
 			navn = it.navn,
-			type = it.tiltakType,
+			type = it.tiltakNavn,
 			startdato = it.startDato,
 			sluttdato = it.sluttDato,
 			erKurs = it.erKurs
