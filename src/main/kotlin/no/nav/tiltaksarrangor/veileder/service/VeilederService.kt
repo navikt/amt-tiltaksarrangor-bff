@@ -55,7 +55,7 @@ class VeilederService(
 				id = it.deltaker.id,
 				deltakerliste = Deltaker.Deltakerliste(
 					id = it.deltakerliste.id,
-					type = it.deltakerliste.tiltakType,
+					type = it.deltakerliste.tiltakNavn,
 					navn = it.deltakerliste.navn
 				),
 				fornavn = it.deltaker.fornavn,
