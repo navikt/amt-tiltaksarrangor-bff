@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -14,6 +15,7 @@ import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
@@ -24,6 +26,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 class KoordinatorServiceTest {
@@ -49,6 +53,10 @@ class KoordinatorServiceTest {
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltakerId2 = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId2))
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
 				id = UUID.randomUUID(),
@@ -59,8 +67,8 @@ class KoordinatorServiceTest {
 				roller = emptyList(),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
 				veilederDeltakere = listOf(
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER),
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER)
+					VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER),
+					VeilederDeltakerDbo(deltakerId2, Veiledertype.MEDVEILEDER)
 				)
 			)
 		)
@@ -76,6 +84,16 @@ class KoordinatorServiceTest {
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId1 = UUID.randomUUID()
+		val deltakerId2 = UUID.randomUUID()
+		val deltakerId3 = UUID.randomUUID()
+		val deltakerId4 = UUID.randomUUID()
+		val deltakerId5 = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId1))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId2))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId3))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId4))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId5))
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
 				id = UUID.randomUUID(),
@@ -86,11 +104,11 @@ class KoordinatorServiceTest {
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
 				veilederDeltakere = listOf(
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER),
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER),
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER),
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER),
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER)
+					VeilederDeltakerDbo(deltakerId1, Veiledertype.VEILEDER),
+					VeilederDeltakerDbo(deltakerId2, Veiledertype.MEDVEILEDER),
+					VeilederDeltakerDbo(deltakerId3, Veiledertype.VEILEDER),
+					VeilederDeltakerDbo(deltakerId4, Veiledertype.MEDVEILEDER),
+					VeilederDeltakerDbo(deltakerId5, Veiledertype.VEILEDER)
 				)
 			)
 		)
@@ -108,6 +126,10 @@ class KoordinatorServiceTest {
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltakerId2 = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId2))
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
 				id = UUID.randomUUID(),
@@ -118,8 +140,8 @@ class KoordinatorServiceTest {
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
 				veilederDeltakere = listOf(
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER),
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER)
+					VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER),
+					VeilederDeltakerDbo(deltakerId2, Veiledertype.MEDVEILEDER)
 				)
 			)
 		)
@@ -139,6 +161,16 @@ class KoordinatorServiceTest {
 		val deltakerliste2 = getDeltakerliste(arrangorId2)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste2)
+		val deltakerId1 = UUID.randomUUID()
+		val deltakerId2 = UUID.randomUUID()
+		val deltakerId3 = UUID.randomUUID()
+		val deltakerId4 = UUID.randomUUID()
+		val deltakerId5 = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId1))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId2))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId3))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId4))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId5))
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
 				id = UUID.randomUUID(),
@@ -153,11 +185,11 @@ class KoordinatorServiceTest {
 				),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id), KoordinatorDeltakerlisteDbo(deltakerliste2.id)),
 				veilederDeltakere = listOf(
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER),
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER),
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER),
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER),
-					VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER)
+					VeilederDeltakerDbo(deltakerId1, Veiledertype.VEILEDER),
+					VeilederDeltakerDbo(deltakerId2, Veiledertype.MEDVEILEDER),
+					VeilederDeltakerDbo(deltakerId3, Veiledertype.VEILEDER),
+					VeilederDeltakerDbo(deltakerId4, Veiledertype.MEDVEILEDER),
+					VeilederDeltakerDbo(deltakerId5, Veiledertype.VEILEDER)
 				)
 			)
 		)
@@ -180,6 +212,35 @@ class KoordinatorServiceTest {
 			startDato = null,
 			sluttDato = null,
 			erKurs = false
+		)
+	}
+
+	private fun getDeltaker(deltakerId: UUID): DeltakerDbo {
+		return DeltakerDbo(
+			id = deltakerId,
+			deltakerlisteId = UUID.randomUUID(),
+			personident = UUID.randomUUID().toString(),
+			fornavn = "Fornavn",
+			mellomnavn = null,
+			etternavn = "Etternavn",
+			telefonnummer = null,
+			epost = null,
+			erSkjermet = false,
+			status = StatusType.DELTAR,
+			statusOpprettetDato = LocalDateTime.now(),
+			statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+			dagerPerUke = null,
+			prosentStilling = null,
+			startdato = LocalDate.of(2023, 2, 15),
+			sluttdato = null,
+			innsoktDato = LocalDate.now(),
+			bestillingstekst = "tekst",
+			navKontor = null,
+			navVeilederId = null,
+			navVeilederEpost = null,
+			navVeilederNavn = null,
+			skjultAvAnsattId = null,
+			skjultDato = null
 		)
 	}
 }

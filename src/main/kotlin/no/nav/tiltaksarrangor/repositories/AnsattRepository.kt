@@ -223,7 +223,12 @@ class AnsattRepository(
 
 	fun getVeilederDeltakerDboListe(ansattId: UUID): List<VeilederDeltakerDbo> {
 		return template.query(
-			"SELECT * FROM veileder_deltaker WHERE ansatt_id = :ansatt_id",
+			"""
+				SELECT *
+				FROM veileder_deltaker
+				         INNER JOIN deltaker d ON d.id = veileder_deltaker.deltaker_id
+				WHERE skjult_dato is NULL AND ansatt_id = :ansatt_id;
+			""".trimIndent(),
 			sqlParameters("ansatt_id" to ansattId),
 			veilederDeltakerRowMapper
 		)

@@ -13,9 +13,12 @@ import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.VeilederDto
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
+import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
@@ -24,6 +27,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -32,6 +36,7 @@ class AnsattServiceTest {
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val ansattRepository = AnsattRepository(template)
+	private val deltakerRepository = DeltakerRepository(template)
 	private val ansattService = AnsattService(amtArrangorClient, ansattRepository)
 
 	@AfterEach
@@ -42,9 +47,13 @@ class AnsattServiceTest {
 
 	@Test
 	fun `oppdaterOgHentMineRoller - ansatt finnes ikke - lagres i database og returnerer riktige roller`() {
+		val deltakerId = UUID.randomUUID()
+		val deltakerId2 = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId2))
 		val ansattId = UUID.randomUUID()
 		val personIdent = "12345678910"
-		coEvery { amtArrangorClient.getAnsatt(any()) } returns getAnsatt(ansattId, personIdent)
+		coEvery { amtArrangorClient.getAnsatt(any()) } returns getAnsatt(ansattId, personIdent, deltakerId, deltakerId2)
 
 		val roller = ansattService.oppdaterOgHentMineRoller(personIdent)
 
@@ -65,9 +74,13 @@ class AnsattServiceTest {
 
 	@Test
 	fun `oppdaterOgHentMineRoller - ansatt finnes allerede - oppdateres i database og returnerer riktige roller`() {
+		val deltakerId = UUID.randomUUID()
+		val deltakerId2 = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId2))
 		val ansattId = UUID.randomUUID()
 		val personIdent = "12345678910"
-		val ansatt = getAnsatt(ansattId, personIdent)
+		val ansatt = getAnsatt(ansattId, personIdent, deltakerId, deltakerId2)
 		ansattRepository.insertOrUpdateAnsatt(ansatt.toAnsattDbo())
 
 		getSistInnlogget(ansattId) shouldBe null
@@ -80,7 +93,7 @@ class AnsattServiceTest {
 				koordinator = listOf(UUID.randomUUID())
 			)
 		)
-		coEvery { amtArrangorClient.getAnsatt(any()) } returns getAnsatt(ansattId, personIdent).copy(arrangorer = oppdaterteArrangorer)
+		coEvery { amtArrangorClient.getAnsatt(any()) } returns getAnsatt(ansattId, personIdent, deltakerId, deltakerId2).copy(arrangorer = oppdaterteArrangorer)
 
 		val roller = ansattService.oppdaterOgHentMineRoller(personIdent)
 
@@ -136,7 +149,7 @@ class AnsattServiceTest {
 		)
 	}
 
-	private fun getAnsatt(ansattId: UUID, personIdent: String): AnsattDto {
+	private fun getAnsatt(ansattId: UUID, personIdent: String, deltakerIdForVeileder: UUID, deltakerIdForVeileder2: UUID): AnsattDto {
 		return AnsattDto(
 			id = ansattId,
 			personalia = AnsattPersonaliaDto(
@@ -151,7 +164,7 @@ class AnsattServiceTest {
 				TilknyttetArrangorDto(
 					arrangorId = UUID.randomUUID(),
 					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
-					veileder = listOf(VeilederDto(UUID.randomUUID(), Veiledertype.VEILEDER)),
+					veileder = listOf(VeilederDto(deltakerIdForVeileder, Veiledertype.VEILEDER)),
 					koordinator = listOf(UUID.randomUUID())
 				),
 				TilknyttetArrangorDto(
@@ -163,10 +176,39 @@ class AnsattServiceTest {
 				TilknyttetArrangorDto(
 					arrangorId = UUID.randomUUID(),
 					roller = listOf(AnsattRolle.VEILEDER),
-					veileder = listOf(VeilederDto(UUID.randomUUID(), Veiledertype.MEDVEILEDER)),
+					veileder = listOf(VeilederDto(deltakerIdForVeileder2, Veiledertype.MEDVEILEDER)),
 					koordinator = emptyList()
 				)
 			)
+		)
+	}
+
+	private fun getDeltaker(deltakerId: UUID): DeltakerDbo {
+		return DeltakerDbo(
+			id = deltakerId,
+			deltakerlisteId = UUID.randomUUID(),
+			personident = UUID.randomUUID().toString(),
+			fornavn = "Fornavn",
+			mellomnavn = null,
+			etternavn = "Etternavn",
+			telefonnummer = null,
+			epost = null,
+			erSkjermet = false,
+			status = StatusType.DELTAR,
+			statusOpprettetDato = LocalDateTime.now(),
+			statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+			dagerPerUke = null,
+			prosentStilling = null,
+			startdato = LocalDate.of(2023, 2, 15),
+			sluttdato = null,
+			innsoktDato = LocalDate.now(),
+			bestillingstekst = "tekst",
+			navKontor = null,
+			navVeilederId = null,
+			navVeilederEpost = null,
+			navVeilederNavn = null,
+			skjultAvAnsattId = null,
+			skjultDato = null
 		)
 	}
 }
