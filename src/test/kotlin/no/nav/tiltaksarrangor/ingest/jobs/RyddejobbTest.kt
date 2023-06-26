@@ -7,11 +7,11 @@ import io.mockk.mockk
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.ingest.jobs.leaderelection.LeaderElection
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
-import no.nav.tiltaksarrangor.ingest.model.Veiledertype
+import no.nav.tiltaksarrangor.model.StatusType
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
@@ -59,7 +59,7 @@ class RyddejobbTest : IntegrationTest() {
 		val deltakerId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(16)))
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, DeltakerStatus.DELTAR, LocalDateTime.now().minusDays(16)))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.DELTAR, LocalDateTime.now().minusDays(16)))
 		ansattRepository.insertOrUpdateAnsatt(getAnsatt(ansattId, deltakerlisteId, deltakerId))
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
@@ -87,7 +87,7 @@ class RyddejobbTest : IntegrationTest() {
 		val ansattId = UUID.randomUUID()
 		val endringsmeldingId = UUID.randomUUID()
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)))
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, DeltakerStatus.HAR_SLUTTET, LocalDateTime.now().minusDays(16)))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(16)))
 		ansattRepository.insertOrUpdateAnsatt(getAnsatt(ansattId, deltakerlisteId, deltakerId))
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(getEndringsmelding(endringsmeldingId, deltakerId))
 
@@ -105,7 +105,7 @@ class RyddejobbTest : IntegrationTest() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)))
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, DeltakerStatus.HAR_SLUTTET, LocalDateTime.now().minusDays(12)))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(12)))
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
@@ -117,7 +117,7 @@ class RyddejobbTest : IntegrationTest() {
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker er skjult - sletter deltaker`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, DeltakerStatus.HAR_SLUTTET, LocalDateTime.now().minusDays(12), erSkjult = true))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(12), erSkjult = true))
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
@@ -129,7 +129,7 @@ class RyddejobbTest : IntegrationTest() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)))
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, DeltakerStatus.DELTAR, LocalDateTime.now()))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.DELTAR, LocalDateTime.now()))
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
@@ -159,7 +159,7 @@ private fun getDeltakerliste(
 private fun getDeltaker(
 	deltakerId: UUID,
 	deltakerlisteId: UUID,
-	status: DeltakerStatus,
+	status: StatusType,
 	statusGyldigFraDato: LocalDateTime,
 	erSkjult: Boolean = false
 ): DeltakerDbo {

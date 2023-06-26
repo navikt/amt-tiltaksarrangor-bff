@@ -21,18 +21,20 @@ import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.TiltakDto
 import no.nav.tiltaksarrangor.ingest.model.VeilederDto
-import no.nav.tiltaksarrangor.ingest.model.Veiledertype
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerlisteDbo
 import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
+import no.nav.tiltaksarrangor.model.StatusType
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.utils.JsonUtils
@@ -124,6 +126,35 @@ class KafkaListenerTest : IntegrationTest() {
 
 	@Test
 	fun `listen - melding pa arrangor-ansatt-topic - lagres i database`() {
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(
+			DeltakerDbo(
+				id = deltakerId,
+				deltakerlisteId = UUID.randomUUID(),
+				personident = "1234",
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				telefonnummer = null,
+				epost = null,
+				erSkjermet = false,
+				status = StatusType.DELTAR,
+				statusOpprettetDato = LocalDateTime.now(),
+				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+				dagerPerUke = null,
+				prosentStilling = null,
+				startdato = LocalDate.of(2023, 2, 15),
+				sluttdato = null,
+				innsoktDato = LocalDate.now(),
+				bestillingstekst = "tekst",
+				navKontor = null,
+				navVeilederId = null,
+				navVeilederEpost = null,
+				navVeilederNavn = null,
+				skjultAvAnsattId = null,
+				skjultDato = null
+			)
+		)
 		val ansattId = UUID.randomUUID()
 		val ansattDto = AnsattDto(
 			id = ansattId,
@@ -139,7 +170,7 @@ class KafkaListenerTest : IntegrationTest() {
 				TilknyttetArrangorDto(
 					arrangorId = UUID.randomUUID(),
 					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
-					veileder = listOf(VeilederDto(UUID.randomUUID(), Veiledertype.VEILEDER)),
+					veileder = listOf(VeilederDto(deltakerId, Veiledertype.VEILEDER)),
 					koordinator = listOf(UUID.randomUUID())
 				)
 			)
@@ -163,6 +194,35 @@ class KafkaListenerTest : IntegrationTest() {
 
 	@Test
 	fun `listen - tombstonemelding pa arrangor-ansatt-topic - slettes i database`() {
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(
+			DeltakerDbo(
+				id = deltakerId,
+				deltakerlisteId = UUID.randomUUID(),
+				personident = "1234",
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				telefonnummer = null,
+				epost = null,
+				erSkjermet = false,
+				status = StatusType.DELTAR,
+				statusOpprettetDato = LocalDateTime.now(),
+				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+				dagerPerUke = null,
+				prosentStilling = null,
+				startdato = LocalDate.of(2023, 2, 15),
+				sluttdato = null,
+				innsoktDato = LocalDate.now(),
+				bestillingstekst = "tekst",
+				navKontor = null,
+				navVeilederId = null,
+				navVeilederEpost = null,
+				navVeilederNavn = null,
+				skjultAvAnsattId = null,
+				skjultDato = null
+			)
+		)
 		val ansattId = UUID.randomUUID()
 		val ansattDto = AnsattDto(
 			id = ansattId,
@@ -178,7 +238,7 @@ class KafkaListenerTest : IntegrationTest() {
 				TilknyttetArrangorDto(
 					arrangorId = UUID.randomUUID(),
 					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
-					veileder = listOf(VeilederDto(UUID.randomUUID(), Veiledertype.VEILEDER)),
+					veileder = listOf(VeilederDto(deltakerId, Veiledertype.VEILEDER)),
 					koordinator = listOf(UUID.randomUUID())
 				)
 			)

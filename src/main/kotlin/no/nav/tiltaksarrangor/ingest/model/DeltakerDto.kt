@@ -32,7 +32,7 @@ fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
 		telefonnummer = personalia.kontaktinformasjon.telefonnummer,
 		epost = personalia.kontaktinformasjon.epost,
 		erSkjermet = personalia.skjermet,
-		status = status.type,
+		status = status.type.toStatusType(deltarPaKurs),
 		statusOpprettetDato = status.opprettetDato,
 		statusGyldigFraDato = status.gyldigFra,
 		dagerPerUke = dagerPerUke,

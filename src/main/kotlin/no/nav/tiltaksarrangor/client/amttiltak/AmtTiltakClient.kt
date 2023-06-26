@@ -6,7 +6,6 @@ import no.nav.tiltaksarrangor.client.amttiltak.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.GjennomforingDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.VeilederDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.VeiledersDeltakerDto
 import no.nav.tiltaksarrangor.client.amttiltak.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.DeltakerIkkeAktuellRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreDeltakelsesprosentRequest
@@ -186,22 +185,6 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "opprett ENDRE_SLUTTDATO endringsmelding på deltaker med id $deltakerId sluttdato: ${endreSluttdatoRequest.sluttdato}")
 			}
-		}
-	}
-
-	fun getVeiledersDeltakere(): List<VeiledersDeltakerDto> {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/veileder/deltakerliste")
-			.get()
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulResponse(response.code, "mine deltakere")
-			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
-
-			return fromJsonString<List<VeiledersDeltakerDto>>(body)
 		}
 	}
 

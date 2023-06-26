@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.repositories
 
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.Veiledertype
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattPersonaliaDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
@@ -223,7 +223,12 @@ class AnsattRepository(
 
 	fun getVeilederDeltakerDboListe(ansattId: UUID): List<VeilederDeltakerDbo> {
 		return template.query(
-			"SELECT * FROM veileder_deltaker WHERE ansatt_id = :ansatt_id",
+			"""
+				SELECT *
+				FROM veileder_deltaker
+				         INNER JOIN deltaker d ON d.id = veileder_deltaker.deltaker_id
+				WHERE skjult_dato is NULL AND ansatt_id = :ansatt_id;
+			""".trimIndent(),
 			sqlParameters("ansatt_id" to ansattId),
 			veilederDeltakerRowMapper
 		)

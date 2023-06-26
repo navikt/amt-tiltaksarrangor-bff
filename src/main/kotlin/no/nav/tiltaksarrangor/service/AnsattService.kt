@@ -1,11 +1,14 @@
 package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
+import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
+import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 @Component
 class AnsattService(
@@ -29,5 +32,24 @@ class AnsattService(
 
 	fun getAnsatt(personIdent: String): AnsattDbo? {
 		return ansattRepository.getAnsatt(personIdent)
+	}
+
+	fun harRoller(roller: List<AnsattRolleDbo>): Boolean {
+		val unikeRoller = roller.map { it.rolle }.distinct()
+		return unikeRoller.isNotEmpty()
+	}
+
+	fun erKoordinator(roller: List<AnsattRolleDbo>): Boolean {
+		val unikeRoller = roller.map { it.rolle }.distinct()
+		return unikeRoller.find { it == AnsattRolle.KOORDINATOR } != null
+	}
+
+	fun erVeileder(roller: List<AnsattRolleDbo>): Boolean {
+		val unikeRoller = roller.map { it.rolle }.distinct()
+		return unikeRoller.find { it == AnsattRolle.VEILEDER } != null
+	}
+
+	fun harRolleHosArrangor(arrangorId: UUID, rolle: AnsattRolle, roller: List<AnsattRolleDbo>): Boolean {
+		return roller.find { it.arrangorId == arrangorId && it.rolle == rolle } != null
 	}
 }
