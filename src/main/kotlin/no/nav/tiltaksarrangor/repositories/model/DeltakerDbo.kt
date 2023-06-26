@@ -30,4 +30,8 @@ data class DeltakerDbo(
 	val navVeilederEpost: String?,
 	val skjultAvAnsattId: UUID?,
 	val skjultDato: LocalDateTime?
-)
+) {
+	fun erSkjult(): Boolean {
+		return skjultDato != null
+	}
+}

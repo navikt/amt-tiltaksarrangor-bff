@@ -7,7 +7,7 @@ import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
-import no.nav.tiltaksarrangor.ingest.model.Veiledertype
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository

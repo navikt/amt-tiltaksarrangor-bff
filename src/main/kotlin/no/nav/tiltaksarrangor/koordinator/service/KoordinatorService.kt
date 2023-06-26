@@ -43,7 +43,7 @@ class KoordinatorService(
 		} else {
 			null
 		}
-		val koordinatorFor = if(ansattService.erKoordinator(ansatt.roller)) {
+		val koordinatorFor = if (ansattService.erKoordinator(ansatt.roller)) {
 			getKoordinatorFor(ansatt.deltakerlister)
 		} else {
 			null

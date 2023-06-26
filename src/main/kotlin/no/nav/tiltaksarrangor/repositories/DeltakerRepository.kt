@@ -51,7 +51,7 @@ class DeltakerRepository(
 	private val deltakerMedDeltakerlisteRowMapper = RowMapper { rs, _ ->
 		DeltakerMedDeltakerlisteDbo(
 			deltaker = DeltakerDbo(
-				id = UUID.fromString(rs.getString("d.id")),
+				id = UUID.fromString(rs.getString("deltakerid")),
 				deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
 				personident = rs.getString("personident"),
 				fornavn = rs.getString("fornavn"),
@@ -60,13 +60,13 @@ class DeltakerRepository(
 				telefonnummer = rs.getString("telefonnummer"),
 				epost = rs.getString("epost"),
 				erSkjermet = rs.getBoolean("er_skjermet"),
-				status = StatusType.valueOf(rs.getString("d.status")),
+				status = StatusType.valueOf(rs.getString("deltakerstatus")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
 				dagerPerUke = rs.getInt("dager_per_uke"),
 				prosentStilling = rs.getDouble("prosent_stilling"),
-				startdato = rs.getNullableLocalDate("d.start_dato"),
-				sluttdato = rs.getNullableLocalDate("d.slutt_dato"),
+				startdato = rs.getNullableLocalDate("deltaker_start_dato"),
+				sluttdato = rs.getNullableLocalDate("deltaker_slutt_dato"),
 				innsoktDato = rs.getDate("innsokt_dato").toLocalDate(),
 				bestillingstekst = rs.getString("bestillingstekst"),
 				navKontor = rs.getString("navkontor"),
@@ -77,14 +77,14 @@ class DeltakerRepository(
 				skjultDato = rs.getNullableLocalDateTime("skjult_dato")
 			),
 			deltakerliste = DeltakerlisteDbo(
-				id = UUID.fromString(rs.getString("dl.id")),
+				id = UUID.fromString(rs.getString("deltakerliste_id")),
 				navn = rs.getString("navn"),
-				status = DeltakerlisteStatus.valueOf(rs.getString("dl.status")),
+				status = DeltakerlisteStatus.valueOf(rs.getString("deltakerliste_status")),
 				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 				tiltakNavn = rs.getString("tiltak_navn"),
 				tiltakType = rs.getString("tiltak_type"),
-				startDato = rs.getNullableLocalDate("dl.start_dato"),
-				sluttDato = rs.getNullableLocalDate("dl.slutt_dato"),
+				startDato = rs.getNullableLocalDate("deltakerliste_start_dato"),
+				sluttDato = rs.getNullableLocalDate("delakerliste_slutt_dato"),
 				erKurs = rs.getBoolean("er_kurs")
 			)
 		)
@@ -203,10 +203,41 @@ class DeltakerRepository(
 	fun getDeltakereMedDeltakerliste(deltakerIder: List<UUID>): List<DeltakerMedDeltakerlisteDbo> {
 		return template.query(
 			"""
-				SELECT *
-				FROM deltaker d
-						 INNER JOIN deltakerliste dl ON dl.id = d.deltakerliste_id
-				WHERE d.id IN (:ids);
+				SELECT deltaker.id as deltakerid,
+						deltakerliste_id,
+						personident,
+						fornavn,
+						mellomnavn,
+						etternavn,
+						telefonnummer,
+						epost,
+						er_skjermet,
+						deltaker.status as deltakerstatus,
+						status_gyldig_fra,
+						status_opprettet_dato,
+						dager_per_uke,
+						prosent_stilling,
+						deltaker.start_dato as deltaker_start_dato,
+						deltaker.slutt_dato as deltaker_slutt_dato,
+						innsokt_dato,
+						bestillingstekst,
+						navkontor,
+						navveileder_id,
+						navveileder_navn,
+						navveileder_epost,
+						skjult_av_ansatt_id,
+						skjult_dato,
+						navn,
+						deltakerliste.status as deltakerliste_status,
+						arrangor_id,
+						tiltak_navn,
+						tiltak_type,
+						deltakerliste.start_dato as deltakerliste_start_dato,
+						deltakerliste.slutt_dato as delakerliste_slutt_dato,
+						er_kurs
+				FROM deltaker
+						 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
+				WHERE deltaker.id IN (:ids);
 			""".trimIndent(),
 			sqlParameters("ids" to deltakerIder),
 			deltakerMedDeltakerlisteRowMapper

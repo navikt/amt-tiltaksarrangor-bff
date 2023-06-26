@@ -21,13 +21,13 @@ import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.TiltakDto
 import no.nav.tiltaksarrangor.ingest.model.VeilederDto
-import no.nav.tiltaksarrangor.ingest.model.Veiledertype
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerlisteDbo
 import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository

@@ -1,8 +1,5 @@
 package no.nav.tiltaksarrangor.veileder.service
 
-import no.nav.tiltaksarrangor.client.amttiltak.dto.VeiledersDeltakerDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.toEndringsmelding
-import no.nav.tiltaksarrangor.client.amttiltak.dto.toStatus
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
@@ -38,6 +35,7 @@ class VeilederService(
 		val deltakere = deltakerRepository.getDeltakereMedDeltakerliste(ansatt.veilederDeltakere.map { it.deltakerId })
 			.filter { ansattService.harRolleHosArrangor(it.deltakerliste.arrangorId, AnsattRolle.VEILEDER, ansatt.roller) }
 			.filter { !it.deltakerliste.erKurs || isDev() || erPilot(it.deltakerliste.id) }
+			.filter { !it.deltaker.erSkjult() }
 
 		if (deltakere.isEmpty()) {
 			return emptyList()
@@ -85,24 +83,4 @@ class VeilederService(
 		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
 		return endringsmeldingerForDeltaker.map { it.toEndringsmelding() }
 	}
-}
-
-private fun VeiledersDeltakerDto.toDeltaker(): Deltaker {
-	return Deltaker(
-		id = id,
-		deltakerliste = Deltaker.Deltakerliste(
-			id = deltakerliste.id,
-			type = deltakerliste.type,
-			navn = deltakerliste.navn
-		),
-		fornavn = fornavn,
-		mellomnavn = mellomnavn,
-		etternavn = etternavn,
-		fodselsnummer = fodselsnummer,
-		status = status.toStatus(deltakerliste.erKurs),
-		startDato = startDato,
-		sluttDato = sluttDato,
-		veiledertype = if (erMedveilederFor) Veiledertype.MEDVEILEDER else Veiledertype.VEILEDER,
-		aktiveEndringsmeldinger = aktiveEndringsmeldinger.map { it.toEndringsmelding() }
-	)
 }

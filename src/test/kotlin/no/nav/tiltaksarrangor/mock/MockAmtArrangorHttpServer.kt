@@ -6,7 +6,7 @@ import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.VeilederDto
-import no.nav.tiltaksarrangor.ingest.model.Veiledertype
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.mockwebserver.MockResponse
 import java.util.UUID

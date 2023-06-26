@@ -12,8 +12,8 @@ import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.VeilederDto
-import no.nav.tiltaksarrangor.ingest.model.Veiledertype
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
