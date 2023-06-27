@@ -41,7 +41,8 @@ class TiltaksarrangorController(
 	fun fjernDeltaker(
 		@PathVariable deltakerId: UUID
 	) {
-		tiltaksarrangorService.fjernDeltaker(deltakerId)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		tiltaksarrangorService.fjernDeltaker(personIdent, deltakerId)
 	}
 
 	@GetMapping("/deltaker/{deltakerId}/endringsmeldinger")

@@ -316,4 +316,18 @@ class DeltakerRepository(
 			UUID.fromString(rs.getString("id"))
 		}
 	}
+
+	fun skjulDeltaker(deltakerId: UUID, ansattId: UUID) {
+		val sql = """
+			UPDATE deltaker SET skjult_dato = CURRENT_TIMESTAMP, skjult_av_ansatt_id = :ansattId WHERE id = :deltakerId
+		""".trimIndent()
+
+		template.update(
+			sql,
+			sqlParameters(
+				"ansattId" to ansattId,
+				"deltakerId" to deltakerId
+			)
+		)
+	}
 }

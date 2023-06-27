@@ -19,8 +19,11 @@ import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
+import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
 import no.nav.tiltaksarrangor.utils.erPilot
 import no.nav.tiltaksarrangor.utils.isDev
 import org.slf4j.LoggerFactory
@@ -43,10 +46,7 @@ class TiltaksarrangorService(
 	}
 
 	fun getDeltaker(personIdent: String, deltakerId: UUID): Deltaker {
-		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
-		if (!ansattService.harRoller(ansatt.roller)) {
-			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator hos noen arrangører")
-		}
+		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 		auditLoggerService.sendAuditLog(
 			ansattPersonIdent = ansatt.personIdent,
@@ -54,7 +54,7 @@ class TiltaksarrangorService(
 			arrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId
 		)
 
-		if (!ansattService.harTilgangTilDeltaker(deltakerId = deltakerId, deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id, deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId, ansatt)) {
+		if (!ansattService.harTilgangTilDeltaker(deltakerId = deltakerId, deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id, deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId, ansattDbo = ansatt)) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
 
@@ -72,8 +72,22 @@ class TiltaksarrangorService(
 		return tilDeltaker(deltakerMedDeltakerliste, veiledere, endringsmeldinger)
 	}
 
-	fun fjernDeltaker(deltakerId: UUID) {
-		amtTiltakClient.skjulDeltakerForTiltaksarrangor(deltakerId)
+	fun fjernDeltaker(personIdent: String, deltakerId: UUID) {
+		val ansatt = getAnsattMedRoller(personIdent)
+		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+
+		if (!ansattService.harTilgangTilDeltaker(deltakerId = deltakerId, deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id, deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId, ansattDbo = ansatt)) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
+		}
+
+		if (!deltakerMedDeltakerliste.deltaker.erSkjult()) {
+			if (kanSkjules(deltakerMedDeltakerliste.deltaker)) {
+				amtTiltakClient.skjulDeltakerForTiltaksarrangor(deltakerId)
+				deltakerRepository.skjulDeltaker(deltakerId = deltakerId, ansattId = ansatt.id)
+			} else {
+				throw IllegalStateException("Kan ikke skjule deltaker med id $deltakerId. Ugyldig status: ${deltakerMedDeltakerliste.deltaker.status.name}")
+			}
+		}
 	}
 
 	fun getAktiveEndringsmeldinger(deltakerId: UUID): List<Endringsmelding> {
@@ -105,6 +119,18 @@ class TiltaksarrangorService(
 
 	fun slettEndringsmelding(endringsmeldingId: UUID) {
 		amtTiltakClient.tilbakekallEndringsmelding(endringsmeldingId)
+	}
+
+	private fun getAnsattMedRoller(personIdent: String): AnsattDbo {
+		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
+		if (!ansattService.harRoller(ansatt.roller)) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator hos noen arrangører")
+		}
+		return ansatt
+	}
+
+	private fun kanSkjules(deltakerDbo: DeltakerDbo): Boolean {
+		return deltakerDbo.status in STATUSER_SOM_KAN_SKJULES
 	}
 
 	private fun tilDeltaker(

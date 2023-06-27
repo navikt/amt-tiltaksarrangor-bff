@@ -1,7 +1,11 @@
 package no.nav.tiltaksarrangor.service
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.mockk.Runs
 import io.mockk.clearMocks
+import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
@@ -9,6 +13,7 @@ import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -56,7 +61,7 @@ class TiltaksarrangorServiceTest {
 	@AfterEach
 	internal fun tearDown() {
 		DbTestDataUtils.cleanDatabase(dataSource)
-		clearMocks(auditLoggerService)
+		clearMocks(auditLoggerService, amtTiltakClient)
 	}
 
 	@Test
@@ -212,5 +217,136 @@ class TiltaksarrangorServiceTest {
 		val veileder = deltaker.veiledere.first()
 		veileder.ansattId shouldBe veilederId
 		veileder.veiledertype shouldBe Veiledertype.VEILEDER
+	}
+
+	@Test
+	fun `fjernDeltaker - ansatt har ikke rolle hos arrangor - returnerer unauthorized`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		assertThrows<UnauthorizedException> {
+			tiltaksarrangorService.fjernDeltaker(personIdent, deltakerId)
+		}
+	}
+
+	@Test
+	fun `fjernDeltaker - deltaker er ikke aktuell og ansatt har tilgang - skjuler deltaker`() {
+		coEvery { amtTiltakClient.skjulDeltakerForTiltaksarrangor(any()) } just Runs
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.IKKE_AKTUELL)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		tiltaksarrangorService.fjernDeltaker(personIdent, deltakerId)
+
+		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
+		deltakerFraDb?.skjultAvAnsattId shouldBe ansattId
+		deltakerFraDb?.skjultDato shouldNotBe null
+	}
+
+	@Test
+	fun `fjernDeltaker - deltaker venter pa oppstart og ansatt har tilgang - returnerer illegal state exception`() {
+		coEvery { amtTiltakClient.skjulDeltakerForTiltaksarrangor(any()) } just Runs
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.VENTER_PA_OPPSTART)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		assertThrows<IllegalStateException> {
+			tiltaksarrangorService.fjernDeltaker(personIdent, deltakerId)
+		}
+
+		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
+		deltakerFraDb?.skjultAvAnsattId shouldBe null
+		deltakerFraDb?.skjultDato shouldBe null
+	}
+
+	@Test
+	fun `fjernDeltaker - deltaker kan skjules men amt-tiltak feiler - returnerer feil og lagrer ingenting`() {
+		coEvery { amtTiltakClient.skjulDeltakerForTiltaksarrangor(any()) } throws RuntimeException("Noe gikk galt")
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.HAR_SLUTTET)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		assertThrows<RuntimeException> {
+			tiltaksarrangorService.fjernDeltaker(personIdent, deltakerId)
+		}
+
+		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
+		deltakerFraDb?.skjultAvAnsattId shouldBe null
+		deltakerFraDb?.skjultDato shouldBe null
 	}
 }
