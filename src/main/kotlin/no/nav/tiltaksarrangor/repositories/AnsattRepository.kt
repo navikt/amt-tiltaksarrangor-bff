@@ -5,6 +5,7 @@ import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattPersonaliaDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.AnsattVeilederDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.utils.sqlParameters
@@ -44,6 +45,18 @@ class AnsattRepository(
 		AnsattRolleDbo(
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 			rolle = AnsattRolle.valueOf(rs.getString("rolle"))
+		)
+	}
+
+	private val ansattVeilederRowMapper = RowMapper { rs, _ ->
+		AnsattVeilederDbo(
+				ansattPersonaliaDbo = AnsattPersonaliaDbo(id = UUID.fromString(rs.getString("id")),
+					personIdent = rs.getString("personident"),
+					fornavn = rs.getString("fornavn"),
+					mellomnavn = rs.getString("mellomnavn"),
+					etternavn = rs.getString("etternavn")
+				),
+			veilederType = Veiledertype.valueOf(rs.getString("veiledertype"))
 		)
 	}
 
@@ -202,6 +215,19 @@ class AnsattRepository(
 			roller = ansattRolleListe,
 			deltakerlister = koordinatorDeltakerlisteDboListe,
 			veilederDeltakere = veilederDeltakerDboListe
+		)
+	}
+
+	fun getVeiledereForDeltaker(deltakerId: UUID): List<AnsattVeilederDbo> {
+		return template.query(
+			"""
+				SELECT *
+				FROM veileder_deltaker
+						 INNER JOIN ansatt a ON a.id = veileder_deltaker.ansatt_id
+				WHERE veileder_deltaker.deltaker_id = :deltaker_id;
+			""".trimIndent(),
+			sqlParameters("deltaker_id" to deltakerId),
+			ansattVeilederRowMapper
 		)
 	}
 

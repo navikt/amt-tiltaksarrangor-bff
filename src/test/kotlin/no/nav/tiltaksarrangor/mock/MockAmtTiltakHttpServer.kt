@@ -21,7 +21,7 @@ import java.util.UUID
 
 class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") {
 
-	fun addDeltakerResponse(deltakerId: UUID) {
+	fun addDeltakerResponse(deltakerId: UUID) {//
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId",
 			MockResponse()
@@ -30,14 +30,14 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
-	fun addDeltakerFailureResponse(deltakerId: UUID) {
+	fun addDeltakerFailureResponse(deltakerId: UUID) {//
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId",
 			MockResponse().setResponseCode(403)
 		)
 	}
 
-	fun addVeilederResponse(deltakerId: UUID) {
+	fun addVeilederResponse(deltakerId: UUID) {//
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/veiledere?deltakerId=$deltakerId",
 			MockResponse()

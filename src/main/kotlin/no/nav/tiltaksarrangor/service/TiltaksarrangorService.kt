@@ -13,9 +13,16 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.model.Deltaker
+import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
+import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.utils.erPilot
+import no.nav.tiltaksarrangor.utils.isDev
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
 
@@ -23,53 +30,77 @@ import java.util.UUID
 class TiltaksarrangorService(
 	private val amtTiltakClient: AmtTiltakClient,
 	private val ansattService: AnsattService,
-	private val metricsService: MetricsService
+	private val metricsService: MetricsService,
+	private val deltakerRepository: DeltakerRepository,
+	private val endringsmeldingRepository: EndringsmeldingRepository
 ) {
+	private val log = LoggerFactory.getLogger(javaClass)
+
 	fun getMineRoller(personIdent: String): List<String> {
 		return ansattService.oppdaterOgHentMineRoller(personIdent).also { metricsService.incInnloggetAnsatt(roller = it) }
 	}
 
-	fun getDeltaker(deltakerId: UUID): Deltaker {
-		val deltaker = amtTiltakClient.getDeltaker(deltakerId)
-		val veiledere = amtTiltakClient.getVeiledere(deltakerId)
-		val aktiveEndringsmeldinger = amtTiltakClient.getAktiveEndringsmeldinger(deltakerId)
+	fun getDeltaker(personIdent: String, deltakerId: UUID): Deltaker {
+		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
+		if (!ansattService.harRoller(ansatt.roller)) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator hos noen arrangører")
+		}
+		// auditlogg!
+
+		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+		if (deltakerMedDeltakerliste == null || deltakerMedDeltakerliste.deltaker.erSkjult()) {
+			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		} else if (deltakerMedDeltakerliste.deltakerliste.erKurs && !(isDev() || erPilot(deltakerMedDeltakerliste.deltakerliste.id))) {
+			log.warn("Har forsøkt å hente kurs-deltaker som ikke tilhører pilot")
+			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		}
+
+		if (!ansattService.harRolleHosArrangor(deltakerMedDeltakerliste.deltakerliste.arrangorId, ansatt.roller)) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
+		}
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		val veiledere = ansattService.getVeiledereForDeltaker(deltakerId)
 
 		return Deltaker(
-			id = deltaker.id,
+			id = deltakerMedDeltakerliste.deltaker.id,
 			deltakerliste = Deltaker.Deltakerliste(
-				id = deltaker.gjennomforing.id,
-				startDato = deltaker.gjennomforing.startDato,
-				sluttDato = deltaker.gjennomforing.sluttDato,
-				erKurs = deltaker.gjennomforing.erKurs
+				id = deltakerMedDeltakerliste.deltakerliste.id,
+				startDato = deltakerMedDeltakerliste.deltakerliste.startDato,
+				sluttDato = deltakerMedDeltakerliste.deltakerliste.sluttDato,
+				erKurs = deltakerMedDeltakerliste.deltakerliste.erKurs
 			),
-			fornavn = deltaker.fornavn,
-			mellomnavn = deltaker.mellomnavn,
-			etternavn = deltaker.etternavn,
-			fodselsnummer = deltaker.fodselsnummer,
-			telefonnummer = deltaker.telefonnummer,
-			epost = deltaker.epost,
-			status = deltaker.status.toStatus(deltaker.gjennomforing.erKurs),
-			startDato = deltaker.startDato,
-			sluttDato = deltaker.sluttDato,
-			deltakelseProsent = deltaker.deltakelseProsent,
-			dagerPerUke = deltaker.dagerPerUke,
-			soktInnPa = deltaker.gjennomforing.navn,
-			soktInnDato = deltaker.registrertDato,
-			tiltakskode = deltaker.gjennomforing.tiltak.tiltakskode,
-			bestillingTekst = deltaker.innsokBegrunnelse,
-			fjernesDato = deltaker.fjernesDato,
+			fornavn = deltakerMedDeltakerliste.deltaker.fornavn,
+			mellomnavn = deltakerMedDeltakerliste.deltaker.mellomnavn,
+			etternavn = deltakerMedDeltakerliste.deltaker.etternavn,
+			fodselsnummer = deltakerMedDeltakerliste.deltaker.personident,
+			telefonnummer = deltakerMedDeltakerliste.deltaker.telefonnummer,
+			epost = deltakerMedDeltakerliste.deltaker.epost,
+			status = DeltakerStatus(
+				type = deltakerMedDeltakerliste.deltaker.status,
+				endretDato = deltakerMedDeltakerliste.deltaker.statusOpprettetDato
+			),
+			startDato = deltakerMedDeltakerliste.deltaker.startdato,
+			sluttDato = deltakerMedDeltakerliste.deltaker.sluttdato,
+			deltakelseProsent = deltakerMedDeltakerliste.deltaker.prosentStilling?.toInt(),
+			dagerPerUke = deltakerMedDeltakerliste.deltaker.dagerPerUke,
+			soktInnPa = deltakerMedDeltakerliste.deltakerliste.navn,
+			soktInnDato = deltakerMedDeltakerliste.deltaker.innsoktDato.atStartOfDay(),
+			tiltakskode = deltakerMedDeltakerliste.deltakerliste.tiltakType,
+			bestillingTekst = deltakerMedDeltakerliste.deltaker.bestillingstekst,
+			fjernesDato = deltakerMedDeltakerliste.deltaker.skalFjernesDato(),
 			navInformasjon = NavInformasjon(
-				navkontor = deltaker.navEnhet?.navn,
-				navVeileder = deltaker.navVeileder?.let {
+				navkontor = deltakerMedDeltakerliste.deltaker.navKontor,
+				navVeileder = deltakerMedDeltakerliste.deltaker.navVeilederId?.let {
 					NavVeileder(
-						navn = it.navn,
-						epost = it.epost,
-						telefon = it.telefon
+						navn = deltakerMedDeltakerliste.deltaker.navVeilederNavn ?: "",
+						epost = deltakerMedDeltakerliste.deltaker.navVeilederEpost,
+						telefon = ""//må fikses
 					)
 				}
 			),
-			veiledere = veiledere.map { it.toVeileder() },
-			aktiveEndringsmeldinger = aktiveEndringsmeldinger.map { it.toEndringsmelding() }
+			veiledere = veiledere,
+			aktiveEndringsmeldinger = endringsmeldinger.map { it.toEndringsmelding() }
 		)
 	}
 
