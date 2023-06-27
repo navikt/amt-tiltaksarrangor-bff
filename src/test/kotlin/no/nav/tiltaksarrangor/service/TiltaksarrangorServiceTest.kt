@@ -40,7 +40,7 @@ import java.util.UUID
 class TiltaksarrangorServiceTest {
 	private val amtTiltakClient = mockk<AmtTiltakClient>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
-	private val metricsService = mockk<MetricsService>()
+	private val metricsService = mockk<MetricsService>(relaxed = true)
 	private val auditLoggerService = mockk<AuditLoggerService>(relaxed = true)
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)

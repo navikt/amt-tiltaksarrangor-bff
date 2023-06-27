@@ -84,6 +84,8 @@ class TiltaksarrangorService(
 			if (kanSkjules(deltakerMedDeltakerliste.deltaker)) {
 				amtTiltakClient.skjulDeltakerForTiltaksarrangor(deltakerId)
 				deltakerRepository.skjulDeltaker(deltakerId = deltakerId, ansattId = ansatt.id)
+				metricsService.incFjernetDeltaker()
+				log.info("Skjult deltaker med id $deltakerId")
 			} else {
 				throw IllegalStateException("Kan ikke skjule deltaker med id $deltakerId. Ugyldig status: ${deltakerMedDeltakerliste.deltaker.status.name}")
 			}
