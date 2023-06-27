@@ -6,7 +6,6 @@ import io.mockk.clearMocks
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.model.StatusType
@@ -19,12 +18,12 @@ import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -207,20 +206,6 @@ class VeilederServiceTest {
 		mineDeltakere.size shouldBe 1
 		mineDeltakere.find { it.id == deltaker.id } shouldNotBe null
 		mineDeltakere.find { it.id == deltaker2.id } shouldBe null
-	}
-
-	private fun getDeltakerliste(arrangorId: UUID): DeltakerlisteDbo {
-		return DeltakerlisteDbo(
-			id = UUID.randomUUID(),
-			navn = "Gjennomføring 1",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = arrangorId,
-			tiltakNavn = "Tiltaksnavnet",
-			tiltakType = "ARBFORB",
-			startDato = null,
-			sluttDato = null,
-			erKurs = false
-		)
 	}
 
 	private fun getDeltaker(deltakerlisteId: UUID, personIdent: String): DeltakerDbo {

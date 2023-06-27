@@ -1,17 +1,13 @@
 package no.nav.tiltaksarrangor.mock
 
 import no.nav.tiltaksarrangor.client.amttiltak.dto.ArrangorDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDetaljerDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerStatusDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.GjennomforingDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.NavEnhetDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.NavVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.StatusType
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TiltakDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.VeilederDto
 import no.nav.tiltaksarrangor.koordinator.model.Koordinator
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.utils.JsonUtils
@@ -20,54 +16,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") {
-
-	fun addDeltakerResponse(deltakerId: UUID) {//
-		addResponseHandler(
-			path = "/api/tiltaksarrangor/deltaker/$deltakerId",
-			MockResponse()
-				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(getDeltaker(deltakerId)))
-		)
-	}
-
-	fun addDeltakerFailureResponse(deltakerId: UUID) {//
-		addResponseHandler(
-			path = "/api/tiltaksarrangor/deltaker/$deltakerId",
-			MockResponse().setResponseCode(403)
-		)
-	}
-
-	fun addVeilederResponse(deltakerId: UUID) {//
-		addResponseHandler(
-			path = "/api/tiltaksarrangor/veiledere?deltakerId=$deltakerId",
-			MockResponse()
-				.setResponseCode(200)
-				.setBody(
-					JsonUtils.objectMapper.writeValueAsString(
-						listOf(
-							VeilederDto(
-								id = UUID.fromString("4f2fb9a7-69c7-4524-bc52-2d00344675ab"),
-								ansattId = UUID.fromString("2d5fc2f7-a9e6-4830-a987-4ff135a70c10"),
-								deltakerId = deltakerId,
-								erMedveileder = false,
-								fornavn = "Fornavn",
-								mellomnavn = null,
-								etternavn = "Etternavn"
-							),
-							VeilederDto(
-								id = UUID.fromString("d8e1af61-0c5e-4843-8bca-ecd9b55c44bc"),
-								ansattId = UUID.fromString("7c43b43b-43be-4d4b-8057-d907c5f1e5c5"),
-								deltakerId = deltakerId,
-								erMedveileder = true,
-								fornavn = "Per",
-								mellomnavn = null,
-								etternavn = "Person"
-							)
-						)
-					)
-				)
-		)
-	}
 
 	fun addAktiveEndringsmeldingerResponse(deltakerId: UUID) {
 		addResponseHandler(
@@ -185,54 +133,6 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			path = "/api/tiltaksarrangor/gjennomforing/$deltakerlisteId/tilgang",
 			MockResponse()
 				.setResponseCode(200)
-		)
-	}
-
-	private fun getDeltaker(deltakerId: UUID): DeltakerDetaljerDto {
-		return DeltakerDetaljerDto(
-			id = deltakerId,
-			fornavn = "Fornavn",
-			mellomnavn = null,
-			etternavn = "Etternavn",
-			fodselsnummer = "10987654321",
-			telefonnummer = "90909090",
-			epost = "mail@test.no",
-			deltakelseProsent = null,
-			dagerPerUke = 5,
-			navEnhet = NavEnhetDto(
-				navn = "Nav Oslo"
-			),
-			navVeileder = NavVeilederDto(
-				navn = "Veileder Veiledersen",
-				telefon = "56565656",
-				epost = "epost@nav.no"
-			),
-			startDato = LocalDate.of(2023, 2, 1),
-			sluttDato = null,
-			registrertDato = LocalDate.of(2023, 1, 15).atStartOfDay(),
-			status = DeltakerStatusDto(
-				type = StatusType.DELTAR,
-				endretDato = LocalDate.of(2023, 2, 1).atStartOfDay()
-			),
-			gjennomforing = GjennomforingDto(
-				id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
-				navn = "Gjennomføring 1",
-				startDato = LocalDate.of(2023, 2, 1),
-				sluttDato = null,
-				status = GjennomforingDto.Status.GJENNOMFORES,
-				tiltak = TiltakDto(
-					tiltakskode = "ARBFORB",
-					tiltaksnavn = "Navn på tiltak"
-				),
-				arrangor = ArrangorDto(
-					virksomhetNavn = "Arrangør AS",
-					organisasjonNavn = null,
-					virksomhetOrgnr = "88888888"
-				),
-				erKurs = false
-			),
-			fjernesDato = null,
-			innsokBegrunnelse = "Tror deltakeren vil ha nytte av dette"
 		)
 	}
 

@@ -7,7 +7,6 @@ import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
-import no.nav.tiltaksarrangor.repositories.model.AnsattVeilederDbo
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID

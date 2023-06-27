@@ -44,7 +44,6 @@ data class AnsattVeilederDbo(
 ) {
 	fun toVeileder(deltakerId: UUID): Veileder {
 		return Veileder(
-			id = UUID.randomUUID(),
 			ansattId = ansattPersonaliaDbo.id,
 			deltakerId = deltakerId,
 			veiledertype = veilederType,

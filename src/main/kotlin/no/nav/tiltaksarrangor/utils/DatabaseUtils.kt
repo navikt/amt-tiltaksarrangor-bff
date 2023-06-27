@@ -22,3 +22,15 @@ fun ResultSet.getNullableLocalDate(columnLabel: String): LocalDate? {
 fun ResultSet.getNullableLocalDateTime(columnLabel: String): LocalDateTime? {
 	return this.getTimestamp(columnLabel)?.toLocalDateTime()
 }
+
+fun ResultSet.getNullableInt(columnLabel: String): Int? {
+	val value = this.getInt(columnLabel)
+	if (this.wasNull()) return null
+	return value
+}
+
+fun ResultSet.getNullableDouble(columnLabel: String): Double? {
+	val value = this.getDouble(columnLabel)
+	if (this.wasNull()) return null
+	return value
+}

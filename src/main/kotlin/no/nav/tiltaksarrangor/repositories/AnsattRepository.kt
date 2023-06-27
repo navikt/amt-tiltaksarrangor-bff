@@ -50,12 +50,13 @@ class AnsattRepository(
 
 	private val ansattVeilederRowMapper = RowMapper { rs, _ ->
 		AnsattVeilederDbo(
-				ansattPersonaliaDbo = AnsattPersonaliaDbo(id = UUID.fromString(rs.getString("id")),
-					personIdent = rs.getString("personident"),
-					fornavn = rs.getString("fornavn"),
-					mellomnavn = rs.getString("mellomnavn"),
-					etternavn = rs.getString("etternavn")
-				),
+			ansattPersonaliaDbo = AnsattPersonaliaDbo(
+				id = UUID.fromString(rs.getString("id")),
+				personIdent = rs.getString("personident"),
+				fornavn = rs.getString("fornavn"),
+				mellomnavn = rs.getString("mellomnavn"),
+				etternavn = rs.getString("etternavn")
+			),
 			veilederType = Veiledertype.valueOf(rs.getString("veiledertype"))
 		)
 	}

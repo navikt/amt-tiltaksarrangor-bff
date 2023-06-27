@@ -5,6 +5,8 @@ import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.utils.getNullableDouble
+import no.nav.tiltaksarrangor.utils.getNullableInt
 import no.nav.tiltaksarrangor.utils.getNullableLocalDate
 import no.nav.tiltaksarrangor.utils.getNullableLocalDateTime
 import no.nav.tiltaksarrangor.utils.getNullableUUID
@@ -33,8 +35,8 @@ class DeltakerRepository(
 			status = StatusType.valueOf(rs.getString("status")),
 			statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 			statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-			dagerPerUke = rs.getInt("dager_per_uke"),
-			prosentStilling = rs.getDouble("prosent_stilling"),
+			dagerPerUke = rs.getNullableInt("dager_per_uke"),
+			prosentStilling = rs.getNullableDouble("prosent_stilling"),
 			startdato = rs.getNullableLocalDate("start_dato"),
 			sluttdato = rs.getNullableLocalDate("slutt_dato"),
 			innsoktDato = rs.getDate("innsokt_dato").toLocalDate(),
@@ -64,8 +66,8 @@ class DeltakerRepository(
 				status = StatusType.valueOf(rs.getString("deltakerstatus")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-				dagerPerUke = rs.getInt("dager_per_uke"),
-				prosentStilling = rs.getDouble("prosent_stilling"),
+				dagerPerUke = rs.getNullableInt("dager_per_uke"),
+				prosentStilling = rs.getNullableDouble("prosent_stilling"),
 				startdato = rs.getNullableLocalDate("deltaker_start_dato"),
 				sluttdato = rs.getNullableLocalDate("deltaker_slutt_dato"),
 				innsoktDato = rs.getDate("innsokt_dato").toLocalDate(),
@@ -275,6 +277,7 @@ class DeltakerRepository(
 						navveileder_id,
 						navveileder_navn,
 						navveileder_epost,
+						navveileder_telefon,
 						skjult_av_ansatt_id,
 						skjult_dato,
 						navn,
