@@ -43,6 +43,7 @@ class DeltakerRepository(
 			navVeilederId = rs.getNullableUUID("navveileder_id"),
 			navVeilederNavn = rs.getString("navveileder_navn"),
 			navVeilederEpost = rs.getString("navveileder_epost"),
+			navVeilederTelefon = rs.getString("navveileder_telefon"),
 			skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 			skjultDato = rs.getNullableLocalDateTime("skjult_dato")
 		)
@@ -73,6 +74,7 @@ class DeltakerRepository(
 				navVeilederId = rs.getNullableUUID("navveileder_id"),
 				navVeilederNavn = rs.getString("navveileder_navn"),
 				navVeilederEpost = rs.getString("navveileder_epost"),
+				navVeilederTelefon = rs.getString("navveileder_telefon"),
 				skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 				skjultDato = rs.getNullableLocalDateTime("skjult_dato")
 			),
@@ -96,7 +98,7 @@ class DeltakerRepository(
 										 er_skjermet, status, status_gyldig_fra, status_opprettet_dato, dager_per_uke, prosent_stilling,
 										 start_dato, slutt_dato,
 										 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
-										 skjult_av_ansatt_id, skjult_dato)
+										 navveileder_telefon, skjult_av_ansatt_id, skjult_dato)
 					VALUES (:id,
 							:deltakerliste_id,
 							:personident,
@@ -119,6 +121,7 @@ class DeltakerRepository(
 							:navveileder_id,
 							:navveileder_navn,
 							:navveileder_epost,
+							:navveileder_telefon,
 							:skjult_av_ansatt_id,
 							:skjult_dato)
 					ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
@@ -142,6 +145,7 @@ class DeltakerRepository(
 												   navveileder_id        = :navveileder_id,
 												   navveileder_navn      = :navveileder_navn,
 												   navveileder_epost     = :navveileder_epost,
+												   navveileder_telefon   = :navveileder_telefon,
 												   skjult_av_ansatt_id   = :skjult_av_ansatt_id,
 												   skjult_dato           = :skjult_dato
 		""".trimIndent()
@@ -171,6 +175,7 @@ class DeltakerRepository(
 				"navveileder_id" to deltakerDbo.navVeilederId,
 				"navveileder_navn" to deltakerDbo.navVeilederNavn,
 				"navveileder_epost" to deltakerDbo.navVeilederEpost,
+				"navveileder_telefon" to deltakerDbo.navVeilederTelefon,
 				"skjult_av_ansatt_id" to deltakerDbo.skjultAvAnsattId,
 				"skjult_dato" to deltakerDbo.skjultDato
 			)
@@ -225,6 +230,7 @@ class DeltakerRepository(
 						navveileder_id,
 						navveileder_navn,
 						navveileder_epost,
+						navveileder_telefon,
 						skjult_av_ansatt_id,
 						skjult_dato,
 						navn,

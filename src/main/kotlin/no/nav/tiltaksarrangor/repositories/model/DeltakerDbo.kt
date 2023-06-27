@@ -28,6 +28,7 @@ data class DeltakerDbo(
 	val navVeilederId: UUID?,
 	val navVeilederNavn: String?,
 	val navVeilederEpost: String?,
+	val navVeilederTelefon: String?,
 	val skjultAvAnsattId: UUID?,
 	val skjultDato: LocalDateTime?
 ) {

@@ -179,7 +179,7 @@ class IngestServiceTest {
 			innsoktDato = LocalDate.now().minusMonths(2),
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false
 		)
@@ -213,7 +213,7 @@ class IngestServiceTest {
 			innsoktDato = LocalDate.now().minusMonths(2),
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false
 		)
@@ -248,7 +248,7 @@ class IngestServiceTest {
 			innsoktDato = LocalDate.now().minusMonths(2),
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false
 		)
@@ -283,7 +283,7 @@ class IngestServiceTest {
 			innsoktDato = LocalDate.now().minusMonths(2),
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false
 		)
@@ -317,7 +317,7 @@ class IngestServiceTest {
 			innsoktDato = LocalDate.now().minusMonths(2),
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = true
 		)
