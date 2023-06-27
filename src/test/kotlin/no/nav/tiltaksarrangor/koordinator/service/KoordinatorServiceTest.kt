@@ -6,8 +6,6 @@ import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -15,19 +13,17 @@ import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.testutils.getDeltaker
+import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.UUID
 
 class KoordinatorServiceTest {
@@ -199,49 +195,5 @@ class KoordinatorServiceTest {
 		mineDeltakerlister.veilederFor?.veilederFor shouldBe 3
 		mineDeltakerlister.veilederFor?.medveilederFor shouldBe 2
 		mineDeltakerlister.koordinatorFor?.deltakerlister?.size shouldBe 2
-	}
-
-	private fun getDeltakerliste(arrangorId: UUID): DeltakerlisteDbo {
-		return DeltakerlisteDbo(
-			id = UUID.randomUUID(),
-			navn = "Gjennomføring 1",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = arrangorId,
-			tiltakNavn = "Tiltaksnavnet",
-			tiltakType = "ARBFORB",
-			startDato = null,
-			sluttDato = null,
-			erKurs = false
-		)
-	}
-
-	private fun getDeltaker(deltakerId: UUID): DeltakerDbo {
-		return DeltakerDbo(
-			id = deltakerId,
-			deltakerlisteId = UUID.randomUUID(),
-			personident = UUID.randomUUID().toString(),
-			fornavn = "Fornavn",
-			mellomnavn = null,
-			etternavn = "Etternavn",
-			telefonnummer = null,
-			epost = null,
-			erSkjermet = false,
-			status = StatusType.DELTAR,
-			statusOpprettetDato = LocalDateTime.now(),
-			statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
-			dagerPerUke = null,
-			prosentStilling = null,
-			startdato = LocalDate.of(2023, 2, 15),
-			sluttdato = null,
-			innsoktDato = LocalDate.now(),
-			bestillingstekst = "tekst",
-			navKontor = null,
-			navVeilederId = null,
-			navVeilederEpost = null,
-			navVeilederNavn = null,
-			navVeilederTelefon = null,
-			skjultAvAnsattId = null,
-			skjultDato = null
-		)
 	}
 }

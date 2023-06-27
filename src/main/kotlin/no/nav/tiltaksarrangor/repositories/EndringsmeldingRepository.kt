@@ -77,6 +77,14 @@ class EndringsmeldingRepository(
 		)
 	}
 
+	fun getEndringsmeldingerForDeltaker(deltakerId: UUID): List<EndringsmeldingDbo> {
+		return template.query(
+			"SELECT * FROM endringsmelding WHERE deltaker_id = :deltaker_id",
+			sqlParameters("deltaker_id" to deltakerId),
+			endringsmeldingRowMapper
+		)
+	}
+
 	private fun parseInnholdJson(innholdJson: String?, type: EndringsmeldingType): Innhold? {
 		if (innholdJson == null && type !in typerUtenInnhold) {
 			log.error("Kan ikke lese endringsmelding med type $type som mangler innhold")

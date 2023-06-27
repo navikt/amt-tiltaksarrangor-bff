@@ -5,6 +5,8 @@ import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.utils.getNullableDouble
+import no.nav.tiltaksarrangor.utils.getNullableInt
 import no.nav.tiltaksarrangor.utils.getNullableLocalDate
 import no.nav.tiltaksarrangor.utils.getNullableLocalDateTime
 import no.nav.tiltaksarrangor.utils.getNullableUUID
@@ -33,8 +35,8 @@ class DeltakerRepository(
 			status = StatusType.valueOf(rs.getString("status")),
 			statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 			statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-			dagerPerUke = rs.getInt("dager_per_uke"),
-			prosentStilling = rs.getDouble("prosent_stilling"),
+			dagerPerUke = rs.getNullableInt("dager_per_uke"),
+			prosentStilling = rs.getNullableDouble("prosent_stilling"),
 			startdato = rs.getNullableLocalDate("start_dato"),
 			sluttdato = rs.getNullableLocalDate("slutt_dato"),
 			innsoktDato = rs.getDate("innsokt_dato").toLocalDate(),
@@ -64,8 +66,8 @@ class DeltakerRepository(
 				status = StatusType.valueOf(rs.getString("deltakerstatus")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-				dagerPerUke = rs.getInt("dager_per_uke"),
-				prosentStilling = rs.getDouble("prosent_stilling"),
+				dagerPerUke = rs.getNullableInt("dager_per_uke"),
+				prosentStilling = rs.getNullableDouble("prosent_stilling"),
 				startdato = rs.getNullableLocalDate("deltaker_start_dato"),
 				sluttdato = rs.getNullableLocalDate("deltaker_slutt_dato"),
 				innsoktDato = rs.getDate("innsokt_dato").toLocalDate(),
@@ -248,6 +250,51 @@ class DeltakerRepository(
 			sqlParameters("ids" to deltakerIder),
 			deltakerMedDeltakerlisteRowMapper
 		)
+	}
+
+	fun getDeltakerMedDeltakerliste(deltakerId: UUID): DeltakerMedDeltakerlisteDbo? {
+		return template.query(
+			"""
+				SELECT deltaker.id as deltakerid,
+						deltakerliste_id,
+						personident,
+						fornavn,
+						mellomnavn,
+						etternavn,
+						telefonnummer,
+						epost,
+						er_skjermet,
+						deltaker.status as deltakerstatus,
+						status_gyldig_fra,
+						status_opprettet_dato,
+						dager_per_uke,
+						prosent_stilling,
+						deltaker.start_dato as deltaker_start_dato,
+						deltaker.slutt_dato as deltaker_slutt_dato,
+						innsokt_dato,
+						bestillingstekst,
+						navkontor,
+						navveileder_id,
+						navveileder_navn,
+						navveileder_epost,
+						navveileder_telefon,
+						skjult_av_ansatt_id,
+						skjult_dato,
+						navn,
+						deltakerliste.status as deltakerliste_status,
+						arrangor_id,
+						tiltak_navn,
+						tiltak_type,
+						deltakerliste.start_dato as deltakerliste_start_dato,
+						deltakerliste.slutt_dato as delakerliste_slutt_dato,
+						er_kurs
+				FROM deltaker
+						 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
+				WHERE deltaker.id = :id;
+			""".trimIndent(),
+			sqlParameters("id" to deltakerId),
+			deltakerMedDeltakerlisteRowMapper
+		).firstOrNull()
 	}
 
 	fun deleteDeltakereForDeltakerliste(deltakerlisteId: UUID): Int {

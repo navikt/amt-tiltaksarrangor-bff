@@ -13,21 +13,19 @@ import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.VeilederDto
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
-import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -180,36 +178,6 @@ class AnsattServiceTest {
 					koordinator = emptyList()
 				)
 			)
-		)
-	}
-
-	private fun getDeltaker(deltakerId: UUID): DeltakerDbo {
-		return DeltakerDbo(
-			id = deltakerId,
-			deltakerlisteId = UUID.randomUUID(),
-			personident = UUID.randomUUID().toString(),
-			fornavn = "Fornavn",
-			mellomnavn = null,
-			etternavn = "Etternavn",
-			telefonnummer = null,
-			epost = null,
-			erSkjermet = false,
-			status = StatusType.DELTAR,
-			statusOpprettetDato = LocalDateTime.now(),
-			statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
-			dagerPerUke = null,
-			prosentStilling = null,
-			startdato = LocalDate.of(2023, 2, 15),
-			sluttdato = null,
-			innsoktDato = LocalDate.now(),
-			bestillingstekst = "tekst",
-			navKontor = null,
-			navVeilederId = null,
-			navVeilederEpost = null,
-			navVeilederNavn = null,
-			navVeilederTelefon = null,
-			skjultAvAnsattId = null,
-			skjultDato = null
 		)
 	}
 }

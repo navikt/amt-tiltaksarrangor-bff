@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.repositories.model
 
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
+import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Veiledertype
 import java.util.UUID
 
@@ -36,3 +37,19 @@ data class VeilederDeltakerDbo(
 	val deltakerId: UUID,
 	val veilederType: Veiledertype
 )
+
+data class AnsattVeilederDbo(
+	val ansattPersonaliaDbo: AnsattPersonaliaDbo,
+	val veilederType: Veiledertype
+) {
+	fun toVeileder(deltakerId: UUID): Veileder {
+		return Veileder(
+			ansattId = ansattPersonaliaDbo.id,
+			deltakerId = deltakerId,
+			veiledertype = veilederType,
+			fornavn = ansattPersonaliaDbo.fornavn,
+			mellomnavn = ansattPersonaliaDbo.mellomnavn,
+			etternavn = ansattPersonaliaDbo.etternavn
+		)
+	}
+}

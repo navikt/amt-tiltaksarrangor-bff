@@ -1,11 +1,9 @@
 package no.nav.tiltaksarrangor.client.amttiltak
 
-import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDetaljerDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.GjennomforingDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.VeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.DeltakerIkkeAktuellRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreDeltakelsesprosentRequest
@@ -35,38 +33,6 @@ class AmtTiltakClient(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 	private val mediaTypeJson = "application/json".toMediaType()
-
-	fun getDeltaker(deltakerId: UUID): DeltakerDetaljerDto {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId")
-			.get()
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulResponse(response.code, "deltaker med id $deltakerId")
-			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
-
-			return fromJsonString<DeltakerDetaljerDto>(body)
-		}
-	}
-
-	fun getVeiledere(deltakerId: UUID): List<VeilederDto> {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/veiledere?deltakerId=$deltakerId")
-			.get()
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulResponse(response.code, "veileder for deltaker med id $deltakerId")
-			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
-
-			return fromJsonString<List<VeilederDto>>(body)
-		}
-	}
 
 	fun getAktiveEndringsmeldinger(deltakerId: UUID): List<EndringsmeldingDto> {
 		val request = Request.Builder()

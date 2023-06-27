@@ -32,7 +32,8 @@ class TiltaksarrangorController(
 	@GetMapping("/deltaker/{deltakerId}")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getDeltaker(@PathVariable deltakerId: UUID): Deltaker {
-		return tiltaksarrangorService.getDeltaker(deltakerId)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		return tiltaksarrangorService.getDeltaker(personIdent, deltakerId)
 	}
 
 	@DeleteMapping("/deltaker/{deltakerId}")

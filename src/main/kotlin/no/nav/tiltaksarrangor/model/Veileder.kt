@@ -3,7 +3,6 @@ package no.nav.tiltaksarrangor.model
 import java.util.UUID
 
 data class Veileder(
-	val id: UUID,
 	val ansattId: UUID,
 	val deltakerId: UUID,
 	val veiledertype: Veiledertype,

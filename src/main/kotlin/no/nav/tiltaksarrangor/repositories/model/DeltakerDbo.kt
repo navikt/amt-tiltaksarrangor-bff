@@ -35,4 +35,18 @@ data class DeltakerDbo(
 	fun erSkjult(): Boolean {
 		return skjultDato != null
 	}
+
+	fun skalFjernesDato(): LocalDateTime? {
+		return if (status in STATUSER_SOM_KAN_SKJULES) {
+			statusGyldigFraDato.plusWeeks(2)
+		} else {
+			null
+		}
+	}
 }
+
+val STATUSER_SOM_KAN_SKJULES = listOf(
+	StatusType.IKKE_AKTUELL,
+	StatusType.HAR_SLUTTET,
+	StatusType.AVBRUTT
+)

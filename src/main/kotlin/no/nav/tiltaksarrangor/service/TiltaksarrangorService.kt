@@ -2,8 +2,6 @@ package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toEndringsmelding
-import no.nav.tiltaksarrangor.client.amttiltak.dto.toStatus
-import no.nav.tiltaksarrangor.client.amttiltak.dto.toVeileder
 import no.nav.tiltaksarrangor.client.amttiltak.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.DeltakerIkkeAktuellRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreDeltakelsesprosentRequest
@@ -13,9 +11,19 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.model.Deltaker
+import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
+import no.nav.tiltaksarrangor.model.Veileder
+import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
+import no.nav.tiltaksarrangor.utils.erPilot
+import no.nav.tiltaksarrangor.utils.isDev
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
 
@@ -23,54 +31,45 @@ import java.util.UUID
 class TiltaksarrangorService(
 	private val amtTiltakClient: AmtTiltakClient,
 	private val ansattService: AnsattService,
-	private val metricsService: MetricsService
+	private val metricsService: MetricsService,
+	private val deltakerRepository: DeltakerRepository,
+	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val auditLoggerService: AuditLoggerService
 ) {
+	private val log = LoggerFactory.getLogger(javaClass)
+
 	fun getMineRoller(personIdent: String): List<String> {
 		return ansattService.oppdaterOgHentMineRoller(personIdent).also { metricsService.incInnloggetAnsatt(roller = it) }
 	}
 
-	fun getDeltaker(deltakerId: UUID): Deltaker {
-		val deltaker = amtTiltakClient.getDeltaker(deltakerId)
-		val veiledere = amtTiltakClient.getVeiledere(deltakerId)
-		val aktiveEndringsmeldinger = amtTiltakClient.getAktiveEndringsmeldinger(deltakerId)
-
-		return Deltaker(
-			id = deltaker.id,
-			deltakerliste = Deltaker.Deltakerliste(
-				id = deltaker.gjennomforing.id,
-				startDato = deltaker.gjennomforing.startDato,
-				sluttDato = deltaker.gjennomforing.sluttDato,
-				erKurs = deltaker.gjennomforing.erKurs
-			),
-			fornavn = deltaker.fornavn,
-			mellomnavn = deltaker.mellomnavn,
-			etternavn = deltaker.etternavn,
-			fodselsnummer = deltaker.fodselsnummer,
-			telefonnummer = deltaker.telefonnummer,
-			epost = deltaker.epost,
-			status = deltaker.status.toStatus(deltaker.gjennomforing.erKurs),
-			startDato = deltaker.startDato,
-			sluttDato = deltaker.sluttDato,
-			deltakelseProsent = deltaker.deltakelseProsent,
-			dagerPerUke = deltaker.dagerPerUke,
-			soktInnPa = deltaker.gjennomforing.navn,
-			soktInnDato = deltaker.registrertDato,
-			tiltakskode = deltaker.gjennomforing.tiltak.tiltakskode,
-			bestillingTekst = deltaker.innsokBegrunnelse,
-			fjernesDato = deltaker.fjernesDato,
-			navInformasjon = NavInformasjon(
-				navkontor = deltaker.navEnhet?.navn,
-				navVeileder = deltaker.navVeileder?.let {
-					NavVeileder(
-						navn = it.navn,
-						epost = it.epost,
-						telefon = it.telefon
-					)
-				}
-			),
-			veiledere = veiledere.map { it.toVeileder() },
-			aktiveEndringsmeldinger = aktiveEndringsmeldinger.map { it.toEndringsmelding() }
+	fun getDeltaker(personIdent: String, deltakerId: UUID): Deltaker {
+		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
+		if (!ansattService.harRoller(ansatt.roller)) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator hos noen arrangører")
+		}
+		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		auditLoggerService.sendAuditLog(
+			ansattPersonIdent = ansatt.personIdent,
+			deltakerPersonIdent = deltakerMedDeltakerliste.deltaker.personident,
+			arrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId
 		)
+
+		if (!ansattService.harTilgangTilDeltaker(deltakerId = deltakerId, deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id, deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId, ansatt)) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
+		}
+
+		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
+			log.warn("Har forsøkt å hente deltaker som er fjernet")
+			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		} else if (deltakerMedDeltakerliste.deltakerliste.erKurs && !(isDev() || erPilot(deltakerMedDeltakerliste.deltakerliste.id))) {
+			log.warn("Har forsøkt å hente kurs-deltaker som ikke tilhører pilot")
+			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		}
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		val veiledere = ansattService.getVeiledereForDeltaker(deltakerId)
+
+		return tilDeltaker(deltakerMedDeltakerliste, veiledere, endringsmeldinger)
 	}
 
 	fun fjernDeltaker(deltakerId: UUID) {
@@ -106,5 +105,52 @@ class TiltaksarrangorService(
 
 	fun slettEndringsmelding(endringsmeldingId: UUID) {
 		amtTiltakClient.tilbakekallEndringsmelding(endringsmeldingId)
+	}
+
+	private fun tilDeltaker(
+		deltakerMedDeltakerliste: DeltakerMedDeltakerlisteDbo,
+		veiledere: List<Veileder>,
+		endringsmeldinger: List<EndringsmeldingDbo>
+	): Deltaker {
+		return Deltaker(
+			id = deltakerMedDeltakerliste.deltaker.id,
+			deltakerliste = Deltaker.Deltakerliste(
+				id = deltakerMedDeltakerliste.deltakerliste.id,
+				startDato = deltakerMedDeltakerliste.deltakerliste.startDato,
+				sluttDato = deltakerMedDeltakerliste.deltakerliste.sluttDato,
+				erKurs = deltakerMedDeltakerliste.deltakerliste.erKurs
+			),
+			fornavn = deltakerMedDeltakerliste.deltaker.fornavn,
+			mellomnavn = deltakerMedDeltakerliste.deltaker.mellomnavn,
+			etternavn = deltakerMedDeltakerliste.deltaker.etternavn,
+			fodselsnummer = deltakerMedDeltakerliste.deltaker.personident,
+			telefonnummer = deltakerMedDeltakerliste.deltaker.telefonnummer,
+			epost = deltakerMedDeltakerliste.deltaker.epost,
+			status = DeltakerStatus(
+				type = deltakerMedDeltakerliste.deltaker.status,
+				endretDato = deltakerMedDeltakerliste.deltaker.statusOpprettetDato
+			),
+			startDato = deltakerMedDeltakerliste.deltaker.startdato,
+			sluttDato = deltakerMedDeltakerliste.deltaker.sluttdato,
+			deltakelseProsent = deltakerMedDeltakerliste.deltaker.prosentStilling?.toInt(),
+			dagerPerUke = deltakerMedDeltakerliste.deltaker.dagerPerUke,
+			soktInnPa = deltakerMedDeltakerliste.deltakerliste.navn,
+			soktInnDato = deltakerMedDeltakerliste.deltaker.innsoktDato.atStartOfDay(),
+			tiltakskode = deltakerMedDeltakerliste.deltakerliste.tiltakType,
+			bestillingTekst = deltakerMedDeltakerliste.deltaker.bestillingstekst,
+			fjernesDato = deltakerMedDeltakerliste.deltaker.skalFjernesDato(),
+			navInformasjon = NavInformasjon(
+				navkontor = deltakerMedDeltakerliste.deltaker.navKontor,
+				navVeileder = deltakerMedDeltakerliste.deltaker.navVeilederId?.let {
+					NavVeileder(
+						navn = deltakerMedDeltakerliste.deltaker.navVeilederNavn ?: "",
+						epost = deltakerMedDeltakerliste.deltaker.navVeilederEpost,
+						telefon = deltakerMedDeltakerliste.deltaker.navVeilederTelefon
+					)
+				}
+			),
+			veiledere = veiledere,
+			aktiveEndringsmeldinger = endringsmeldinger.map { it.toEndringsmelding() }
+		)
 	}
 }

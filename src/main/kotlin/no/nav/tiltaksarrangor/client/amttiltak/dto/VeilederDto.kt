@@ -16,7 +16,6 @@ data class VeilederDto(
 
 fun VeilederDto.toVeileder(): Veileder {
 	return Veileder(
-		id = id,
 		ansattId = ansattId,
 		deltakerId = deltakerId,
 		veiledertype = if (erMedveileder) {
