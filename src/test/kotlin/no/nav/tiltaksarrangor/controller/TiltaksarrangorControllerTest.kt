@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.controller
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
@@ -358,15 +359,54 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 	@Test
 	fun `fjernDeltaker - autentisert - returnerer 200`() {
 		val deltakerId = UUID.fromString("27446cc8-30ad-4030-94e3-de438c2af3c6")
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Orgnavn",
+				organisasjonsnummer = "orgnummer",
+				overordnetArrangorId = null
+			)
+		)
+		val deltakerliste = getDeltakerliste(arrangorId).copy(
+			id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
+			startDato = LocalDate.of(2023, 2, 1)
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(
+			personident = "10987654321",
+			status = StatusType.HAR_SLUTTET,
+			statusOpprettetDato = LocalDate.of(2023, 2, 1).atStartOfDay()
+		)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)
+				),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER))
+			)
+		)
 		mockAmtTiltakServer.addSkjulDeltakerResponse(deltakerId)
 
 		val response = sendRequest(
 			method = "DELETE",
 			path = "/tiltaksarrangor/deltaker/$deltakerId",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		response.code shouldBe 200
+		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
+		deltakerFraDb?.skjultAvAnsattId shouldBe ansattId
+		deltakerFraDb?.skjultDato shouldNotBe null
 	}
 
 	private fun getAktiveEndringsmeldinger(deltakerId: UUID): List<EndringsmeldingDbo> {
