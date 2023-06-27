@@ -45,6 +45,7 @@ fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
 		navVeilederId = navVeileder?.id,
 		navVeilederNavn = navVeileder?.navn,
 		navVeilederEpost = navVeileder?.epost,
+		navVeilederTelefon = navVeileder?.telefonnummer,
 		skjultAvAnsattId = skjult?.skjultAvAnsattId,
 		skjultDato = skjult?.dato
 	)
