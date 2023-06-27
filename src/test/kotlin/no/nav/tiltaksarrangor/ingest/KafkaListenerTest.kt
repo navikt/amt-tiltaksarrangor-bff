@@ -151,6 +151,7 @@ class KafkaListenerTest : IntegrationTest() {
 				navVeilederId = null,
 				navVeilederEpost = null,
 				navVeilederNavn = null,
+				navVeilederTelefon = null,
 				skjultAvAnsattId = null,
 				skjultDato = null
 			)
@@ -219,6 +220,7 @@ class KafkaListenerTest : IntegrationTest() {
 				navVeilederId = null,
 				navVeilederEpost = null,
 				navVeilederNavn = null,
+				navVeilederTelefon = null,
 				skjultAvAnsattId = null,
 				skjultDato = null
 			)
@@ -373,7 +375,7 @@ class KafkaListenerTest : IntegrationTest() {
 			innsoktDato = LocalDate.now().minusMonths(2),
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false
 		)
@@ -418,7 +420,7 @@ class KafkaListenerTest : IntegrationTest() {
 			innsoktDato = LocalDate.now().minusMonths(2),
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false
 		)
@@ -460,7 +462,7 @@ class KafkaListenerTest : IntegrationTest() {
 			innsoktDato = LocalDate.now().minusMonths(2),
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false
 		)
@@ -503,7 +505,7 @@ class KafkaListenerTest : IntegrationTest() {
 			innsoktDato = LocalDate.now().minusMonths(2),
 			bestillingTekst = "Bestilling",
 			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null),
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false
 		)

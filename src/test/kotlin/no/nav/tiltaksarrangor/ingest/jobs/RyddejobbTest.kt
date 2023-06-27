@@ -186,6 +186,7 @@ private fun getDeltaker(
 		navVeilederId = UUID.randomUUID(),
 		navVeilederNavn = "Per Veileder",
 		navVeilederEpost = null,
+		navVeilederTelefon = null,
 		skjultAvAnsattId = if (erSkjult) UUID.randomUUID() else null,
 		skjultDato = if (erSkjult) LocalDateTime.now() else null
 	)

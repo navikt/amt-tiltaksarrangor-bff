@@ -247,6 +247,7 @@ class VeilederServiceTest {
 			navVeilederId = null,
 			navVeilederEpost = null,
 			navVeilederNavn = null,
+			navVeilederTelefon = null,
 			skjultAvAnsattId = null,
 			skjultDato = null
 		)
