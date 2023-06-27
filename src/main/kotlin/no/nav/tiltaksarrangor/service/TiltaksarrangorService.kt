@@ -54,12 +54,12 @@ class TiltaksarrangorService(
 			arrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId
 		)
 
-		if (!ansattService.harRolleHosArrangor(deltakerMedDeltakerliste.deltakerliste.arrangorId, ansatt.roller)) {
+		if (!ansattService.harTilgangTilDeltaker(deltakerId = deltakerId, deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id, deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId, ansatt)) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
 
 		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
-			log.warn("Har forsøkt å hente kurs-deltaker som er fjernet")
+			log.warn("Har forsøkt å hente deltaker som er fjernet")
 			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 		} else if (deltakerMedDeltakerliste.deltakerliste.erKurs && !(isDev() || erPilot(deltakerMedDeltakerliste.deltakerliste.id))) {
 			log.warn("Har forsøkt å hente kurs-deltaker som ikke tilhører pilot")

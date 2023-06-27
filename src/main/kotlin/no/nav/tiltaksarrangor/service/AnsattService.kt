@@ -58,7 +58,15 @@ class AnsattService(
 		return roller.find { it.arrangorId == arrangorId && it.rolle == rolle } != null
 	}
 
-	fun harRolleHosArrangor(arrangorId: UUID, roller: List<AnsattRolleDbo>): Boolean {
-		return roller.find { it.arrangorId == arrangorId } != null
+	fun harTilgangTilDeltaker(deltakerId: UUID, deltakerlisteId: UUID, deltakerlisteArrangorId: UUID, ansattDbo: AnsattDbo): Boolean {
+		val erKoordinatorHosArrangor = harRolleHosArrangor(deltakerlisteArrangorId, AnsattRolle.KOORDINATOR, ansattDbo.roller)
+		val erVeilederHosArrangor = harRolleHosArrangor(deltakerlisteArrangorId, AnsattRolle.VEILEDER, ansattDbo.roller)
+
+		if (erKoordinatorHosArrangor && ansattDbo.deltakerlister.find { it.deltakerlisteId == deltakerlisteId } != null) {
+			return true
+		} else if (erVeilederHosArrangor && ansattDbo.veilederDeltakere.find { it.deltakerId == deltakerId } != null) {
+			return true
+		}
+		return false
 	}
 }

@@ -161,7 +161,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
 				id = UUID.fromString("2d5fc2f7-a9e6-4830-a987-4ff135a70c10"),
-				personIdent = UUID.randomUUID().toString(),
+				personIdent = personIdent,
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
@@ -186,25 +186,11 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.MEDVEILEDER))
 			)
 		)
-		ansattRepository.insertOrUpdateAnsatt(
-			AnsattDbo(
-				id = UUID.randomUUID(),
-				personIdent = personIdent,
-				fornavn = "Ansatt",
-				mellomnavn = null,
-				etternavn = "Ansattsen",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
-				deltakerlister = emptyList(),
-				veilederDeltakere = emptyList()
-			)
-		)
 
 		val response = sendRequest(
 			method = "GET",
 			path = "/tiltaksarrangor/deltaker/$deltakerId",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		val expectedJson = """

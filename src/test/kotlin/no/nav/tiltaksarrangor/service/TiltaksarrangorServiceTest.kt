@@ -18,6 +18,7 @@ import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
+import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
@@ -105,7 +106,7 @@ class TiltaksarrangorServiceTest {
 				roller = listOf(
 					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
 				),
-				deltakerlister = emptyList(),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
 				veilederDeltakere = emptyList()
 			)
 		)
@@ -133,7 +134,7 @@ class TiltaksarrangorServiceTest {
 				roller = listOf(
 					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
 				),
-				deltakerlister = emptyList(),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
 				veilederDeltakere = emptyList()
 			)
 		)
@@ -190,7 +191,7 @@ class TiltaksarrangorServiceTest {
 				roller = listOf(
 					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
 				),
-				deltakerlister = emptyList(),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
 				veilederDeltakere = emptyList()
 			)
 		)
