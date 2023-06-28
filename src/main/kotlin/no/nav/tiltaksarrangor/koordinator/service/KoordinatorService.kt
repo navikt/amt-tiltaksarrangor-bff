@@ -6,7 +6,6 @@ import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toEndringsmelding
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toStatus
 import no.nav.tiltaksarrangor.client.amttiltak.dto.toVeileder
-import no.nav.tiltaksarrangor.koordinator.model.AdminDeltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.KoordinatorFor
@@ -81,33 +80,6 @@ class KoordinatorService(
 				.filter { !gjennomforing.erKurs || it.status.type != StatusType.IKKE_AKTUELL },
 			erKurs = gjennomforing.erKurs
 		)
-	}
-
-	fun getAlleDeltakerlister(): List<AdminDeltakerliste> {
-		val deltakerlisterLagtTil = amtTiltakClient.getDeltakerlisterLagtTil()
-		val tilgjengeligeDeltakerlister = amtTiltakClient.getTilgjengeligeDeltakerlister()
-
-		return tilgjengeligeDeltakerlister.map {
-			AdminDeltakerliste(
-				id = it.id,
-				navn = it.navn,
-				tiltaksnavn = it.tiltak.tiltaksnavn,
-				arrangorNavn = if (it.arrangor.organisasjonNavn.isNullOrEmpty()) it.arrangor.virksomhetNavn else it.arrangor.organisasjonNavn,
-				arrangorOrgnummer = it.arrangor.virksomhetOrgnr,
-				arrangorParentNavn = it.arrangor.virksomhetNavn,
-				startDato = it.startDato,
-				sluttDato = it.sluttDato,
-				lagtTil = deltakerlisterLagtTil.find { gjennomforingDto -> gjennomforingDto.id == it.id } != null
-			)
-		}
-	}
-
-	fun leggTilDeltakerliste(deltakerlisteId: UUID) {
-		amtTiltakClient.opprettTilgangTilGjennomforing(deltakerlisteId)
-	}
-
-	fun fjernDeltakerliste(deltakerlisteId: UUID) {
-		amtTiltakClient.fjernTilgangTilGjennomforing(deltakerlisteId)
 	}
 
 	private fun getVeilederFor(veilederDeltakere: List<VeilederDeltakerDbo>): VeilederFor {
