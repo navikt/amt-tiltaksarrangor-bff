@@ -21,6 +21,14 @@ class MockAmtArrangorHttpServer : MockHttpServer(name = "Amt-Arrangor Mock Serve
 		)
 	}
 
+	fun addLeggTilEllerFjernDeltakerlisteResponse(arrangorId: UUID, deltakerlisteId: UUID) {
+		addResponseHandler(
+			path = "/api/ansatt/koordinator/$arrangorId/$deltakerlisteId",
+			MockResponse()
+				.setResponseCode(200)
+		)
+	}
+
 	private fun getAnsatt(ansattId: UUID, personIdent: String): AnsattDto {
 		return AnsattDto(
 			id = ansattId,

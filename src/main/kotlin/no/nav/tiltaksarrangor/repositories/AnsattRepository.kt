@@ -69,6 +69,37 @@ class AnsattRepository(
 		template.update(sql, sqlParameters("ansattId" to ansattId))
 	}
 
+	fun insertKoordinatorDeltakerliste(ansattId: UUID, deltakerliste: KoordinatorDeltakerlisteDbo) {
+		val sql = """
+		INSERT INTO koordinator_deltakerliste(ansatt_id, deltakerliste_id)
+		VALUES (:ansatt_id,
+				:deltakerliste_id)
+		ON CONFLICT (ansatt_id, deltakerliste_id) DO NOTHING
+		""".trimIndent()
+
+		template.update(
+			sql,
+			sqlParameters(
+				"ansatt_id" to ansattId,
+				"deltakerliste_id" to deltakerliste.deltakerlisteId
+			)
+		)
+	}
+
+	fun deleteKoordinatorDeltakerliste(ansattId: UUID, deltakerliste: KoordinatorDeltakerlisteDbo) {
+		val sql = """
+		DELETE FROM koordinator_deltakerliste WHERE ansatt_id = :ansatt_id AND deltakerliste_id = :deltakerliste_id
+		""".trimIndent()
+
+		template.update(
+			sql,
+			sqlParameters(
+				"ansatt_id" to ansattId,
+				"deltakerliste_id" to deltakerliste.deltakerlisteId
+			)
+		)
+	}
+
 	fun insertOrUpdateAnsatt(ansattDbo: AnsattDbo) {
 		val sql = """
 			INSERT INTO ansatt(id, personident, fornavn, mellomnavn, etternavn)

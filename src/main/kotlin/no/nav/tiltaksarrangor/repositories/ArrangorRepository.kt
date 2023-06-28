@@ -59,4 +59,15 @@ class ArrangorRepository(
 			arrangorRowMapper
 		).firstOrNull()
 	}
+
+	fun getArrangorer(arrangorIder: List<UUID>): List<ArrangorDbo> {
+		if (arrangorIder.isEmpty()) {
+			return emptyList()
+		}
+		return template.query(
+			"SELECT * FROM arrangor WHERE id in (:ids)",
+			sqlParameters("ids" to arrangorIder),
+			arrangorRowMapper
+		)
+	}
 }
