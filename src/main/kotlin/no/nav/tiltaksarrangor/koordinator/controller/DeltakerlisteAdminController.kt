@@ -32,7 +32,8 @@ class DeltakerlisteAdminController(
 	fun leggTilDeltakerliste(
 		@PathVariable deltakerlisteId: UUID
 	) {
-		return deltakerlisteAdminService.leggTilDeltakerliste(deltakerlisteId)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		return deltakerlisteAdminService.leggTilDeltakerliste(deltakerlisteId, personIdent)
 	}
 
 	@DeleteMapping("/deltakerliste/{deltakerlisteId}")

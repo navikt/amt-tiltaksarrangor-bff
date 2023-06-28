@@ -5,12 +5,15 @@ import no.nav.tiltaksarrangor.ingest.model.AnsattDto
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.CacheUtils
 import no.nav.tiltaksarrangor.utils.JsonUtils
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Duration
+import java.util.UUID
 
 @Component
 class AmtArrangorClient(
@@ -18,6 +21,7 @@ class AmtArrangorClient(
 	private val amtArrangorHttpClient: OkHttpClient
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
+	private val mediaTypeJson = "application/json".toMediaType()
 
 	private val personidentToAnsattCache = Caffeine.newBuilder()
 		.expireAfterWrite(Duration.ofHours(1))
@@ -47,5 +51,26 @@ class AmtArrangorClient(
 				return@tryCacheFirstNullable JsonUtils.fromJsonString<AnsattDto>(body)
 			}
 		}
+	}
+
+	fun leggTilDeltakerlisteForKoordinator(ansattId: UUID, deltakerlisteId: UUID, arrangorId: UUID) {
+		val request = Request.Builder()
+			.url("$amtArrangorUrl/api/ansatt/koordinator/$arrangorId/$deltakerlisteId")
+			.post("".toRequestBody(mediaTypeJson))
+			.build()
+
+		amtArrangorHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				when (response.code) {
+					401 -> throw UnauthorizedException("Ikke tilgang til å legge til deltakerliste i amt-arrangør")
+					403 -> throw UnauthorizedException("Ikke tilgang til å legge til deltakerliste i amt-arrangør")
+					else -> {
+						log.error("Kunne ikke legge til deltakerliste i amt-arrangør, responsekode: ${response.code}")
+						throw RuntimeException("Kunne ikke legge til deltakerliste")
+					}
+				}
+			}
+		}
+		log.info("Oppdatert amt-arrangor med deltakerliste $deltakerlisteId for ansatt $ansattId")
 	}
 }

@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -37,6 +38,11 @@ class AnsattService(
 
 	fun getVeiledereForDeltaker(deltakerId: UUID): List<Veileder> {
 		return ansattRepository.getVeiledereForDeltaker(deltakerId).map { it.toVeileder(deltakerId) }
+	}
+
+	fun leggTilDeltakerliste(ansattId: UUID, deltakerlisteId: UUID, arrangorId: UUID) {
+		amtArrangorClient.leggTilDeltakerlisteForKoordinator(ansattId = ansattId, deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
+		ansattRepository.insertKoordinatorDeltakerliste(ansattId = ansattId, deltakerliste = KoordinatorDeltakerlisteDbo(deltakerlisteId))
 	}
 
 	fun harRoller(roller: List<AnsattRolleDbo>): Boolean {

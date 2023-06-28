@@ -1,7 +1,12 @@
 package no.nav.tiltaksarrangor.koordinator.service
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.mockk.Runs
 import io.mockk.clearMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
@@ -18,6 +23,7 @@ import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.service.AnsattService
+import no.nav.tiltaksarrangor.service.MetricsService
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import org.junit.jupiter.api.AfterEach
@@ -30,6 +36,7 @@ import java.util.UUID
 class DeltakerlisteAdminServiceTest {
 	private val amtTiltakClient = mockk<AmtTiltakClient>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
+	private val metricsService = mockk<MetricsService>(relaxed = true)
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val ansattRepository = AnsattRepository(template)
@@ -37,7 +44,7 @@ class DeltakerlisteAdminServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val arrangorRepository = ArrangorRepository(template)
-	private val deltakerlisteAdminService = DeltakerlisteAdminService(amtTiltakClient, ansattService, deltakerlisteRepository, arrangorRepository)
+	private val deltakerlisteAdminService = DeltakerlisteAdminService(amtTiltakClient, ansattService, deltakerlisteRepository, arrangorRepository, metricsService)
 
 	@AfterEach
 	internal fun tearDown() {
@@ -165,5 +172,117 @@ class DeltakerlisteAdminServiceTest {
 		adminDeltakerliste2?.startDato shouldBe LocalDate.of(2023, 5, 1)
 		adminDeltakerliste2?.sluttDato shouldBe LocalDate.of(2023, 6, 1)
 		adminDeltakerliste2?.lagtTil shouldBe false
+	}
+
+	@Test
+	fun `leggTilDeltakerliste - ansatt er ikke koordinator hos arrangor - returnerer unauthorized`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val deltakerliste = DeltakerlisteDbo(
+			id = UUID.randomUUID(),
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = UUID.randomUUID(),
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+
+		assertThrows<UnauthorizedException> {
+			deltakerlisteAdminService.leggTilDeltakerliste(deltakerliste.id, personIdent)
+		}
+	}
+
+	@Test
+	fun `leggTilDeltakerliste - ansatt har allerede lagt til deltakerliste - endrer ignenting`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = UUID.randomUUID(),
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		deltakerlisteAdminService.leggTilDeltakerliste(deltakerliste.id, personIdent)
+
+		coVerify(exactly = 0) { amtTiltakClient.opprettTilgangTilGjennomforing(any()) }
+		coVerify(exactly = 0) { amtArrangorClient.leggTilDeltakerlisteForKoordinator(any(), any(), any()) }
+	}
+
+	@Test
+	fun `leggTilDeltakerliste - ansatt har tilgang til deltakerliste - deltakerliste legges til`() {
+		coEvery { amtArrangorClient.leggTilDeltakerlisteForKoordinator(any(), any(), any()) } just Runs
+		coEvery { amtTiltakClient.opprettTilgangTilGjennomforing(any()) } just Runs
+
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = UUID.randomUUID(),
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(UUID.randomUUID())),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		deltakerlisteAdminService.leggTilDeltakerliste(deltakerliste.id, personIdent)
+
+		val ansattFraDb = ansattRepository.getAnsatt(ansattId)
+		ansattFraDb?.deltakerlister?.size shouldBe 2
+		ansattFraDb?.deltakerlister?.find { it.deltakerlisteId == deltakerliste.id } shouldNotBe null
+
+		coVerify(exactly = 1) { amtTiltakClient.opprettTilgangTilGjennomforing(deltakerliste.id) }
+		coVerify(exactly = 1) { amtArrangorClient.leggTilDeltakerlisteForKoordinator(ansattId, deltakerliste.id, arrangorId) }
 	}
 }

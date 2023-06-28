@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 
 private const val innlogging_metric = "tiltaksarrangorbff_innlogging"
 private const val fjernet_deltaker_metric = "tiltaksarrangorbff_fjernet_deltaker"
+private const val lagt_til_deltakerliste_metric = "tiltaksarrangorbff_lagttil_deltakerliste"
 
 @Service
 class MetricsService(
@@ -15,6 +16,7 @@ class MetricsService(
 	private val innloggetKoordinatorOgVeilederCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.KOORDINATOR_OG_VEILEDER.name)
 	private val innloggetTotaltCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.TOTALT.name)
 	private val fjernetDeltakerCounter = registry.counter(fjernet_deltaker_metric)
+	private val lagtTilDeltakerlisteCounter = registry.counter(lagt_til_deltakerliste_metric)
 
 	fun incInnloggetAnsatt(roller: List<String>) {
 		if (roller.isEmpty()) {
@@ -34,6 +36,10 @@ class MetricsService(
 
 	fun incFjernetDeltaker() {
 		fjernetDeltakerCounter.increment()
+	}
+
+	fun incLagtTilDeltakerliste() {
+		lagtTilDeltakerlisteCounter.increment()
 	}
 
 	enum class RollePermutasjon {
