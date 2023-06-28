@@ -1,8 +1,11 @@
 package no.nav.tiltaksarrangor.repositories
 
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteMedArrangorDbo
 import no.nav.tiltaksarrangor.utils.getNullableLocalDate
+import no.nav.tiltaksarrangor.utils.getNullableUUID
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
@@ -29,6 +32,28 @@ class DeltakerlisteRepository(
 			startDato = rs.getNullableLocalDate("start_dato"),
 			sluttDato = rs.getNullableLocalDate("slutt_dato"),
 			erKurs = rs.getBoolean("er_kurs")
+		)
+	}
+
+	private val deltakerlisteMedArrangorRowMapper = RowMapper { rs, _ ->
+		DeltakerlisteMedArrangorDbo(
+			deltakerlisteDbo = DeltakerlisteDbo(
+				id = UUID.fromString(rs.getString("deltakerliste_id")),
+				navn = rs.getString("deltakerliste_navn"),
+				status = DeltakerlisteStatus.valueOf(rs.getString("status")),
+				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
+				tiltakNavn = rs.getString("tiltak_navn"),
+				tiltakType = rs.getString("tiltak_type"),
+				startDato = rs.getNullableLocalDate("start_dato"),
+				sluttDato = rs.getNullableLocalDate("slutt_dato"),
+				erKurs = rs.getBoolean("er_kurs")
+			),
+			arrangorDbo = ArrangorDbo(
+				id = UUID.fromString(rs.getString("arrangor_id")),
+				navn = rs.getString("arrangor_navn"),
+				organisasjonsnummer = rs.getString("organisasjonsnummer"),
+				overordnetArrangorId = rs.getNullableUUID("overordnet_arrangor_id")
+			)
 		)
 	}
 
@@ -100,6 +125,33 @@ class DeltakerlisteRepository(
 			"SELECT * FROM deltakerliste WHERE id in(:ids)",
 			sqlParameters("ids" to deltakerlisteIder),
 			deltakerlisteRowMapper
+		)
+	}
+
+	fun getDeltakerlisterMedArrangor(arrangorIder: List<UUID>): List<DeltakerlisteMedArrangorDbo> {
+		if (arrangorIder.isEmpty()) {
+			return emptyList()
+		}
+		return template.query(
+			"""
+				SELECT deltakerliste.id as deltakerliste_id,
+						deltakerliste.navn as deltakerliste_navn,
+						status,
+						arrangor_id,
+						tiltak_navn,
+						tiltak_type,
+						start_dato,
+						slutt_dato,
+						er_kurs,
+						a.navn as arrangor_navn,
+						a.organisasjonsnummer,
+						a.overordnet_arrangor_id
+				FROM deltakerliste
+						 INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
+				WHERE a.id in (:arrangorIds);
+			""".trimIndent(),
+			sqlParameters("arrangorIds" to arrangorIder),
+			deltakerlisteMedArrangorRowMapper
 		)
 	}
 
