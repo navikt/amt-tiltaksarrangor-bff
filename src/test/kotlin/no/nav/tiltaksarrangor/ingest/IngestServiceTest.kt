@@ -76,7 +76,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltakerliste - status APENT_FOR_INNSOK - lagres ikke`() {
+	internal fun `lagreDeltakerliste - status APENT_FOR_INNSOK - lagres`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
@@ -98,8 +98,7 @@ class IngestServiceTest {
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
-		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId) }
+		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
 	}
 
 	@Test

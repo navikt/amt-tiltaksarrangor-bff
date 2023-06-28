@@ -108,7 +108,7 @@ class IngestService(
 }
 
 fun DeltakerlisteDto.skalLagres(): Boolean {
-	if (status == DeltakerlisteStatus.GJENNOMFORES) {
+	if (status == DeltakerlisteStatus.GJENNOMFORES || status == DeltakerlisteStatus.APENT_FOR_INNSOK) {
 		return true
 	} else if (status == DeltakerlisteStatus.AVSLUTTET && sluttDato != null && LocalDate.now()
 		.isBefore(sluttDato.plusDays(15))
