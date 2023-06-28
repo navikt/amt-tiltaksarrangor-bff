@@ -45,6 +45,11 @@ class AnsattService(
 		ansattRepository.insertKoordinatorDeltakerliste(ansattId = ansattId, deltakerliste = KoordinatorDeltakerlisteDbo(deltakerlisteId))
 	}
 
+	fun fjernDeltakerliste(ansattId: UUID, deltakerlisteId: UUID, arrangorId: UUID) {
+		amtArrangorClient.fjernDeltakerlisteForKoordinator(ansattId = ansattId, deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
+		ansattRepository.deleteKoordinatorDeltakerliste(ansattId = ansattId, deltakerliste = KoordinatorDeltakerlisteDbo(deltakerlisteId))
+	}
+
 	fun harRoller(roller: List<AnsattRolleDbo>): Boolean {
 		val unikeRoller = roller.map { it.rolle }.distinct()
 		return unikeRoller.isNotEmpty()

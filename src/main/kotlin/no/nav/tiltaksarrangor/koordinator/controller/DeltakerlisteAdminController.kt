@@ -41,6 +41,7 @@ class DeltakerlisteAdminController(
 	fun fjernDeltakerliste(
 		@PathVariable deltakerlisteId: UUID
 	) {
-		return deltakerlisteAdminService.fjernDeltakerliste(deltakerlisteId)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		return deltakerlisteAdminService.fjernDeltakerliste(deltakerlisteId, personIdent)
 	}
 }

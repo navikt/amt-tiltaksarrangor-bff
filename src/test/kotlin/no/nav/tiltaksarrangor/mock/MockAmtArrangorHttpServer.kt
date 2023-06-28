@@ -21,7 +21,7 @@ class MockAmtArrangorHttpServer : MockHttpServer(name = "Amt-Arrangor Mock Serve
 		)
 	}
 
-	fun addLeggTilDeltakerlisteResponse(arrangorId: UUID, deltakerlisteId: UUID) {
+	fun addLeggTilEllerFjernDeltakerlisteResponse(arrangorId: UUID, deltakerlisteId: UUID) {
 		addResponseHandler(
 			path = "/api/ansatt/koordinator/$arrangorId/$deltakerlisteId",
 			MockResponse()

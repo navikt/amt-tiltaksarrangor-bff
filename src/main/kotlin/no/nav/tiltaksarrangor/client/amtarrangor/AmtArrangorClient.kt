@@ -65,12 +65,33 @@ class AmtArrangorClient(
 					401 -> throw UnauthorizedException("Ikke tilgang til å legge til deltakerliste i amt-arrangør")
 					403 -> throw UnauthorizedException("Ikke tilgang til å legge til deltakerliste i amt-arrangør")
 					else -> {
-						log.error("Kunne ikke legge til deltakerliste i amt-arrangør, responsekode: ${response.code}")
+						log.error("Kunne ikke legge til deltakerliste $deltakerlisteId i amt-arrangør, responsekode: ${response.code}")
 						throw RuntimeException("Kunne ikke legge til deltakerliste")
 					}
 				}
 			}
 		}
 		log.info("Oppdatert amt-arrangor med deltakerliste $deltakerlisteId for ansatt $ansattId")
+	}
+
+	fun fjernDeltakerlisteForKoordinator(ansattId: UUID, deltakerlisteId: UUID, arrangorId: UUID) {
+		val request = Request.Builder()
+			.url("$amtArrangorUrl/api/ansatt/koordinator/$arrangorId/$deltakerlisteId")
+			.delete()
+			.build()
+
+		amtArrangorHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				when (response.code) {
+					401 -> throw UnauthorizedException("Ikke tilgang til å fjerne deltakerliste i amt-arrangør")
+					403 -> throw UnauthorizedException("Ikke tilgang til å fjerne deltakerliste i amt-arrangør")
+					else -> {
+						log.error("Kunne ikke fjerne deltakerliste $deltakerlisteId i amt-arrangør, responsekode: ${response.code}")
+						throw RuntimeException("Kunne ikke fjerne deltakerliste")
+					}
+				}
+			}
+		}
+		log.info("Fjernet amt-arrangor deltakerliste $deltakerlisteId for ansatt $ansattId")
 	}
 }

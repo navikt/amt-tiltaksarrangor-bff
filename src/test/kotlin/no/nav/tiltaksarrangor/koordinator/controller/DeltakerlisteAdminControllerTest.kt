@@ -150,7 +150,7 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 			)
 		)
 		mockAmtTiltakServer.addOpprettEllerFjernTilgangTilGjennomforingResponse(deltakerlisteId)
-		mockAmtArrangorServer.addLeggTilDeltakerlisteResponse(arrangorId, deltakerlisteId)
+		mockAmtArrangorServer.addLeggTilEllerFjernDeltakerlisteResponse(arrangorId, deltakerlisteId)
 
 		val response = sendRequest(
 			method = "POST",
@@ -178,16 +178,47 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 
 	@Test
 	fun `fjernDeltakerliste - autentisert - returnerer 200`() {
+		val personIdent = "12345678910"
 		val deltakerlisteId = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a")
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = deltakerlisteId,
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		mockAmtArrangorServer.addLeggTilEllerFjernDeltakerlisteResponse(arrangorId, deltakerlisteId)
 		mockAmtTiltakServer.addOpprettEllerFjernTilgangTilGjennomforingResponse(deltakerlisteId)
 
 		val response = sendRequest(
 			method = "DELETE",
 			path = "/tiltaksarrangor/koordinator/admin/deltakerliste/$deltakerlisteId",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		response.code shouldBe 200
+
+		val ansattFraDb = ansattRepository.getAnsatt(ansattId)
+		ansattFraDb?.deltakerlister?.size shouldBe 0
 	}
 }
 

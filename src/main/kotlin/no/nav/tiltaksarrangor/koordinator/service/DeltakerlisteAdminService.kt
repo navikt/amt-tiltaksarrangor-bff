@@ -59,7 +59,7 @@ class DeltakerlisteAdminService(
 
 		if (ansattService.harRolleHosArrangor(arrangorId = deltakerliste.arrangorId, rolle = AnsattRolle.KOORDINATOR, roller = ansatt.roller)) {
 			if (!deltakerliste.erKurs || isDev() || erPilot(deltakerlisteId)) {
-				if (!deltakerlisteAlleredeLagtTil(ansatt, deltakerlisteId)) {
+				if (!deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
 					amtTiltakClient.opprettTilgangTilGjennomforing(deltakerlisteId)
 					ansattService.leggTilDeltakerliste(
 						ansattId = ansatt.id,
@@ -68,8 +68,9 @@ class DeltakerlisteAdminService(
 					)
 					metricsService.incLagtTilDeltakerliste()
 					log.info("Lagt til deltakerliste $deltakerlisteId for ansatt ${ansatt.id}")
+				} else {
+					log.info("Deltakerliste $deltakerlisteId er allerede lagt til for ansatt ${ansatt.id}")
 				}
-				log.info("Deltakerliste $deltakerlisteId er allerede lagt til for ansatt ${ansatt.id}")
 			} else {
 				throw UnauthorizedException("Kan ikke legge til deltakerliste med id $deltakerlisteId fordi det er kurs og ikke pilot")
 			}
@@ -78,8 +79,27 @@ class DeltakerlisteAdminService(
 		}
 	}
 
-	fun fjernDeltakerliste(deltakerlisteId: UUID) {
-		amtTiltakClient.fjernTilgangTilGjennomforing(deltakerlisteId)
+	fun fjernDeltakerliste(deltakerlisteId: UUID, personIdent: String) {
+		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
+		val deltakerliste = deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
+			?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
+
+		if (ansattService.harRolleHosArrangor(arrangorId = deltakerliste.arrangorId, rolle = AnsattRolle.KOORDINATOR, roller = ansatt.roller)) {
+			if (deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
+				amtTiltakClient.fjernTilgangTilGjennomforing(deltakerlisteId)
+				ansattService.fjernDeltakerliste(
+					ansattId = ansatt.id,
+					deltakerlisteId = deltakerlisteId,
+					arrangorId = deltakerliste.arrangorId
+				)
+				metricsService.incFjernetDeltakerliste()
+				log.info("Fjernet deltakerliste $deltakerlisteId for ansatt ${ansatt.id}")
+			} else {
+				log.info("Deltakerliste $deltakerlisteId er ikke lagt til for ansatt ${ansatt.id}")
+			}
+		} else {
+			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltakerliste med id $deltakerlisteId")
+		}
 	}
 
 	private fun getAnsattMedKoordinatorRoller(personIdent: String): AnsattDbo {
@@ -90,7 +110,7 @@ class DeltakerlisteAdminService(
 		return ansatt
 	}
 
-	private fun deltakerlisteAlleredeLagtTil(ansattDbo: AnsattDbo, deltakerlisteId: UUID): Boolean {
+	private fun deltakerlisteErLagtTil(ansattDbo: AnsattDbo, deltakerlisteId: UUID): Boolean {
 		return ansattDbo.deltakerlister.find { it.deltakerlisteId == deltakerlisteId } != null
 	}
 

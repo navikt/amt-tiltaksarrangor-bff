@@ -285,4 +285,116 @@ class DeltakerlisteAdminServiceTest {
 		coVerify(exactly = 1) { amtTiltakClient.opprettTilgangTilGjennomforing(deltakerliste.id) }
 		coVerify(exactly = 1) { amtArrangorClient.leggTilDeltakerlisteForKoordinator(ansattId, deltakerliste.id, arrangorId) }
 	}
+
+	@Test
+	fun `fjernDeltakerliste - ansatt er ikke koordinator hos arrangor - returnerer unauthorized`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val deltakerliste = DeltakerlisteDbo(
+			id = UUID.randomUUID(),
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = UUID.randomUUID(),
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+
+		assertThrows<UnauthorizedException> {
+			deltakerlisteAdminService.fjernDeltakerliste(deltakerliste.id, personIdent)
+		}
+	}
+
+	@Test
+	fun `fjernDeltakerliste - ansatt har ikke lagt til deltakerliste - endrer ignenting`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = UUID.randomUUID(),
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		deltakerlisteAdminService.fjernDeltakerliste(deltakerliste.id, personIdent)
+
+		coVerify(exactly = 0) { amtTiltakClient.fjernTilgangTilGjennomforing(any()) }
+		coVerify(exactly = 0) { amtArrangorClient.fjernDeltakerlisteForKoordinator(any(), any(), any()) }
+	}
+
+	@Test
+	fun `fjernDeltakerliste - ansatt har lagt til deltakerliste - deltakerliste fjernes`() {
+		coEvery { amtArrangorClient.fjernDeltakerlisteForKoordinator(any(), any(), any()) } just Runs
+		coEvery { amtTiltakClient.fjernTilgangTilGjennomforing(any()) } just Runs
+
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = UUID.randomUUID(),
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(UUID.randomUUID()), KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		deltakerlisteAdminService.fjernDeltakerliste(deltakerliste.id, personIdent)
+
+		val ansattFraDb = ansattRepository.getAnsatt(ansattId)
+		ansattFraDb?.deltakerlister?.size shouldBe 1
+		ansattFraDb?.deltakerlister?.find { it.deltakerlisteId == deltakerliste.id } shouldBe null
+
+		coVerify(exactly = 1) { amtTiltakClient.fjernTilgangTilGjennomforing(deltakerliste.id) }
+		coVerify(exactly = 1) { amtArrangorClient.fjernDeltakerlisteForKoordinator(ansattId, deltakerliste.id, arrangorId) }
+	}
 }
