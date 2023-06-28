@@ -166,9 +166,9 @@ class DeltakerlisteAdminServiceTest {
 		val adminDeltakerliste2 = adminDeltakerlister.find { it.id == deltakerliste2.id }
 		adminDeltakerliste2?.navn shouldBe "Gjennomføring 2"
 		adminDeltakerliste2?.tiltaksnavn shouldBe "Annet tiltak"
-		adminDeltakerliste2?.arrangorNavn shouldBe "Annen arrangør AS"
+		adminDeltakerliste2?.arrangorNavn shouldBe "Overordnet arrangør AS"
 		adminDeltakerliste2?.arrangorOrgnummer shouldBe "99999999"
-		adminDeltakerliste2?.arrangorParentNavn shouldBe "Overordnet arrangør AS"
+		adminDeltakerliste2?.arrangorParentNavn shouldBe "Annen arrangør AS"
 		adminDeltakerliste2?.startDato shouldBe LocalDate.of(2023, 5, 1)
 		adminDeltakerliste2?.sluttDato shouldBe LocalDate.of(2023, 6, 1)
 		adminDeltakerliste2?.lagtTil shouldBe false

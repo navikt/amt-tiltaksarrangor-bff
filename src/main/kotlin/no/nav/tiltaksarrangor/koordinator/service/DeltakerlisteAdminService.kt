@@ -40,11 +40,11 @@ class DeltakerlisteAdminService(
 				id = it.deltakerlisteDbo.id,
 				navn = it.deltakerlisteDbo.navn,
 				tiltaksnavn = it.deltakerlisteDbo.tiltakNavn,
-				arrangorNavn = it.arrangorDbo.navn,
-				arrangorOrgnummer = it.arrangorDbo.organisasjonsnummer,
-				arrangorParentNavn = it.arrangorDbo.overordnetArrangorId?.let { overordnetArrangorId ->
+				arrangorNavn = it.arrangorDbo.overordnetArrangorId?.let { overordnetArrangorId ->
 					finnOverordnetArrangorNavn(overordnetArrangorId, overordnedeArrangorer)
 				} ?: it.arrangorDbo.navn,
+				arrangorOrgnummer = it.arrangorDbo.organisasjonsnummer,
+				arrangorParentNavn = it.arrangorDbo.navn, // arrangørnavn og overordnet arrangørnavn er byttet om i frontend, frem til det fikses der må disse være motsatt av hva som er logisk
 				startDato = it.deltakerlisteDbo.startDato,
 				sluttDato = it.deltakerlisteDbo.sluttDato,
 				lagtTil = ansatt.deltakerlister.find { koordinatorDeltakerliste -> koordinatorDeltakerliste.deltakerlisteId == it.deltakerlisteDbo.id } != null
