@@ -8,6 +8,7 @@ import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
+import no.nav.tiltaksarrangor.utils.JsonUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -24,6 +25,7 @@ class AnsattService(
 			log.info("Bruker uten tilganger har logget inn")
 		}
 		log.info("Hentet ansatt med id ${ansatt.id} fra amt-arrangør")
+		log.info("Ansatt: ${JsonUtils.objectMapper.writeValueAsString(ansatt)}")
 
 		ansattRepository.insertOrUpdateAnsatt(ansatt.toAnsattDbo())
 		log.info("Lagret eller oppdatert ansatt med id ${ansatt.id}")
