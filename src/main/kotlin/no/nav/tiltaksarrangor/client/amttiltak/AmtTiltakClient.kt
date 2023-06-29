@@ -1,8 +1,6 @@
 package no.nav.tiltaksarrangor.client.amttiltak
 
-import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.EndringsmeldingDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.GjennomforingDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.DeltakerIkkeAktuellRequest
@@ -11,7 +9,6 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.EndreOppstartsdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
-import no.nav.tiltaksarrangor.koordinator.model.Koordinator
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
@@ -206,54 +203,6 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "fjerne deltaker med id $deltakerId")
 			}
-		}
-	}
-
-	fun getKoordinatorer(deltakerlisteId: UUID): List<Koordinator> {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/gjennomforing/$deltakerlisteId/koordinatorer")
-			.get()
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulResponse(response.code, "koordinatorer for deltakerliste med id $deltakerlisteId")
-			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
-
-			return fromJsonString<List<Koordinator>>(body)
-		}
-	}
-
-	fun getGjennomforing(deltakerlisteId: UUID): GjennomforingDto {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/gjennomforing/$deltakerlisteId")
-			.get()
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulResponse(response.code, "deltakerliste med id $deltakerlisteId")
-			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
-
-			return fromJsonString<GjennomforingDto>(body)
-		}
-	}
-
-	fun getDeltakerePaGjennomforing(deltakerlisteId: UUID): List<DeltakerDto> {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker?gjennomforingId=$deltakerlisteId")
-			.get()
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulResponse(response.code, "deltakere for deltakerliste med id $deltakerlisteId")
-			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
-
-			return fromJsonString<List<DeltakerDto>>(body)
 		}
 	}
 

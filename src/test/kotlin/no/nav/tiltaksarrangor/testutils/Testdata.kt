@@ -1,9 +1,12 @@
 package no.nav.tiltaksarrangor.testutils
 
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
+import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -49,5 +52,14 @@ fun getDeltaker(deltakerId: UUID, deltakerlisteId: UUID = UUID.randomUUID()): De
 		navVeilederTelefon = null,
 		skjultAvAnsattId = null,
 		skjultDato = null
+	)
+}
+
+fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo {
+	return EndringsmeldingDbo(
+		id = UUID.randomUUID(),
+		deltakerId = deltakerId,
+		type = EndringsmeldingType.FORLENG_DELTAKELSE,
+		innhold = Innhold.ForlengDeltakelseInnhold(LocalDate.now().plusMonths(2))
 	)
 }

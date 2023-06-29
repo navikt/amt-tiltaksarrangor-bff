@@ -40,13 +40,13 @@ data class VeilederDeltakerDbo(
 
 data class AnsattVeilederDbo(
 	val ansattPersonaliaDbo: AnsattPersonaliaDbo,
-	val veilederType: Veiledertype
+	val veilederDeltakerDbo: VeilederDeltakerDbo
 ) {
-	fun toVeileder(deltakerId: UUID): Veileder {
+	fun toVeileder(): Veileder {
 		return Veileder(
 			ansattId = ansattPersonaliaDbo.id,
-			deltakerId = deltakerId,
-			veiledertype = veilederType,
+			deltakerId = veilederDeltakerDbo.deltakerId,
+			veiledertype = veilederDeltakerDbo.veilederType,
 			fornavn = ansattPersonaliaDbo.fornavn,
 			mellomnavn = ansattPersonaliaDbo.mellomnavn,
 			etternavn = ansattPersonaliaDbo.etternavn

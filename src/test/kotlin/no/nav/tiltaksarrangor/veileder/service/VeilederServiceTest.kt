@@ -8,7 +8,6 @@ import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -17,13 +16,13 @@ import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
-import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
+import no.nav.tiltaksarrangor.testutils.getEndringsmelding
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -79,9 +78,9 @@ class VeilederServiceTest {
 		val deltakerliste2 = deltakerliste.copy(id = UUID.randomUUID(), arrangorId = arrangorId2, navn = "Deltakerliste 2")
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste2)
-		val deltaker = getDeltaker(deltakerliste.id, "12345")
-		val deltaker2 = getDeltaker(deltakerliste.id, "23456")
-		val deltaker3 = getDeltaker(deltakerliste2.id, "34567")
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
+		val deltaker2 = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "23456")
+		val deltaker3 = getDeltaker(UUID.randomUUID(), deltakerliste2.id).copy(personident = "34567")
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker3)
@@ -144,9 +143,9 @@ class VeilederServiceTest {
 		val deltakerliste2 = deltakerliste.copy(id = UUID.randomUUID(), arrangorId = arrangorId2, navn = "Deltakerliste 2")
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste2)
-		val deltaker = getDeltaker(deltakerliste.id, "12345")
-		val deltaker2 = getDeltaker(deltakerliste.id, "23456")
-		val deltaker3 = getDeltaker(deltakerliste2.id, "34567")
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
+		val deltaker2 = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "23456")
+		val deltaker3 = getDeltaker(UUID.randomUUID(), deltakerliste2.id).copy(personident = "34567")
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker3)
@@ -181,7 +180,7 @@ class VeilederServiceTest {
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
-		val deltaker = getDeltaker(deltakerliste.id, "12345")
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
 		val deltaker2 = deltaker.copy(id = UUID.randomUUID(), personident = "23456", skjultDato = LocalDateTime.now())
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
@@ -206,44 +205,5 @@ class VeilederServiceTest {
 		mineDeltakere.size shouldBe 1
 		mineDeltakere.find { it.id == deltaker.id } shouldNotBe null
 		mineDeltakere.find { it.id == deltaker2.id } shouldBe null
-	}
-
-	private fun getDeltaker(deltakerlisteId: UUID, personIdent: String): DeltakerDbo {
-		return DeltakerDbo(
-			id = UUID.randomUUID(),
-			deltakerlisteId = deltakerlisteId,
-			personident = personIdent,
-			fornavn = "Fornavn",
-			mellomnavn = null,
-			etternavn = "Etternavn",
-			telefonnummer = null,
-			epost = null,
-			erSkjermet = false,
-			status = StatusType.DELTAR,
-			statusOpprettetDato = LocalDateTime.now(),
-			statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
-			dagerPerUke = null,
-			prosentStilling = null,
-			startdato = LocalDate.of(2023, 2, 15),
-			sluttdato = null,
-			innsoktDato = LocalDate.now(),
-			bestillingstekst = "tekst",
-			navKontor = null,
-			navVeilederId = null,
-			navVeilederEpost = null,
-			navVeilederNavn = null,
-			navVeilederTelefon = null,
-			skjultAvAnsattId = null,
-			skjultDato = null
-		)
-	}
-
-	private fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo {
-		return EndringsmeldingDbo(
-			id = UUID.randomUUID(),
-			deltakerId = deltakerId,
-			type = EndringsmeldingType.FORLENG_DELTAKELSE,
-			innhold = Innhold.ForlengDeltakelseInnhold(LocalDate.now().plusMonths(2))
-		)
 	}
 }

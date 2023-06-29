@@ -1,23 +1,30 @@
 package no.nav.tiltaksarrangor.koordinator.service
 
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
-import no.nav.tiltaksarrangor.client.amttiltak.dto.DeltakerDto
 import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.toEndringsmelding
-import no.nav.tiltaksarrangor.client.amttiltak.dto.toStatus
-import no.nav.tiltaksarrangor.client.amttiltak.dto.toVeileder
+import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
+import no.nav.tiltaksarrangor.koordinator.model.Koordinator
 import no.nav.tiltaksarrangor.koordinator.model.KoordinatorFor
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
 import no.nav.tiltaksarrangor.koordinator.model.TilgjengeligVeileder
 import no.nav.tiltaksarrangor.koordinator.model.VeilederFor
-import no.nav.tiltaksarrangor.model.StatusType
+import no.nav.tiltaksarrangor.model.DeltakerStatus
+import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.repositories.ArrangorRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteMedArrangorDbo
+import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
@@ -30,7 +37,10 @@ import java.util.UUID
 class KoordinatorService(
 	private val amtTiltakClient: AmtTiltakClient,
 	private val ansattService: AnsattService,
-	private val deltakerlisteRepository: DeltakerlisteRepository
+	private val deltakerlisteRepository: DeltakerlisteRepository,
+	private val arrangorRepository: ArrangorRepository,
+	private val deltakerRepository: DeltakerRepository,
+	private val endringsmeldingRepository: EndringsmeldingRepository
 ) {
 	fun getMineDeltakerlister(personIdent: String): MineDeltakerlister {
 		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
@@ -61,24 +71,54 @@ class KoordinatorService(
 		amtTiltakClient.tildelVeiledereForDeltaker(deltakerId, request)
 	}
 
-	fun getDeltakerliste(deltakerlisteId: UUID): Deltakerliste {
-		val gjennomforing = amtTiltakClient.getGjennomforing(deltakerlisteId)
-		val deltakere = amtTiltakClient.getDeltakerePaGjennomforing(deltakerlisteId)
-		val koordinatorer = amtTiltakClient.getKoordinatorer(deltakerlisteId)
+	fun getDeltakerliste(deltakerlisteId: UUID, personIdent: String): Deltakerliste {
+		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
+		val deltakerlisteMedArrangor = deltakerlisteRepository.getDeltakerlisteMedArrangor(deltakerlisteId)
+			?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
+
+		val harKoordinatorRolleHosArrangor = ansattService.harRolleHosArrangor(
+			arrangorId = deltakerlisteMedArrangor.deltakerlisteDbo.arrangorId,
+			rolle = AnsattRolle.KOORDINATOR,
+			roller = ansatt.roller
+		)
+		if (harKoordinatorRolleHosArrangor && (!deltakerlisteMedArrangor.deltakerlisteDbo.erKurs || isDev() || erPilot(deltakerlisteId))) {
+			if (ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
+				return getDeltakerliste(deltakerlisteMedArrangor)
+			} else {
+				throw UnauthorizedException("Ansatt ${ansatt.id} kan ikke hente deltakerliste med id $deltakerlisteId før den er lagt til")
+			}
+		} else {
+			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltakerliste med id $deltakerlisteId")
+		}
+	}
+
+	private fun getDeltakerliste(deltakerlisteMedArrangor: DeltakerlisteMedArrangorDbo): Deltakerliste {
+		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
+		val koordinatorer = ansattService.getKoordinatorerForDeltakerliste(deltakerlisteId = deltakerlisteMedArrangor.deltakerlisteDbo.id)
+			.sortedBy { it.etternavn } // sorteringen er kun for KoordinatorControllerTest sin skyld
+
+		val deltakere = deltakerRepository.getDeltakereForDeltakerliste(deltakerlisteMedArrangor.deltakerlisteDbo.id)
+			.filter { !it.erSkjult() }
+		val veiledereForDeltakerliste = ansattService.getVeiledereForDeltakere(deltakere.map { it.id })
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltakere(deltakere.map { it.id })
 
 		return Deltakerliste(
-			id = gjennomforing.id,
-			navn = gjennomforing.navn,
-			tiltaksnavn = gjennomforing.tiltak.tiltaksnavn,
-			arrangorNavn = if (gjennomforing.arrangor.organisasjonNavn.isNullOrEmpty()) gjennomforing.arrangor.virksomhetNavn else gjennomforing.arrangor.organisasjonNavn,
-			startDato = gjennomforing.startDato,
-			sluttDato = gjennomforing.sluttDato,
-			status = Deltakerliste.Status.valueOf(gjennomforing.status.name),
-			koordinatorer = koordinatorer,
-			deltakere = deltakere
-				.map { it.toDeltaker(gjennomforing.erKurs) }
-				.filter { !gjennomforing.erKurs || it.status.type != StatusType.IKKE_AKTUELL },
-			erKurs = gjennomforing.erKurs
+			id = deltakerlisteMedArrangor.deltakerlisteDbo.id,
+			navn = deltakerlisteMedArrangor.deltakerlisteDbo.navn,
+			tiltaksnavn = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakNavn,
+			arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn,
+			startDato = deltakerlisteMedArrangor.deltakerlisteDbo.startDato,
+			sluttDato = deltakerlisteMedArrangor.deltakerlisteDbo.sluttDato,
+			status = Deltakerliste.Status.valueOf(deltakerlisteMedArrangor.deltakerlisteDbo.status.name),
+			koordinatorer = koordinatorer.map {
+				Koordinator(
+					fornavn = it.fornavn,
+					mellomnavn = it.mellomnavn,
+					etternavn = it.etternavn
+				)
+			},
+			deltakere = tilKoordinatorsDeltakere(deltakere, veiledereForDeltakerliste, endringsmeldinger),
+			erKurs = deltakerlisteMedArrangor.deltakerlisteDbo.erKurs
 		)
 	}
 
@@ -92,6 +132,49 @@ class KoordinatorService(
 	private fun getKoordinatorFor(koordinatorsDeltakerlister: List<KoordinatorDeltakerlisteDbo>): KoordinatorFor {
 		val deltakerlister = deltakerlisteRepository.getDeltakerlister(koordinatorsDeltakerlister.map { it.deltakerlisteId }).toDeltakerliste()
 		return KoordinatorFor(deltakerlister = deltakerlister.filter { !it.erKurs || isDev() || erPilot(it.id) })
+	}
+
+	private fun getAnsattMedKoordinatorRoller(personIdent: String): AnsattDbo {
+		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
+		if (!ansattService.erKoordinator(ansatt.roller)) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke koordinator hos noen arrangører")
+		}
+		return ansatt
+	}
+
+	private fun tilKoordinatorsDeltakere(
+		deltakere: List<DeltakerDbo>,
+		veiledere: List<Veileder>,
+		endringsmeldinger: List<EndringsmeldingDbo>
+	): List<Deltaker> {
+		return deltakere.map {
+			Deltaker(
+				id = it.id,
+				fornavn = it.fornavn,
+				mellomnavn = it.mellomnavn,
+				etternavn = it.etternavn,
+				fodselsnummer = it.personident,
+				soktInnDato = it.innsoktDato.atStartOfDay(),
+				startDato = it.startdato,
+				sluttDato = it.sluttdato,
+				status = DeltakerStatus(
+					type = it.status,
+					endretDato = it.statusGyldigFraDato
+				),
+				veiledere = getVeiledereForDeltaker(it.id, veiledere),
+				navKontor = it.navKontor,
+				aktiveEndringsmeldinger = getEndringsmeldinger(it.id, endringsmeldinger)
+			)
+		}
+	}
+
+	private fun getVeiledereForDeltaker(deltakerId: UUID, veiledereDeltakere: List<Veileder>): List<Veileder> {
+		return veiledereDeltakere.filter { it.deltakerId == deltakerId }
+	}
+
+	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
+		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
+		return endringsmeldingerForDeltaker.map { it.toEndringsmelding() }
 	}
 }
 
@@ -114,22 +197,5 @@ fun TilgjengeligVeilederDto.toTilgjengeligVeileder(): TilgjengeligVeileder {
 		fornavn = fornavn,
 		mellomnavn = mellomnavn,
 		etternavn = etternavn
-	)
-}
-
-fun DeltakerDto.toDeltaker(erKurs: Boolean): Deltaker {
-	return Deltaker(
-		id = id,
-		fornavn = fornavn,
-		mellomnavn = mellomnavn,
-		etternavn = etternavn,
-		fodselsnummer = fodselsnummer,
-		soktInnDato = registrertDato,
-		startDato = startDato,
-		sluttDato = sluttDato,
-		status = status.toStatus(erKurs),
-		veiledere = aktiveVeiledere.map { it.toVeileder() },
-		navKontor = navKontor,
-		aktiveEndringsmeldinger = aktiveEndringsmeldinger.map { it.toEndringsmelding() }
 	)
 }

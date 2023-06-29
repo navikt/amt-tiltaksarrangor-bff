@@ -6,6 +6,7 @@ import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
+import no.nav.tiltaksarrangor.repositories.model.AnsattPersonaliaDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import org.slf4j.LoggerFactory
@@ -37,7 +38,14 @@ class AnsattService(
 	}
 
 	fun getVeiledereForDeltaker(deltakerId: UUID): List<Veileder> {
-		return ansattRepository.getVeiledereForDeltaker(deltakerId).map { it.toVeileder(deltakerId) }
+		return ansattRepository.getVeiledereForDeltaker(deltakerId).map { it.toVeileder() }
+	}
+
+	fun getVeiledereForDeltakere(deltakerIder: List<UUID>): List<Veileder> {
+		if (deltakerIder.isEmpty()) {
+			return emptyList()
+		}
+		return ansattRepository.getVeiledereForDeltakere(deltakerIder).map { it.toVeileder() }
 	}
 
 	fun leggTilDeltakerliste(ansattId: UUID, deltakerlisteId: UUID, arrangorId: UUID) {
@@ -48,6 +56,10 @@ class AnsattService(
 	fun fjernDeltakerliste(ansattId: UUID, deltakerlisteId: UUID, arrangorId: UUID) {
 		amtArrangorClient.fjernDeltakerlisteForKoordinator(ansattId = ansattId, deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
 		ansattRepository.deleteKoordinatorDeltakerliste(ansattId = ansattId, deltakerliste = KoordinatorDeltakerlisteDbo(deltakerlisteId))
+	}
+
+	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID): List<AnsattPersonaliaDbo> {
+		return ansattRepository.getKoordinatorerForDeltakerliste(deltakerlisteId)
 	}
 
 	fun harRoller(roller: List<AnsattRolleDbo>): Boolean {
@@ -79,5 +91,9 @@ class AnsattService(
 			return true
 		}
 		return false
+	}
+
+	fun deltakerlisteErLagtTil(ansattDbo: AnsattDbo, deltakerlisteId: UUID): Boolean {
+		return ansattDbo.deltakerlister.find { it.deltakerlisteId == deltakerlisteId } != null
 	}
 }
