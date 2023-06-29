@@ -1,7 +1,6 @@
 package no.nav.tiltaksarrangor.mock
 
 import no.nav.tiltaksarrangor.client.amttiltak.dto.EndringsmeldingDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.mockwebserver.MockResponse
@@ -48,15 +47,6 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			path = "/api/tiltaksarrangor/endringsmelding/$endringsmeldingId/tilbakekall",
 			MockResponse()
 				.setResponseCode(200)
-		)
-	}
-
-	fun addTilgjengeligeVeiledereResponse(deltakerlisteId: UUID) {
-		addResponseHandler(
-			path = "/api/tiltaksarrangor/veiledere/tilgjengelig?gjennomforingId=$deltakerlisteId",
-			MockResponse()
-				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(getTilgjengeligeVeiledere()))
 		)
 	}
 
@@ -108,23 +98,6 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 					sluttdato = LocalDate.of(2023, 5, 3)
 				),
 				type = "ENDRE_SLUTTDATO"
-			)
-		)
-	}
-
-	private fun getTilgjengeligeVeiledere(): List<TilgjengeligVeilederDto> {
-		return listOf(
-			TilgjengeligVeilederDto(
-				ansattId = UUID.fromString("29bf6799-bb56-4a86-857b-99b529b3dfc4"),
-				fornavn = "Fornavn1",
-				mellomnavn = null,
-				etternavn = "Etternavn1"
-			),
-			TilgjengeligVeilederDto(
-				ansattId = UUID.fromString("e824dbfe-5317-491b-82ed-03b870eed963"),
-				fornavn = "Fornavn2",
-				mellomnavn = null,
-				etternavn = "Etternavn2"
 			)
 		)
 	}

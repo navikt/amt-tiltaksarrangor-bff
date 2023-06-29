@@ -1,7 +1,6 @@
 package no.nav.tiltaksarrangor.koordinator.service
 
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
-import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
@@ -63,8 +62,29 @@ class KoordinatorService(
 		)
 	}
 
-	fun getTilgjengeligeVeiledere(deltakerlisteId: UUID): List<TilgjengeligVeileder> {
-		return amtTiltakClient.getTilgjengeligeVeiledere(deltakerlisteId).map { it.toTilgjengeligVeileder() }
+	fun getTilgjengeligeVeiledere(deltakerlisteId: UUID, personIdent: String): List<TilgjengeligVeileder> {
+		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
+		val deltakerliste = deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
+			?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
+
+		val harKoordinatorRolleHosArrangor = ansattService.harRolleHosArrangor(
+			arrangorId = deltakerliste.arrangorId,
+			rolle = AnsattRolle.KOORDINATOR,
+			roller = ansatt.roller
+		)
+
+		if (harKoordinatorRolleHosArrangor) {
+			return ansattService.getVeiledereForArrangor(deltakerliste.arrangorId).map {
+				TilgjengeligVeileder(
+					ansattId = it.id,
+					fornavn = it.fornavn,
+					mellomnavn = it.mellomnavn,
+					etternavn = it.etternavn
+				)
+			}
+		} else {
+			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltakerliste med id $deltakerlisteId")
+		}
 	}
 
 	fun tildelVeiledereForDeltaker(deltakerId: UUID, request: LeggTilVeiledereRequest) {
@@ -189,13 +209,4 @@ fun List<DeltakerlisteDbo>.toDeltakerliste(): List<KoordinatorFor.Deltakerliste>
 			erKurs = it.erKurs
 		)
 	}
-}
-
-fun TilgjengeligVeilederDto.toTilgjengeligVeileder(): TilgjengeligVeileder {
-	return TilgjengeligVeileder(
-		ansattId = ansattId,
-		fornavn = fornavn,
-		mellomnavn = mellomnavn,
-		etternavn = etternavn
-	)
 }

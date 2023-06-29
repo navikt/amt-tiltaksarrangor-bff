@@ -297,6 +297,23 @@ class AnsattRepository(
 		)
 	}
 
+	fun getVeiledereForArrangor(arrangorId: UUID): List<AnsattPersonaliaDbo> {
+		return template.query(
+			"""
+				SELECT distinct a.*
+				FROM ansatt a
+						 INNER JOIN ansatt_rolle ar on a.id = ar.ansatt_id
+				WHERE ar.arrangor_id = :arrangor_id
+				  AND ar.rolle = :rolle;
+			""".trimIndent(),
+			sqlParameters(
+				"arrangor_id" to arrangorId,
+				"rolle" to AnsattRolle.VEILEDER.name
+			),
+			ansattPersonaliaRowMapper
+		)
+	}
+
 	fun getAnsattRolleListe(ansattId: UUID): List<AnsattRolleDbo> {
 		return template.query(
 			"SELECT * FROM ansatt_rolle WHERE ansatt_id = :ansatt_id",

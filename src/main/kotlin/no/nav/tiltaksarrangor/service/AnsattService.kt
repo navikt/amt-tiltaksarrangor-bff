@@ -62,6 +62,10 @@ class AnsattService(
 		return ansattRepository.getKoordinatorerForDeltakerliste(deltakerlisteId)
 	}
 
+	fun getVeiledereForArrangor(arrangorId: UUID): List<AnsattPersonaliaDbo> {
+		return ansattRepository.getVeiledereForArrangor(arrangorId)
+	}
+
 	fun harRoller(roller: List<AnsattRolleDbo>): Boolean {
 		val unikeRoller = roller.map { it.rolle }.distinct()
 		return unikeRoller.isNotEmpty()

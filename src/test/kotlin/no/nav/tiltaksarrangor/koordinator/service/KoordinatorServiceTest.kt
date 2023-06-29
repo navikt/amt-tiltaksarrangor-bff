@@ -401,4 +401,135 @@ class KoordinatorServiceTest {
 		koordinatorsDeltaker?.aktiveEndringsmeldinger?.size shouldBe 1
 		koordinatorsDeltaker?.aktiveEndringsmeldinger?.find { it.type == Endringsmelding.Type.FORLENG_DELTAKELSE } shouldNotBe null
 	}
+
+	@Test
+	fun `getTilgjengeligeVeiledere - ansatt har ikke koordinatorrolle hos arrangor - returnerer unauthorized`() {
+		val personIdent = "12345678910"
+		val deltakerlisteId = UUID.randomUUID()
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = deltakerlisteId,
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		assertThrows<UnauthorizedException> {
+			koordinatorService.getTilgjengeligeVeiledere(deltakerlisteId, personIdent)
+		}
+	}
+
+	@Test
+	fun `getTilgjengeligeVeiledere - ansatt har koordinatorrolle hos arrangor men det finnes ingen veiledere - returnerer tom liste`() {
+		val personIdent = "12345678910"
+		val deltakerlisteId = UUID.randomUUID()
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = deltakerlisteId,
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		koordinatorService.getTilgjengeligeVeiledere(deltakerlisteId, personIdent).size shouldBe 0
+	}
+
+	@Test
+	fun `getTilgjengeligeVeiledere - ansatt har koordinatorrolle hos arrangor og det finnes veiledere - returnerer veiledere`() {
+		val personIdent = "12345678910"
+		val deltakerlisteId = UUID.randomUUID()
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = deltakerlisteId,
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val ansattId1 = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId1,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR), AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val ansattId2 = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId2,
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn2",
+				mellomnavn = null,
+				etternavn = "Etternavn2",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val ansattId3 = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId3,
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn3",
+				mellomnavn = null,
+				etternavn = "Etternavn3",
+				roller = listOf(AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		val veiledere = koordinatorService.getTilgjengeligeVeiledere(deltakerlisteId, personIdent)
+		veiledere.size shouldBe 2
+		veiledere.find { it.ansattId == ansattId1 } shouldNotBe null
+		veiledere.find { it.ansattId == ansattId2 } shouldNotBe null
+	}
 }

@@ -123,13 +123,61 @@ class KoordinatorControllerTest : IntegrationTest() {
 
 	@Test
 	fun `getTilgjengeligeVeiledere - autentisert - returnerer 200`() {
-		val deltakerlisteId = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a")
-		mockAmtTiltakServer.addTilgjengeligeVeiledereResponse(deltakerlisteId)
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Tiltaksnavnet",
+			tiltakType = "ARBFORB",
+			startDato = null,
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.fromString("29bf6799-bb56-4a86-857b-99b529b3dfc4"),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn1",
+				mellomnavn = null,
+				etternavn = "Etternavn1",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList()
+			)
+		)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.fromString("e824dbfe-5317-491b-82ed-03b870eed963"),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn2",
+				mellomnavn = null,
+				etternavn = "Etternavn2",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER))
+			)
+		)
 
 		val response = sendRequest(
 			method = "GET",
-			path = "/tiltaksarrangor/koordinator/$deltakerlisteId/veiledere",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			path = "/tiltaksarrangor/koordinator/${deltakerliste.id}/veiledere",
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		val expectedJson = """

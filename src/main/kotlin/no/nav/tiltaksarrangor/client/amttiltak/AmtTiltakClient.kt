@@ -1,7 +1,6 @@
 package no.nav.tiltaksarrangor.client.amttiltak
 
 import no.nav.tiltaksarrangor.client.amttiltak.dto.EndringsmeldingDto
-import no.nav.tiltaksarrangor.client.amttiltak.dto.TilgjengeligVeilederDto
 import no.nav.tiltaksarrangor.client.amttiltak.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.DeltakerIkkeAktuellRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreDeltakelsesprosentRequest
@@ -161,22 +160,6 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "tilbakekalle endringsmelding med id $endringsmeldingId")
 			}
-		}
-	}
-
-	fun getTilgjengeligeVeiledere(deltakerlisteId: UUID): List<TilgjengeligVeilederDto> {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/veiledere/tilgjengelig?gjennomforingId=$deltakerlisteId")
-			.get()
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulResponse(response.code, "tilgjengelige veiledere for deltakerliste med id $deltakerlisteId")
-			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
-
-			return fromJsonString<List<TilgjengeligVeilederDto>>(body)
 		}
 	}
 
