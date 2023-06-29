@@ -95,6 +95,7 @@ class KoordinatorService(
 	private fun getDeltakerliste(deltakerlisteMedArrangor: DeltakerlisteMedArrangorDbo): Deltakerliste {
 		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
 		val koordinatorer = ansattService.getKoordinatorerForDeltakerliste(deltakerlisteId = deltakerlisteMedArrangor.deltakerlisteDbo.id)
+			.sortedBy { it.etternavn } // sorteringen er kun for KoordinatorControllerTest sin skyld
 
 		val deltakere = deltakerRepository.getDeltakereForDeltakerliste(deltakerlisteMedArrangor.deltakerlisteDbo.id)
 			.filter { !it.erSkjult() }
