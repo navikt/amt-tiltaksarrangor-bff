@@ -207,6 +207,14 @@ class DeltakerRepository(
 		).firstOrNull()
 	}
 
+	fun getDeltakereForDeltakerliste(deltakerlisteId: UUID): List<DeltakerDbo> {
+		return template.query(
+			"SELECT * FROM deltaker WHERE deltakerliste_id = :deltakerliste_id",
+			sqlParameters("deltakerliste_id" to deltakerlisteId),
+			deltakerRowMapper
+		)
+	}
+
 	fun getDeltakereMedDeltakerliste(deltakerIder: List<UUID>): List<DeltakerMedDeltakerlisteDbo> {
 		return template.query(
 			"""

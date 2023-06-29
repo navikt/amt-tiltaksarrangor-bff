@@ -9,10 +9,12 @@ import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
+import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
@@ -33,6 +35,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 	private val ansattRepository = AnsattRepository(template)
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
+	private val arrangorRepository = ArrangorRepository(template)
 
 	@AfterEach
 	internal fun tearDown() {
@@ -198,15 +201,86 @@ class KoordinatorControllerTest : IntegrationTest() {
 
 	@Test
 	fun `getDeltakerliste - autentisert - returnerer 200`() {
+		val personIdent = "12345678910"
 		val deltakerlisteId = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a")
-		mockAmtTiltakServer.addKoordinatorerResponse(deltakerlisteId)
-		mockAmtTiltakServer.addGjennomforingResponse(deltakerlisteId)
-		mockAmtTiltakServer.addDeltakerePaGjennomforingResponse(deltakerlisteId)
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "88888888",
+				overordnetArrangorId = null
+			)
+		)
+		val deltakerliste = DeltakerlisteDbo(
+			id = deltakerlisteId,
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn1",
+				mellomnavn = null,
+				etternavn = "Etternavn1",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn2",
+				mellomnavn = null,
+				etternavn = "Etternavn2",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val deltaker = DeltakerDbo(
+			id = UUID.fromString("252428ac-37a6-4341-bb17-5bad412c9409"),
+			deltakerlisteId = deltakerlisteId,
+			personident = "10987654321",
+			fornavn = "Fornavn",
+			mellomnavn = null,
+			etternavn = "Etternavn",
+			telefonnummer = null,
+			epost = null,
+			erSkjermet = false,
+			status = StatusType.DELTAR,
+			statusOpprettetDato = LocalDateTime.now(),
+			statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+			dagerPerUke = null,
+			prosentStilling = null,
+			startdato = LocalDate.of(2023, 2, 1),
+			sluttdato = null,
+			innsoktDato = LocalDate.of(2023, 1, 15),
+			bestillingstekst = "tekst",
+			navKontor = "NAV Testheim",
+			navVeilederId = null,
+			navVeilederEpost = null,
+			navVeilederNavn = null,
+			navVeilederTelefon = null,
+			skjultAvAnsattId = null,
+			skjultDato = null
+		)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 
 		val response = sendRequest(
 			method = "GET",
 			path = "/tiltaksarrangor/koordinator/deltakerliste/$deltakerlisteId",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		val expectedJson = """

@@ -128,6 +128,30 @@ class DeltakerlisteRepository(
 		)
 	}
 
+	fun getDeltakerlisteMedArrangor(deltakerlisteId: UUID): DeltakerlisteMedArrangorDbo? {
+		return template.query(
+			"""
+				SELECT deltakerliste.id as deltakerliste_id,
+						deltakerliste.navn as deltakerliste_navn,
+						status,
+						arrangor_id,
+						tiltak_navn,
+						tiltak_type,
+						start_dato,
+						slutt_dato,
+						er_kurs,
+						a.navn as arrangor_navn,
+						a.organisasjonsnummer,
+						a.overordnet_arrangor_id
+				FROM deltakerliste
+						 INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
+				WHERE deltakerliste.id = :id;
+			""".trimIndent(),
+			sqlParameters("id" to deltakerlisteId),
+			deltakerlisteMedArrangorRowMapper
+		).firstOrNull()
+	}
+
 	fun getDeltakerlisterMedArrangor(arrangorIder: List<UUID>): List<DeltakerlisteMedArrangorDbo> {
 		if (arrangorIder.isEmpty()) {
 			return emptyList()

@@ -35,7 +35,8 @@ class KoordinatorController(
 	fun getDeltakerliste(
 		@PathVariable deltakerlisteId: UUID
 	): Deltakerliste {
-		return koordinatorService.getDeltakerliste(deltakerlisteId)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		return koordinatorService.getDeltakerliste(deltakerlisteId, personIdent)
 	}
 
 	@GetMapping("/{deltakerlisteId}/veiledere")

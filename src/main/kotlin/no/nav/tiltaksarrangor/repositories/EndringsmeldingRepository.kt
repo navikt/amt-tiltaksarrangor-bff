@@ -70,6 +70,9 @@ class EndringsmeldingRepository(
 	}
 
 	fun getEndringsmeldingerForDeltakere(deltakerIder: List<UUID>): List<EndringsmeldingDbo> {
+		if (deltakerIder.isEmpty()) {
+			return emptyList()
+		}
 		return template.query(
 			"SELECT * FROM endringsmelding WHERE deltaker_id in(:ids)",
 			sqlParameters("ids" to deltakerIder),

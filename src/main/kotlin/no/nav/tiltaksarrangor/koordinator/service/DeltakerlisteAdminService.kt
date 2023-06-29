@@ -57,9 +57,14 @@ class DeltakerlisteAdminService(
 		val deltakerliste = deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
 			?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
 
-		if (ansattService.harRolleHosArrangor(arrangorId = deltakerliste.arrangorId, rolle = AnsattRolle.KOORDINATOR, roller = ansatt.roller)) {
+		val harKoordinatorRolleHosArrangor = ansattService.harRolleHosArrangor(
+			arrangorId = deltakerliste.arrangorId,
+			rolle = AnsattRolle.KOORDINATOR,
+			roller = ansatt.roller
+		)
+		if (harKoordinatorRolleHosArrangor) {
 			if (!deltakerliste.erKurs || isDev() || erPilot(deltakerlisteId)) {
-				if (!deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
+				if (!ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
 					amtTiltakClient.opprettTilgangTilGjennomforing(deltakerlisteId)
 					ansattService.leggTilDeltakerliste(
 						ansattId = ansatt.id,
@@ -84,8 +89,13 @@ class DeltakerlisteAdminService(
 		val deltakerliste = deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
 			?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
 
-		if (ansattService.harRolleHosArrangor(arrangorId = deltakerliste.arrangorId, rolle = AnsattRolle.KOORDINATOR, roller = ansatt.roller)) {
-			if (deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
+		val harKoordinatorRolleHosArrangor = ansattService.harRolleHosArrangor(
+			arrangorId = deltakerliste.arrangorId,
+			rolle = AnsattRolle.KOORDINATOR,
+			roller = ansatt.roller
+		)
+		if (harKoordinatorRolleHosArrangor) {
+			if (ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
 				amtTiltakClient.fjernTilgangTilGjennomforing(deltakerlisteId)
 				ansattService.fjernDeltakerliste(
 					ansattId = ansatt.id,
@@ -108,10 +118,6 @@ class DeltakerlisteAdminService(
 			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke koordinator hos noen arrangører")
 		}
 		return ansatt
-	}
-
-	private fun deltakerlisteErLagtTil(ansattDbo: AnsattDbo, deltakerlisteId: UUID): Boolean {
-		return ansattDbo.deltakerlister.find { it.deltakerlisteId == deltakerlisteId } != null
 	}
 
 	private fun finnOverordnetArrangorNavn(overordnetArrangorId: UUID, overordnedeArrangorer: List<ArrangorDbo>): String? {

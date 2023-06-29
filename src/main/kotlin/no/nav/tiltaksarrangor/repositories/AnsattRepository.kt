@@ -57,7 +57,10 @@ class AnsattRepository(
 				mellomnavn = rs.getString("mellomnavn"),
 				etternavn = rs.getString("etternavn")
 			),
-			veilederType = Veiledertype.valueOf(rs.getString("veiledertype"))
+			veilederDeltakerDbo = VeilederDeltakerDbo(
+				deltakerId = UUID.fromString(rs.getString("deltaker_id")),
+				veilederType = Veiledertype.valueOf(rs.getString("veiledertype"))
+			)
 		)
 	}
 
@@ -260,6 +263,37 @@ class AnsattRepository(
 			""".trimIndent(),
 			sqlParameters("deltaker_id" to deltakerId),
 			ansattVeilederRowMapper
+		)
+	}
+
+	fun getVeiledereForDeltakere(deltakerIder: List<UUID>): List<AnsattVeilederDbo> {
+		return template.query(
+			"""
+				SELECT *
+				FROM veileder_deltaker
+						 INNER JOIN ansatt a ON a.id = veileder_deltaker.ansatt_id
+				WHERE veileder_deltaker.deltaker_id in(:deltaker_ids);
+			""".trimIndent(),
+			sqlParameters("deltaker_ids" to deltakerIder),
+			ansattVeilederRowMapper
+		)
+	}
+
+	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID): List<AnsattPersonaliaDbo> {
+		return template.query(
+			"""
+				SELECT distinct a.*
+				FROM ansatt a
+						 INNER JOIN ansatt_rolle ar on a.id = ar.ansatt_id
+						 INNER JOIN koordinator_deltakerliste kdl on ar.ansatt_id = kdl.ansatt_id
+				WHERE kdl.deltakerliste_id = :deltakerliste_id
+				  AND ar.rolle = :rolle;
+			""".trimIndent(),
+			sqlParameters(
+				"deltakerliste_id" to deltakerlisteId,
+				"rolle" to AnsattRolle.KOORDINATOR.name
+			),
+			ansattPersonaliaRowMapper
 		)
 	}
 
