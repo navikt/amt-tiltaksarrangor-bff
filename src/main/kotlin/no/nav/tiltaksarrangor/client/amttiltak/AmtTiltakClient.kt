@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.client.amttiltak
 
-import no.nav.tiltaksarrangor.client.amttiltak.dto.EndringsmeldingDto
 import no.nav.tiltaksarrangor.client.amttiltak.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.DeltakerIkkeAktuellRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreDeltakelsesprosentRequest
@@ -10,7 +9,6 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
-import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -29,22 +27,6 @@ class AmtTiltakClient(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 	private val mediaTypeJson = "application/json".toMediaType()
-
-	fun getAktiveEndringsmeldinger(deltakerId: UUID): List<EndringsmeldingDto> {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/endringsmelding/aktiv?deltakerId=$deltakerId")
-			.get()
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulResponse(response.code, "endringsmeldinger for deltaker med id $deltakerId")
-			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
-
-			return fromJsonString<List<EndringsmeldingDto>>(body)
-		}
-	}
 
 	fun leggTilOppstartsdato(deltakerId: UUID, leggTilOppstartsdatoRequest: LeggTilOppstartsdatoRequest) {
 		val request = Request.Builder()
@@ -211,18 +193,6 @@ class AmtTiltakClient(
 		amtTiltakHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "fjerne deltakerliste med id $deltakerlisteId")
-			}
-		}
-	}
-
-	private fun handleUnsuccessfulResponse(responseCode: Int, requestedResource: String) {
-		when (responseCode) {
-			401 -> throw UnauthorizedException("Ikke tilgang til $requestedResource")
-			403 -> throw UnauthorizedException("Ikke tilgang til $requestedResource")
-			404 -> throw NoSuchElementException("Fant ikke $requestedResource")
-			else -> {
-				log.error("Kunne ikke hente $requestedResource fra amt-tiltak, responsekode: $responseCode")
-				throw RuntimeException("Kunne ikke hente $requestedResource")
 			}
 		}
 	}

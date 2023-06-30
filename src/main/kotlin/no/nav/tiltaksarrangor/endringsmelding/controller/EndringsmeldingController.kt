@@ -24,7 +24,8 @@ class EndringsmeldingController(
 	@GetMapping("/deltaker/{deltakerId}/endringsmeldinger")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getAktiveEndringsmeldinger(@PathVariable deltakerId: UUID): List<Endringsmelding> {
-		return endringsmeldingService.getAktiveEndringsmeldinger(deltakerId)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		return endringsmeldingService.getAktiveEndringsmeldinger(deltakerId, personIdent)
 	}
 
 	@PostMapping("/deltaker/{deltakerId}/endringsmelding")

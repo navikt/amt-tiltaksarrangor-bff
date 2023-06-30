@@ -4,6 +4,8 @@ import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
+import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
+import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -11,6 +13,7 @@ import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
@@ -50,13 +53,60 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 
 	@Test
 	fun `getAktiveEndringsmeldinger - autentisert - returnerer 200`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")
-		mockAmtTiltakServer.addAktiveEndringsmeldingerResponse(deltakerId)
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmelding1 = EndringsmeldingDbo(
+			id = UUID.fromString("27446cc8-30ad-4030-94e3-de438c2af3c6"),
+			deltakerId = deltakerId,
+			type = EndringsmeldingType.AVSLUTT_DELTAKELSE,
+			innhold = Innhold.AvsluttDeltakelseInnhold(
+				sluttdato = LocalDate.of(2023, 3, 30),
+				aarsak = DeltakerStatusAarsak(
+					type = DeltakerStatusAarsak.Type.SYK,
+					beskrivelse = "har blitt syk"
+				)
+			)
+		)
+		val endringsmelding2 = EndringsmeldingDbo(
+			id = UUID.fromString("5029689f-3de6-4d97-9cfa-552f75625ef2"),
+			deltakerId = deltakerId,
+			type = EndringsmeldingType.DELTAKER_ER_AKTUELL,
+			innhold = null
+		)
+		val endringsmelding3 = EndringsmeldingDbo(
+			id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),
+			deltakerId = deltakerId,
+			type = EndringsmeldingType.ENDRE_SLUTTDATO,
+			innhold = Innhold.EndreSluttdatoInnhold(
+				sluttdato = LocalDate.of(2023, 5, 3)
+			)
+		)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding1)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding2)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding3)
 
 		val response = sendRequest(
 			method = "GET",
 			path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmeldinger",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		val expectedJson = """
