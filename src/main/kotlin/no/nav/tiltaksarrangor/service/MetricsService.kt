@@ -7,6 +7,7 @@ private const val innlogging_metric = "tiltaksarrangorbff_innlogging"
 private const val fjernet_deltaker_metric = "tiltaksarrangorbff_fjernet_deltaker"
 private const val lagt_til_deltakerliste_metric = "tiltaksarrangorbff_lagttil_deltakerliste"
 private const val fjernet_deltakerliste_metric = "tiltaksarrangorbff_fjernet_deltakerliste"
+private const val tildelt_veileder_metric = "tiltaksarrangorbff_tildelt_veileder"
 
 @Service
 class MetricsService(
@@ -19,6 +20,7 @@ class MetricsService(
 	private val fjernetDeltakerCounter = registry.counter(fjernet_deltaker_metric)
 	private val lagtTilDeltakerlisteCounter = registry.counter(lagt_til_deltakerliste_metric)
 	private val fjernetDeltakerlisteCounter = registry.counter(fjernet_deltakerliste_metric)
+	private val tildeltVeilederCounter = registry.counter(tildelt_veileder_metric)
 
 	fun incInnloggetAnsatt(roller: List<String>) {
 		if (roller.isEmpty()) {
@@ -46,6 +48,10 @@ class MetricsService(
 
 	fun incFjernetDeltakerliste() {
 		fjernetDeltakerlisteCounter.increment()
+	}
+
+	fun incTildeltVeileder() {
+		tildeltVeilederCounter.increment()
 	}
 
 	enum class RollePermutasjon {

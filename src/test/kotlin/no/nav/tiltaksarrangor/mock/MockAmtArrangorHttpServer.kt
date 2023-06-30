@@ -29,6 +29,14 @@ class MockAmtArrangorHttpServer : MockHttpServer(name = "Amt-Arrangor Mock Serve
 		)
 	}
 
+	fun addOppdaterVeilederForDeltakerResponse(deltakerId: UUID) {
+		addResponseHandler(
+			path = "/api/ansatt/veiledere/$deltakerId",
+			MockResponse()
+				.setResponseCode(200)
+		)
+	}
+
 	private fun getAnsatt(ansattId: UUID, personIdent: String): AnsattDto {
 		return AnsattDto(
 			id = ansattId,

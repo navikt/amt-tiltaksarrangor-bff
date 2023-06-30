@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.koordinator.controller
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
@@ -19,6 +20,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
+import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -40,6 +42,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 	@AfterEach
 	internal fun tearDown() {
 		mockAmtTiltakServer.resetHttpServer()
+		mockAmtArrangorServer.resetHttpServer()
 		cleanDatabase()
 	}
 
@@ -123,13 +126,61 @@ class KoordinatorControllerTest : IntegrationTest() {
 
 	@Test
 	fun `getTilgjengeligeVeiledere - autentisert - returnerer 200`() {
-		val deltakerlisteId = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a")
-		mockAmtTiltakServer.addTilgjengeligeVeiledereResponse(deltakerlisteId)
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Tiltaksnavnet",
+			tiltakType = "ARBFORB",
+			startDato = null,
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.fromString("29bf6799-bb56-4a86-857b-99b529b3dfc4"),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn1",
+				mellomnavn = null,
+				etternavn = "Etternavn1",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList()
+			)
+		)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.fromString("e824dbfe-5317-491b-82ed-03b870eed963"),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn2",
+				mellomnavn = null,
+				etternavn = "Etternavn2",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.MEDVEILEDER))
+			)
+		)
 
 		val response = sendRequest(
 			method = "GET",
-			path = "/tiltaksarrangor/koordinator/$deltakerlisteId/veiledere",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			path = "/tiltaksarrangor/koordinator/${deltakerliste.id}/veiledere",
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		val expectedJson = """
@@ -163,17 +214,72 @@ class KoordinatorControllerTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `tildelVeiledereForDeltaker - autentisert, avslutt deltakelse - returnerer 200`() {
+	fun `tildelVeiledereForDeltaker - autentisert, tildeler veiledere - returnerer 200`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = UUID.randomUUID(),
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Tiltaksnavnet",
+			tiltakType = "ARBFORB",
+			startDato = null,
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val veileder1Id = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = veileder1Id,
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn1",
+				mellomnavn = null,
+				etternavn = "Etternavn1",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val veileder2Id = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = veileder2Id,
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn2",
+				mellomnavn = null,
+				etternavn = "Etternavn2",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList()
+			)
+		)
+
 		mockAmtTiltakServer.addTildelVeiledereForDeltakerResponse(deltakerId)
+		mockAmtArrangorServer.addOppdaterVeilederForDeltakerResponse(deltakerId)
 		val requestBody = LeggTilVeiledereRequest(
 			listOf(
 				VeilederRequest(
-					ansattId = UUID.randomUUID(),
+					ansattId = veileder1Id,
 					erMedveileder = false
 				),
 				VeilederRequest(
-					ansattId = UUID.randomUUID(),
+					ansattId = veileder2Id,
 					erMedveileder = true
 				)
 			)
@@ -183,10 +289,18 @@ class KoordinatorControllerTest : IntegrationTest() {
 			method = "POST",
 			path = "/tiltaksarrangor/koordinator/veiledere?deltakerId=$deltakerId",
 			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		response.code shouldBe 200
+
+		val veileder1 = ansattRepository.getAnsatt(veileder1Id)
+		veileder1?.veilederDeltakere?.size shouldBe 1
+		veileder1?.veilederDeltakere?.find { it.deltakerId == deltakerId && it.veilederType == Veiledertype.VEILEDER } shouldNotBe null
+
+		val veileder2 = ansattRepository.getAnsatt(veileder2Id)
+		veileder2?.veilederDeltakere?.size shouldBe 1
+		veileder2?.veilederDeltakere?.find { it.deltakerId == deltakerId && it.veilederType == Veiledertype.MEDVEILEDER } shouldNotBe null
 	}
 
 	@Test
@@ -288,35 +402,5 @@ class KoordinatorControllerTest : IntegrationTest() {
 		""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
-	}
-
-	private fun getDeltaker(deltakerId: UUID): DeltakerDbo {
-		return DeltakerDbo(
-			id = deltakerId,
-			deltakerlisteId = UUID.randomUUID(),
-			personident = UUID.randomUUID().toString(),
-			fornavn = "Fornavn",
-			mellomnavn = null,
-			etternavn = "Etternavn",
-			telefonnummer = null,
-			epost = null,
-			erSkjermet = false,
-			status = StatusType.DELTAR,
-			statusOpprettetDato = LocalDateTime.now(),
-			statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
-			dagerPerUke = null,
-			prosentStilling = null,
-			startdato = LocalDate.of(2023, 2, 15),
-			sluttdato = null,
-			innsoktDato = LocalDate.now(),
-			bestillingstekst = "tekst",
-			navKontor = null,
-			navVeilederId = null,
-			navVeilederEpost = null,
-			navVeilederNavn = null,
-			navVeilederTelefon = null,
-			skjultAvAnsattId = null,
-			skjultDato = null
-		)
 	}
 }

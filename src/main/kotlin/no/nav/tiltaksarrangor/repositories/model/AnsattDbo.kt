@@ -38,6 +38,16 @@ data class VeilederDeltakerDbo(
 	val veilederType: Veiledertype
 )
 
+data class AnsattRolleMedAnsattIdDbo(
+	val ansattId: UUID,
+	val ansattRolleDbo: AnsattRolleDbo
+)
+
+data class VeilederForDeltakerDbo(
+	val ansattId: UUID,
+	val veilederType: Veiledertype
+)
+
 data class AnsattVeilederDbo(
 	val ansattPersonaliaDbo: AnsattPersonaliaDbo,
 	val veilederDeltakerDbo: VeilederDeltakerDbo

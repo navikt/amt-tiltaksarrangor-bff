@@ -44,7 +44,8 @@ class KoordinatorController(
 	fun getTilgjengeligeVeiledere(
 		@PathVariable deltakerlisteId: UUID
 	): List<TilgjengeligVeileder> {
-		return koordinatorService.getTilgjengeligeVeiledere(deltakerlisteId)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		return koordinatorService.getTilgjengeligeVeiledere(deltakerlisteId, personIdent)
 	}
 
 	@PostMapping("/veiledere", params = ["deltakerId"])
@@ -53,6 +54,7 @@ class KoordinatorController(
 		@RequestParam("deltakerId") deltakerId: UUID,
 		@RequestBody request: LeggTilVeiledereRequest
 	) {
-		koordinatorService.tildelVeiledereForDeltaker(deltakerId, request)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		koordinatorService.tildelVeiledereForDeltaker(deltakerId, request, personIdent)
 	}
 }

@@ -5,9 +5,11 @@ import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattPersonaliaDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.AnsattRolleMedAnsattIdDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattVeilederDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
+import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -45,6 +47,16 @@ class AnsattRepository(
 		AnsattRolleDbo(
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 			rolle = AnsattRolle.valueOf(rs.getString("rolle"))
+		)
+	}
+
+	private val ansattRolleMedAnsattIdRowMapper = RowMapper { rs, _ ->
+		AnsattRolleMedAnsattIdDbo(
+			ansattId = UUID.fromString(rs.getString("ansatt_id")),
+			ansattRolleDbo = AnsattRolleDbo(
+				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
+				rolle = AnsattRolle.valueOf(rs.getString("rolle"))
+			)
 		)
 	}
 
@@ -87,6 +99,30 @@ class AnsattRepository(
 				"deltakerliste_id" to deltakerliste.deltakerlisteId
 			)
 		)
+	}
+
+	fun updateVeiledereForDeltaker(deltakerId: UUID, veiledere: List<VeilederForDeltakerDbo>) {
+		template.update(
+			"DELETE FROM veileder_deltaker WHERE deltaker_id = :deltaker_id",
+			sqlParameters("deltaker_id" to deltakerId)
+		)
+		veiledere.forEach {
+			val sql = """
+			INSERT INTO veileder_deltaker(ansatt_id, deltaker_id, veiledertype)
+			VALUES (:ansatt_id,
+					:deltaker_id,
+					:veiledertype)
+			""".trimIndent()
+
+			template.update(
+				sql,
+				sqlParameters(
+					"ansatt_id" to it.ansattId,
+					"deltaker_id" to deltakerId,
+					"veiledertype" to it.veilederType.name
+				)
+			)
+		}
 	}
 
 	fun deleteKoordinatorDeltakerliste(ansattId: UUID, deltakerliste: KoordinatorDeltakerlisteDbo) {
@@ -279,7 +315,7 @@ class AnsattRepository(
 		)
 	}
 
-	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID): List<AnsattPersonaliaDbo> {
+	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID, arrangorId: UUID): List<AnsattPersonaliaDbo> {
 		return template.query(
 			"""
 				SELECT distinct a.*
@@ -287,11 +323,30 @@ class AnsattRepository(
 						 INNER JOIN ansatt_rolle ar on a.id = ar.ansatt_id
 						 INNER JOIN koordinator_deltakerliste kdl on ar.ansatt_id = kdl.ansatt_id
 				WHERE kdl.deltakerliste_id = :deltakerliste_id
+				  AND ar.arrangor_id = :arrangor_id
 				  AND ar.rolle = :rolle;
 			""".trimIndent(),
 			sqlParameters(
 				"deltakerliste_id" to deltakerlisteId,
+				"arrangor_id" to arrangorId,
 				"rolle" to AnsattRolle.KOORDINATOR.name
+			),
+			ansattPersonaliaRowMapper
+		)
+	}
+
+	fun getVeiledereForArrangor(arrangorId: UUID): List<AnsattPersonaliaDbo> {
+		return template.query(
+			"""
+				SELECT distinct a.*
+				FROM ansatt a
+						 INNER JOIN ansatt_rolle ar on a.id = ar.ansatt_id
+				WHERE ar.arrangor_id = :arrangor_id
+				  AND ar.rolle = :rolle;
+			""".trimIndent(),
+			sqlParameters(
+				"arrangor_id" to arrangorId,
+				"rolle" to AnsattRolle.VEILEDER.name
 			),
 			ansattPersonaliaRowMapper
 		)
@@ -302,6 +357,14 @@ class AnsattRepository(
 			"SELECT * FROM ansatt_rolle WHERE ansatt_id = :ansatt_id",
 			sqlParameters("ansatt_id" to ansattId),
 			ansattRolleRowMapper
+		)
+	}
+
+	fun getAnsattRolleLister(ansattIder: List<UUID>): List<AnsattRolleMedAnsattIdDbo> {
+		return template.query(
+			"SELECT * FROM ansatt_rolle WHERE ansatt_id in(:ansatt_ids)",
+			sqlParameters("ansatt_ids" to ansattIder),
+			ansattRolleMedAnsattIdRowMapper
 		)
 	}
 

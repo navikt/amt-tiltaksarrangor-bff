@@ -1,6 +1,8 @@
 package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
+import no.nav.tiltaksarrangor.client.amtarrangor.dto.OppdaterVeiledereForDeltakerRequest
+import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.model.Veileder
@@ -9,6 +11,7 @@ import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattPersonaliaDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -58,8 +61,40 @@ class AnsattService(
 		ansattRepository.deleteKoordinatorDeltakerliste(ansattId = ansattId, deltakerliste = KoordinatorDeltakerlisteDbo(deltakerlisteId))
 	}
 
-	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID): List<AnsattPersonaliaDbo> {
-		return ansattRepository.getKoordinatorerForDeltakerliste(deltakerlisteId)
+	fun tildelVeiledereForDeltaker(deltakerId: UUID, arrangorId: UUID, veiledereForDeltaker: List<VeilederForDeltakerDbo>) {
+		val gamleVeiledereForDeltaker = ansattRepository.getVeiledereForDeltaker(deltakerId)
+		amtArrangorClient.oppdaterVeilederForDeltaker(
+			deltakerId = deltakerId,
+			oppdaterVeiledereForDeltakerRequest = createOppdaterVeiledereForDeltakerRequest(
+				arrangorId = arrangorId,
+				nyeVeiledereForDeltaker = veiledereForDeltaker,
+				gamleVeiledereForDeltaker = gamleVeiledereForDeltaker.map { VeilederForDeltakerDbo(it.ansattPersonaliaDbo.id, it.veilederDeltakerDbo.veilederType) }
+			)
+		)
+		ansattRepository.updateVeiledereForDeltaker(deltakerId = deltakerId, veiledere = veiledereForDeltaker)
+	}
+
+	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID, arrangorId: UUID): List<AnsattPersonaliaDbo> {
+		return ansattRepository.getKoordinatorerForDeltakerliste(deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
+	}
+
+	fun getVeiledereForArrangor(arrangorId: UUID): List<AnsattPersonaliaDbo> {
+		return ansattRepository.getVeiledereForArrangor(arrangorId)
+	}
+
+	fun erAlleAnsatteVeiledereHosArrangor(ansattIder: List<UUID>, arrangorId: UUID): Boolean {
+		if (ansattIder.isEmpty()) {
+			return false
+		}
+		val roller = ansattRepository.getAnsattRolleLister(ansattIder).filter { it.ansattRolleDbo.arrangorId == arrangorId }
+		ansattIder.forEach { ansattId ->
+			val erVeilederHosArrangor = harRolleHosArrangor(arrangorId, AnsattRolle.VEILEDER, roller.filter { it.ansattId == ansattId }.map { it.ansattRolleDbo })
+			if (!erVeilederHosArrangor) {
+				log.info("Ansatt med id $ansattId er ikke veileder hos arrangør $arrangorId")
+				return false
+			}
+		}
+		return true
 	}
 
 	fun harRoller(roller: List<AnsattRolleDbo>): Boolean {
@@ -95,5 +130,19 @@ class AnsattService(
 
 	fun deltakerlisteErLagtTil(ansattDbo: AnsattDbo, deltakerlisteId: UUID): Boolean {
 		return ansattDbo.deltakerlister.find { it.deltakerlisteId == deltakerlisteId } != null
+	}
+
+	private fun createOppdaterVeiledereForDeltakerRequest(
+		arrangorId: UUID,
+		nyeVeiledereForDeltaker: List<VeilederForDeltakerDbo>,
+		gamleVeiledereForDeltaker: List<VeilederForDeltakerDbo>
+	): OppdaterVeiledereForDeltakerRequest {
+		val veiledereSomFjernes = gamleVeiledereForDeltaker.filter { !nyeVeiledereForDeltaker.contains(it) }
+		val veiledereSomLeggesTil = nyeVeiledereForDeltaker.filter { !gamleVeiledereForDeltaker.contains(it) }
+		return OppdaterVeiledereForDeltakerRequest(
+			arrangorId = arrangorId,
+			veilederSomLeggesTil = veiledereSomLeggesTil.map { VeilederAnsatt(ansattId = it.ansattId, type = it.veilederType) },
+			veilederSomFjernes = veiledereSomFjernes.map { VeilederAnsatt(ansattId = it.ansattId, type = it.veilederType) }
+		)
 	}
 }
