@@ -112,6 +112,10 @@ class AnsattRepository(
 			VALUES (:ansatt_id,
 					:deltaker_id,
 					:veiledertype)
+			ON CONFLICT (ansatt_id, deltaker_id) DO UPDATE SET
+					ansatt_id 		= :ansatt_id,
+					deltaker_id		= :deltaker_id,
+					veiledertype 	= :veiledertype
 			""".trimIndent()
 
 			template.update(
@@ -181,6 +185,10 @@ class AnsattRepository(
 			VALUES (:ansatt_id,
 					:arrangor_id,
 					:rolle)
+			ON CONFLICT (ansatt_id, arrangor_id, rolle) DO UPDATE SET
+					ansatt_id 		= :ansatt_id,
+					arrangor_id		= :arrangor_id,
+					rolle 			= :rolle
 			""".trimIndent()
 
 			template.update(
@@ -204,6 +212,7 @@ class AnsattRepository(
 			INSERT INTO koordinator_deltakerliste(ansatt_id, deltakerliste_id)
 			VALUES (:ansatt_id,
 					:deltakerliste_id)
+			ON CONFLICT (ansatt_id, deltakerliste_id) DO NOTHING
 			""".trimIndent()
 
 			template.update(
@@ -227,6 +236,10 @@ class AnsattRepository(
 			VALUES (:ansatt_id,
 					:deltaker_id,
 					:veiledertype)
+			ON CONFLICT (ansatt_id, deltaker_id) DO UPDATE SET
+				ansatt_id 		= :ansatt_id,
+				deltaker_id		= :deltaker_id,
+				veiledertype 	= :veiledertype
 			""".trimIndent()
 
 			template.update(
