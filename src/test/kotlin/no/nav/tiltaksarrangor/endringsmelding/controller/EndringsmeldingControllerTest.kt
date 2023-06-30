@@ -3,21 +3,39 @@ package no.nav.tiltaksarrangor.endringsmelding.controller
 import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
+import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.repositories.AnsattRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
+import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
+import no.nav.tiltaksarrangor.testutils.getDeltaker
+import no.nav.tiltaksarrangor.testutils.getDeltakerliste
+import no.nav.tiltaksarrangor.testutils.getEndringsmelding
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.util.UUID
 
 class EndringsmeldingControllerTest : IntegrationTest() {
 	private val mediaTypeJson = "application/json".toMediaType()
+	private val template = NamedParameterJdbcTemplate(postgresDataSource)
+	private val ansattRepository = AnsattRepository(template)
+	private val deltakerRepository = DeltakerRepository(template)
+	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
+	private val endringsmeldingRepository = EndringsmeldingRepository(template)
 
 	@AfterEach
 	internal fun tearDown() {
 		mockAmtTiltakServer.resetHttpServer()
+		cleanDatabase()
 	}
 
 	@Test
@@ -153,13 +171,35 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 
 	@Test
 	fun `slettEndringsmelding - autentisert - returnerer 200`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
 		val endringsmeldingId = UUID.fromString("27446cc8-30ad-4030-94e3-de438c2af3c6")
+		val endringsmelding = getEndringsmelding(deltakerId).copy(id = endringsmeldingId)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
 		mockAmtTiltakServer.addTilbakekallEndringsmeldingResponse(endringsmeldingId)
 
 		val response = sendRequest(
 			method = "DELETE",
 			path = "/tiltaksarrangor/endringsmelding/$endringsmeldingId",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		response.code shouldBe 200

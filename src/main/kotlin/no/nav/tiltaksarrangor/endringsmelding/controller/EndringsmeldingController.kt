@@ -4,6 +4,7 @@ import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.endringsmelding.service.EndringsmeldingService
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.service.TokenService
 import no.nav.tiltaksarrangor.utils.Issuer
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,7 +18,8 @@ import java.util.UUID
 @RestController
 @RequestMapping("/tiltaksarrangor")
 class EndringsmeldingController(
-	private val endringsmeldingService: EndringsmeldingService
+	private val endringsmeldingService: EndringsmeldingService,
+	private val tokenService: TokenService
 ) {
 	@GetMapping("/deltaker/{deltakerId}/endringsmeldinger")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
@@ -39,6 +41,7 @@ class EndringsmeldingController(
 	fun slettEndringsmelding(
 		@PathVariable endringsmeldingId: UUID
 	) {
-		endringsmeldingService.slettEndringsmelding(endringsmeldingId)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		endringsmeldingService.slettEndringsmelding(endringsmeldingId, personIdent)
 	}
 }

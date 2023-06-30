@@ -1,11 +1,21 @@
 package no.nav.tiltaksarrangor.repositories
 
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.typerUtenInnhold
+import no.nav.tiltaksarrangor.model.StatusType
+import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
+import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingMedDeltakerOgDeltakerliste
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
+import no.nav.tiltaksarrangor.utils.getNullableDouble
+import no.nav.tiltaksarrangor.utils.getNullableInt
+import no.nav.tiltaksarrangor.utils.getNullableLocalDate
+import no.nav.tiltaksarrangor.utils.getNullableLocalDateTime
+import no.nav.tiltaksarrangor.utils.getNullableUUID
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.postgresql.util.PGobject
 import org.slf4j.LoggerFactory
@@ -27,6 +37,56 @@ class EndringsmeldingRepository(
 			deltakerId = UUID.fromString(rs.getString("deltaker_id")),
 			type = type,
 			innhold = parseInnholdJson(rs.getString("innhold"), type)
+		)
+	}
+
+	private val endringsmeldingMedDeltakerOgDeltakerlisteRowMapper = RowMapper { rs, _ ->
+		val type = EndringsmeldingType.valueOf(rs.getString("type"))
+		EndringsmeldingMedDeltakerOgDeltakerliste(
+			endringsmeldingDbo = EndringsmeldingDbo(
+				id = UUID.fromString(rs.getString("endringsmeldingid")),
+				deltakerId = UUID.fromString(rs.getString("deltakerid")),
+				type = type,
+				innhold = parseInnholdJson(rs.getString("innhold"), type)
+			),
+			deltakerDbo = DeltakerDbo(
+				id = UUID.fromString(rs.getString("deltakerid")),
+				deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
+				personident = rs.getString("personident"),
+				fornavn = rs.getString("fornavn"),
+				mellomnavn = rs.getString("mellomnavn"),
+				etternavn = rs.getString("etternavn"),
+				telefonnummer = rs.getString("telefonnummer"),
+				epost = rs.getString("epost"),
+				erSkjermet = rs.getBoolean("er_skjermet"),
+				status = StatusType.valueOf(rs.getString("deltakerstatus")),
+				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
+				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
+				dagerPerUke = rs.getNullableInt("dager_per_uke"),
+				prosentStilling = rs.getNullableDouble("prosent_stilling"),
+				startdato = rs.getNullableLocalDate("deltaker_start_dato"),
+				sluttdato = rs.getNullableLocalDate("deltaker_slutt_dato"),
+				innsoktDato = rs.getDate("innsokt_dato").toLocalDate(),
+				bestillingstekst = rs.getString("bestillingstekst"),
+				navKontor = rs.getString("navkontor"),
+				navVeilederId = rs.getNullableUUID("navveileder_id"),
+				navVeilederNavn = rs.getString("navveileder_navn"),
+				navVeilederEpost = rs.getString("navveileder_epost"),
+				navVeilederTelefon = rs.getString("navveileder_telefon"),
+				skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
+				skjultDato = rs.getNullableLocalDateTime("skjult_dato")
+			),
+			deltakerlisteDbo = DeltakerlisteDbo(
+				id = UUID.fromString(rs.getString("deltakerliste_id")),
+				navn = rs.getString("navn"),
+				status = DeltakerlisteStatus.valueOf(rs.getString("deltakerliste_status")),
+				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
+				tiltakNavn = rs.getString("tiltak_navn"),
+				tiltakType = rs.getString("tiltak_type"),
+				startDato = rs.getNullableLocalDate("deltakerliste_start_dato"),
+				sluttDato = rs.getNullableLocalDate("delakerliste_slutt_dato"),
+				erKurs = rs.getBoolean("er_kurs")
+			)
 		)
 	}
 
@@ -66,6 +126,55 @@ class EndringsmeldingRepository(
 			"SELECT * FROM endringsmelding WHERE id = :id",
 			sqlParameters("id" to endringsmeldingId),
 			endringsmeldingRowMapper
+		).firstOrNull()
+	}
+
+	fun getEndringsmeldingMedDeltakerOgDeltakerliste(endringsmeldingId: UUID): EndringsmeldingMedDeltakerOgDeltakerliste? {
+		return template.query(
+			"""
+				SELECT endringsmelding.id as endringsmeldingid,
+						type,
+						innhold,
+						deltaker.id as deltakerid,
+						deltakerliste_id,
+						personident,
+						fornavn,
+						mellomnavn,
+						etternavn,
+						telefonnummer,
+						epost,
+						er_skjermet,
+						deltaker.status as deltakerstatus,
+						status_gyldig_fra,
+						status_opprettet_dato,
+						dager_per_uke,
+						prosent_stilling,
+						deltaker.start_dato as deltaker_start_dato,
+						deltaker.slutt_dato as deltaker_slutt_dato,
+						innsokt_dato,
+						bestillingstekst,
+						navkontor,
+						navveileder_id,
+						navveileder_navn,
+						navveileder_epost,
+						navveileder_telefon,
+						skjult_av_ansatt_id,
+						skjult_dato,
+						navn,
+						deltakerliste.status as deltakerliste_status,
+						arrangor_id,
+						tiltak_navn,
+						tiltak_type,
+						deltakerliste.start_dato as deltakerliste_start_dato,
+						deltakerliste.slutt_dato as delakerliste_slutt_dato,
+						er_kurs
+				FROM endringsmelding
+				         INNER JOIN deltaker ON deltaker.id = endringsmelding.deltaker_id
+				         INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
+				WHERE endringsmelding.id = :id
+			""".trimIndent(),
+			sqlParameters("id" to endringsmeldingId),
+			endringsmeldingMedDeltakerOgDeltakerlisteRowMapper
 		).firstOrNull()
 	}
 
