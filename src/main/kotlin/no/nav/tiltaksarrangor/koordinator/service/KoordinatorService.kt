@@ -15,6 +15,7 @@ import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
@@ -26,9 +27,12 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteMedArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
+import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
+import no.nav.tiltaksarrangor.service.MetricsService
 import no.nav.tiltaksarrangor.utils.erPilot
 import no.nav.tiltaksarrangor.utils.isDev
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
 
@@ -39,8 +43,11 @@ class KoordinatorService(
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val arrangorRepository: ArrangorRepository,
 	private val deltakerRepository: DeltakerRepository,
-	private val endringsmeldingRepository: EndringsmeldingRepository
+	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val metricsService: MetricsService
 ) {
+	private val log = LoggerFactory.getLogger(javaClass)
+
 	fun getMineDeltakerlister(personIdent: String): MineDeltakerlister {
 		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
 		if (!ansattService.harRoller(ansatt.roller)) {
@@ -73,7 +80,7 @@ class KoordinatorService(
 			roller = ansatt.roller
 		)
 
-		if (harKoordinatorRolleHosArrangor) {
+		if (harKoordinatorRolleHosArrangor && ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
 			return ansattService.getVeiledereForArrangor(deltakerliste.arrangorId).map {
 				TilgjengeligVeileder(
 					ansattId = it.id,
@@ -87,8 +94,54 @@ class KoordinatorService(
 		}
 	}
 
-	fun tildelVeiledereForDeltaker(deltakerId: UUID, request: LeggTilVeiledereRequest) {
-		amtTiltakClient.tildelVeiledereForDeltaker(deltakerId, request)
+	fun tildelVeiledereForDeltaker(deltakerId: UUID, request: LeggTilVeiledereRequest, personIdent: String) {
+		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
+		val deltakerMedDeltakerlisteDbo = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+
+		val harKoordinatorRolleHosArrangor = ansattService.harRolleHosArrangor(
+			arrangorId = deltakerMedDeltakerlisteDbo.deltakerliste.arrangorId,
+			rolle = AnsattRolle.KOORDINATOR,
+			roller = ansatt.roller
+		)
+		if (harKoordinatorRolleHosArrangor && ansattService.deltakerlisteErLagtTil(ansatt, deltakerMedDeltakerlisteDbo.deltakerliste.id)) {
+			validerRequest(request)
+			if (!ansattService.erAlleAnsatteVeiledereHosArrangor(
+					ansattIder = request.veiledere.map { it.ansattId },
+					arrangorId = deltakerMedDeltakerlisteDbo.deltakerliste.arrangorId
+				)
+			) {
+				throw UnauthorizedException("Alle ansatte må ha veileder-rolle hos arrangør")
+			}
+			amtTiltakClient.tildelVeiledereForDeltaker(deltakerId, request)
+			ansattService.tildelVeiledereForDeltaker(
+				deltakerId = deltakerId,
+				arrangorId = deltakerMedDeltakerlisteDbo.deltakerliste.arrangorId,
+				veiledereForDeltaker = request.veiledere.map {
+					VeilederForDeltakerDbo(
+						ansattId = it.ansattId,
+						veilederType = it.toVeiledertype()
+					)
+				}
+			)
+			metricsService.incTildeltVeileder()
+			log.info("Lagt til veiledere for deltaker $deltakerId")
+		} else {
+			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til å tildele veileder for deltaker med id $deltakerId")
+		}
+	}
+
+	private fun validerRequest(request: LeggTilVeiledereRequest) {
+		if (request.veiledere.count { it.erMedveileder } > 3) {
+			throw ValidationException("Deltakere kan ikke ha flere enn 3 medveiledere")
+		}
+		if (request.veiledere.count { !it.erMedveileder } > 1) {
+			throw ValidationException("Deltakere kan ikke ha flere enn en veileder")
+		}
+		val unikeAnsatte = request.veiledere.distinctBy { it.ansattId }
+		if (request.veiledere.size > unikeAnsatte.size) {
+			throw ValidationException("Ansatt kan ikke ha flere veilederroller for en deltaker")
+		}
 	}
 
 	fun getDeltakerliste(deltakerlisteId: UUID, personIdent: String): Deltakerliste {
@@ -114,7 +167,10 @@ class KoordinatorService(
 
 	private fun getDeltakerliste(deltakerlisteMedArrangor: DeltakerlisteMedArrangorDbo): Deltakerliste {
 		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
-		val koordinatorer = ansattService.getKoordinatorerForDeltakerliste(deltakerlisteId = deltakerlisteMedArrangor.deltakerlisteDbo.id)
+		val koordinatorer = ansattService.getKoordinatorerForDeltakerliste(
+			deltakerlisteId = deltakerlisteMedArrangor.deltakerlisteDbo.id,
+			arrangorId = deltakerlisteMedArrangor.arrangorDbo.id
+		)
 			.sortedBy { it.etternavn } // sorteringen er kun for KoordinatorControllerTest sin skyld
 
 		val deltakere = deltakerRepository.getDeltakereForDeltakerliste(deltakerlisteMedArrangor.deltakerlisteDbo.id)

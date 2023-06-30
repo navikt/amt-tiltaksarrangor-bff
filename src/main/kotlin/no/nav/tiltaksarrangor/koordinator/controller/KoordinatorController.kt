@@ -54,6 +54,7 @@ class KoordinatorController(
 		@RequestParam("deltakerId") deltakerId: UUID,
 		@RequestBody request: LeggTilVeiledereRequest
 	) {
-		koordinatorService.tildelVeiledereForDeltaker(deltakerId, request)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		koordinatorService.tildelVeiledereForDeltaker(deltakerId, request, personIdent)
 	}
 }

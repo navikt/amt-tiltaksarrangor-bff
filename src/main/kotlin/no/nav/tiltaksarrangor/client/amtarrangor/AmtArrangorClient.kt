@@ -1,8 +1,10 @@
 package no.nav.tiltaksarrangor.client.amtarrangor
 
+import no.nav.tiltaksarrangor.client.amtarrangor.dto.OppdaterVeiledereForDeltakerRequest
 import no.nav.tiltaksarrangor.ingest.model.AnsattDto
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.JsonUtils
+import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -84,5 +86,26 @@ class AmtArrangorClient(
 			}
 		}
 		log.info("Fjernet amt-arrangor deltakerliste $deltakerlisteId for ansatt $ansattId")
+	}
+
+	fun oppdaterVeilederForDeltaker(deltakerId: UUID, oppdaterVeiledereForDeltakerRequest: OppdaterVeiledereForDeltakerRequest) {
+		val request = Request.Builder()
+			.url("$amtArrangorUrl/api/ansatt/veiledere/$deltakerId")
+			.post(objectMapper.writeValueAsString(oppdaterVeiledereForDeltakerRequest).toRequestBody(mediaTypeJson))
+			.build()
+
+		amtArrangorHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				when (response.code) {
+					401 -> throw UnauthorizedException("Ikke tilgang til å oppdatere veiledere i amt-arrangør")
+					403 -> throw UnauthorizedException("Ikke tilgang til å oppdatere veiledere i amt-arrangør")
+					else -> {
+						log.error("Kunne ikke oppdatere veiledere for deltaker $deltakerId i amt-arrangør, responsekode: ${response.code}")
+						throw RuntimeException("Kunne ikke oppdatere veiledere")
+					}
+				}
+			}
+		}
+		log.info("Oppdatert amt-arrangor med veiledere for $deltakerId")
 	}
 }
