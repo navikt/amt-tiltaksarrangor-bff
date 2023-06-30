@@ -1,4 +1,4 @@
-package no.nav.tiltaksarrangor.controller.request
+package no.nav.tiltaksarrangor.endringsmelding.controller.request
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
