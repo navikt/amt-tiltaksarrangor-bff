@@ -7,8 +7,10 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.EndreOppstartsdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
+import no.nav.tiltaksarrangor.client.amttiltak.response.OpprettEndringsmeldingResponse
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.utils.JsonUtils
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -28,7 +30,7 @@ class AmtTiltakClient(
 	private val log = LoggerFactory.getLogger(javaClass)
 	private val mediaTypeJson = "application/json".toMediaType()
 
-	fun leggTilOppstartsdato(deltakerId: UUID, leggTilOppstartsdatoRequest: LeggTilOppstartsdatoRequest) {
+	fun leggTilOppstartsdato(deltakerId: UUID, leggTilOppstartsdatoRequest: LeggTilOppstartsdatoRequest): UUID {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/oppstartsdato")
 			.post(objectMapper.writeValueAsString(leggTilOppstartsdatoRequest).toRequestBody(mediaTypeJson))
@@ -38,10 +40,13 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "legge til oppstartdato for deltaker med id $deltakerId")
 			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return JsonUtils.fromJsonString<OpprettEndringsmeldingResponse>(body).id
 		}
 	}
 
-	fun endreOppstartsdato(deltakerId: UUID, endreOppstartsdatoRequest: EndreOppstartsdatoRequest) {
+	fun endreOppstartsdato(deltakerId: UUID, endreOppstartsdatoRequest: EndreOppstartsdatoRequest): UUID {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/oppstartsdato")
 			.patch(objectMapper.writeValueAsString(endreOppstartsdatoRequest).toRequestBody(mediaTypeJson))
@@ -51,10 +56,13 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "endre oppstartdato for deltaker med id $deltakerId")
 			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return JsonUtils.fromJsonString<OpprettEndringsmeldingResponse>(body).id
 		}
 	}
 
-	fun avsluttDeltakelse(deltakerId: UUID, avsluttDeltakelseRequest: AvsluttDeltakelseRequest) {
+	fun avsluttDeltakelse(deltakerId: UUID, avsluttDeltakelseRequest: AvsluttDeltakelseRequest): UUID {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/avslutt-deltakelse")
 			.patch(objectMapper.writeValueAsString(avsluttDeltakelseRequest).toRequestBody(mediaTypeJson))
@@ -64,10 +72,13 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "avslutte deltakelse for deltaker med id $deltakerId")
 			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return JsonUtils.fromJsonString<OpprettEndringsmeldingResponse>(body).id
 		}
 	}
 
-	fun forlengDeltakelse(deltakerId: UUID, forlengDeltakelseRequest: ForlengDeltakelseRequest) {
+	fun forlengDeltakelse(deltakerId: UUID, forlengDeltakelseRequest: ForlengDeltakelseRequest): UUID {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/forleng-deltakelse")
 			.patch(objectMapper.writeValueAsString(forlengDeltakelseRequest).toRequestBody(mediaTypeJson))
@@ -77,10 +88,13 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "forlenge deltakelse for deltaker med id $deltakerId")
 			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return JsonUtils.fromJsonString<OpprettEndringsmeldingResponse>(body).id
 		}
 	}
 
-	fun endreDeltakelsesprosent(deltakerId: UUID, endreDeltakelsesprosentRequest: EndreDeltakelsesprosentRequest) {
+	fun endreDeltakelsesprosent(deltakerId: UUID, endreDeltakelsesprosentRequest: EndreDeltakelsesprosentRequest): UUID {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/deltakelse-prosent")
 			.patch(objectMapper.writeValueAsString(endreDeltakelsesprosentRequest).toRequestBody(mediaTypeJson))
@@ -90,10 +104,13 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "endre deltakelsesprosent for deltaker med id $deltakerId")
 			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return JsonUtils.fromJsonString<OpprettEndringsmeldingResponse>(body).id
 		}
 	}
 
-	fun deltakerIkkeAktuell(deltakerId: UUID, deltakerIkkeAktuellRequest: DeltakerIkkeAktuellRequest) {
+	fun deltakerIkkeAktuell(deltakerId: UUID, deltakerIkkeAktuellRequest: DeltakerIkkeAktuellRequest): UUID {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/ikke-aktuell")
 			.patch(objectMapper.writeValueAsString(deltakerIkkeAktuellRequest).toRequestBody(mediaTypeJson))
@@ -103,10 +120,13 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "sette deltaker med id $deltakerId som ikke aktuell")
 			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return JsonUtils.fromJsonString<OpprettEndringsmeldingResponse>(body).id
 		}
 	}
 
-	fun deltakerErAktuell(deltakerId: UUID) {
+	fun deltakerErAktuell(deltakerId: UUID): UUID {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/er-aktuell")
 			.patch("".toRequestBody(mediaTypeJson))
@@ -116,10 +136,13 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "opprett DELTAKER_ER_AKTUELL endringsmelding på deltaker med id $deltakerId ")
 			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return JsonUtils.fromJsonString<OpprettEndringsmeldingResponse>(body).id
 		}
 	}
 
-	fun endreSluttdato(deltakerId: UUID, endreSluttdatoRequest: EndreSluttdatoRequest) {
+	fun endreSluttdato(deltakerId: UUID, endreSluttdatoRequest: EndreSluttdatoRequest): UUID {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/endre-sluttdato")
 			.patch(objectMapper.writeValueAsString(endreSluttdatoRequest).toRequestBody(mediaTypeJson))
@@ -129,6 +152,9 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "opprett ENDRE_SLUTTDATO endringsmelding på deltaker med id $deltakerId sluttdato: ${endreSluttdatoRequest.sluttdato}")
 			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return JsonUtils.fromJsonString<OpprettEndringsmeldingResponse>(body).id
 		}
 	}
 

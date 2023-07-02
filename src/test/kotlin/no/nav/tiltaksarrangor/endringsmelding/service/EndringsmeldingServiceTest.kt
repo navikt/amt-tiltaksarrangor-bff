@@ -9,6 +9,7 @@ import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
+import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
@@ -234,5 +235,195 @@ class EndringsmeldingServiceTest {
 
 		endringsmeldingRepository.getEndringsmelding(endringsmelding.id) shouldBe null
 		coVerify { amtTiltakClient.tilbakekallEndringsmelding(endringsmelding.id) }
+	}
+
+	@Test
+	fun `opprettEndringsmelding - ansatt har ikke rolle hos arrangor - returnerer unauthorized`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmeldingRequest = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold(LocalDate.now())
+		)
+
+		assertThrows<UnauthorizedException> {
+			endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
+		}
+	}
+
+	@Test
+	fun `opprettEndringsmelding - deltaker er skjult - returnerer skjult deltaker exception`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(skjultDato = LocalDateTime.now(), skjultAvAnsattId = UUID.randomUUID())
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmeldingRequest = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold(LocalDate.now())
+		)
+
+		assertThrows<SkjultDeltakerException> {
+			endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
+		}
+	}
+
+	@Test
+	fun `opprettEndringsmelding - legg til oppstartdato - oppretter endringsmelding`() {
+		val endringsmeldingId = UUID.randomUUID()
+		coEvery { amtTiltakClient.leggTilOppstartsdato(any(), any()) } returns endringsmeldingId
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmeldingRequest = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold(LocalDate.now())
+		)
+
+		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		endringsmeldinger.size shouldBe 1
+		val endringsmelding = endringsmeldinger.first()
+		endringsmelding.id shouldBe endringsmeldingId
+		endringsmelding.type shouldBe EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO
+		(endringsmelding.innhold as Innhold.LeggTilOppstartsdatoInnhold).oppstartsdato shouldBe LocalDate.now()
+	}
+
+	@Test
+	fun `opprettEndringsmelding - endre deltakelsesprosent - oppretter endringsmelding`() {
+		val endringsmeldingId = UUID.randomUUID()
+		coEvery { amtTiltakClient.endreDeltakelsesprosent(any(), any()) } returns endringsmeldingId
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmeldingRequest = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.EndreDeltakelseProsentInnhold(
+				deltakelseProsent = 50,
+				dagerPerUke = 4,
+				gyldigFraDato = LocalDate.now()
+			)
+		)
+
+		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		endringsmeldinger.size shouldBe 1
+		val endringsmelding = endringsmeldinger.first()
+		endringsmelding.id shouldBe endringsmeldingId
+		endringsmelding.type shouldBe EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT
+		(endringsmelding.innhold as Innhold.EndreDeltakelseProsentInnhold).nyDeltakelseProsent shouldBe 50
+		(endringsmelding.innhold as Innhold.EndreDeltakelseProsentInnhold).dagerPerUke shouldBe 4
+		(endringsmelding.innhold as Innhold.EndreDeltakelseProsentInnhold).gyldigFraDato shouldBe LocalDate.now()
+	}
+
+	@Test
+	fun `opprettEndringsmelding - har endringsmelding av samme type - sletter gammel endringsmelding og oppretter ny`() {
+		val endringsmeldingId = UUID.randomUUID()
+		coEvery { amtTiltakClient.forlengDeltakelse(any(), any()) } returns endringsmeldingId
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmelding1 = getEndringsmelding(deltakerId)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding1)
+		val endringsmeldingRequest = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.ForlengDeltakelseInnhold(
+				sluttdato = LocalDate.now()
+			)
+		)
+
+		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		endringsmeldinger.size shouldBe 1
+		val endringsmelding = endringsmeldinger.first()
+		endringsmelding.id shouldBe endringsmeldingId
+		endringsmelding.type shouldBe EndringsmeldingType.FORLENG_DELTAKELSE
+		(endringsmelding.innhold as Innhold.ForlengDeltakelseInnhold).sluttdato shouldBe LocalDate.now()
 	}
 }

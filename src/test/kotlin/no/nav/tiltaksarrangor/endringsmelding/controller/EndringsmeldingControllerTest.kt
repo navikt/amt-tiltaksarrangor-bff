@@ -135,7 +135,26 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 
 	@Test
 	fun `opprettEndringsmelding - autentisert, avslutt deltakelse - returnerer 200`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
 		mockAmtTiltakServer.addAvsluttDeltakelseResponse(deltakerId)
 		val requestBody = EndringsmeldingRequest(
 			innhold = EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
@@ -149,15 +168,42 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 			method = "POST",
 			path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
 			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		response.code shouldBe 200
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		endringsmeldinger.size shouldBe 1
+		val endringsmelding = endringsmeldinger.first()
+		endringsmelding.type shouldBe EndringsmeldingType.AVSLUTT_DELTAKELSE
+		(endringsmelding.innhold as Innhold.AvsluttDeltakelseInnhold).sluttdato shouldBe LocalDate.now()
+		(endringsmelding.innhold as Innhold.AvsluttDeltakelseInnhold).aarsak.type shouldBe DeltakerStatusAarsak.Type.FATT_JOBB
+		(endringsmelding.innhold as Innhold.AvsluttDeltakelseInnhold).aarsak.beskrivelse shouldBe null
 	}
 
 	@Test
 	fun `opprettEndringsmelding - deltaker er aktuell json request - returnerer 200`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
 		mockAmtTiltakServer.addDeltakerErAktuellResponse(deltakerId)
 
 		val requestStr = """{"innhold":{"type":"DELTAKER_ER_AKTUELL"}}"""
@@ -165,15 +211,40 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 			method = "POST",
 			path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
 			body = requestStr.toRequestBody(mediaTypeJson),
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		response.code shouldBe 200
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		endringsmeldinger.size shouldBe 1
+		val endringsmelding = endringsmeldinger.first()
+		endringsmelding.type shouldBe EndringsmeldingType.DELTAKER_ER_AKTUELL
+		endringsmelding.innhold shouldBe null
 	}
 
 	@Test
 	fun `opprettEndringsmelding - autentisert, deltaker er aktuell - returnerer 200`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
 		mockAmtTiltakServer.addDeltakerErAktuellResponse(deltakerId)
 		val requestBody = EndringsmeldingRequest(
 			innhold = EndringsmeldingRequest.Innhold.DeltakerErAktuellInnhold()
@@ -183,15 +254,40 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 			method = "POST",
 			path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
 			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		response.code shouldBe 200
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		endringsmeldinger.size shouldBe 1
+		val endringsmelding = endringsmeldinger.first()
+		endringsmelding.type shouldBe EndringsmeldingType.DELTAKER_ER_AKTUELL
+		endringsmelding.innhold shouldBe null
 	}
 
 	@Test
 	fun `opprettEndringsmelding - autentisert, endre sluttdato - returnerer 200`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
 		mockAmtTiltakServer.addEndreSluttdatoResponse(deltakerId)
 		val requestBody = EndringsmeldingRequest(
 			innhold = EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold(
@@ -203,10 +299,16 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 			method = "POST",
 			path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
 			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
 		)
 
 		response.code shouldBe 200
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		endringsmeldinger.size shouldBe 1
+		val endringsmelding = endringsmeldinger.first()
+		endringsmelding.type shouldBe EndringsmeldingType.ENDRE_SLUTTDATO
+		(endringsmelding.innhold as Innhold.EndreSluttdatoInnhold).sluttdato shouldBe LocalDate.now()
 	}
 
 	@Test

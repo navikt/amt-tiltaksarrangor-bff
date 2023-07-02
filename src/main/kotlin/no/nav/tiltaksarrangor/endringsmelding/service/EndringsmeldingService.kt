@@ -9,6 +9,7 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
+import no.nav.tiltaksarrangor.endringsmelding.controller.request.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
@@ -49,8 +50,23 @@ class EndringsmeldingService(
 		return endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).map { it.toEndringsmelding() }
 	}
 
-	fun opprettEndringsmelding(deltakerId: UUID, request: EndringsmeldingRequest) {
-		when (request.innhold.type) {
+	fun opprettEndringsmelding(deltakerId: UUID, request: EndringsmeldingRequest, personIdent: String) {
+		val ansatt = getAnsattMedRoller(personIdent)
+		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		val harTilgangTilDeltaker = ansattService.harTilgangTilDeltaker(
+			deltakerId = deltakerId,
+			deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
+			deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
+			ansattDbo = ansatt
+		)
+		if (!harTilgangTilDeltaker) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
+		}
+		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
+			throw SkjultDeltakerException("Deltaker med id $deltakerId er skjult for tiltaksarrangør")
+		}
+
+		val endringsmeldingId = when (request.innhold.type) {
 			EndringsmeldingRequest.EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO ->
 				amtTiltakClient.leggTilOppstartsdato(deltakerId, LeggTilOppstartsdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold).oppstartsdato))
 
@@ -70,6 +86,9 @@ class EndringsmeldingService(
 			EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTDATO -> amtTiltakClient.endreSluttdato(deltakerId, EndreSluttdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold).sluttdato))
 			EndringsmeldingRequest.EndringsmeldingType.DELTAKER_ER_AKTUELL -> amtTiltakClient.deltakerErAktuell(deltakerId)
 		}
+
+		endringsmeldingRepository.lagreNyOgSlettTidligereEndringsmeldingMedSammeType(request.toEndringsmeldingDbo(endringsmeldingId = endringsmeldingId, deltakerId = deltakerId))
+		log.info("Endringsmelding av type ${request.innhold.type.name} opprettet med id $endringsmeldingId for deltaker $deltakerId")
 	}
 
 	fun slettEndringsmelding(endringsmeldingId: UUID, personIdent: String) {

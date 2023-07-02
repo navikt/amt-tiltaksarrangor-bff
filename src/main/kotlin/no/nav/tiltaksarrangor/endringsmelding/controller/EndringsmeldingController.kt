@@ -34,7 +34,8 @@ class EndringsmeldingController(
 		@PathVariable deltakerId: UUID,
 		@RequestBody request: EndringsmeldingRequest
 	) {
-		endringsmeldingService.opprettEndringsmelding(deltakerId, request)
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		endringsmeldingService.opprettEndringsmelding(deltakerId, request, personIdent)
 	}
 
 	@DeleteMapping("/endringsmelding/{endringsmeldingId}")
