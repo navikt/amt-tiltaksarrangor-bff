@@ -121,6 +121,19 @@ class EndringsmeldingRepository(
 		)
 	}
 
+	fun lagreNyOgSlettTidligereEndringsmeldingMedSammeType(endringsmeldingDbo: EndringsmeldingDbo) {
+		template.update(
+			"""
+				DELETE FROM endringsmelding WHERE deltaker_id = :deltaker_id AND type = :type
+			""".trimIndent(),
+			sqlParameters(
+				"deltaker_id" to endringsmeldingDbo.deltakerId,
+				"type" to endringsmeldingDbo.type.name
+			)
+		)
+		insertOrUpdateEndringsmelding(endringsmeldingDbo)
+	}
+
 	fun getEndringsmelding(endringsmeldingId: UUID): EndringsmeldingDbo? {
 		return template.query(
 			"SELECT * FROM endringsmelding WHERE id = :id",

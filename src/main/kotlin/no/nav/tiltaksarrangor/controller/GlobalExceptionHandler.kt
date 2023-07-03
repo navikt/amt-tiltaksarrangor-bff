@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.controller
 import com.fasterxml.jackson.annotation.JsonInclude
 import jakarta.servlet.http.HttpServletRequest
 import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException
+import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -23,6 +24,7 @@ class GlobalExceptionHandler(
 	fun handleException(ex: Exception, request: HttpServletRequest): ResponseEntity<Response> {
 		return when (ex) {
 			is ValidationException -> buildResponse(HttpStatus.BAD_REQUEST, ex)
+			is SkjultDeltakerException -> buildResponse(HttpStatus.BAD_REQUEST, ex)
 			is JwtTokenUnauthorizedException -> buildResponse(HttpStatus.UNAUTHORIZED, ex)
 			is UnauthorizedException -> buildResponse(HttpStatus.FORBIDDEN, ex)
 			is NoSuchElementException -> buildResponse(HttpStatus.NOT_FOUND, ex)

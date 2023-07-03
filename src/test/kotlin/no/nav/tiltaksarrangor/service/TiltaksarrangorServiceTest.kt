@@ -15,6 +15,7 @@ import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
+import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -93,7 +94,7 @@ class TiltaksarrangorServiceTest {
 	}
 
 	@Test
-	fun `getDeltaker - deltaker er skjult - returnerer not found`() {
+	fun `getDeltaker - deltaker er skjult - returnerer skjult deltaker exception`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
@@ -116,7 +117,7 @@ class TiltaksarrangorServiceTest {
 			)
 		)
 
-		assertThrows<NoSuchElementException> {
+		assertThrows<SkjultDeltakerException> {
 			tiltaksarrangorService.getDeltaker(personIdent, deltakerId)
 		}
 	}

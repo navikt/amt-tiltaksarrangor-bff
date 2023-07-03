@@ -6,6 +6,7 @@ import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
 import no.nav.tiltaksarrangor.model.Veileder
+import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
@@ -50,7 +51,7 @@ class TiltaksarrangorService(
 
 		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
 			log.warn("Har forsøkt å hente deltaker som er fjernet")
-			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+			throw SkjultDeltakerException("Fant ikke deltaker med id $deltakerId")
 		} else if (deltakerMedDeltakerliste.deltakerliste.erKurs && !(isDev() || erPilot(deltakerMedDeltakerliste.deltakerliste.id))) {
 			log.warn("Har forsøkt å hente kurs-deltaker som ikke tilhører pilot")
 			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
