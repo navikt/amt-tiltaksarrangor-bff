@@ -32,7 +32,6 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 
 	@AfterEach
 	internal fun tearDown() {
-		mockAmtTiltakServer.resetHttpServer()
 		cleanDatabase()
 	}
 
@@ -149,7 +148,6 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 				veilederDeltakere = emptyList()
 			)
 		)
-		mockAmtTiltakServer.addOpprettEllerFjernTilgangTilGjennomforingResponse(deltakerlisteId)
 		mockAmtArrangorServer.addLeggTilEllerFjernDeltakerlisteResponse(arrangorId, deltakerlisteId)
 
 		val response = sendRequest(
@@ -207,7 +205,6 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 			)
 		)
 		mockAmtArrangorServer.addLeggTilEllerFjernDeltakerlisteResponse(arrangorId, deltakerlisteId)
-		mockAmtTiltakServer.addOpprettEllerFjernTilgangTilGjennomforingResponse(deltakerlisteId)
 
 		val response = sendRequest(
 			method = "DELETE",

@@ -9,7 +9,6 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
-import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
@@ -34,7 +33,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 class DeltakerlisteAdminServiceTest {
-	private val amtTiltakClient = mockk<AmtTiltakClient>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val metricsService = mockk<MetricsService>(relaxed = true)
 	private val dataSource = SingletonPostgresContainer.getDataSource()
@@ -44,12 +42,12 @@ class DeltakerlisteAdminServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val arrangorRepository = ArrangorRepository(template)
-	private val deltakerlisteAdminService = DeltakerlisteAdminService(amtTiltakClient, ansattService, deltakerlisteRepository, arrangorRepository, metricsService)
+	private val deltakerlisteAdminService = DeltakerlisteAdminService(ansattService, deltakerlisteRepository, arrangorRepository, metricsService)
 
 	@AfterEach
 	internal fun tearDown() {
 		DbTestDataUtils.cleanDatabase(dataSource)
-		clearMocks(amtArrangorClient, amtTiltakClient)
+		clearMocks(amtArrangorClient)
 	}
 
 	@Test
@@ -239,14 +237,12 @@ class DeltakerlisteAdminServiceTest {
 
 		deltakerlisteAdminService.leggTilDeltakerliste(deltakerliste.id, personIdent)
 
-		coVerify(exactly = 0) { amtTiltakClient.opprettTilgangTilGjennomforing(any()) }
 		coVerify(exactly = 0) { amtArrangorClient.leggTilDeltakerlisteForKoordinator(any(), any(), any()) }
 	}
 
 	@Test
 	fun `leggTilDeltakerliste - ansatt har tilgang til deltakerliste - deltakerliste legges til`() {
 		coEvery { amtArrangorClient.leggTilDeltakerlisteForKoordinator(any(), any(), any()) } just Runs
-		coEvery { amtTiltakClient.opprettTilgangTilGjennomforing(any()) } just Runs
 
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
@@ -282,7 +278,6 @@ class DeltakerlisteAdminServiceTest {
 		ansattFraDb?.deltakerlister?.size shouldBe 2
 		ansattFraDb?.deltakerlister?.find { it.deltakerlisteId == deltakerliste.id } shouldNotBe null
 
-		coVerify(exactly = 1) { amtTiltakClient.opprettTilgangTilGjennomforing(deltakerliste.id) }
 		coVerify(exactly = 1) { amtArrangorClient.leggTilDeltakerlisteForKoordinator(ansattId, deltakerliste.id, arrangorId) }
 	}
 
@@ -351,14 +346,12 @@ class DeltakerlisteAdminServiceTest {
 
 		deltakerlisteAdminService.fjernDeltakerliste(deltakerliste.id, personIdent)
 
-		coVerify(exactly = 0) { amtTiltakClient.fjernTilgangTilGjennomforing(any()) }
 		coVerify(exactly = 0) { amtArrangorClient.fjernDeltakerlisteForKoordinator(any(), any(), any()) }
 	}
 
 	@Test
 	fun `fjernDeltakerliste - ansatt har lagt til deltakerliste - deltakerliste fjernes`() {
 		coEvery { amtArrangorClient.fjernDeltakerlisteForKoordinator(any(), any(), any()) } just Runs
-		coEvery { amtTiltakClient.fjernTilgangTilGjennomforing(any()) } just Runs
 
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
@@ -394,7 +387,6 @@ class DeltakerlisteAdminServiceTest {
 		ansattFraDb?.deltakerlister?.size shouldBe 1
 		ansattFraDb?.deltakerlister?.find { it.deltakerlisteId == deltakerliste.id } shouldBe null
 
-		coVerify(exactly = 1) { amtTiltakClient.fjernTilgangTilGjennomforing(deltakerliste.id) }
 		coVerify(exactly = 1) { amtArrangorClient.fjernDeltakerlisteForKoordinator(ansattId, deltakerliste.id, arrangorId) }
 	}
 }
