@@ -36,6 +36,10 @@ class IngestService(
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	fun lagreArrangor(arrangorId: UUID, arrangor: ArrangorDto?) {
+		if (arrangorId.toString() == "115331da-e386-47e4-ae7e-b96fc22c0811") {
+			log.info("Ignorerer duplikat arrangør")
+			return
+		}
 		if (arrangor == null) {
 			arrangorRepository.deleteArrangor(arrangorId)
 			log.info("Slettet arrangør med id $arrangorId")
