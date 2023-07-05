@@ -41,7 +41,6 @@ class KoordinatorControllerTest : IntegrationTest() {
 
 	@AfterEach
 	internal fun tearDown() {
-		mockAmtTiltakServer.resetHttpServer()
 		mockAmtArrangorServer.resetHttpServer()
 		cleanDatabase()
 	}
@@ -270,7 +269,6 @@ class KoordinatorControllerTest : IntegrationTest() {
 			)
 		)
 
-		mockAmtTiltakServer.addTildelVeiledereForDeltakerResponse(deltakerId)
 		mockAmtArrangorServer.addOppdaterVeilederForDeltakerResponse(deltakerId)
 		val requestBody = LeggTilVeiledereRequest(
 			listOf(

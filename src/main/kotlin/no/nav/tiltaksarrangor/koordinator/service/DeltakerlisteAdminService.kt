@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.koordinator.service
 
-import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.AdminDeltakerliste
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
@@ -18,7 +17,6 @@ import java.util.UUID
 
 @Component
 class DeltakerlisteAdminService(
-	private val amtTiltakClient: AmtTiltakClient,
 	private val ansattService: AnsattService,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val arrangorRepository: ArrangorRepository,
@@ -65,7 +63,6 @@ class DeltakerlisteAdminService(
 		if (harKoordinatorRolleHosArrangor) {
 			if (!deltakerliste.erKurs || isDev() || erPilot(deltakerlisteId)) {
 				if (!ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
-					amtTiltakClient.opprettTilgangTilGjennomforing(deltakerlisteId)
 					ansattService.leggTilDeltakerliste(
 						ansattId = ansatt.id,
 						deltakerlisteId = deltakerlisteId,
@@ -96,7 +93,6 @@ class DeltakerlisteAdminService(
 		)
 		if (harKoordinatorRolleHosArrangor) {
 			if (ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
-				amtTiltakClient.fjernTilgangTilGjennomforing(deltakerlisteId)
 				ansattService.fjernDeltakerliste(
 					ansattId = ansatt.id,
 					deltakerlisteId = deltakerlisteId,

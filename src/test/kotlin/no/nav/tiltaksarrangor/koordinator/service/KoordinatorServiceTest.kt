@@ -10,7 +10,6 @@ import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
-import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
@@ -48,7 +47,6 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class KoordinatorServiceTest {
-	private val amtTiltakClient = mockk<AmtTiltakClient>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val metricsService = mockk<MetricsService>(relaxed = true)
 	private val dataSource = SingletonPostgresContainer.getDataSource()
@@ -60,7 +58,6 @@ class KoordinatorServiceTest {
 	private val arrangorRepository = ArrangorRepository(template)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
 	private val koordinatorService = KoordinatorService(
-		amtTiltakClient,
 		ansattService,
 		deltakerlisteRepository,
 		arrangorRepository,
@@ -72,7 +69,7 @@ class KoordinatorServiceTest {
 	@AfterEach
 	internal fun tearDown() {
 		DbTestDataUtils.cleanDatabase(dataSource)
-		clearMocks(amtArrangorClient, amtTiltakClient)
+		clearMocks(amtArrangorClient)
 	}
 
 	@Test
@@ -730,7 +727,6 @@ class KoordinatorServiceTest {
 
 	@Test
 	fun `tildelVeiledereForDeltaker - ny veileder - lagrer ny veileder`() {
-		coEvery { amtTiltakClient.tildelVeiledereForDeltaker(any(), any()) } just Runs
 		coEvery { amtArrangorClient.oppdaterVeilederForDeltaker(any(), any()) } just Runs
 		val personIdent = "12345678910"
 		val deltakerlisteId = UUID.randomUUID()
@@ -802,7 +798,6 @@ class KoordinatorServiceTest {
 		deltakersVeiledere.find { it.ansattId == veileder1Id && it.veiledertype == Veiledertype.MEDVEILEDER } shouldNotBe null
 		deltakersVeiledere.find { it.ansattId == veileder2Id && it.veiledertype == Veiledertype.VEILEDER } shouldNotBe null
 
-		coVerify { amtTiltakClient.tildelVeiledereForDeltaker(deltakerId, match { it.veiledere.size == 2 }) }
 		coVerify {
 			amtArrangorClient.oppdaterVeilederForDeltaker(
 				deltakerId,

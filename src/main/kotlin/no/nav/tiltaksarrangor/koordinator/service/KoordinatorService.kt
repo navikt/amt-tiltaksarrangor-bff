@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.koordinator.service
 
-import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
@@ -38,7 +37,6 @@ import java.util.UUID
 
 @Component
 class KoordinatorService(
-	private val amtTiltakClient: AmtTiltakClient,
 	private val ansattService: AnsattService,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val arrangorRepository: ArrangorRepository,
@@ -113,7 +111,6 @@ class KoordinatorService(
 			) {
 				throw UnauthorizedException("Alle ansatte må ha veileder-rolle hos arrangør")
 			}
-			amtTiltakClient.tildelVeiledereForDeltaker(deltakerId, request)
 			ansattService.tildelVeiledereForDeltaker(
 				deltakerId = deltakerId,
 				arrangorId = deltakerMedDeltakerlisteDbo.deltakerliste.arrangorId,

@@ -8,7 +8,6 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.response.OpprettEndringsmeldingResponse
-import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
@@ -171,19 +170,6 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun tildelVeiledereForDeltaker(deltakerId: UUID, leggTilVeiledereRequest: LeggTilVeiledereRequest) {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/veiledere?deltakerId=$deltakerId")
-			.patch(objectMapper.writeValueAsString(leggTilVeiledereRequest).toRequestBody(mediaTypeJson))
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulUpdateResponse(response.code, "legge til veiledere for deltaker med id $deltakerId")
-			}
-		}
-	}
-
 	fun skjulDeltakerForTiltaksarrangor(deltakerId: UUID) {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/skjul")
@@ -193,32 +179,6 @@ class AmtTiltakClient(
 		amtTiltakHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "fjerne deltaker med id $deltakerId")
-			}
-		}
-	}
-
-	fun opprettTilgangTilGjennomforing(deltakerlisteId: UUID) {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/gjennomforing/$deltakerlisteId/tilgang")
-			.post(emptyRequest())
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulUpdateResponse(response.code, "legge til deltakerliste med id $deltakerlisteId")
-			}
-		}
-	}
-
-	fun fjernTilgangTilGjennomforing(deltakerlisteId: UUID) {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/gjennomforing/$deltakerlisteId/tilgang")
-			.delete()
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulUpdateResponse(response.code, "fjerne deltakerliste med id $deltakerlisteId")
 			}
 		}
 	}
