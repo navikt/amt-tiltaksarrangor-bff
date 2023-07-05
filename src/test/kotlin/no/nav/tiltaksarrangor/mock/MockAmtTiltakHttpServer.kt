@@ -41,14 +41,6 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
-	fun addTildelVeiledereForDeltakerResponse(deltakerId: UUID) {
-		addResponseHandler(
-			path = "/api/tiltaksarrangor/veiledere?deltakerId=$deltakerId",
-			MockResponse()
-				.setResponseCode(200)
-		)
-	}
-
 	fun addSkjulDeltakerResponse(deltakerId: UUID) {
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/skjul",
