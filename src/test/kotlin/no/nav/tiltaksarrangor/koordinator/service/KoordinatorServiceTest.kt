@@ -810,4 +810,70 @@ class KoordinatorServiceTest {
 			)
 		}
 	}
+
+	@Test
+	fun `tildelVeiledereForDeltaker - fjerner veileder - veileder fjernes`() {
+		coEvery { amtArrangorClient.oppdaterVeilederForDeltaker(any(), any()) } just Runs
+		val personIdent = "12345678910"
+		val deltakerlisteId = UUID.randomUUID()
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = DeltakerlisteDbo(
+			id = deltakerlisteId,
+			navn = "Gjennomføring 1",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = arrangorId,
+			tiltakNavn = "Navn på tiltak",
+			tiltakType = "ARBFORB",
+			startDato = LocalDate.of(2023, 2, 1),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId))
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val veileder1Id = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = veileder1Id,
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn1",
+				mellomnavn = null,
+				etternavn = "Etternavn1",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER))
+			)
+		)
+		val request = LeggTilVeiledereRequest(
+			veiledere = emptyList()
+		)
+
+		koordinatorService.tildelVeiledereForDeltaker(deltakerId, request, personIdent)
+
+		val deltakersVeiledere = ansattService.getVeiledereForDeltaker(deltakerId)
+		deltakersVeiledere.size shouldBe 0
+
+		coVerify {
+			amtArrangorClient.oppdaterVeilederForDeltaker(
+				deltakerId,
+				match {
+					it.arrangorId == arrangorId && it.veilederSomFjernes.size == 1 && it.veilederSomLeggesTil.isEmpty() &&
+						it.veilederSomFjernes.contains(VeilederAnsatt(veileder1Id, Veiledertype.VEILEDER))
+				}
+			)
+		}
+	}
 }
