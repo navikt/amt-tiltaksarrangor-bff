@@ -84,7 +84,7 @@ class AnsattService(
 
 	fun erAlleAnsatteVeiledereHosArrangor(ansattIder: List<UUID>, arrangorId: UUID): Boolean {
 		if (ansattIder.isEmpty()) {
-			return false
+			return true
 		}
 		val roller = ansattRepository.getAnsattRolleLister(ansattIder).filter { it.ansattRolleDbo.arrangorId == arrangorId }
 		ansattIder.forEach { ansattId ->
