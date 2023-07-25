@@ -42,7 +42,7 @@ data class EndringsmeldingRequest(
 
 		data class EndreDeltakelseProsentInnhold(
 			val deltakelseProsent: Int,
-			val dagerPerUke: Float?,
+			val dagerPerUke: Int?,
 			val gyldigFraDato: LocalDate?
 		) : Innhold(EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT)
 

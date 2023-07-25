@@ -153,7 +153,7 @@ class EndringsmeldingServiceTest {
 			type = EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT,
 			innhold = Innhold.EndreDeltakelseProsentInnhold(
 				nyDeltakelseProsent = 50,
-				dagerPerUke = 2.5f,
+				dagerPerUke = 2,
 				gyldigFraDato = LocalDate.now()
 			)
 		)
@@ -170,7 +170,7 @@ class EndringsmeldingServiceTest {
 		endringsmelding2?.type shouldBe Endringsmelding.Type.ENDRE_DELTAKELSE_PROSENT
 		endringsmelding2?.innhold shouldBe Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(
 			deltakelseProsent = 50,
-			dagerPerUke = 2.5f,
+			dagerPerUke = 2,
 			gyldigFraDato = LocalDate.now()
 		)
 	}
@@ -367,7 +367,7 @@ class EndringsmeldingServiceTest {
 		val endringsmeldingRequest = EndringsmeldingRequest(
 			innhold = EndringsmeldingRequest.Innhold.EndreDeltakelseProsentInnhold(
 				deltakelseProsent = 50,
-				dagerPerUke = 4f,
+				dagerPerUke = 4,
 				gyldigFraDato = LocalDate.now()
 			)
 		)
