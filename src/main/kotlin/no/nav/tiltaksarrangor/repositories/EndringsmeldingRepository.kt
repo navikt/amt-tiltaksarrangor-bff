@@ -12,7 +12,7 @@ import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingMedDeltakerOgDel
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import no.nav.tiltaksarrangor.utils.getNullableDouble
-import no.nav.tiltaksarrangor.utils.getNullableInt
+import no.nav.tiltaksarrangor.utils.getNullableFloat
 import no.nav.tiltaksarrangor.utils.getNullableLocalDate
 import no.nav.tiltaksarrangor.utils.getNullableLocalDateTime
 import no.nav.tiltaksarrangor.utils.getNullableUUID
@@ -62,7 +62,7 @@ class EndringsmeldingRepository(
 				status = StatusType.valueOf(rs.getString("deltakerstatus")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-				dagerPerUke = rs.getNullableInt("dager_per_uke"),
+				dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 				prosentStilling = rs.getNullableDouble("prosent_stilling"),
 				startdato = rs.getNullableLocalDate("deltaker_start_dato"),
 				sluttdato = rs.getNullableLocalDate("deltaker_slutt_dato"),

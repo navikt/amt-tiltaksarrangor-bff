@@ -29,6 +29,12 @@ fun ResultSet.getNullableInt(columnLabel: String): Int? {
 	return value
 }
 
+fun ResultSet.getNullableFloat(columnLabel: String): Float? {
+	val value = this.getFloat(columnLabel)
+	if (this.wasNull()) return null
+	return value
+}
+
 fun ResultSet.getNullableDouble(columnLabel: String): Double? {
 	val value = this.getDouble(columnLabel)
 	if (this.wasNull()) return null

@@ -4,6 +4,6 @@ import java.time.LocalDate
 
 data class EndreDeltakelsesprosentRequest(
 	val deltakelseProsent: Int,
-	val dagerPerUke: Int?,
+	val dagerPerUke: Float?,
 	val gyldigFraDato: LocalDate?
 )
