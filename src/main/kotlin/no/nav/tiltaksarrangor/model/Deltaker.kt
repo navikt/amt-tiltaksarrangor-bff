@@ -17,7 +17,7 @@ data class Deltaker(
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
 	val deltakelseProsent: Int?,
-	val dagerPerUke: Int?,
+	val dagerPerUke: Float?,
 	val soktInnPa: String,
 	val soktInnDato: LocalDateTime,
 	val tiltakskode: String,

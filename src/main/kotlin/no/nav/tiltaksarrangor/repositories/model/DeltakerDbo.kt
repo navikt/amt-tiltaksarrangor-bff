@@ -18,7 +18,7 @@ data class DeltakerDbo(
 	val status: StatusType,
 	val statusOpprettetDato: LocalDateTime,
 	val statusGyldigFraDato: LocalDateTime,
-	val dagerPerUke: Int?,
+	val dagerPerUke: Float?,
 	val prosentStilling: Double?,
 	val startdato: LocalDate?,
 	val sluttdato: LocalDate?,
