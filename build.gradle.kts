@@ -1,11 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.1.1"
-    id("io.spring.dependency-management") version "1.1.0"
+    id("org.springframework.boot") version "3.1.2"
+    id("io.spring.dependency-management") version "1.1.2"
     id("org.jlleitschuh.gradle.ktlint") version "11.5.0"
     kotlin("jvm") version "1.9.0"
-    kotlin("plugin.spring") version "1.8.22"
+    kotlin("plugin.spring") version "1.9.0"
 }
 
 group = "no.nav.amt-tiltaksarrangor-bff"
@@ -18,7 +18,7 @@ repositories {
 }
 
 val logstashEncoderVersion = "7.4"
-val kafkaClientsVersion = "3.5.0"
+val kafkaClientsVersion = "3.5.1"
 val tokenSupportVersion = "3.1.0"
 val okHttpVersion = "4.11.0"
 val kotestVersion = "5.6.2"
