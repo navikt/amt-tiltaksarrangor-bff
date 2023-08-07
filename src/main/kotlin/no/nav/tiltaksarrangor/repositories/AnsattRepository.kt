@@ -151,14 +151,15 @@ class AnsattRepository(
 					:fornavn,
 					:mellomnavn,
 					:etternavn)
-			ON CONFLICT (id) DO UPDATE SET
+			ON CONFLICT (personident) DO UPDATE SET
 					personident 		= :personident,
 					fornavn				= :fornavn,
 					mellomnavn 			= :mellomnavn,
 					etternavn			= :etternavn
+			RETURNING *
 		""".trimIndent()
 
-		template.update(
+		val ansatt = template.query(
 			sql,
 			sqlParameters(
 				"id" to ansattDbo.id,
@@ -166,12 +167,13 @@ class AnsattRepository(
 				"fornavn" to ansattDbo.fornavn,
 				"mellomnavn" to ansattDbo.mellomnavn,
 				"etternavn" to ansattDbo.etternavn
-			)
-		)
+			),
+			ansattPersonaliaRowMapper
+		).first()
 
-		insertOrUpdateAnsattRolle(ansattDbo.id, ansattDbo.roller)
-		insertOrUpdateKoordinatorDeltakerliste(ansattDbo.id, ansattDbo.deltakerlister)
-		insertOrUpdateVeilederDeltaker(ansattDbo.id, ansattDbo.veilederDeltakere.distinct())
+		insertOrUpdateAnsattRolle(ansatt.id, ansattDbo.roller)
+		insertOrUpdateKoordinatorDeltakerliste(ansatt.id, ansattDbo.deltakerlister)
+		insertOrUpdateVeilederDeltaker(ansatt.id, ansattDbo.veilederDeltakere.distinct())
 	}
 
 	private fun insertOrUpdateAnsattRolle(ansattId: UUID, roller: List<AnsattRolleDbo>) {
