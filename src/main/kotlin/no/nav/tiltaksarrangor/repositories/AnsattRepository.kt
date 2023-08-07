@@ -14,6 +14,7 @@ import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Component
@@ -143,6 +144,7 @@ class AnsattRepository(
 		)
 	}
 
+	@Transactional
 	fun insertOrUpdateAnsatt(ansattDbo: AnsattDbo) {
 		val sql = """
 			INSERT INTO ansatt(id, personident, fornavn, mellomnavn, etternavn)
