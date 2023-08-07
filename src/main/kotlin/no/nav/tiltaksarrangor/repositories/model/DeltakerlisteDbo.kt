@@ -9,21 +9,18 @@ data class DeltakerlisteDbo(
 	val navn: String,
 	val status: DeltakerlisteStatus,
 	val arrangorId: UUID,
-	private val _tiltakNavn: String,
+	val tiltakNavn: String,
 	val tiltakType: String,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
 	val erKurs: Boolean
 ) {
 
-	val tiltakNavn = _tiltakNavn
-		get(): String {
-			return when (tiltakType) {
-				"ARBRRHDAG" -> "Arbeidsforberedende trening"
-				"ARBFORB" -> "Arbeidsrettet rehabilitering"
-				"DIGIOPPARB" -> "Digitalt oppfølgingstiltak"
-				"GRUPPEAMO" -> "Arbeidsmarkedsopplæring"
-				else -> field
-			}
-		}
+	fun cleanTiltaksnavn() = when (tiltakNavn) {
+		"Arbeidsforberedende trening (AFT)" -> "Arbeidsforberedende trening"
+		"Arbeidsrettet rehabilitering (dag)" -> "Arbeidsrettet rehabilitering"
+		"Digitalt oppfølgingstiltak for arbeidsledige (jobbklubb)" -> "Digitalt oppfølgingstiltak"
+		"Gruppe AMO" -> "Arbeidsmarkedsopplæring"
+		else -> tiltakNavn
+	}
 }

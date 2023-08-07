@@ -81,7 +81,7 @@ class EndringsmeldingRepository(
 				navn = rs.getString("navn"),
 				status = DeltakerlisteStatus.valueOf(rs.getString("deltakerliste_status")),
 				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
-				_tiltakNavn = rs.getString("tiltak_navn"),
+				tiltakNavn = rs.getString("tiltak_navn"),
 				tiltakType = rs.getString("tiltak_type"),
 				startDato = rs.getNullableLocalDate("deltakerliste_start_dato"),
 				sluttDato = rs.getNullableLocalDate("delakerliste_slutt_dato"),

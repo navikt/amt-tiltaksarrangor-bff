@@ -115,7 +115,7 @@ class DeltakerlisteAdminServiceTest {
 			navn = "Gjennomføring 1",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = arrangorId,
-			_tiltakNavn = "Navn på tiltak",
+			tiltakNavn = "Navn på tiltak",
 			tiltakType = "ARBFORB",
 			startDato = LocalDate.of(2023, 2, 1),
 			sluttDato = null,
@@ -126,7 +126,7 @@ class DeltakerlisteAdminServiceTest {
 			navn = "Gjennomføring 2",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = arrangorId2,
-			_tiltakNavn = "Annet tiltak",
+			tiltakNavn = "Annet tiltak",
 			tiltakType = "INDOPPFAG",
 			startDato = LocalDate.of(2023, 5, 1),
 			sluttDato = LocalDate.of(2023, 6, 1),
@@ -153,7 +153,7 @@ class DeltakerlisteAdminServiceTest {
 
 		val adminDeltakerliste1 = adminDeltakerlister.find { it.id == deltakerliste1.id }
 		adminDeltakerliste1?.navn shouldBe "Gjennomføring 1"
-		adminDeltakerliste1?.tiltaksnavn shouldBe "Arbeidsrettet rehabilitering"
+		adminDeltakerliste1?.tiltaksnavn shouldBe "Navn på tiltak"
 		adminDeltakerliste1?.arrangorNavn shouldBe "Arrangør AS"
 		adminDeltakerliste1?.arrangorOrgnummer shouldBe "88888888"
 		adminDeltakerliste1?.arrangorParentNavn shouldBe "Arrangør AS"
@@ -193,7 +193,7 @@ class DeltakerlisteAdminServiceTest {
 			navn = "Gjennomføring 1",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = UUID.randomUUID(),
-			_tiltakNavn = "Navn på tiltak",
+			tiltakNavn = "Navn på tiltak",
 			tiltakType = "ARBFORB",
 			startDato = LocalDate.of(2023, 2, 1),
 			sluttDato = null,
@@ -215,7 +215,7 @@ class DeltakerlisteAdminServiceTest {
 			navn = "Gjennomføring 1",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = arrangorId,
-			_tiltakNavn = "Navn på tiltak",
+			tiltakNavn = "Navn på tiltak",
 			tiltakType = "ARBFORB",
 			startDato = LocalDate.of(2023, 2, 1),
 			sluttDato = null,
@@ -251,7 +251,7 @@ class DeltakerlisteAdminServiceTest {
 			navn = "Gjennomføring 1",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = arrangorId,
-			_tiltakNavn = "Navn på tiltak",
+			tiltakNavn = "Navn på tiltak",
 			tiltakType = "ARBFORB",
 			startDato = LocalDate.of(2023, 2, 1),
 			sluttDato = null,
@@ -302,7 +302,7 @@ class DeltakerlisteAdminServiceTest {
 			navn = "Gjennomføring 1",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = UUID.randomUUID(),
-			_tiltakNavn = "Navn på tiltak",
+			tiltakNavn = "Navn på tiltak",
 			tiltakType = "ARBFORB",
 			startDato = LocalDate.of(2023, 2, 1),
 			sluttDato = null,
@@ -324,7 +324,7 @@ class DeltakerlisteAdminServiceTest {
 			navn = "Gjennomføring 1",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = arrangorId,
-			_tiltakNavn = "Navn på tiltak",
+			tiltakNavn = "Navn på tiltak",
 			tiltakType = "ARBFORB",
 			startDato = LocalDate.of(2023, 2, 1),
 			sluttDato = null,
@@ -360,7 +360,7 @@ class DeltakerlisteAdminServiceTest {
 			navn = "Gjennomføring 1",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = arrangorId,
-			_tiltakNavn = "Navn på tiltak",
+			tiltakNavn = "Navn på tiltak",
 			tiltakType = "ARBFORB",
 			startDato = LocalDate.of(2023, 2, 1),
 			sluttDato = null,
