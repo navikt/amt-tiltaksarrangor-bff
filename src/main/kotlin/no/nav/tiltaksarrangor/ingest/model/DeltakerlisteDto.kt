@@ -21,7 +21,7 @@ fun DeltakerlisteDto.toDeltakerlisteDbo(): DeltakerlisteDbo {
 		navn = navn,
 		status = status,
 		arrangorId = arrangor.id,
-		tiltakNavn = tiltak.navn,
+		_tiltakNavn = tiltak.navn,
 		tiltakType = tiltak.type,
 		startDato = startDato,
 		sluttDato = sluttDato,

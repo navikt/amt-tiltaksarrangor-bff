@@ -62,7 +62,7 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 			navn = "Gjennomføring 1",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = arrangorId,
-			tiltakNavn = "Navn på tiltak",
+			_tiltakNavn = "Navn på tiltak",
 			tiltakType = "ARBFORB",
 			startDato = LocalDate.of(2023, 2, 1),
 			sluttDato = null,
@@ -73,7 +73,7 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 			navn = "Gjennomføring 2",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = arrangorId,
-			tiltakNavn = "Annet tiltak",
+			_tiltakNavn = "Annet tiltak",
 			tiltakType = "INDOPPFAG",
 			startDato = LocalDate.of(2023, 5, 1),
 			sluttDato = LocalDate.of(2023, 6, 1),
@@ -101,7 +101,7 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 		)
 
 		val expectedJson = """
-			[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","navn":"Gjennomføring 1","tiltaksnavn":"Navn på tiltak","arrangorNavn":"Arrangør AS","arrangorOrgnummer":"88888888","arrangorParentNavn":"Arrangør AS","startDato":"2023-02-01","sluttDato":null,"lagtTil":true},{"id":"fd70758a-44c5-4868-bdcb-b1ddd26cb5e9","navn":"Gjennomføring 2","tiltaksnavn":"Annet tiltak","arrangorNavn":"Arrangør AS","arrangorOrgnummer":"88888888","arrangorParentNavn":"Arrangør AS","startDato":"2023-05-01","sluttDato":"2023-06-01","lagtTil":false}]
+			[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","navn":"Gjennomføring 1","tiltaksnavn":"Arbeidsrettet rehabilitering","arrangorNavn":"Arrangør AS","arrangorOrgnummer":"88888888","arrangorParentNavn":"Arrangør AS","startDato":"2023-02-01","sluttDato":null,"lagtTil":true},{"id":"fd70758a-44c5-4868-bdcb-b1ddd26cb5e9","navn":"Gjennomføring 2","tiltaksnavn":"Annet tiltak","arrangorNavn":"Arrangør AS","arrangorOrgnummer":"88888888","arrangorParentNavn":"Arrangør AS","startDato":"2023-05-01","sluttDato":"2023-06-01","lagtTil":false}]
 		""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
@@ -128,7 +128,7 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 			navn = "Gjennomføring 1",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = arrangorId,
-			tiltakNavn = "Navn på tiltak",
+			_tiltakNavn = "Navn på tiltak",
 			tiltakType = "ARBFORB",
 			startDato = LocalDate.of(2023, 2, 1),
 			sluttDato = null,
@@ -184,7 +184,7 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 			navn = "Gjennomføring 1",
 			status = DeltakerlisteStatus.GJENNOMFORES,
 			arrangorId = arrangorId,
-			tiltakNavn = "Navn på tiltak",
+			_tiltakNavn = "Navn på tiltak",
 			tiltakType = "ARBFORB",
 			startDato = LocalDate.of(2023, 2, 1),
 			sluttDato = null,

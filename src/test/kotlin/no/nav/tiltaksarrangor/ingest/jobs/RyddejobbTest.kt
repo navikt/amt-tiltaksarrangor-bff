@@ -151,7 +151,7 @@ private fun getDeltakerliste(
 		sluttDato = sluttdato,
 		erKurs = false,
 		arrangorId = UUID.randomUUID(),
-		tiltakNavn = "Tiltak",
+		_tiltakNavn = "Tiltak",
 		tiltakType = "AMO"
 	)
 }

@@ -17,7 +17,7 @@ fun getDeltakerliste(arrangorId: UUID): DeltakerlisteDbo {
 		navn = "Gjennomføring 1",
 		status = DeltakerlisteStatus.GJENNOMFORES,
 		arrangorId = arrangorId,
-		tiltakNavn = "Tiltaksnavnet",
+		_tiltakNavn = "Tiltaksnavnet",
 		tiltakType = "ARBFORB",
 		startDato = null,
 		sluttDato = null,
