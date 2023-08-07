@@ -277,6 +277,88 @@ class KafkaListenerTest : IntegrationTest() {
 	}
 
 	@Test
+	fun `listen - melding pa arrangor-ansatt-topic med oppdatert navn - oppdaterer i database`() {
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(
+			DeltakerDbo(
+				id = deltakerId,
+				deltakerlisteId = UUID.randomUUID(),
+				personident = "1234",
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				telefonnummer = null,
+				epost = null,
+				erSkjermet = false,
+				status = StatusType.DELTAR,
+				statusOpprettetDato = LocalDateTime.now(),
+				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+				dagerPerUke = null,
+				prosentStilling = null,
+				startdato = LocalDate.of(2023, 2, 15),
+				sluttdato = null,
+				innsoktDato = LocalDate.now(),
+				bestillingstekst = "tekst",
+				navKontor = null,
+				navVeilederId = null,
+				navVeilederEpost = null,
+				navVeilederNavn = null,
+				navVeilederTelefon = null,
+				skjultAvAnsattId = null,
+				skjultDato = null
+			)
+		)
+		val ansattId = UUID.randomUUID()
+		val personalia = AnsattPersonaliaDto(
+			personident = "12345678910",
+			navn = NavnDto(
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn"
+			)
+		)
+		val ansattDto = AnsattDto(
+			id = ansattId,
+			personalia = personalia,
+			arrangorer = listOf(
+				TilknyttetArrangorDto(
+					arrangorId = UUID.randomUUID(),
+					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
+					veileder = listOf(VeilederDto(deltakerId, Veiledertype.VEILEDER)),
+					koordinator = listOf(UUID.randomUUID())
+				)
+			)
+		)
+		ansattRepository.insertOrUpdateAnsatt(ansattDto.toAnsattDbo())
+		testKafkaProducer.send(
+			ProducerRecord(
+				ARRANGOR_ANSATT_TOPIC,
+				null,
+				ansattId.toString(),
+				JsonUtils.objectMapper.writeValueAsString(
+					ansattDto.copy(
+						id = ansattId,
+						personalia = personalia.copy(
+							navn = NavnDto(
+								fornavn = "Fornavn",
+								mellomnavn = "Mellomnavn",
+								etternavn = "Etternavn"
+							)
+						)
+					)
+				)
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			ansattRepository.getAnsatt(ansattId)?.mellomnavn != null &&
+				ansattRepository.getAnsattRolleListe(ansattId).size == 2 &&
+				ansattRepository.getKoordinatorDeltakerlisteDboListe(ansattId).size == 1 &&
+				ansattRepository.getVeilederDeltakerDboListe(ansattId).size == 1
+		}
+	}
+
+	@Test
 	fun `listen - tombstonemelding pa arrangor-ansatt-topic - slettes i database`() {
 		val deltakerId = UUID.randomUUID()
 		deltakerRepository.insertOrUpdateDeltaker(
