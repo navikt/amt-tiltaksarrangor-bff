@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.client.amtarrangor
 
+import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.OppdaterVeiledereForDeltakerRequest
 import no.nav.tiltaksarrangor.ingest.model.AnsattDto
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
@@ -17,7 +18,8 @@ import java.util.UUID
 @Component
 class AmtArrangorClient(
 	@Value("\${amt-arrangor.url}") private val amtArrangorUrl: String,
-	private val amtArrangorHttpClient: OkHttpClient
+	private val amtArrangorHttpClient: OkHttpClient,
+	private val amtArrangorAADHttpClient: OkHttpClient
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 	private val mediaTypeJson = "application/json".toMediaType()
@@ -107,5 +109,25 @@ class AmtArrangorClient(
 			}
 		}
 		log.info("Oppdatert amt-arrangor med veiledere for $deltakerId")
+	}
+
+	fun getArrangor(orgnummer: String): ArrangorMedOverordnetArrangor? {
+		val request = Request.Builder()
+			.url("$amtArrangorUrl/api/service/arrangor/organisasjonsnummer/$orgnummer")
+			.get()
+			.build()
+
+		amtArrangorAADHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				if (response.code == 404) {
+					log.info("Arrangør med orgnummer $orgnummer finnes ikke hos amt-arrangør")
+					return null
+				}
+				log.error("Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. Status=${response.code}")
+				throw RuntimeException("Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. Status=${response.code}")
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+			return JsonUtils.fromJsonString<ArrangorMedOverordnetArrangor>(body)
+		}
 	}
 }

@@ -1,11 +1,14 @@
 package no.nav.tiltaksarrangor.ingest
 
+import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
+import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.ingest.model.AnsattDto
 import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteFraValpDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.SKJULES_ALLTID_STATUSER
@@ -19,6 +22,7 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -31,7 +35,8 @@ class IngestService(
 	private val ansattRepository: AnsattRepository,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val deltakerRepository: DeltakerRepository,
-	private val endringsmeldingRepository: EndringsmeldingRepository
+	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val amtArrangorClient: AmtArrangorClient
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -53,6 +58,23 @@ class IngestService(
 		} else {
 			ansattRepository.insertOrUpdateAnsatt(ansatt.toAnsattDbo())
 			log.info("Lagret ansatt med id $ansattId")
+		}
+	}
+
+	fun lagreDeltakerlisteFraValp(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteFraValpDto?) {
+		if (deltakerlisteDto == null) {
+			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
+			log.info("Slettet tombstonet deltakerliste fra valp med id $deltakerlisteId")
+		} else if (deltakerlisteDto.skalLagres()) {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(toDeltakerlisteDbo(deltakerlisteDto))
+			log.info("Lagret deltakerliste fra valp med id $deltakerlisteId")
+		} else {
+			val antallSlettedeDeltakerlister = deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
+			if (antallSlettedeDeltakerlister > 0) {
+				log.info("Slettet deltakerliste fra valp med id $deltakerlisteId")
+			} else {
+				log.info("Ignorert deltakerliste fra valp med id $deltakerlisteId")
+			}
 		}
 	}
 
@@ -106,12 +128,64 @@ class IngestService(
 			}
 		}
 	}
+
+	private fun toDeltakerlisteDbo(deltakerlisteDto: DeltakerlisteFraValpDto): DeltakerlisteDbo {
+		return DeltakerlisteDbo(
+			id = deltakerlisteDto.id,
+			navn = deltakerlisteDto.navn,
+			status = DeltakerlisteStatus.valueOf(deltakerlisteDto.status.name),
+			arrangorId = getArrangorId(deltakerlisteDto.virksomhetsnummer),
+			tiltakNavn = deltakerlisteDto.tiltakstype.navn,
+			tiltakType = deltakerlisteDto.tiltakstype.arenaKode,
+			startDato = deltakerlisteDto.startDato,
+			sluttDato = deltakerlisteDto.sluttDato,
+			erKurs = deltakerlisteDto.erKurs()
+		)
+	}
+
+	private fun getArrangorId(organisasjonsnummer: String): UUID {
+		val arrangorId = arrangorRepository.getArrangor(organisasjonsnummer)?.id
+		if (arrangorId != null) {
+			return arrangorId
+		}
+		log.info("Fant ikke arrangør med orgnummer $organisasjonsnummer i databasen, henter fra amt-arrangør")
+		val arrangor = amtArrangorClient.getArrangor(organisasjonsnummer)
+			?: throw RuntimeException("Kunne ikke hente arrangør med orgnummer $organisasjonsnummer")
+		arrangorRepository.insertOrUpdateArrangor(arrangor.toArrangorDbo())
+		return arrangor.id
+	}
 }
 
 fun DeltakerlisteDto.skalLagres(): Boolean {
 	if (status == DeltakerlisteStatus.GJENNOMFORES || status == DeltakerlisteStatus.APENT_FOR_INNSOK) {
 		return true
 	} else if (status == DeltakerlisteStatus.AVSLUTTET && sluttDato != null && LocalDate.now()
+		.isBefore(sluttDato.plusDays(15))
+	) {
+		return true
+	}
+	return false
+}
+
+private val stottedeTiltak = setOf(
+	"INDOPPFAG",
+	"ARBFORB",
+	"AVKLARAG",
+	"VASV",
+	"ARBRRHDAG",
+	"DIGIOPPARB",
+	"JOBBK",
+	"GRUPPEAMO",
+	"GRUFAGYRKE"
+)
+
+fun DeltakerlisteFraValpDto.skalLagres(): Boolean {
+	if (!stottedeTiltak.contains(tiltakstype.arenaKode)) {
+		return false
+	}
+	if (status == DeltakerlisteFraValpDto.Status.GJENNOMFORES || status == DeltakerlisteFraValpDto.Status.APENT_FOR_INNSOK) {
+		return true
+	} else if (status == DeltakerlisteFraValpDto.Status.AVSLUTTET && sluttDato != null && LocalDate.now()
 		.isBefore(sluttDato.plusDays(15))
 	) {
 		return true

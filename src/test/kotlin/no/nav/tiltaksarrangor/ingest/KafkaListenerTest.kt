@@ -13,6 +13,7 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteFraValpDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
@@ -35,6 +36,7 @@ import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.utils.JsonUtils
@@ -69,7 +71,7 @@ class KafkaListenerTest : IntegrationTest() {
 
 	@BeforeEach
 	internal fun subscribe() {
-		testKafkaConsumer.subscribeHvisIkkeSubscribed(ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC)
+		testKafkaConsumer.subscribeHvisIkkeSubscribed(ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKERLISTE_VALP_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC)
 	}
 
 	@AfterEach
@@ -384,6 +386,144 @@ class KafkaListenerTest : IntegrationTest() {
 		testKafkaProducer.send(
 			ProducerRecord(
 				DELTAKERLISTE_TOPIC,
+				null,
+				deltakerlisteId.toString(),
+				JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerlisteDto)
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) == null &&
+				deltakerRepository.getDeltaker(deltakerId) == null
+		}
+	}
+
+	@Test
+	fun `listen - melding pa valp-deltakerliste-topic - lagres i database`() {
+		val arrangorDto = ArrangorDto(
+			id = UUID.randomUUID(),
+			navn = "Arrangør AS",
+			organisasjonsnummer = "77777777",
+			overordnetArrangorId = null
+		)
+		arrangorRepository.insertOrUpdateArrangor(arrangorDto.toArrangorDbo())
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteFraValpDto(
+			id = deltakerlisteId,
+			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
+				id = UUID.randomUUID(),
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
+			),
+			navn = "Gjennomføring av tiltak",
+			startDato = LocalDate.of(2023, 5, 2),
+			sluttDato = null,
+			status = DeltakerlisteFraValpDto.Status.GJENNOMFORES,
+			virksomhetsnummer = arrangorDto.organisasjonsnummer,
+			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
+		)
+		testKafkaProducer.send(
+			ProducerRecord(
+				DELTAKERLISTE_VALP_TOPIC,
+				null,
+				deltakerlisteId.toString(),
+				JsonUtils.objectMapper.writeValueAsString(deltakerlisteDto)
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) != null
+		}
+	}
+
+	@Test
+	fun `listen - tombstonemelding pa valp-deltakerliste-topic - slettes i database`() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDbo = DeltakerlisteDbo(
+			id = deltakerlisteId,
+			navn = "Gjennomføring av tiltak",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = UUID.randomUUID(),
+			tiltakNavn = "Det flotte tiltaket",
+			tiltakType = "DIGIOPPARB",
+			startDato = LocalDate.of(2023, 5, 2),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
+		testKafkaProducer.send(
+			ProducerRecord(
+				DELTAKERLISTE_VALP_TOPIC,
+				null,
+				deltakerlisteId.toString(),
+				null
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) == null
+		}
+	}
+
+	@Test
+	fun `listen - avsluttet deltakerliste-melding pa valp-deltakerliste-topic og deltakerliste finnes i db - sletter deltakerliste og deltaker fra db`() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDbo = DeltakerlisteDbo(
+			id = deltakerlisteId,
+			navn = "Gjennomføring av tiltak",
+			status = DeltakerlisteStatus.GJENNOMFORES,
+			arrangorId = UUID.randomUUID(),
+			tiltakNavn = "Avsluttet tiltak",
+			tiltakType = "DIGIOPPARB",
+			startDato = LocalDate.now().minusYears(2),
+			sluttDato = null,
+			erKurs = false
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
+		val deltakerId = UUID.randomUUID()
+		val deltakerDto = DeltakerDto(
+			id = deltakerId,
+			deltakerlisteId = deltakerlisteId,
+			personalia = DeltakerPersonaliaDto(
+				personident = "10987654321",
+				navn = NavnDto("Fornavn", null, "Etternavn"),
+				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+				skjermet = false
+			),
+			status = DeltakerStatusDto(
+				type = DeltakerStatus.DELTAR,
+				gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+				opprettetDato = LocalDateTime.now().minusWeeks(6)
+			),
+			dagerPerUke = null,
+			prosentStilling = null,
+			oppstartsdato = LocalDate.now().minusWeeks(5),
+			sluttdato = null,
+			innsoktDato = LocalDate.now().minusMonths(2),
+			bestillingTekst = "Bestilling",
+			navKontor = "NAV Oslo",
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
+			skjult = null,
+			deltarPaKurs = false
+		)
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
+		val avsluttetDeltakerlisteDto = DeltakerlisteFraValpDto(
+			id = deltakerlisteDbo.id,
+			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
+				id = UUID.randomUUID(),
+				navn = deltakerlisteDbo.tiltakNavn,
+				arenaKode = deltakerlisteDbo.tiltakType
+			),
+			navn = deltakerlisteDbo.navn,
+			startDato = deltakerlisteDbo.startDato!!,
+			sluttDato = LocalDate.now().minusWeeks(4),
+			status = DeltakerlisteFraValpDto.Status.AVSLUTTET,
+			virksomhetsnummer = "888888888",
+			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
+		)
+		testKafkaProducer.send(
+			ProducerRecord(
+				DELTAKERLISTE_VALP_TOPIC,
 				null,
 				deltakerlisteId.toString(),
 				JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerlisteDto)

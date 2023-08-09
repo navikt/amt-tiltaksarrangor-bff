@@ -51,6 +51,9 @@ spec:
     pool: nav-prod
   tokenx:
     enabled: true
+  azure:
+    application:
+      enabled: true
   accessPolicy:
     inbound:
       rules:
@@ -65,3 +68,5 @@ spec:
       value: prod-gcp:amt:amt-tiltak
     - name: AMT_ARRANGOR_TOKENX_CLIENT_ID
       value: prod-gcp:amt:amt-arrangor
+    - name: AMT_ARRANGOR_AAD_CLIENT_ID
+      value: prod-gcp.amt.amt-arrangor

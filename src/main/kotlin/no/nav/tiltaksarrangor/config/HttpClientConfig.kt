@@ -6,6 +6,7 @@ import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
@@ -35,6 +36,23 @@ class HttpClientConfig {
 		oAuth2AccessTokenService: OAuth2AccessTokenService
 	): OkHttpClient {
 		val registrationName = "amt-arrangor-tokenx"
+		val clientProperties = clientConfigurationProperties.registration[registrationName]
+			?: throw RuntimeException("Fant ikke config for $registrationName")
+		return OkHttpClient.Builder()
+			.connectTimeout(5, TimeUnit.SECONDS)
+			.readTimeout(5, TimeUnit.SECONDS)
+			.followRedirects(false)
+			.addInterceptor(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
+			.build()
+	}
+
+	@Bean
+	fun amtArrangorAADHttpClient(
+		restTemplateBuilder: RestTemplateBuilder,
+		clientConfigurationProperties: ClientConfigurationProperties,
+		oAuth2AccessTokenService: OAuth2AccessTokenService
+	): OkHttpClient {
+		val registrationName = "amt-arrangor-aad"
 		val clientProperties = clientConfigurationProperties.registration[registrationName]
 			?: throw RuntimeException("Fant ikke config for $registrationName")
 		return OkHttpClient.Builder()

@@ -2,10 +2,13 @@ package no.nav.tiltaksarrangor.ingest
 
 import io.mockk.Runs
 import io.mockk.clearMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
+import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerKontaktinformasjonDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerNavVeilederDto
@@ -14,6 +17,7 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteFraValpDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
@@ -36,17 +40,28 @@ class IngestServiceTest {
 	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val endringsmeldingRepository = mockk<EndringsmeldingRepository>()
-	private val ingestService = IngestService(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository)
+	private val amtArrangorClient = mockk<AmtArrangorClient>()
+	private val ingestService = IngestService(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository, amtArrangorClient)
+
+	private val arrangor = ArrangorMedOverordnetArrangor(
+		id = UUID.randomUUID(),
+		navn = "Arrangør AS",
+		organisasjonsnummer = "88888888",
+		overordnetArrangor = null
+	)
 
 	@BeforeEach
 	internal fun resetMocks() {
-		clearMocks(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository)
+		clearMocks(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository, amtArrangorClient)
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
 		every { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(any()) } returns 1
 		every { deltakerRepository.insertOrUpdateDeltaker(any()) } just Runs
 		every { deltakerRepository.deleteDeltaker(any()) } returns 1
 		every { endringsmeldingRepository.insertOrUpdateEndringsmelding(any()) } just Runs
 		every { endringsmeldingRepository.deleteEndringsmelding(any()) } returns 1
+		every { arrangorRepository.getArrangor("88888888") } returns null
+		every { arrangorRepository.insertOrUpdateArrangor(any()) } just Runs
+		coEvery { amtArrangorClient.getArrangor("88888888") } returns arrangor
 	}
 
 	@Test
@@ -62,7 +77,7 @@ class IngestServiceTest {
 				navn = "Arrangør AS"
 			),
 			tiltak = TiltakDto(
-				navn = "Avsluttet tiltak",
+				navn = "Supert tiltak",
 				type = "AMO"
 			),
 			startDato = LocalDate.now().minusYears(2),
@@ -88,7 +103,7 @@ class IngestServiceTest {
 				navn = "Arrangør AS"
 			),
 			tiltak = TiltakDto(
-				navn = "Avsluttet tiltak",
+				navn = "Åpent tiltak",
 				type = "AMO"
 			),
 			startDato = LocalDate.now().minusYears(2),
@@ -152,6 +167,122 @@ class IngestServiceTest {
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
 		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
+	}
+
+	@Test
+	internal fun `lagreDeltakerlisteFraValp - status GJENNOMFORES - lagres i db `() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteFraValpDto(
+			id = deltakerlisteId,
+			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
+				id = UUID.randomUUID(),
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
+			),
+			navn = "Gjennomføring av tiltak",
+			startDato = LocalDate.now().minusYears(2),
+			sluttDato = null,
+			status = DeltakerlisteFraValpDto.Status.GJENNOMFORES,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
+		)
+
+		ingestService.lagreDeltakerlisteFraValp(deltakerlisteId, deltakerlisteDto)
+
+		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
+	}
+
+	@Test
+	internal fun `lagreDeltakerlisteFraValp - status APENT_FOR_INNSOK - lagres`() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteFraValpDto(
+			id = deltakerlisteId,
+			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
+				id = UUID.randomUUID(),
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
+			),
+			navn = "Gjennomføring av tiltak",
+			startDato = LocalDate.now().minusYears(2),
+			sluttDato = null,
+			status = DeltakerlisteFraValpDto.Status.APENT_FOR_INNSOK,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
+		)
+
+		ingestService.lagreDeltakerlisteFraValp(deltakerlisteId, deltakerlisteDto)
+
+		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
+	}
+
+	@Test
+	internal fun `lagreDeltakerlisteFraValp - status AVSLUTTET for 6 mnd siden - lagres ikke`() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteFraValpDto(
+			id = deltakerlisteId,
+			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
+				id = UUID.randomUUID(),
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
+			),
+			navn = "Avsluttet tiltak",
+			startDato = LocalDate.now().minusYears(2),
+			sluttDato = LocalDate.now().minusMonths(6),
+			status = DeltakerlisteFraValpDto.Status.AVSLUTTET,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
+		)
+
+		ingestService.lagreDeltakerlisteFraValp(deltakerlisteId, deltakerlisteDto)
+
+		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
+		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId) }
+	}
+
+	@Test
+	internal fun `lagreDeltakerlisteFraValp - status AVSLUTTET for 1 uke siden - lagres i db`() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteFraValpDto(
+			id = deltakerlisteId,
+			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
+				id = UUID.randomUUID(),
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
+			),
+			navn = "Avsluttet tiltak",
+			startDato = LocalDate.now().minusYears(2),
+			sluttDato = LocalDate.now().minusWeeks(1),
+			status = DeltakerlisteFraValpDto.Status.AVSLUTTET,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
+		)
+
+		ingestService.lagreDeltakerlisteFraValp(deltakerlisteId, deltakerlisteDto)
+
+		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
+	}
+
+	@Test
+	internal fun `lagreDeltakerlisteFraValp - ikke stottet tiltakstype - lagres ikke i db `() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteFraValpDto(
+			id = deltakerlisteId,
+			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
+				id = UUID.randomUUID(),
+				navn = "Det flotte tiltaket",
+				arenaKode = "UTD"
+			),
+			navn = "Gjennomføring av tiltak",
+			startDato = LocalDate.now().minusYears(2),
+			sluttDato = null,
+			status = DeltakerlisteFraValpDto.Status.GJENNOMFORES,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
+		)
+
+		ingestService.lagreDeltakerlisteFraValp(deltakerlisteId, deltakerlisteDto)
+
+		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
 	}
 
 	@Test
