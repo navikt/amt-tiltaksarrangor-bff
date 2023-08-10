@@ -15,14 +15,10 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerNavVeilederDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerPersonaliaDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteFraValpDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
-import no.nav.tiltaksarrangor.ingest.model.TiltakDto
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -69,20 +65,17 @@ class IngestServiceTest {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangor = DeltakerlisteArrangorDto(
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
 				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
 			),
-			tiltak = TiltakDto(
-				navn = "Supert tiltak",
-				type = "AMO"
-			),
+			navn = "Gjennomføring av tiltak",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = null,
-			erKurs = false
+			status = DeltakerlisteDto.Status.GJENNOMFORES,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
 		)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -95,20 +88,17 @@ class IngestServiceTest {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.APENT_FOR_INNSOK,
-			arrangor = DeltakerlisteArrangorDto(
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
 				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
 			),
-			tiltak = TiltakDto(
-				navn = "Åpent tiltak",
-				type = "AMO"
-			),
+			navn = "Gjennomføring av tiltak",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = null,
-			erKurs = false
+			status = DeltakerlisteDto.Status.APENT_FOR_INNSOK,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
 		)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -121,20 +111,17 @@ class IngestServiceTest {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.AVSLUTTET,
-			arrangor = DeltakerlisteArrangorDto(
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
 				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
 			),
-			tiltak = TiltakDto(
-				navn = "Avsluttet tiltak",
-				type = "AMO"
-			),
+			navn = "Avsluttet tiltak",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = LocalDate.now().minusMonths(6),
-			erKurs = false
+			status = DeltakerlisteDto.Status.AVSLUTTET,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
 		)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -148,20 +135,17 @@ class IngestServiceTest {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.AVSLUTTET,
-			arrangor = DeltakerlisteArrangorDto(
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
 				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
 			),
-			tiltak = TiltakDto(
-				navn = "Avsluttet tiltak",
-				type = "AMO"
-			),
+			navn = "Avsluttet tiltak",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = LocalDate.now().minusWeeks(1),
-			erKurs = false
+			status = DeltakerlisteDto.Status.AVSLUTTET,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
 		)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -170,104 +154,11 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltakerlisteFraValp - status GJENNOMFORES - lagres i db `() {
+	internal fun `lagreDeltakerliste - ikke stottet tiltakstype - lagres ikke i db `() {
 		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto = DeltakerlisteFraValpDto(
+		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
-			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
-				id = UUID.randomUUID(),
-				navn = "Det flotte tiltaket",
-				arenaKode = "DIGIOPPARB"
-			),
-			navn = "Gjennomføring av tiltak",
-			startDato = LocalDate.now().minusYears(2),
-			sluttDato = null,
-			status = DeltakerlisteFraValpDto.Status.GJENNOMFORES,
-			virksomhetsnummer = "88888888",
-			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
-		)
-
-		ingestService.lagreDeltakerlisteFraValp(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerlisteFraValp - status APENT_FOR_INNSOK - lagres`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto = DeltakerlisteFraValpDto(
-			id = deltakerlisteId,
-			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
-				id = UUID.randomUUID(),
-				navn = "Det flotte tiltaket",
-				arenaKode = "DIGIOPPARB"
-			),
-			navn = "Gjennomføring av tiltak",
-			startDato = LocalDate.now().minusYears(2),
-			sluttDato = null,
-			status = DeltakerlisteFraValpDto.Status.APENT_FOR_INNSOK,
-			virksomhetsnummer = "88888888",
-			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
-		)
-
-		ingestService.lagreDeltakerlisteFraValp(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerlisteFraValp - status AVSLUTTET for 6 mnd siden - lagres ikke`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto = DeltakerlisteFraValpDto(
-			id = deltakerlisteId,
-			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
-				id = UUID.randomUUID(),
-				navn = "Det flotte tiltaket",
-				arenaKode = "DIGIOPPARB"
-			),
-			navn = "Avsluttet tiltak",
-			startDato = LocalDate.now().minusYears(2),
-			sluttDato = LocalDate.now().minusMonths(6),
-			status = DeltakerlisteFraValpDto.Status.AVSLUTTET,
-			virksomhetsnummer = "88888888",
-			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
-		)
-
-		ingestService.lagreDeltakerlisteFraValp(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerlisteFraValp - status AVSLUTTET for 1 uke siden - lagres i db`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto = DeltakerlisteFraValpDto(
-			id = deltakerlisteId,
-			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
-				id = UUID.randomUUID(),
-				navn = "Det flotte tiltaket",
-				arenaKode = "DIGIOPPARB"
-			),
-			navn = "Avsluttet tiltak",
-			startDato = LocalDate.now().minusYears(2),
-			sluttDato = LocalDate.now().minusWeeks(1),
-			status = DeltakerlisteFraValpDto.Status.AVSLUTTET,
-			virksomhetsnummer = "88888888",
-			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
-		)
-
-		ingestService.lagreDeltakerlisteFraValp(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerlisteFraValp - ikke stottet tiltakstype - lagres ikke i db `() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto = DeltakerlisteFraValpDto(
-			id = deltakerlisteId,
-			tiltakstype = DeltakerlisteFraValpDto.Tiltakstype(
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
 				id = UUID.randomUUID(),
 				navn = "Det flotte tiltaket",
 				arenaKode = "UTD"
@@ -275,12 +166,12 @@ class IngestServiceTest {
 			navn = "Gjennomføring av tiltak",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = null,
-			status = DeltakerlisteFraValpDto.Status.GJENNOMFORES,
+			status = DeltakerlisteDto.Status.GJENNOMFORES,
 			virksomhetsnummer = "88888888",
-			oppstart = DeltakerlisteFraValpDto.Oppstartstype.LOPENDE
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
 		)
 
-		ingestService.lagreDeltakerlisteFraValp(deltakerlisteId, deltakerlisteDto)
+		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
 		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
 	}

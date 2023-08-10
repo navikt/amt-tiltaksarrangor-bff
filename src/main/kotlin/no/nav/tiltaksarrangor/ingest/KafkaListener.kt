@@ -9,8 +9,7 @@ import java.util.UUID
 
 const val ARRANGOR_TOPIC = "amt.arrangor-v1"
 const val ARRANGOR_ANSATT_TOPIC = "amt.arrangor-ansatt-v1"
-const val DELTAKERLISTE_TOPIC = "amt.deltakerliste-v1"
-const val DELTAKERLISTE_VALP_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
+const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
 const val DELTAKER_TOPIC = "amt.deltaker-v2"
 const val ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
 
@@ -20,7 +19,7 @@ class KafkaListener(
 ) {
 
 	@KafkaListener(
-		topics = [ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKERLISTE_VALP_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC],
+		topics = [ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC],
 		properties = ["auto.offset.reset = earliest"],
 		containerFactory = "kafkaListenerContainerFactory"
 	)
@@ -28,7 +27,6 @@ class KafkaListener(
 		when (cr.topic()) {
 			ARRANGOR_TOPIC -> ingestService.lagreArrangor(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			ARRANGOR_ANSATT_TOPIC -> ingestService.lagreAnsatt(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
-			DELTAKERLISTE_VALP_TOPIC -> ingestService.lagreDeltakerlisteFraValp(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			DELTAKERLISTE_TOPIC -> ingestService.lagreDeltakerliste(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			DELTAKER_TOPIC -> ingestService.lagreDeltaker(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			ENDRINGSMELDING_TOPIC -> ingestService.lagreEndringsmelding(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })

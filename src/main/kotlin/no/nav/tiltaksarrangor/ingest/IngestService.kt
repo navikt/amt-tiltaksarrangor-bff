@@ -8,14 +8,12 @@ import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteFraValpDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.SKJULES_ALLTID_STATUSER
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
-import no.nav.tiltaksarrangor.ingest.model.toDeltakerlisteDbo
 import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -61,29 +59,12 @@ class IngestService(
 		}
 	}
 
-	fun lagreDeltakerlisteFraValp(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteFraValpDto?) {
-		if (deltakerlisteDto == null) {
-			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
-			log.info("Slettet tombstonet deltakerliste fra valp med id $deltakerlisteId")
-		} else if (deltakerlisteDto.skalLagres()) {
-			deltakerlisteRepository.insertOrUpdateDeltakerliste(toDeltakerlisteDbo(deltakerlisteDto))
-			log.info("Lagret deltakerliste fra valp med id $deltakerlisteId")
-		} else {
-			val antallSlettedeDeltakerlister = deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
-			if (antallSlettedeDeltakerlister > 0) {
-				log.info("Slettet deltakerliste fra valp med id $deltakerlisteId")
-			} else {
-				log.info("Ignorert deltakerliste fra valp med id $deltakerlisteId")
-			}
-		}
-	}
-
 	fun lagreDeltakerliste(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteDto?) {
 		if (deltakerlisteDto == null) {
 			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
 			log.info("Slettet tombstonet deltakerliste med id $deltakerlisteId")
 		} else if (deltakerlisteDto.skalLagres()) {
-			deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDto.toDeltakerlisteDbo())
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(toDeltakerlisteDbo(deltakerlisteDto))
 			log.info("Lagret deltakerliste med id $deltakerlisteId")
 		} else {
 			val antallSlettedeDeltakerlister = deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
@@ -129,7 +110,7 @@ class IngestService(
 		}
 	}
 
-	private fun toDeltakerlisteDbo(deltakerlisteDto: DeltakerlisteFraValpDto): DeltakerlisteDbo {
+	private fun toDeltakerlisteDbo(deltakerlisteDto: DeltakerlisteDto): DeltakerlisteDbo {
 		return DeltakerlisteDbo(
 			id = deltakerlisteDto.id,
 			navn = deltakerlisteDto.navn,
@@ -156,17 +137,6 @@ class IngestService(
 	}
 }
 
-fun DeltakerlisteDto.skalLagres(): Boolean {
-	if (status == DeltakerlisteStatus.GJENNOMFORES || status == DeltakerlisteStatus.APENT_FOR_INNSOK) {
-		return true
-	} else if (status == DeltakerlisteStatus.AVSLUTTET && sluttDato != null && LocalDate.now()
-		.isBefore(sluttDato.plusDays(15))
-	) {
-		return true
-	}
-	return false
-}
-
 private val stottedeTiltak = setOf(
 	"INDOPPFAG",
 	"ARBFORB",
@@ -179,13 +149,13 @@ private val stottedeTiltak = setOf(
 	"GRUFAGYRKE"
 )
 
-fun DeltakerlisteFraValpDto.skalLagres(): Boolean {
+fun DeltakerlisteDto.skalLagres(): Boolean {
 	if (!stottedeTiltak.contains(tiltakstype.arenaKode)) {
 		return false
 	}
-	if (status == DeltakerlisteFraValpDto.Status.GJENNOMFORES || status == DeltakerlisteFraValpDto.Status.APENT_FOR_INNSOK) {
+	if (status == DeltakerlisteDto.Status.GJENNOMFORES || status == DeltakerlisteDto.Status.APENT_FOR_INNSOK) {
 		return true
-	} else if (status == DeltakerlisteFraValpDto.Status.AVSLUTTET && sluttDato != null && LocalDate.now()
+	} else if (status == DeltakerlisteDto.Status.AVSLUTTET && sluttDato != null && LocalDate.now()
 		.isBefore(sluttDato.plusDays(15))
 	) {
 		return true
