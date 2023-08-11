@@ -11,7 +11,7 @@ data class DeltakerlisteDto(
 	val sluttDato: LocalDate? = null,
 	val status: Status,
 	val virksomhetsnummer: String,
-	val oppstart: Oppstartstype
+	val oppstart: Oppstartstype?
 ) {
 
 	data class Tiltakstype(
@@ -34,6 +34,16 @@ data class DeltakerlisteDto(
 	}
 
 	fun erKurs(): Boolean {
-		return oppstart == Oppstartstype.FELLES
+		if (oppstart != null) {
+			return oppstart == Oppstartstype.FELLES
+		} else {
+			return kursTiltak.contains(tiltakstype.arenaKode)
+		}
 	}
+
+	private val kursTiltak = setOf(
+		"JOBBK",
+		"GRUPPEAMO",
+		"GRUFAGYRKE"
+	)
 }
