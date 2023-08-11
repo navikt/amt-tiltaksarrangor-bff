@@ -68,4 +68,4 @@ spec:
     - name: AMT_ARRANGOR_TOKENX_CLIENT_ID
       value: dev-gcp:amt:amt-arrangor
     - name: AMT_ARRANGOR_AAD_CLIENT_ID
-      value: dev-gcp.amt.amt-arrangor
+      value: api://dev-gcp.amt.amt-arrangor/.default
