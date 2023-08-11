@@ -49,6 +49,7 @@ class IngestService(
 	}
 
 	fun lagreAnsatt(ansattId: UUID, ansatt: AnsattDto?) {
+		Thread.sleep(10) // for å unngå at ansatt oppdateres via kafka og synkront kall samtidig
 		if (ansatt == null) {
 			ansattRepository.deleteAnsatt(ansattId)
 			log.info("Slettet ansatt med id $ansattId")
