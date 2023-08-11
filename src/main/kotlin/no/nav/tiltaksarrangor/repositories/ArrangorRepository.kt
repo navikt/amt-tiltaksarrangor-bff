@@ -60,6 +60,14 @@ class ArrangorRepository(
 		).firstOrNull()
 	}
 
+	fun getArrangor(organisasjonsnummer: String): ArrangorDbo? {
+		return template.query(
+			"SELECT * FROM arrangor WHERE organisasjonsnummer = :organisasjonsnummer",
+			sqlParameters("organisasjonsnummer" to organisasjonsnummer),
+			arrangorRowMapper
+		).firstOrNull()
+	}
+
 	fun getArrangorer(arrangorIder: List<UUID>): List<ArrangorDbo> {
 		if (arrangorIder.isEmpty()) {
 			return emptyList()

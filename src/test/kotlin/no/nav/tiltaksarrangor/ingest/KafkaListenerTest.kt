@@ -11,7 +11,6 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerNavVeilederDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerPersonaliaDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
@@ -19,12 +18,10 @@ import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
-import no.nav.tiltaksarrangor.ingest.model.TiltakDto
 import no.nav.tiltaksarrangor.ingest.model.VeilederDto
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
-import no.nav.tiltaksarrangor.ingest.model.toDeltakerlisteDbo
 import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
 import no.nav.tiltaksarrangor.model.StatusType
@@ -35,6 +32,7 @@ import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.utils.JsonUtils
@@ -265,23 +263,27 @@ class KafkaListenerTest : IntegrationTest() {
 
 	@Test
 	fun `listen - melding pa deltakerliste-topic - lagres i database`() {
+		val arrangorDto = ArrangorDto(
+			id = UUID.randomUUID(),
+			navn = "Arrangør AS",
+			organisasjonsnummer = "77777777",
+			overordnetArrangorId = null
+		)
+		arrangorRepository.insertOrUpdateArrangor(arrangorDto.toArrangorDbo())
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangor = DeltakerlisteArrangorDto(
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
 				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
-			),
-			tiltak = TiltakDto(
 				navn = "Det flotte tiltaket",
-				type = "AMO"
+				arenaKode = "DIGIOPPARB"
 			),
+			navn = "Gjennomføring av tiltak",
 			startDato = LocalDate.of(2023, 5, 2),
 			sluttDato = null,
-			erKurs = false
+			status = DeltakerlisteDto.Status.GJENNOMFORES,
+			virksomhetsnummer = arrangorDto.organisasjonsnummer,
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
 		)
 		testKafkaProducer.send(
 			ProducerRecord(
@@ -300,24 +302,18 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - tombstonemelding pa deltakerliste-topic - slettes i database`() {
 		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto = DeltakerlisteDto(
+		val deltakerlisteDbo = DeltakerlisteDbo(
 			id = deltakerlisteId,
 			navn = "Gjennomføring av tiltak",
 			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangor = DeltakerlisteArrangorDto(
-				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
-			),
-			tiltak = TiltakDto(
-				navn = "Det flotte tiltaket",
-				type = "AMO"
-			),
+			arrangorId = UUID.randomUUID(),
+			tiltakNavn = "Det flotte tiltaket",
+			tiltakType = "DIGIOPPARB",
 			startDato = LocalDate.of(2023, 5, 2),
 			sluttDato = null,
 			erKurs = false
 		)
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDto.toDeltakerlisteDbo())
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
 		testKafkaProducer.send(
 			ProducerRecord(
 				DELTAKERLISTE_TOPIC,
@@ -335,24 +331,18 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - avsluttet deltakerliste-melding pa deltakerliste-topic og deltakerliste finnes i db - sletter deltakerliste og deltaker fra db`() {
 		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto = DeltakerlisteDto(
+		val deltakerlisteDbo = DeltakerlisteDbo(
 			id = deltakerlisteId,
 			navn = "Gjennomføring av tiltak",
 			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangor = DeltakerlisteArrangorDto(
-				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
-			),
-			tiltak = TiltakDto(
-				navn = "Avsluttet tiltak",
-				type = "AMO"
-			),
+			arrangorId = UUID.randomUUID(),
+			tiltakNavn = "Avsluttet tiltak",
+			tiltakType = "DIGIOPPARB",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = null,
 			erKurs = false
 		)
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDto.toDeltakerlisteDbo())
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
 		val deltakerId = UUID.randomUUID()
 		val deltakerDto = DeltakerDto(
 			id = deltakerId,
@@ -380,7 +370,20 @@ class KafkaListenerTest : IntegrationTest() {
 			deltarPaKurs = false
 		)
 		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
-		val avsluttetDeltakerlisteDto = deltakerlisteDto.copy(status = DeltakerlisteStatus.AVSLUTTET, sluttDato = LocalDate.now().minusWeeks(4))
+		val avsluttetDeltakerlisteDto = DeltakerlisteDto(
+			id = deltakerlisteDbo.id,
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
+				id = UUID.randomUUID(),
+				navn = deltakerlisteDbo.tiltakNavn,
+				arenaKode = deltakerlisteDbo.tiltakType
+			),
+			navn = deltakerlisteDbo.navn,
+			startDato = deltakerlisteDbo.startDato!!,
+			sluttDato = LocalDate.now().minusWeeks(4),
+			status = DeltakerlisteDto.Status.AVSLUTTET,
+			virksomhetsnummer = "888888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
+		)
 		testKafkaProducer.send(
 			ProducerRecord(
 				DELTAKERLISTE_TOPIC,

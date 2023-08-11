@@ -1,0 +1,21 @@
+package no.nav.tiltaksarrangor.client.amtarrangor.dto
+
+import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
+import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
+import java.util.UUID
+
+data class ArrangorMedOverordnetArrangor(
+	val id: UUID,
+	val navn: String,
+	val organisasjonsnummer: String,
+	val overordnetArrangor: ArrangorDto?
+)
+
+fun ArrangorMedOverordnetArrangor.toArrangorDbo(): ArrangorDbo {
+	return ArrangorDbo(
+		id = id,
+		navn = navn,
+		organisasjonsnummer = organisasjonsnummer,
+		overordnetArrangorId = overordnetArrangor?.id
+	)
+}

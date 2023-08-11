@@ -1,30 +1,49 @@
 package no.nav.tiltaksarrangor.ingest.model
 
-import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import java.time.LocalDate
 import java.util.UUID
 
 data class DeltakerlisteDto(
 	val id: UUID,
+	val tiltakstype: Tiltakstype,
 	val navn: String,
-	val status: DeltakerlisteStatus,
-	val arrangor: DeltakerlisteArrangorDto,
-	val tiltak: TiltakDto,
-	val startDato: LocalDate?,
-	val sluttDato: LocalDate?,
-	val erKurs: Boolean
-)
+	val startDato: LocalDate,
+	val sluttDato: LocalDate? = null,
+	val status: Status,
+	val virksomhetsnummer: String,
+	val oppstart: Oppstartstype?
+) {
 
-fun DeltakerlisteDto.toDeltakerlisteDbo(): DeltakerlisteDbo {
-	return DeltakerlisteDbo(
-		id = id,
-		navn = navn,
-		status = status,
-		arrangorId = arrangor.id,
-		tiltakNavn = tiltak.navn,
-		tiltakType = tiltak.type,
-		startDato = startDato,
-		sluttDato = sluttDato,
-		erKurs = erKurs
+	data class Tiltakstype(
+		val id: UUID,
+		val navn: String,
+		val arenaKode: String
+	)
+
+	enum class Status {
+		GJENNOMFORES,
+		AVBRUTT,
+		AVLYST,
+		AVSLUTTET,
+		APENT_FOR_INNSOK;
+	}
+
+	enum class Oppstartstype {
+		LOPENDE,
+		FELLES
+	}
+
+	fun erKurs(): Boolean {
+		if (oppstart != null) {
+			return oppstart == Oppstartstype.FELLES
+		} else {
+			return kursTiltak.contains(tiltakstype.arenaKode)
+		}
+	}
+
+	private val kursTiltak = setOf(
+		"JOBBK",
+		"GRUPPEAMO",
+		"GRUFAGYRKE"
 	)
 }

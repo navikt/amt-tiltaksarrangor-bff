@@ -2,23 +2,23 @@ package no.nav.tiltaksarrangor.ingest
 
 import io.mockk.Runs
 import io.mockk.clearMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
+import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerKontaktinformasjonDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerNavVeilederDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerPersonaliaDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
-import no.nav.tiltaksarrangor.ingest.model.TiltakDto
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -36,17 +36,28 @@ class IngestServiceTest {
 	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val endringsmeldingRepository = mockk<EndringsmeldingRepository>()
-	private val ingestService = IngestService(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository)
+	private val amtArrangorClient = mockk<AmtArrangorClient>()
+	private val ingestService = IngestService(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository, amtArrangorClient)
+
+	private val arrangor = ArrangorMedOverordnetArrangor(
+		id = UUID.randomUUID(),
+		navn = "Arrangør AS",
+		organisasjonsnummer = "88888888",
+		overordnetArrangor = null
+	)
 
 	@BeforeEach
 	internal fun resetMocks() {
-		clearMocks(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository)
+		clearMocks(arrangorRepository, ansattRepository, deltakerlisteRepository, deltakerRepository, endringsmeldingRepository, amtArrangorClient)
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
 		every { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(any()) } returns 1
 		every { deltakerRepository.insertOrUpdateDeltaker(any()) } just Runs
 		every { deltakerRepository.deleteDeltaker(any()) } returns 1
 		every { endringsmeldingRepository.insertOrUpdateEndringsmelding(any()) } just Runs
 		every { endringsmeldingRepository.deleteEndringsmelding(any()) } returns 1
+		every { arrangorRepository.getArrangor("88888888") } returns null
+		every { arrangorRepository.insertOrUpdateArrangor(any()) } just Runs
+		coEvery { amtArrangorClient.getArrangor("88888888") } returns arrangor
 	}
 
 	@Test
@@ -54,20 +65,17 @@ class IngestServiceTest {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangor = DeltakerlisteArrangorDto(
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
 				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
 			),
-			tiltak = TiltakDto(
-				navn = "Avsluttet tiltak",
-				type = "AMO"
-			),
+			navn = "Gjennomføring av tiltak",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = null,
-			erKurs = false
+			status = DeltakerlisteDto.Status.GJENNOMFORES,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
 		)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -80,20 +88,17 @@ class IngestServiceTest {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.APENT_FOR_INNSOK,
-			arrangor = DeltakerlisteArrangorDto(
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
 				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
 			),
-			tiltak = TiltakDto(
-				navn = "Avsluttet tiltak",
-				type = "AMO"
-			),
+			navn = "Gjennomføring av tiltak",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = null,
-			erKurs = false
+			status = DeltakerlisteDto.Status.APENT_FOR_INNSOK,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
 		)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -106,20 +111,17 @@ class IngestServiceTest {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.AVSLUTTET,
-			arrangor = DeltakerlisteArrangorDto(
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
 				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
 			),
-			tiltak = TiltakDto(
-				navn = "Avsluttet tiltak",
-				type = "AMO"
-			),
+			navn = "Avsluttet tiltak",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = LocalDate.now().minusMonths(6),
-			erKurs = false
+			status = DeltakerlisteDto.Status.AVSLUTTET,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
 		)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -133,25 +135,45 @@ class IngestServiceTest {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.AVSLUTTET,
-			arrangor = DeltakerlisteArrangorDto(
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
 				id = UUID.randomUUID(),
-				organisasjonsnummer = "88888888",
-				navn = "Arrangør AS"
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
 			),
-			tiltak = TiltakDto(
-				navn = "Avsluttet tiltak",
-				type = "AMO"
-			),
+			navn = "Avsluttet tiltak",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = LocalDate.now().minusWeeks(1),
-			erKurs = false
+			status = DeltakerlisteDto.Status.AVSLUTTET,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
 		)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
 		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
+	}
+
+	@Test
+	internal fun `lagreDeltakerliste - ikke stottet tiltakstype - lagres ikke i db `() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteDto(
+			id = deltakerlisteId,
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
+				id = UUID.randomUUID(),
+				navn = "Det flotte tiltaket",
+				arenaKode = "UTD"
+			),
+			navn = "Gjennomføring av tiltak",
+			startDato = LocalDate.now().minusYears(2),
+			sluttDato = null,
+			status = DeltakerlisteDto.Status.GJENNOMFORES,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
+		)
+
+		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
+
+		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
 	}
 
 	@Test

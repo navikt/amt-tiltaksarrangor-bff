@@ -50,6 +50,9 @@ spec:
     pool: nav-dev
   tokenx:
     enabled: true
+  azure:
+    application:
+      enabled: true
   accessPolicy:
     inbound:
       rules:
@@ -64,3 +67,5 @@ spec:
       value: dev-gcp:amt:amt-tiltak
     - name: AMT_ARRANGOR_TOKENX_CLIENT_ID
       value: dev-gcp:amt:amt-arrangor
+    - name: AMT_ARRANGOR_AAD_CLIENT_ID
+      value: api://dev-gcp.amt.amt-arrangor/.default
