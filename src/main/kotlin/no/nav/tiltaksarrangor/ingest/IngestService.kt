@@ -110,6 +110,17 @@ class IngestService(
 		}
 	}
 
+	private fun DeltakerDto.skalLagres(): Boolean {
+		if (status.type in SKJULES_ALLTID_STATUSER) {
+			return false
+		} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs && deltakerRepository.getDeltaker(id) == null) {
+			return false
+		} else if (status.type in AVSLUTTENDE_STATUSER) {
+			return !LocalDateTime.now().isAfter(status.gyldigFra.plusWeeks(2))
+		}
+		return true
+	}
+
 	private fun toDeltakerlisteDbo(deltakerlisteDto: DeltakerlisteDto): DeltakerlisteDbo {
 		return DeltakerlisteDbo(
 			id = deltakerlisteDto.id,
@@ -161,17 +172,6 @@ fun DeltakerlisteDto.skalLagres(): Boolean {
 		return true
 	}
 	return false
-}
-
-fun DeltakerDto.skalLagres(): Boolean {
-	if (status.type in SKJULES_ALLTID_STATUSER) {
-		return false
-	} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs) {
-		return false
-	} else if (status.type in AVSLUTTENDE_STATUSER) {
-		return !LocalDateTime.now().isAfter(status.gyldigFra.plusWeeks(2))
-	}
-	return true
 }
 
 fun EndringsmeldingDto.skalLagres(): Boolean {
