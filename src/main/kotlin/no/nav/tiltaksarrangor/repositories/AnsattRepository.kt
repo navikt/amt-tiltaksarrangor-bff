@@ -147,7 +147,6 @@ class AnsattRepository(
 		)
 	}
 
-
 	@Retryable(
 		include = [PessimisticLockingFailureException::class],
 		backoff = Backoff(delay = 250L, multiplier = 1.2, random = true)
