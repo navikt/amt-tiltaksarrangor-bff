@@ -62,7 +62,7 @@ class IntegrationTest {
 			registry.add("amt-arrangor.url", mockAmtArrangorServer::serverUrl)
 
 			val container = SingletonPostgresContainer.getContainer()
-			val kafkaContainer = KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.0.1")).apply {
+			val kafkaContainer = KafkaContainer(DockerImageName.parse(getKafkaImage())).apply {
 				start()
 				System.setProperty("KAFKA_BROKERS", bootstrapServers)
 			}
@@ -115,4 +115,13 @@ class IntegrationTest {
 			)
 		).serialize()
 	}
+}
+
+private fun getKafkaImage(): String {
+	val tag = when (System.getProperty("os.arch")) {
+		"aarch64" -> "7.2.2-1-ubi8.arm64"
+		else -> "7.2.2"
+	}
+
+	return "confluentinc/cp-kafka:$tag"
 }
