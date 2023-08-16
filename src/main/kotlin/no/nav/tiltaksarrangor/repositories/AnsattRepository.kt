@@ -11,8 +11,11 @@ import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import no.nav.tiltaksarrangor.utils.sqlParameters
+import org.springframework.dao.PessimisticLockingFailureException
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -144,6 +147,11 @@ class AnsattRepository(
 		)
 	}
 
+
+	@Retryable(
+		include = [PessimisticLockingFailureException::class],
+		backoff = Backoff(delay = 250L, multiplier = 1.2, random = true)
+	)
 	@Transactional
 	fun insertOrUpdateAnsatt(ansattDbo: AnsattDbo) {
 		val sql = """
