@@ -149,7 +149,7 @@ class AnsattRepository(
 
 	@Retryable(
 		include = [PessimisticLockingFailureException::class],
-		backoff = Backoff(delay = 250L, multiplier = 1.2, random = true)
+		backoff = Backoff(delay = 250L, multiplier = 1.6, random = true)
 	)
 	@Transactional
 	fun insertOrUpdateAnsatt(ansattDbo: AnsattDbo) {
