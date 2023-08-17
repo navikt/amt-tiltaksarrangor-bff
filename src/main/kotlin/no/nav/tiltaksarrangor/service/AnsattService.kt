@@ -14,6 +14,7 @@ import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Component
@@ -61,8 +62,10 @@ class AnsattService(
 		ansattRepository.deleteKoordinatorDeltakerliste(ansattId = ansattId, deltakerliste = KoordinatorDeltakerlisteDbo(deltakerlisteId))
 	}
 
+	@Transactional
 	fun tildelVeiledereForDeltaker(deltakerId: UUID, arrangorId: UUID, veiledereForDeltaker: List<VeilederForDeltakerDbo>) {
 		val gamleVeiledereForDeltaker = ansattRepository.getVeiledereForDeltaker(deltakerId)
+		ansattRepository.updateVeiledereForDeltaker(deltakerId = deltakerId, veiledere = veiledereForDeltaker)
 		amtArrangorClient.oppdaterVeilederForDeltaker(
 			deltakerId = deltakerId,
 			oppdaterVeiledereForDeltakerRequest = createOppdaterVeiledereForDeltakerRequest(
@@ -71,7 +74,6 @@ class AnsattService(
 				gamleVeiledereForDeltaker = gamleVeiledereForDeltaker.map { VeilederForDeltakerDbo(it.ansattPersonaliaDbo.id, it.veilederDeltakerDbo.veilederType) }
 			)
 		)
-		ansattRepository.updateVeiledereForDeltaker(deltakerId = deltakerId, veiledere = veiledereForDeltaker)
 	}
 
 	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID, arrangorId: UUID): List<AnsattPersonaliaDbo> {
