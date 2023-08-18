@@ -9,9 +9,17 @@ import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
+import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
+import no.nav.tiltaksarrangor.ingest.model.Bostedsadresse
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.ingest.model.Kontaktadresse
+import no.nav.tiltaksarrangor.ingest.model.Matrikkeladresse
+import no.nav.tiltaksarrangor.ingest.model.Oppholdsadresse
+import no.nav.tiltaksarrangor.ingest.model.Postboksadresse
+import no.nav.tiltaksarrangor.ingest.model.Vegadresse
+import no.nav.tiltaksarrangor.model.Adressetype
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
@@ -23,11 +31,13 @@ import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import org.junit.jupiter.api.AfterEach
@@ -154,6 +164,11 @@ class TiltaksarrangorServiceTest {
 		deltaker.tiltakskode shouldBe deltakerliste.tiltakType
 		deltaker.aktiveEndringsmeldinger.size shouldBe 0
 		deltaker.veiledere.size shouldBe 0
+		deltaker.adresse?.adressetype shouldBe Adressetype.KONTAKTADRESSE
+		deltaker.adresse?.postnummer shouldBe "1234"
+		deltaker.adresse?.poststed shouldBe "MOSS"
+		deltaker.adresse?.tilleggsnavn shouldBe null
+		deltaker.adresse?.adressenavn shouldBe "Gate 1"
 	}
 
 	@Test
@@ -349,5 +364,149 @@ class TiltaksarrangorServiceTest {
 		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
 		deltakerFraDb?.skjultAvAnsattId shouldBe null
 		deltakerFraDb?.skjultDato shouldBe null
+	}
+
+	@Test
+	fun `getAdresse - deltaker har adresse, tiltakstype jobbklubb - returnerer null`() {
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "JOBBK")
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id)
+		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
+
+		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()
+
+		adresse shouldBe null
+	}
+
+	@Test
+	fun `getAdresse - deltaker har kontaktadresse, bostedsadresse og oppholdsadresse, tiltakstype AFT - returnerer kontaktadresse`() {
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "ARBFORB")
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(
+			adresse = AdresseDto(
+				bostedsadresse = Bostedsadresse(
+					coAdressenavn = "C/O Gutterommet",
+					vegadresse = null,
+					matrikkeladresse = Matrikkeladresse(
+						tilleggsnavn = "Gården",
+						postnummer = "0484",
+						poststed = "OSLO"
+					)
+				),
+				oppholdsadresse = Oppholdsadresse(
+					coAdressenavn = null,
+					vegadresse = Vegadresse(
+						husnummer = "1",
+						husbokstav = "B",
+						adressenavn = "Veien",
+						tilleggsnavn = null,
+						postnummer = "1234",
+						poststed = "MOSS"
+					),
+					matrikkeladresse = Matrikkeladresse(
+						tilleggsnavn = "Fortet",
+						postnummer = "0101",
+						poststed = "ANDEBY"
+					)
+				),
+				kontaktadresse = Kontaktadresse(
+					coAdressenavn = null,
+					vegadresse = null,
+					postboksadresse = Postboksadresse(
+						postboks = "45451",
+						postnummer = "3312",
+						poststed = "VESTØYA"
+					)
+				)
+			)
+		)
+		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
+
+		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()
+
+		adresse?.adressetype shouldBe Adressetype.KONTAKTADRESSE
+		adresse?.postnummer shouldBe "3312"
+		adresse?.poststed shouldBe "VESTØYA"
+		adresse?.tilleggsnavn shouldBe null
+		adresse?.adressenavn shouldBe "Postboks 45451"
+	}
+
+	@Test
+	fun `getAdresse - deltaker har bostedsadresse og oppholdsadresse, tiltakstype AFT - returnerer oppholdsadresse`() {
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "ARBFORB")
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(
+			adresse = AdresseDto(
+				bostedsadresse = Bostedsadresse(
+					coAdressenavn = "C/O Gutterommet",
+					vegadresse = null,
+					matrikkeladresse = Matrikkeladresse(
+						tilleggsnavn = "Gården",
+						postnummer = "0484",
+						poststed = "OSLO"
+					)
+				),
+				oppholdsadresse = Oppholdsadresse(
+					coAdressenavn = "C/O Pappa",
+					vegadresse = Vegadresse(
+						husnummer = "1",
+						husbokstav = "B",
+						adressenavn = "Veien",
+						tilleggsnavn = null,
+						postnummer = "1234",
+						poststed = "MOSS"
+					),
+					matrikkeladresse = Matrikkeladresse(
+						tilleggsnavn = "Fortet",
+						postnummer = "0101",
+						poststed = "ANDEBY"
+					)
+				),
+				kontaktadresse = null
+			)
+		)
+		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
+
+		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()
+
+		adresse?.adressetype shouldBe Adressetype.OPPHOLDSADRESSE
+		adresse?.postnummer shouldBe "1234"
+		adresse?.poststed shouldBe "MOSS"
+		adresse?.tilleggsnavn shouldBe null
+		adresse?.adressenavn shouldBe "C/O Pappa, Veien 1B"
+	}
+
+	@Test
+	fun `getAdresse - deltaker har bare bostedsadresse, tiltakstype AFT - returnerer bostedsadresse`() {
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "ARBFORB")
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(
+			adresse = AdresseDto(
+				bostedsadresse = Bostedsadresse(
+					coAdressenavn = "C/O Gutterommet",
+					vegadresse = null,
+					matrikkeladresse = Matrikkeladresse(
+						tilleggsnavn = "Gården",
+						postnummer = "0484",
+						poststed = "OSLO"
+					)
+				),
+				oppholdsadresse = null,
+				kontaktadresse = null
+			)
+		)
+		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
+
+		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()
+
+		adresse?.adressetype shouldBe Adressetype.BOSTEDSADRESSE
+		adresse?.postnummer shouldBe "0484"
+		adresse?.poststed shouldBe "OSLO"
+		adresse?.tilleggsnavn shouldBe "Gården"
+		adresse?.adressenavn shouldBe "C/O Gutterommet"
 	}
 }

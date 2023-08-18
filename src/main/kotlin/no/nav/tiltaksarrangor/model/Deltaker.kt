@@ -25,7 +25,8 @@ data class Deltaker(
 	val fjernesDato: LocalDateTime?,
 	val navInformasjon: NavInformasjon,
 	val veiledere: List<Veileder>,
-	val aktiveEndringsmeldinger: List<Endringsmelding>
+	val aktiveEndringsmeldinger: List<Endringsmelding>,
+	val adresse: Adresse?
 ) {
 	data class Deltakerliste(
 		val id: UUID,
@@ -33,4 +34,16 @@ data class Deltaker(
 		val sluttDato: LocalDate?,
 		val erKurs: Boolean
 	)
+}
+
+data class Adresse(
+	val adressetype: Adressetype,
+	val postnummer: String,
+	val poststed: String,
+	val tilleggsnavn: String?,
+	val adressenavn: String?
+)
+
+enum class Adressetype {
+	KONTAKTADRESSE, OPPHOLDSADRESSE, BOSTEDSADRESSE
 }

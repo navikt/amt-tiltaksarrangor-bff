@@ -25,6 +25,7 @@ import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.testutils.getAdresse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -173,6 +174,7 @@ private fun getDeltaker(
 		telefonnummer = "98989898",
 		epost = "epost@nav.no",
 		erSkjermet = false,
+		adresse = getAdresse(),
 		status = status,
 		statusOpprettetDato = LocalDateTime.now().minusWeeks(6),
 		statusGyldigFraDato = statusGyldigFraDato,

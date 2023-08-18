@@ -1,10 +1,12 @@
 package no.nav.tiltaksarrangor.repositories
 
+import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import no.nav.tiltaksarrangor.utils.getNullableDouble
 import no.nav.tiltaksarrangor.utils.getNullableFloat
 import no.nav.tiltaksarrangor.utils.getNullableLocalDate
@@ -32,6 +34,7 @@ class DeltakerRepository(
 			telefonnummer = rs.getString("telefonnummer"),
 			epost = rs.getString("epost"),
 			erSkjermet = rs.getBoolean("er_skjermet"),
+			adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
 			status = StatusType.valueOf(rs.getString("status")),
 			statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 			statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
@@ -63,6 +66,7 @@ class DeltakerRepository(
 				telefonnummer = rs.getString("telefonnummer"),
 				epost = rs.getString("epost"),
 				erSkjermet = rs.getBoolean("er_skjermet"),
+				adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
 				status = StatusType.valueOf(rs.getString("deltakerstatus")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
@@ -100,7 +104,7 @@ class DeltakerRepository(
 										 er_skjermet, status, status_gyldig_fra, status_opprettet_dato, dager_per_uke, prosent_stilling,
 										 start_dato, slutt_dato,
 										 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
-										 navveileder_telefon, skjult_av_ansatt_id, skjult_dato)
+										 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse)
 					VALUES (:id,
 							:deltakerliste_id,
 							:personident,
@@ -125,7 +129,8 @@ class DeltakerRepository(
 							:navveileder_epost,
 							:navveileder_telefon,
 							:skjult_av_ansatt_id,
-							:skjult_dato)
+							:skjult_dato,
+							:adresse)
 					ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
 												   personident           = :personident,
 												   fornavn               = :fornavn,
@@ -149,7 +154,8 @@ class DeltakerRepository(
 												   navveileder_epost     = :navveileder_epost,
 												   navveileder_telefon   = :navveileder_telefon,
 												   skjult_av_ansatt_id   = :skjult_av_ansatt_id,
-												   skjult_dato           = :skjult_dato
+												   skjult_dato           = :skjult_dato,
+												   adresse				 = :adresse
 		""".trimIndent()
 
 		template.update(
@@ -179,7 +185,8 @@ class DeltakerRepository(
 				"navveileder_epost" to deltakerDbo.navVeilederEpost,
 				"navveileder_telefon" to deltakerDbo.navVeilederTelefon,
 				"skjult_av_ansatt_id" to deltakerDbo.skjultAvAnsattId,
-				"skjult_dato" to deltakerDbo.skjultDato
+				"skjult_dato" to deltakerDbo.skjultDato,
+				"adresse" to deltakerDbo.adresse?.toPGObject()
 			)
 		)
 	}
@@ -227,6 +234,7 @@ class DeltakerRepository(
 						telefonnummer,
 						epost,
 						er_skjermet,
+						adresse,
 						deltaker.status as deltakerstatus,
 						status_gyldig_fra,
 						status_opprettet_dato,
@@ -272,6 +280,7 @@ class DeltakerRepository(
 						telefonnummer,
 						epost,
 						er_skjermet,
+						adresse,
 						deltaker.status as deltakerstatus,
 						status_gyldig_fra,
 						status_opprettet_dato,

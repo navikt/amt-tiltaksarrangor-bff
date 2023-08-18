@@ -23,4 +23,16 @@ data class DeltakerlisteDbo(
 		"Gruppe AMO" -> "Arbeidsmarkedsopplæring"
 		else -> tiltakNavn
 	}
+
+	fun skalViseAdresseForDeltaker(): Boolean {
+		return tiltakstyperMedAdresse.contains(tiltakType)
+	}
+
+	private val tiltakstyperMedAdresse = setOf(
+		"INDOPPFAG",
+		"ARBFORB",
+		"AVKLARAG",
+		"VASV",
+		"ARBRRHDAG"
+	)
 }
