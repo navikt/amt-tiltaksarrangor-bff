@@ -52,14 +52,16 @@ class AnsattService(
 		return ansattRepository.getVeiledereForDeltakere(deltakerIder).map { it.toVeileder() }
 	}
 
+	@Transactional
 	fun leggTilDeltakerliste(ansattId: UUID, deltakerlisteId: UUID, arrangorId: UUID) {
-		amtArrangorClient.leggTilDeltakerlisteForKoordinator(ansattId = ansattId, deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
 		ansattRepository.insertKoordinatorDeltakerliste(ansattId = ansattId, deltakerliste = KoordinatorDeltakerlisteDbo(deltakerlisteId))
+		amtArrangorClient.leggTilDeltakerlisteForKoordinator(ansattId = ansattId, deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
 	}
 
+	@Transactional
 	fun fjernDeltakerliste(ansattId: UUID, deltakerlisteId: UUID, arrangorId: UUID) {
-		amtArrangorClient.fjernDeltakerlisteForKoordinator(ansattId = ansattId, deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
 		ansattRepository.deleteKoordinatorDeltakerliste(ansattId = ansattId, deltakerliste = KoordinatorDeltakerlisteDbo(deltakerlisteId))
+		amtArrangorClient.fjernDeltakerlisteForKoordinator(ansattId = ansattId, deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
 	}
 
 	@Transactional
