@@ -20,6 +20,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
+import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.MediaType.Companion.toMediaType
@@ -370,6 +371,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 			telefonnummer = null,
 			epost = null,
 			erSkjermet = false,
+			adresse = getAdresse(),
 			status = StatusType.DELTAR,
 			statusOpprettetDato = LocalDateTime.now(),
 			statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),

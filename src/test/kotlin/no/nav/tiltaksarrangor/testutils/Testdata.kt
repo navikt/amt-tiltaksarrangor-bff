@@ -1,8 +1,13 @@
 package no.nav.tiltaksarrangor.testutils
 
+import no.nav.tiltaksarrangor.ingest.model.AdresseDto
+import no.nav.tiltaksarrangor.ingest.model.Bostedsadresse
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.ingest.model.Kontaktadresse
+import no.nav.tiltaksarrangor.ingest.model.Matrikkeladresse
+import no.nav.tiltaksarrangor.ingest.model.Vegadresse
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -36,6 +41,7 @@ fun getDeltaker(deltakerId: UUID, deltakerlisteId: UUID = UUID.randomUUID()): De
 		telefonnummer = null,
 		epost = null,
 		erSkjermet = false,
+		adresse = getAdresse(),
 		status = StatusType.DELTAR,
 		statusOpprettetDato = LocalDateTime.now(),
 		statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
@@ -63,3 +69,29 @@ fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo {
 		innhold = Innhold.ForlengDeltakelseInnhold(LocalDate.now().plusMonths(2))
 	)
 }
+
+fun getAdresse(): AdresseDto =
+	AdresseDto(
+		bostedsadresse = Bostedsadresse(
+			coAdressenavn = "C/O Gutterommet",
+			vegadresse = null,
+			matrikkeladresse = Matrikkeladresse(
+				tilleggsnavn = "Gården",
+				postnummer = "0484",
+				poststed = "OSLO"
+			)
+		),
+		oppholdsadresse = null,
+		kontaktadresse = Kontaktadresse(
+			coAdressenavn = null,
+			vegadresse = Vegadresse(
+				husnummer = "1",
+				husbokstav = null,
+				adressenavn = "Gate",
+				tilleggsnavn = null,
+				postnummer = "1234",
+				poststed = "MOSS"
+			),
+			postboksadresse = null
+		)
+	)

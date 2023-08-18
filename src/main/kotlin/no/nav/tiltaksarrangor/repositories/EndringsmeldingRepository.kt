@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.repositories
 
+import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
@@ -59,6 +60,7 @@ class EndringsmeldingRepository(
 				telefonnummer = rs.getString("telefonnummer"),
 				epost = rs.getString("epost"),
 				erSkjermet = rs.getBoolean("er_skjermet"),
+				adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
 				status = StatusType.valueOf(rs.getString("deltakerstatus")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
@@ -157,6 +159,7 @@ class EndringsmeldingRepository(
 						telefonnummer,
 						epost,
 						er_skjermet,
+						adresse,
 						deltaker.status as deltakerstatus,
 						status_gyldig_fra,
 						status_opprettet_dato,

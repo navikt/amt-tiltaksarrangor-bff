@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.repositories.model
 
+import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.model.StatusType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -15,6 +16,7 @@ data class DeltakerDbo(
 	val telefonnummer: String?,
 	val epost: String?,
 	val erSkjermet: Boolean,
+	val adresse: AdresseDto?,
 	val status: StatusType,
 	val statusOpprettetDato: LocalDateTime,
 	val statusGyldigFraDato: LocalDateTime,

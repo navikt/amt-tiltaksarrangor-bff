@@ -24,6 +24,7 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -187,7 +188,8 @@ class IngestServiceTest {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,
@@ -221,7 +223,8 @@ class IngestServiceTest {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.SOKT_INN,
@@ -256,7 +259,8 @@ class IngestServiceTest {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.HAR_SLUTTET,
@@ -291,7 +295,8 @@ class IngestServiceTest {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.HAR_SLUTTET,
@@ -326,7 +331,8 @@ class IngestServiceTest {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.IKKE_AKTUELL,
@@ -362,7 +368,8 @@ class IngestServiceTest {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.IKKE_AKTUELL,
@@ -398,7 +405,8 @@ class IngestServiceTest {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.IKKE_AKTUELL,

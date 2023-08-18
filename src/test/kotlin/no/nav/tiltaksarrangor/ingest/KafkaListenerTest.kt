@@ -35,6 +35,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -136,6 +137,7 @@ class KafkaListenerTest : IntegrationTest() {
 				telefonnummer = null,
 				epost = null,
 				erSkjermet = false,
+				adresse = getAdresse(),
 				status = StatusType.DELTAR,
 				statusOpprettetDato = LocalDateTime.now(),
 				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
@@ -205,6 +207,7 @@ class KafkaListenerTest : IntegrationTest() {
 				telefonnummer = null,
 				epost = null,
 				erSkjermet = false,
+				adresse = getAdresse(),
 				status = StatusType.DELTAR,
 				statusOpprettetDato = LocalDateTime.now(),
 				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
@@ -351,7 +354,8 @@ class KafkaListenerTest : IntegrationTest() {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,
@@ -409,7 +413,8 @@ class KafkaListenerTest : IntegrationTest() {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,
@@ -451,7 +456,8 @@ class KafkaListenerTest : IntegrationTest() {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,
@@ -494,7 +500,8 @@ class KafkaListenerTest : IntegrationTest() {
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false
+				skjermet = false,
+				adresse = getAdresse()
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,

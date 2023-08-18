@@ -14,6 +14,7 @@ import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
+import no.nav.tiltaksarrangor.testutils.getAdresse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -69,6 +70,7 @@ class VeilederControllerTest : IntegrationTest() {
 			telefonnummer = null,
 			epost = null,
 			erSkjermet = false,
+			adresse = getAdresse(),
 			status = StatusType.DELTAR,
 			statusOpprettetDato = LocalDateTime.now(),
 			statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),

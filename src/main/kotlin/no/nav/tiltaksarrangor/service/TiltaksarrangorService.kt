@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
+import no.nav.tiltaksarrangor.model.Adresse
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.NavInformasjon
@@ -138,7 +139,26 @@ class TiltaksarrangorService(
 				}
 			),
 			veiledere = veiledere,
-			aktiveEndringsmeldinger = endringsmeldinger.map { it.toEndringsmelding() }
+			aktiveEndringsmeldinger = endringsmeldinger.map { it.toEndringsmelding() },
+			adresse = deltakerMedDeltakerliste.getAdresse()
 		)
 	}
+}
+
+fun DeltakerMedDeltakerlisteDbo.getAdresse(): Adresse? {
+	if (deltaker.adresse == null) {
+		return null
+	}
+	if (deltakerliste.skalViseAdresseForDeltaker()) {
+		return if (deltaker.adresse.kontaktadresse != null) {
+			deltaker.adresse.kontaktadresse.toAdresse()
+		} else if (deltaker.adresse.oppholdsadresse != null) {
+			deltaker.adresse.oppholdsadresse.toAdresse()
+		} else if (deltaker.adresse.bostedsadresse != null) {
+			deltaker.adresse.bostedsadresse.toAdresse()
+		} else {
+			null
+		}
+	}
+	return null
 }
