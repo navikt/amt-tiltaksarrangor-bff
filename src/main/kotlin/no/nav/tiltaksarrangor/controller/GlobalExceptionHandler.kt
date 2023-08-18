@@ -51,7 +51,6 @@ class GlobalExceptionHandler(
 				Response(
 					status = status.value(),
 					title = status,
-					detail = exception.message,
 					stacktrace = if (includeStacktrace) ExceptionUtils.getStackTrace(exception) else null
 				)
 			)
@@ -61,7 +60,6 @@ class GlobalExceptionHandler(
 	data class Response(
 		val status: Int,
 		val title: HttpStatus,
-		val detail: String?,
 		val stacktrace: String? = null
 	)
 }
