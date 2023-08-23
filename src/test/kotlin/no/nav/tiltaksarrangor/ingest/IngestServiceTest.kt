@@ -26,6 +26,7 @@ import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
+import no.nav.tiltaksarrangor.testutils.getVurderinger
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -205,7 +206,8 @@ class IngestServiceTest {
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
-			deltarPaKurs = false
+			deltarPaKurs = false,
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -240,7 +242,8 @@ class IngestServiceTest {
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
-			deltarPaKurs = false
+			deltarPaKurs = false,
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -276,7 +279,8 @@ class IngestServiceTest {
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
-			deltarPaKurs = false
+			deltarPaKurs = false,
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -312,7 +316,8 @@ class IngestServiceTest {
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
-			deltarPaKurs = false
+			deltarPaKurs = false,
+			vurderingerFraArrangor = getVurderinger(deltakerId)
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -348,7 +353,8 @@ class IngestServiceTest {
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
-			deltarPaKurs = true
+			deltarPaKurs = true,
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -385,7 +391,8 @@ class IngestServiceTest {
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
-			deltarPaKurs = true
+			deltarPaKurs = true,
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -422,7 +429,8 @@ class IngestServiceTest {
 			navKontor = "NAV Oslo",
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
-			deltarPaKurs = true
+			deltarPaKurs = true,
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)

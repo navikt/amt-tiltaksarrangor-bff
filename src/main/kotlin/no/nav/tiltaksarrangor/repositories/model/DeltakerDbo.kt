@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.repositories.model
 
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
+import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.StatusType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -32,7 +33,8 @@ data class DeltakerDbo(
 	val navVeilederEpost: String?,
 	val navVeilederTelefon: String?,
 	val skjultAvAnsattId: UUID?,
-	val skjultDato: LocalDateTime?
+	val skjultDato: LocalDateTime?,
+	val vurderingerFraArrangor: List<VurderingDto>?
 ) {
 	fun erSkjult(): Boolean {
 		return skjultDato != null

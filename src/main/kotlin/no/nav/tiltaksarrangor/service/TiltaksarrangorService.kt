@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
 import no.nav.tiltaksarrangor.model.Veileder
+import no.nav.tiltaksarrangor.model.Vurdering
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -140,7 +141,9 @@ class TiltaksarrangorService(
 			),
 			veiledere = veiledere,
 			aktiveEndringsmeldinger = endringsmeldinger.map { it.toEndringsmelding() },
-			adresse = deltakerMedDeltakerliste.getAdresse()
+			adresse = deltakerMedDeltakerliste.getAdresse(),
+			gjeldendeVurderingFraArrangor = deltakerMedDeltakerliste.deltaker.getGjeldendeVurdering(),
+			historiskeVurderingerFraArrangor = deltakerMedDeltakerliste.deltaker.getHistoriskeVurderinger()
 		)
 	}
 }
@@ -161,4 +164,12 @@ fun DeltakerMedDeltakerlisteDbo.getAdresse(): Adresse? {
 		}
 	}
 	return null
+}
+
+fun DeltakerDbo.getGjeldendeVurdering(): Vurdering? {
+	return vurderingerFraArrangor?.firstOrNull { it.gyldigTil == null }?.toVurdering()
+}
+
+fun DeltakerDbo.getHistoriskeVurderinger(): List<Vurdering>? {
+	return vurderingerFraArrangor?.filter { it.gyldigTil != null }?.map { it.toVurdering() }
 }

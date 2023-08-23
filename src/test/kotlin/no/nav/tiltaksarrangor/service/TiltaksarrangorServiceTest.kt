@@ -19,10 +19,12 @@ import no.nav.tiltaksarrangor.ingest.model.Matrikkeladresse
 import no.nav.tiltaksarrangor.ingest.model.Oppholdsadresse
 import no.nav.tiltaksarrangor.ingest.model.Postboksadresse
 import no.nav.tiltaksarrangor.ingest.model.Vegadresse
+import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.Adressetype
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
+import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -139,7 +141,30 @@ class TiltaksarrangorServiceTest {
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		deltakerRepository.insertOrUpdateDeltaker(
+			getDeltaker(deltakerId, deltakerliste.id).copy(
+				vurderingerFraArrangor = listOf(
+					VurderingDto(
+						id = UUID.randomUUID(),
+						deltakerId = deltakerId,
+						vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+						begrunnelse = "Mangler førerkort",
+						opprettetAvArrangorAnsattId = UUID.randomUUID(),
+						gyldigFra = LocalDateTime.now().minusWeeks(2),
+						gyldigTil = LocalDateTime.now()
+					),
+					VurderingDto(
+						id = UUID.randomUUID(),
+						deltakerId = deltakerId,
+						vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+						begrunnelse = null,
+						opprettetAvArrangorAnsattId = UUID.randomUUID(),
+						gyldigFra = LocalDateTime.now(),
+						gyldigTil = null
+					)
+				)
+			)
+		)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
 				id = UUID.randomUUID(),
@@ -169,6 +194,9 @@ class TiltaksarrangorServiceTest {
 		deltaker.adresse?.poststed shouldBe "MOSS"
 		deltaker.adresse?.tilleggsnavn shouldBe null
 		deltaker.adresse?.adressenavn shouldBe "Gate 1"
+		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
+		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 1
+		deltaker.historiskeVurderingerFraArrangor?.firstOrNull()?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
 	}
 
 	@Test
@@ -233,6 +261,8 @@ class TiltaksarrangorServiceTest {
 		val veileder = deltaker.veiledere.first()
 		veileder.ansattId shouldBe veilederId
 		veileder.veiledertype shouldBe Veiledertype.VEILEDER
+		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
+		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 0
 	}
 
 	@Test

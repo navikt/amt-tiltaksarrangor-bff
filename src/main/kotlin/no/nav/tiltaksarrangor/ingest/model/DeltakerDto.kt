@@ -18,7 +18,8 @@ data class DeltakerDto(
 	val navKontor: String?,
 	val navVeileder: DeltakerNavVeilederDto?,
 	val skjult: DeltakerSkjultDto?,
-	val deltarPaKurs: Boolean
+	val deltarPaKurs: Boolean,
+	val vurderingerFraArrangor: List<VurderingDto>?
 )
 
 fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
@@ -48,7 +49,8 @@ fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
 		navVeilederEpost = navVeileder?.epost,
 		navVeilederTelefon = navVeileder?.telefonnummer,
 		skjultAvAnsattId = skjult?.skjultAvAnsattId,
-		skjultDato = skjult?.dato
+		skjultDato = skjult?.dato,
+		vurderingerFraArrangor = vurderingerFraArrangor
 	)
 }
 

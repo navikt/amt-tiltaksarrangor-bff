@@ -4,6 +4,7 @@ import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.ingest.model.typerUtenInnhold
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
@@ -61,6 +62,7 @@ class EndringsmeldingRepository(
 				epost = rs.getString("epost"),
 				erSkjermet = rs.getBoolean("er_skjermet"),
 				adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
+				vurderingerFraArrangor = rs.getString("vurderinger")?.let { fromJsonString<List<VurderingDto>>(it) },
 				status = StatusType.valueOf(rs.getString("deltakerstatus")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
@@ -160,6 +162,7 @@ class EndringsmeldingRepository(
 						epost,
 						er_skjermet,
 						adresse,
+						vurderinger,
 						deltaker.status as deltakerstatus,
 						status_gyldig_fra,
 						status_opprettet_dato,
