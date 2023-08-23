@@ -356,4 +356,18 @@ class DeltakerRepository(
 			)
 		)
 	}
+
+	fun oppdaterVurderingerForDeltaker(deltakerId: UUID, oppdaterteVurderinger: List<VurderingDto>) {
+		val sql = """
+			UPDATE deltaker SET vurderinger = :vurderinger WHERE id = :deltakerId
+		""".trimIndent()
+
+		template.update(
+			sql,
+			sqlParameters(
+				"vurderinger" to oppdaterteVurderinger.toPGObject(),
+				"deltakerId" to deltakerId
+			)
+		)
+	}
 }

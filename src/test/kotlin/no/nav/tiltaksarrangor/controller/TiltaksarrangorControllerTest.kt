@@ -3,12 +3,15 @@ package no.nav.tiltaksarrangor.controller
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.tiltaksarrangor.IntegrationTest
+import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
+import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -23,6 +26,8 @@ import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getVurderinger
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -31,6 +36,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class TiltaksarrangorControllerTest : IntegrationTest() {
+	private val mediaTypeJson = "application/json".toMediaType()
 	private val template = NamedParameterJdbcTemplate(postgresDataSource)
 	private val ansattRepository = AnsattRepository(template)
 	private val deltakerRepository = DeltakerRepository(template)
@@ -199,6 +205,101 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
+	}
+
+	@Test
+	fun `registrerVurdering - ikke autentisert - returnerer 401`() {
+		val requestBody = RegistrerVurderingRequest(
+			vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+			begrunnelse = null
+		)
+		val response = sendRequest(
+			method = "POST",
+			path = "/tiltaksarrangor/deltaker/${UUID.randomUUID()}/vurdering",
+			body = objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson)
+		)
+
+		response.code shouldBe 401
+	}
+
+	@Test
+	fun `registrerVurdering - autentisert - returnerer 200`() {
+		val requestBody = RegistrerVurderingRequest(
+			vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+			begrunnelse = null
+		)
+		val deltakerId = UUID.fromString("27446cc8-30ad-4030-94e3-de438c2af3c6")
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Orgnavn",
+				organisasjonsnummer = "orgnummer",
+				overordnetArrangorId = null
+			)
+		)
+		val deltakerliste = getDeltakerliste(arrangorId).copy(
+			id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
+			startDato = LocalDate.of(2023, 2, 1)
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val opprinneligVurdering = VurderingDto(
+			id = UUID.randomUUID(),
+			deltakerId = deltakerId,
+			vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+			begrunnelse = "Mangler førerkort",
+			opprettetAvArrangorAnsattId = UUID.randomUUID(),
+			gyldigFra = LocalDateTime.now().minusWeeks(1),
+			gyldigTil = null
+		)
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(
+			personident = "10987654321",
+			status = StatusType.VURDERES,
+			statusOpprettetDato = LocalDate.of(2023, 2, 1).atStartOfDay()
+		).copy(vurderingerFraArrangor = listOf(opprinneligVurdering))
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)
+				),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER))
+			)
+		)
+		mockAmtTiltakServer.addRegistrerVurderingResponse(
+			deltakerId,
+			listOf(
+				opprinneligVurdering.copy(gyldigTil = LocalDateTime.now()),
+				VurderingDto(
+					id = UUID.randomUUID(),
+					deltakerId = deltakerId,
+					vurderingstype = requestBody.vurderingstype,
+					begrunnelse = requestBody.begrunnelse,
+					opprettetAvArrangorAnsattId = UUID.randomUUID(),
+					gyldigFra = LocalDateTime.now(),
+					gyldigTil = null
+				)
+			)
+		)
+
+		val response = sendRequest(
+			method = "POST",
+			path = "/tiltaksarrangor/deltaker/$deltakerId/vurdering",
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+			body = objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson)
+		)
+
+		response.code shouldBe 200
+		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
+		deltakerFraDb?.vurderingerFraArrangor?.size shouldBe 2
 	}
 
 	@Test

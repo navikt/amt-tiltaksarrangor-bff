@@ -8,6 +8,8 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.response.OpprettEndringsmeldingResponse
+import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
+import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
@@ -180,6 +182,22 @@ class AmtTiltakClient(
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "fjerne deltaker med id $deltakerId")
 			}
+		}
+	}
+
+	fun registrerVurdering(deltakerId: UUID, registrerVurderingRequest: RegistrerVurderingRequest): List<VurderingDto> {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/vurdering")
+			.post(objectMapper.writeValueAsString(registrerVurderingRequest).toRequestBody(mediaTypeJson))
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulUpdateResponse(response.code, "registrere vurdering for deltaker med id $deltakerId")
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return JsonUtils.fromJsonString<List<VurderingDto>>(body)
 		}
 	}
 
