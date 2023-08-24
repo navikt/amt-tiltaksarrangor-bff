@@ -8,7 +8,9 @@ import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.Kontaktadresse
 import no.nav.tiltaksarrangor.ingest.model.Matrikkeladresse
 import no.nav.tiltaksarrangor.ingest.model.Vegadresse
+import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.StatusType
+import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
@@ -42,6 +44,7 @@ fun getDeltaker(deltakerId: UUID, deltakerlisteId: UUID = UUID.randomUUID()): De
 		epost = null,
 		erSkjermet = false,
 		adresse = getAdresse(),
+		vurderingerFraArrangor = getVurderinger(deltakerId),
 		status = StatusType.DELTAR,
 		statusOpprettetDato = LocalDateTime.now(),
 		statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
@@ -95,3 +98,17 @@ fun getAdresse(): AdresseDto =
 			postboksadresse = null
 		)
 	)
+
+fun getVurderinger(deltakerId: UUID, gyldigFra: LocalDateTime = LocalDateTime.now()): List<VurderingDto> {
+	return listOf(
+		VurderingDto(
+			id = UUID.randomUUID(),
+			deltakerId = deltakerId,
+			vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+			begrunnelse = "Mangler førerkort",
+			opprettetAvArrangorAnsattId = UUID.randomUUID(),
+			gyldigFra = gyldigFra,
+			gyldigTil = null
+		)
+	)
+}

@@ -387,7 +387,8 @@ class KoordinatorControllerTest : IntegrationTest() {
 			navVeilederNavn = null,
 			navVeilederTelefon = null,
 			skjultAvAnsattId = null,
-			skjultDato = null
+			skjultDato = null,
+			vurderingerFraArrangor = null
 		)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 

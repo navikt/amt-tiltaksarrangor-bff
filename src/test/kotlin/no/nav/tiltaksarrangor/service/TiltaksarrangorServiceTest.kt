@@ -9,6 +9,7 @@ import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
+import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.Bostedsadresse
@@ -19,12 +20,15 @@ import no.nav.tiltaksarrangor.ingest.model.Matrikkeladresse
 import no.nav.tiltaksarrangor.ingest.model.Oppholdsadresse
 import no.nav.tiltaksarrangor.ingest.model.Postboksadresse
 import no.nav.tiltaksarrangor.ingest.model.Vegadresse
+import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.Adressetype
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
+import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
@@ -37,7 +41,6 @@ import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
-import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import org.junit.jupiter.api.AfterEach
@@ -139,7 +142,30 @@ class TiltaksarrangorServiceTest {
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		deltakerRepository.insertOrUpdateDeltaker(
+			getDeltaker(deltakerId, deltakerliste.id).copy(
+				vurderingerFraArrangor = listOf(
+					VurderingDto(
+						id = UUID.randomUUID(),
+						deltakerId = deltakerId,
+						vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+						begrunnelse = "Mangler førerkort",
+						opprettetAvArrangorAnsattId = UUID.randomUUID(),
+						gyldigFra = LocalDateTime.now().minusWeeks(2),
+						gyldigTil = LocalDateTime.now()
+					),
+					VurderingDto(
+						id = UUID.randomUUID(),
+						deltakerId = deltakerId,
+						vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+						begrunnelse = null,
+						opprettetAvArrangorAnsattId = UUID.randomUUID(),
+						gyldigFra = LocalDateTime.now(),
+						gyldigTil = null
+					)
+				)
+			)
+		)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
 				id = UUID.randomUUID(),
@@ -169,6 +195,9 @@ class TiltaksarrangorServiceTest {
 		deltaker.adresse?.poststed shouldBe "MOSS"
 		deltaker.adresse?.tilleggsnavn shouldBe null
 		deltaker.adresse?.adressenavn shouldBe "Gate 1"
+		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
+		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 1
+		deltaker.historiskeVurderingerFraArrangor?.firstOrNull()?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
 	}
 
 	@Test
@@ -233,6 +262,8 @@ class TiltaksarrangorServiceTest {
 		val veileder = deltaker.veiledere.first()
 		veileder.ansattId shouldBe veilederId
 		veileder.veiledertype shouldBe Veiledertype.VEILEDER
+		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
+		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 0
 	}
 
 	@Test
@@ -364,6 +395,158 @@ class TiltaksarrangorServiceTest {
 		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
 		deltakerFraDb?.skjultAvAnsattId shouldBe null
 		deltakerFraDb?.skjultDato shouldBe null
+	}
+
+	@Test
+	fun `registrerVurdering - ansatt har ikke rolle hos arrangor - returnerer unauthorized`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.VURDERES))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		assertThrows<UnauthorizedException> {
+			tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_IKKE_KRAVENE, "Ikke gode nok norskkunnskaper"))
+		}
+	}
+
+	@Test
+	fun `registrerVurdering - deltaker har status vurderes og ansatt har tilgang - vurdering blir lagret`() {
+		val deltakerId = UUID.randomUUID()
+		val ansattId = UUID.randomUUID()
+		val forsteVurdering = VurderingDto(
+			id = UUID.randomUUID(),
+			deltakerId = deltakerId,
+			vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+			begrunnelse = "Mangler grunnkurs",
+			opprettetAvArrangorAnsattId = UUID.randomUUID(),
+			gyldigFra = LocalDateTime.now().minusWeeks(1),
+			gyldigTil = null
+		)
+		val andreVurdering = VurderingDto(
+			id = UUID.randomUUID(),
+			deltakerId = deltakerId,
+			vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+			begrunnelse = null,
+			opprettetAvArrangorAnsattId = ansattId,
+			gyldigFra = LocalDateTime.now(),
+			gyldigTil = null
+		)
+		coEvery { amtTiltakClient.registrerVurdering(any(), any()) } returns listOf(
+			forsteVurdering.copy(gyldigTil = LocalDateTime.now()),
+			andreVurdering
+		)
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(
+			status = StatusType.VURDERES,
+			vurderingerFraArrangor = listOf(forsteVurdering)
+		)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null))
+
+		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
+		deltakerFraDb?.vurderingerFraArrangor?.size shouldBe 2
+		deltakerFraDb?.vurderingerFraArrangor?.find { it.gyldigTil == null }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
+		deltakerFraDb?.vurderingerFraArrangor?.find { it.gyldigTil != null }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
+	}
+
+	@Test
+	fun `registrerVurdering - deltaker venter pa oppstart og ansatt har tilgang - returnerer illegal state exception`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.VENTER_PA_OPPSTART, vurderingerFraArrangor = null)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		assertThrows<IllegalStateException> {
+			tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null))
+		}
+
+		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
+		deltakerFraDb?.vurderingerFraArrangor shouldBe null
+	}
+
+	@Test
+	fun `registrerVurdering - reguest har type OPPFYLLER_IKKE_KRAVENE og mangler begrunnelse - returnerer ValidationException`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.VURDERES, vurderingerFraArrangor = null)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+
+		assertThrows<ValidationException> {
+			tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_IKKE_KRAVENE, null))
+		}
+
+		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
+		deltakerFraDb?.vurderingerFraArrangor shouldBe null
 	}
 
 	@Test

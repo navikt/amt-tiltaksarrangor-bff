@@ -26,7 +26,9 @@ data class Deltaker(
 	val navInformasjon: NavInformasjon,
 	val veiledere: List<Veileder>,
 	val aktiveEndringsmeldinger: List<Endringsmelding>,
-	val adresse: Adresse?
+	val adresse: Adresse?,
+	val gjeldendeVurderingFraArrangor: Vurdering?,
+	val historiskeVurderingerFraArrangor: List<Vurdering>?
 ) {
 	data class Deltakerliste(
 		val id: UUID,

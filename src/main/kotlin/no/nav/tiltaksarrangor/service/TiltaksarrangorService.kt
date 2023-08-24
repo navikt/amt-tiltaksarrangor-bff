@@ -1,14 +1,19 @@
 package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
+import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.model.Adresse
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
+import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veileder
+import no.nav.tiltaksarrangor.model.Vurdering
+import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
@@ -62,6 +67,33 @@ class TiltaksarrangorService(
 		val veiledere = ansattService.getVeiledereForDeltaker(deltakerId)
 
 		return tilDeltaker(deltakerMedDeltakerliste, veiledere, endringsmeldinger)
+	}
+
+	fun registrerVurdering(personIdent: String, deltakerId: UUID, request: RegistrerVurderingRequest) {
+		val ansatt = getAnsattMedRoller(personIdent)
+		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+
+		if (!ansattService.harTilgangTilDeltaker(deltakerId = deltakerId, deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id, deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId, ansattDbo = ansatt)) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
+		}
+
+		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
+			log.warn("Har forsøkt å registrere vurdering for deltaker som er fjernet")
+			throw SkjultDeltakerException("Fant ikke deltaker med id $deltakerId")
+		} else if (deltakerMedDeltakerliste.deltakerliste.erKurs && !(isDev() || erPilot(deltakerMedDeltakerliste.deltakerliste.id))) {
+			log.warn("Har forsøkt å registrere vurdering for kurs-deltaker som ikke tilhører pilot")
+			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		}
+		if (deltakerMedDeltakerliste.deltaker.status != StatusType.VURDERES) {
+			throw IllegalStateException("Kan ikke registrere vurdering for deltaker med id $deltakerId med annen status enn VURDERES. Ugyldig status: ${deltakerMedDeltakerliste.deltaker.status.name}")
+		}
+		if (request.vurderingstype == Vurderingstype.OPPFYLLER_IKKE_KRAVENE && request.begrunnelse.isNullOrEmpty()) {
+			throw ValidationException("Kan ikke registrere vurdering for deltaker med id $deltakerId. Begrunnelse mangler.")
+		}
+
+		val oppdaterteVurderinger = amtTiltakClient.registrerVurdering(deltakerId, request)
+		deltakerRepository.oppdaterVurderingerForDeltaker(deltakerId, oppdaterteVurderinger)
+		log.info("Registrert vurdering for deltaker med id $deltakerId")
 	}
 
 	fun fjernDeltaker(personIdent: String, deltakerId: UUID) {
@@ -140,7 +172,9 @@ class TiltaksarrangorService(
 			),
 			veiledere = veiledere,
 			aktiveEndringsmeldinger = endringsmeldinger.map { it.toEndringsmelding() },
-			adresse = deltakerMedDeltakerliste.getAdresse()
+			adresse = deltakerMedDeltakerliste.getAdresse(),
+			gjeldendeVurderingFraArrangor = deltakerMedDeltakerliste.deltaker.getGjeldendeVurdering(),
+			historiskeVurderingerFraArrangor = deltakerMedDeltakerliste.deltaker.getHistoriskeVurderinger()
 		)
 	}
 }
@@ -161,4 +195,12 @@ fun DeltakerMedDeltakerlisteDbo.getAdresse(): Adresse? {
 		}
 	}
 	return null
+}
+
+fun DeltakerDbo.getGjeldendeVurdering(): Vurdering? {
+	return vurderingerFraArrangor?.firstOrNull { it.gyldigTil == null }?.toVurdering()
+}
+
+fun DeltakerDbo.getHistoriskeVurderinger(): List<Vurdering>? {
+	return vurderingerFraArrangor?.filter { it.gyldigTil != null }?.map { it.toVurdering() }
 }

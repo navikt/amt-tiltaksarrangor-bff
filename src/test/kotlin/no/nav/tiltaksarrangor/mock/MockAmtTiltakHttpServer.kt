@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.mock
 
 import no.nav.tiltaksarrangor.client.amttiltak.response.OpprettEndringsmeldingResponse
+import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.mockwebserver.MockResponse
 import java.util.UUID
@@ -46,6 +47,15 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/skjul",
 			MockResponse()
 				.setResponseCode(200)
+		)
+	}
+
+	fun addRegistrerVurderingResponse(deltakerId: UUID, vurderinger: List<VurderingDto>) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/deltaker/$deltakerId/vurdering",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(JsonUtils.objectMapper.writeValueAsString(vurderinger))
 		)
 	}
 }
