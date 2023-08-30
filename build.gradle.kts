@@ -25,6 +25,7 @@ val kotestVersion = "5.6.2"
 val testcontainersVersion = "1.19.0"
 val mockkVersion = "1.13.7"
 val commonVersion = "3.2023.05.25_12.58-6d52407f804a"
+val unleashVersion = "8.3.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -53,6 +54,7 @@ dependencies {
     implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
     implementation("com.github.ben-manes.caffeine:caffeine")
+    implementation("io.getunleash:unleash-client-java:$unleashVersion")
 
     implementation("org.postgresql:postgresql")
 
