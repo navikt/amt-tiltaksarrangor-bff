@@ -9,8 +9,7 @@ import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
-import no.nav.tiltaksarrangor.utils.erPilot
-import no.nav.tiltaksarrangor.utils.isDev
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -20,7 +19,8 @@ class DeltakerlisteAdminService(
 	private val ansattService: AnsattService,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val arrangorRepository: ArrangorRepository,
-	private val metricsService: MetricsService
+	private val metricsService: MetricsService,
+	private val unleashService: UnleashService
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -28,7 +28,7 @@ class DeltakerlisteAdminService(
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val koordinatorHosArrangorer = ansatt.roller.filter { it.rolle == AnsattRolle.KOORDINATOR }.map { it.arrangorId }
 		val alleDeltakerlister = deltakerlisteRepository.getDeltakerlisterMedArrangor(koordinatorHosArrangorer)
-			.filter { !it.deltakerlisteDbo.erKurs || isDev() || erPilot(it.deltakerlisteDbo.id) }
+			.filter { !it.deltakerlisteDbo.erKurs || unleashService.skalViseKurs(it.deltakerlisteDbo.id) }
 
 		val unikeOverordnedeArrangorIder = alleDeltakerlister.mapNotNull { it.arrangorDbo.overordnetArrangorId }.distinct()
 		val overordnedeArrangorer = arrangorRepository.getArrangorer(unikeOverordnedeArrangorIder)
@@ -61,7 +61,7 @@ class DeltakerlisteAdminService(
 			roller = ansatt.roller
 		)
 		if (harKoordinatorRolleHosArrangor) {
-			if (!deltakerliste.erKurs || isDev() || erPilot(deltakerlisteId)) {
+			if (!deltakerliste.erKurs || unleashService.skalViseKurs(deltakerlisteId)) {
 				if (!ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
 					ansattService.leggTilDeltakerliste(
 						ansattId = ansatt.id,
