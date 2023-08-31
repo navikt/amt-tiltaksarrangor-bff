@@ -61,7 +61,11 @@ spec:
       rules:
         - application: amt-tiltak
         - application: amt-arrangor
+      external:
+        - host: amt-unleash-api.nav.cloud.nais.io
   leaderElection: true
+  envFrom:
+    - secret: amt-tiltaksarrangor-bff-unleash-api-token
   env:
     - name: AMT_TILTAK_TOKENX_CLIENT_ID
       value: dev-gcp:amt:amt-tiltak

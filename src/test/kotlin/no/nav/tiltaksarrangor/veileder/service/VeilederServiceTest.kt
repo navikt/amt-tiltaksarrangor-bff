@@ -23,6 +23,7 @@ import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -33,6 +34,7 @@ import java.util.UUID
 
 class VeilederServiceTest {
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
+	private val unleashService = mockk<UnleashService>()
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val ansattRepository = AnsattRepository(template)
@@ -40,7 +42,7 @@ class VeilederServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
-	private val veilederService = VeilederService(ansattService, deltakerRepository, endringsmeldingRepository)
+	private val veilederService = VeilederService(ansattService, deltakerRepository, endringsmeldingRepository, unleashService)
 
 	@AfterEach
 	internal fun tearDown() {

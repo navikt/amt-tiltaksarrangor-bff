@@ -21,8 +21,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
-import no.nav.tiltaksarrangor.utils.erPilot
-import no.nav.tiltaksarrangor.utils.isDev
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -34,7 +33,8 @@ class TiltaksarrangorService(
 	private val metricsService: MetricsService,
 	private val deltakerRepository: DeltakerRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
-	private val auditLoggerService: AuditLoggerService
+	private val auditLoggerService: AuditLoggerService,
+	private val unleashService: UnleashService
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -58,7 +58,7 @@ class TiltaksarrangorService(
 		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
 			log.warn("Har forsøkt å hente deltaker som er fjernet")
 			throw SkjultDeltakerException("Fant ikke deltaker med id $deltakerId")
-		} else if (deltakerMedDeltakerliste.deltakerliste.erKurs && !(isDev() || erPilot(deltakerMedDeltakerliste.deltakerliste.id))) {
+		} else if (deltakerMedDeltakerliste.deltakerliste.erKurs && !unleashService.skalViseKurs(deltakerMedDeltakerliste.deltakerliste.id)) {
 			log.warn("Har forsøkt å hente kurs-deltaker som ikke tilhører pilot")
 			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 		}
@@ -80,7 +80,7 @@ class TiltaksarrangorService(
 		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
 			log.warn("Har forsøkt å registrere vurdering for deltaker som er fjernet")
 			throw SkjultDeltakerException("Fant ikke deltaker med id $deltakerId")
-		} else if (deltakerMedDeltakerliste.deltakerliste.erKurs && !(isDev() || erPilot(deltakerMedDeltakerliste.deltakerliste.id))) {
+		} else if (deltakerMedDeltakerliste.deltakerliste.erKurs && !unleashService.skalViseKurs(deltakerMedDeltakerliste.deltakerliste.id)) {
 			log.warn("Har forsøkt å registrere vurdering for kurs-deltaker som ikke tilhører pilot")
 			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 		}
