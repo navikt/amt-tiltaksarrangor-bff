@@ -8,6 +8,10 @@ import java.util.UUID
 class UnleashService(
 	private val unleash: DefaultUnleash
 ) {
+	fun getFeaturetoggles(features: List<String>): Map<String, Boolean> {
+		return features.associateWith { unleash.isEnabled(it) }
+	}
+
 	fun skalViseKurs(deltakerlisteId: UUID): Boolean {
 		return if (erPilot(deltakerlisteId)) {
 			true
