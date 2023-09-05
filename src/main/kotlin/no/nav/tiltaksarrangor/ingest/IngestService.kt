@@ -49,7 +49,7 @@ class IngestService(
 	}
 
 	fun lagreAnsatt(ansattId: UUID, ansatt: AnsattDto?) {
-		if (ansatt == null) {
+		if (ansatt == null || ansatt.arrangorer.isEmpty()) {
 			ansattRepository.deleteAnsatt(ansattId)
 			log.info("Slettet ansatt med id $ansattId")
 		} else {
