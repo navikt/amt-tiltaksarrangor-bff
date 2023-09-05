@@ -37,7 +37,7 @@ data class EndringsmeldingRequest(
 		) : Innhold(EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO)
 
 		data class EndreOppstartsdatoInnhold(
-			val oppstartsdato: LocalDate
+			val oppstartsdato: LocalDate?
 		) : Innhold(EndringsmeldingType.ENDRE_OPPSTARTSDATO)
 
 		data class EndreDeltakelseProsentInnhold(
