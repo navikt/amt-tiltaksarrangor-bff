@@ -268,6 +268,79 @@ class KafkaListenerTest : IntegrationTest() {
 	}
 
 	@Test
+	fun `listen - melding pa arrangor-ansatt-topic med tom arrangorliste - slettes database`() {
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(
+			DeltakerDbo(
+				id = deltakerId,
+				deltakerlisteId = UUID.randomUUID(),
+				personident = "1234",
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				telefonnummer = null,
+				epost = null,
+				erSkjermet = false,
+				adresse = getAdresse(),
+				status = StatusType.DELTAR,
+				statusOpprettetDato = LocalDateTime.now(),
+				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+				dagerPerUke = null,
+				prosentStilling = null,
+				startdato = LocalDate.of(2023, 2, 15),
+				sluttdato = null,
+				innsoktDato = LocalDate.now(),
+				bestillingstekst = "tekst",
+				navKontor = null,
+				navVeilederId = null,
+				navVeilederEpost = null,
+				navVeilederNavn = null,
+				navVeilederTelefon = null,
+				skjultAvAnsattId = null,
+				skjultDato = null,
+				vurderingerFraArrangor = getVurderinger(deltakerId)
+			)
+		)
+		val ansattId = UUID.randomUUID()
+		val ansattDto = AnsattDto(
+			id = ansattId,
+			personalia = AnsattPersonaliaDto(
+				personident = "12345678910",
+				navn = NavnDto(
+					fornavn = "Fornavn",
+					mellomnavn = null,
+					etternavn = "Etternavn"
+				)
+			),
+			arrangorer = listOf(
+				TilknyttetArrangorDto(
+					arrangorId = UUID.randomUUID(),
+					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
+					veileder = listOf(VeilederDto(deltakerId, Veiledertype.VEILEDER)),
+					koordinator = listOf(UUID.randomUUID())
+				)
+			)
+		)
+		ansattRepository.insertOrUpdateAnsatt(ansattDto.toAnsattDbo())
+
+		testKafkaProducer.send(
+			ProducerRecord(
+				ARRANGOR_ANSATT_TOPIC,
+				null,
+				ansattId.toString(),
+				JsonUtils.objectMapper.writeValueAsString(ansattDto.copy(arrangorer = emptyList()))
+			)
+		).get()
+
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			ansattRepository.getAnsattRolleListe(ansattId).isEmpty() &&
+				ansattRepository.getKoordinatorDeltakerlisteDboListe(ansattId).isEmpty() &&
+				ansattRepository.getVeilederDeltakerDboListe(ansattId).isEmpty() &&
+				ansattRepository.getAnsatt(ansattId) == null
+		}
+	}
+
+	@Test
 	fun `listen - melding pa deltakerliste-topic - lagres i database`() {
 		val arrangorDto = ArrangorDto(
 			id = UUID.randomUUID(),
