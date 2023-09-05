@@ -24,8 +24,8 @@ val okHttpVersion = "4.11.0"
 val kotestVersion = "5.7.1"
 val testcontainersVersion = "1.19.0"
 val mockkVersion = "1.13.7"
-val commonVersion = "3.2023.05.25_12.58-6d52407f804a"
-val unleashVersion = "8.3.0"
+val commonVersion = "3.2023.07.07_09.10-85326e9557f0"
+val unleashVersion = "8.3.1"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -46,6 +46,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("com.github.navikt.common-java-modules:audit-log:$commonVersion")
+    implementation("com.github.navikt.common-java-modules:log:$commonVersion")
 
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
