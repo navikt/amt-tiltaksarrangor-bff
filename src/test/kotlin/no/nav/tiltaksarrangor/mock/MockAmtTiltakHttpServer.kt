@@ -25,6 +25,15 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
+	fun addEndreOppstartsdatoResponse(deltakerId: UUID) {
+		addResponseHandler(
+			path = "/api/tiltaksarrangor/deltaker/$deltakerId/oppstartsdato",
+			MockResponse()
+				.setResponseCode(200)
+				.setBody(JsonUtils.objectMapper.writeValueAsString(OpprettEndringsmeldingResponse(UUID.randomUUID())))
+		)
+	}
+
 	fun addEndreSluttdatoResponse(deltakerId: UUID) {
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/endre-sluttdato",
