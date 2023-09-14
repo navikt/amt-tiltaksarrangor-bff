@@ -93,6 +93,7 @@ class TiltaksarrangorService(
 
 		val oppdaterteVurderinger = amtTiltakClient.registrerVurdering(deltakerId, request)
 		deltakerRepository.oppdaterVurderingerForDeltaker(deltakerId, oppdaterteVurderinger)
+		metricsService.incVurderingOpprettet(request.vurderingstype)
 		log.info("Registrert vurdering for deltaker med id $deltakerId")
 	}
 

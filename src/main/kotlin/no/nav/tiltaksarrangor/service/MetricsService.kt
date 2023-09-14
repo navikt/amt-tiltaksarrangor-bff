@@ -1,6 +1,8 @@
 package no.nav.tiltaksarrangor.service
 
+import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
+import no.nav.tiltaksarrangor.model.Vurderingstype
 import org.springframework.stereotype.Service
 
 private const val innlogging_metric = "tiltaksarrangorbff_innlogging"
@@ -9,10 +11,11 @@ private const val lagt_til_deltakerliste_metric = "tiltaksarrangorbff_lagttil_de
 private const val fjernet_deltakerliste_metric = "tiltaksarrangorbff_fjernet_deltakerliste"
 private const val tildelt_veileder_metric = "tiltaksarrangorbff_tildelt_veileder"
 private const val tilbakekalt_em_metric = "tiltaksarrangorbff_tilbakekalt_em"
+private const val vurdering_opprettet_metric = "tiltaksarrangorbff_vurdering_opprettet"
 
 @Service
 class MetricsService(
-	registry: MeterRegistry
+	private val registry: MeterRegistry
 ) {
 	private val innloggetKoordinatorCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.KOORDINATOR.name)
 	private val innloggetVeilederCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.VEILEDER.name)
@@ -58,6 +61,13 @@ class MetricsService(
 
 	fun incTilbakekaltEndringsmelding() {
 		tilbakekaltEndringsmeldingCounter.increment()
+	}
+
+	fun incVurderingOpprettet(vurderingstype: Vurderingstype) {
+		Counter.builder(vurdering_opprettet_metric)
+			.tags("vurderingstype", vurderingstype.name)
+			.register(registry)
+			.increment()
 	}
 
 	enum class RollePermutasjon {
