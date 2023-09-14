@@ -14,7 +14,7 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
-    maven { setUrl("https://jitpack.io") }
+    maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
 val logstashEncoderVersion = "7.4"
@@ -24,7 +24,7 @@ val okHttpVersion = "4.11.0"
 val kotestVersion = "5.7.2"
 val testcontainersVersion = "1.19.0"
 val mockkVersion = "1.13.7"
-val commonVersion = "3.2023.07.07_09.10-85326e9557f0"
+val commonVersion = "3.2023.09.13_04.55-a8ff452fbd94"
 val unleashVersion = "8.3.1"
 
 dependencies {
@@ -45,8 +45,8 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
-    implementation("com.github.navikt.common-java-modules:audit-log:$commonVersion")
-    implementation("com.github.navikt.common-java-modules:log:$commonVersion")
+    implementation("no.nav.common:audit-log:$commonVersion")
+    implementation("no.nav.common:log:$commonVersion")
 
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
