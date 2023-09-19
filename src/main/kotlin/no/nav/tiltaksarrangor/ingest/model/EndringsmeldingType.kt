@@ -7,10 +7,5 @@ enum class EndringsmeldingType {
 	FORLENG_DELTAKELSE,
 	AVSLUTT_DELTAKELSE,
 	DELTAKER_IKKE_AKTUELL,
-	DELTAKER_ER_AKTUELL,
 	ENDRE_SLUTTDATO
 }
-
-val typerUtenInnhold = listOf<EndringsmeldingType>(
-	EndringsmeldingType.DELTAKER_ER_AKTUELL
-)

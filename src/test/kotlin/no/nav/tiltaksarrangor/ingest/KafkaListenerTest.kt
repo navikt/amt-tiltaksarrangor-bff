@@ -688,8 +688,8 @@ class KafkaListenerTest : IntegrationTest() {
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
 			status = "AKTIV",
-			type = EndringsmeldingType.DELTAKER_ER_AKTUELL,
-			innhold = null,
+			type = EndringsmeldingType.ENDRE_SLUTTDATO,
+			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 			createdAt = LocalDateTime.now()
 		)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDto.toEndringsmeldingDbo())
@@ -700,8 +700,8 @@ class KafkaListenerTest : IntegrationTest() {
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
 			status = "UTFORT",
-			type = EndringsmeldingType.DELTAKER_ER_AKTUELL,
-			innhold = null,
+			type = EndringsmeldingType.ENDRE_SLUTTDATO,
+			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 			createdAt = LocalDateTime.now()
 		)
 		testKafkaProducer.send(

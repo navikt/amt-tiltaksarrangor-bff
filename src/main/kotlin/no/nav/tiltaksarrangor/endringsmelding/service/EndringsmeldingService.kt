@@ -84,7 +84,6 @@ class EndringsmeldingService(
 			}
 			EndringsmeldingRequest.EndringsmeldingType.DELTAKER_IKKE_AKTUELL -> amtTiltakClient.deltakerIkkeAktuell(deltakerId, DeltakerIkkeAktuellRequest((request.innhold as EndringsmeldingRequest.Innhold.DeltakerIkkeAktuellInnhold).aarsak))
 			EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTDATO -> amtTiltakClient.endreSluttdato(deltakerId, EndreSluttdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold).sluttdato))
-			EndringsmeldingRequest.EndringsmeldingType.DELTAKER_ER_AKTUELL -> amtTiltakClient.deltakerErAktuell(deltakerId)
 		}
 
 		endringsmeldingRepository.lagreNyOgSlettTidligereEndringsmeldingMedSammeType(request.toEndringsmeldingDbo(endringsmeldingId = endringsmeldingId, deltakerId = deltakerId))

@@ -22,7 +22,6 @@ fun EndringsmeldingRequest.Innhold.toEndringsmeldingInnhold(): Innhold? {
 		is EndringsmeldingRequest.Innhold.EndreDeltakelseProsentInnhold -> Innhold.EndreDeltakelseProsentInnhold(this.deltakelseProsent, this.dagerPerUke, this.gyldigFraDato)
 		is EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold -> Innhold.AvsluttDeltakelseInnhold(this.sluttdato, this.aarsak)
 		is EndringsmeldingRequest.Innhold.DeltakerIkkeAktuellInnhold -> Innhold.DeltakerIkkeAktuellInnhold(this.aarsak)
-		is EndringsmeldingRequest.Innhold.DeltakerErAktuellInnhold -> null
 		is EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold -> Innhold.EndreSluttdatoInnhold(this.sluttdato)
 	}
 }
