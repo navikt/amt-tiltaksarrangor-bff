@@ -35,8 +35,6 @@ sealed class Innhold {
 	data class EndreSluttdatoInnhold(
 		val sluttdato: LocalDate
 	) : Innhold()
-
-	class DeltakerErAktuellInnhold : Innhold()
 }
 
 fun Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold? {
@@ -47,7 +45,6 @@ fun Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold? {
 		is Innhold.EndreDeltakelseProsentInnhold -> Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(this.nyDeltakelseProsent, this.dagerPerUke, this.gyldigFraDato)
 		is Innhold.AvsluttDeltakelseInnhold -> Endringsmelding.Innhold.AvsluttDeltakelseInnhold(this.sluttdato, this.aarsak)
 		is Innhold.DeltakerIkkeAktuellInnhold -> Endringsmelding.Innhold.DeltakerIkkeAktuellInnhold(this.aarsak)
-		is Innhold.DeltakerErAktuellInnhold -> null
 		is Innhold.EndreSluttdatoInnhold -> Endringsmelding.Innhold.EndreSluttdatoInnhold(this.sluttdato)
 	}
 }

@@ -127,22 +127,6 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun deltakerErAktuell(deltakerId: UUID): UUID {
-		val request = Request.Builder()
-			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/er-aktuell")
-			.patch("".toRequestBody(mediaTypeJson))
-			.build()
-
-		amtTiltakHttpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				handleUnsuccessfulUpdateResponse(response.code, "opprett DELTAKER_ER_AKTUELL endringsmelding på deltaker med id $deltakerId ")
-			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
-
-			return JsonUtils.fromJsonString<OpprettEndringsmeldingResponse>(body).id
-		}
-	}
-
 	fun endreSluttdato(deltakerId: UUID, endreSluttdatoRequest: EndreSluttdatoRequest): UUID {
 		val request = Request.Builder()
 			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/endre-sluttdato")

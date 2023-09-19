@@ -5,7 +5,6 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
-import no.nav.tiltaksarrangor.ingest.model.typerUtenInnhold
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -217,33 +216,31 @@ class EndringsmeldingRepository(
 	}
 
 	private fun parseInnholdJson(innholdJson: String?, type: EndringsmeldingType): Innhold? {
-		if (innholdJson == null && type !in typerUtenInnhold) {
+		if (innholdJson == null) {
 			log.error("Kan ikke lese endringsmelding med type $type som mangler innhold")
 			throw IllegalStateException("Endringsmelding med type $type må ha innhold")
 		}
 		return when (type) {
 			EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO ->
-				innholdJson?.let { fromJsonString<Innhold.LeggTilOppstartsdatoInnhold>(it) }
+				fromJsonString<Innhold.LeggTilOppstartsdatoInnhold>(innholdJson)
 
 			EndringsmeldingType.ENDRE_OPPSTARTSDATO ->
-				innholdJson?.let { fromJsonString<Innhold.EndreOppstartsdatoInnhold>(it) }
+				fromJsonString<Innhold.EndreOppstartsdatoInnhold>(innholdJson)
 
 			EndringsmeldingType.FORLENG_DELTAKELSE ->
-				innholdJson?.let { fromJsonString<Innhold.ForlengDeltakelseInnhold>(it) }
+				fromJsonString<Innhold.ForlengDeltakelseInnhold>(innholdJson)
 
 			EndringsmeldingType.AVSLUTT_DELTAKELSE ->
-				innholdJson?.let { fromJsonString<Innhold.AvsluttDeltakelseInnhold>(it) }
+				fromJsonString<Innhold.AvsluttDeltakelseInnhold>(innholdJson)
 
 			EndringsmeldingType.DELTAKER_IKKE_AKTUELL ->
-				innholdJson?.let { fromJsonString<Innhold.DeltakerIkkeAktuellInnhold>(it) }
+				fromJsonString<Innhold.DeltakerIkkeAktuellInnhold>(innholdJson)
 
 			EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT ->
-				innholdJson?.let { fromJsonString<Innhold.EndreDeltakelseProsentInnhold>(it) }
+				fromJsonString<Innhold.EndreDeltakelseProsentInnhold>(innholdJson)
 
 			EndringsmeldingType.ENDRE_SLUTTDATO ->
-				innholdJson?.let { fromJsonString<Innhold.EndreSluttdatoInnhold>(it) }
-
-			EndringsmeldingType.DELTAKER_ER_AKTUELL -> null
+				fromJsonString<Innhold.EndreSluttdatoInnhold>(innholdJson)
 		}
 	}
 }

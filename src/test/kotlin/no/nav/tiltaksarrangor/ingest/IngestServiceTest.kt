@@ -18,6 +18,7 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
+import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -449,8 +450,8 @@ class IngestServiceTest {
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
 			status = "AKTIV",
-			type = EndringsmeldingType.DELTAKER_ER_AKTUELL,
-			innhold = null,
+			type = EndringsmeldingType.ENDRE_SLUTTDATO,
+			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 			createdAt = LocalDateTime.now()
 		)
 
@@ -469,8 +470,8 @@ class IngestServiceTest {
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
 			status = "UTDATERT",
-			type = EndringsmeldingType.DELTAKER_ER_AKTUELL,
-			innhold = null,
+			type = EndringsmeldingType.ENDRE_SLUTTDATO,
+			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 			createdAt = LocalDateTime.now()
 		)
 
