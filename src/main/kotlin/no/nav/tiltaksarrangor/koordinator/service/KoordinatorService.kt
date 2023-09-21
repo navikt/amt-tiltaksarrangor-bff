@@ -29,6 +29,7 @@ import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
+import no.nav.tiltaksarrangor.service.getGjeldendeVurdering
 import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -236,7 +237,8 @@ class KoordinatorService(
 				),
 				veiledere = getVeiledereForDeltaker(it.id, veiledere),
 				navKontor = it.navKontor,
-				aktiveEndringsmeldinger = getEndringsmeldinger(it.id, endringsmeldinger)
+				aktiveEndringsmeldinger = getEndringsmeldinger(it.id, endringsmeldinger),
+				gjeldendeVurderingFraArrangor = it.getGjeldendeVurdering()
 			)
 		}
 	}
