@@ -13,10 +13,13 @@ import no.nav.tiltaksarrangor.endringsmelding.controller.request.Endringsmelding
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
@@ -425,5 +428,114 @@ class EndringsmeldingServiceTest {
 		endringsmelding.id shouldBe endringsmeldingId
 		endringsmelding.type shouldBe EndringsmeldingType.FORLENG_DELTAKELSE
 		(endringsmelding.innhold as Innhold.ForlengDeltakelseInnhold).sluttdato shouldBe LocalDate.now()
+	}
+
+	@Test
+	fun `opprettEndringsmelding - endre sluttaarsak, deltaker har ikke riktig status - feiler`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.DELTAR)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmeldingRequest = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold(
+				DeltakerStatusAarsak(DeltakerStatusAarsak.Type.SYK, "")
+			)
+		)
+
+		assertThrows<ValidationException> {
+			endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
+		}
+	}
+
+	@Test
+	fun `opprettEndringsmelding - endre sluttaarsak, deltaker deltar på et kurstiltak - feiler`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId).copy(erKurs = true)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.HAR_SLUTTET)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmeldingRequest = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold(
+				DeltakerStatusAarsak(DeltakerStatusAarsak.Type.SYK, "")
+			)
+		)
+
+		assertThrows<ValidationException> {
+			endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
+		}
+	}
+
+	@Test
+	fun `opprettEndringsmelding - endre sluttaarsak - oppretter ny endringsmelding`() {
+		val endringsmeldingId = UUID.randomUUID()
+		coEvery { amtTiltakClient.endreSluttaarsak(any(), any()) } returns endringsmeldingId
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId).copy(erKurs = false)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.HAR_SLUTTET)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.SYK, "")
+
+		val endringsmeldingRequest = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold(aarsak)
+		)
+
+		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		endringsmeldinger.size shouldBe 1
+		val endringsmelding = endringsmeldinger.first()
+		endringsmelding.id shouldBe endringsmeldingId
+		endringsmelding.type shouldBe EndringsmeldingType.ENDRE_SLUTTAARSAK
+		(endringsmelding.innhold as Innhold.EndreSluttaarsakInnhold).aarsak shouldBe aarsak
 	}
 }
