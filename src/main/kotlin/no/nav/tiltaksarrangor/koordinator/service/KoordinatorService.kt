@@ -192,7 +192,8 @@ class KoordinatorService(
 				)
 			},
 			deltakere = tilKoordinatorsDeltakere(deltakere, veiledereForDeltakerliste, endringsmeldinger),
-			erKurs = deltakerlisteMedArrangor.deltakerlisteDbo.erKurs
+			erKurs = deltakerlisteMedArrangor.deltakerlisteDbo.erKurs,
+			tiltakType = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType
 		)
 	}
 

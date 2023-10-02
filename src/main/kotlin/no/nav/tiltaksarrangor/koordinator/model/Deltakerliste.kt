@@ -13,7 +13,8 @@ data class Deltakerliste(
 	val status: Status,
 	val koordinatorer: List<Koordinator>,
 	val deltakere: List<Deltaker>,
-	val erKurs: Boolean
+	val erKurs: Boolean,
+	val tiltakType: String
 ) {
 	enum class Status {
 		APENT_FOR_INNSOK, GJENNOMFORES, AVSLUTTET
