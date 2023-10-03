@@ -35,9 +35,13 @@ sealed class Innhold {
 	data class EndreSluttdatoInnhold(
 		val sluttdato: LocalDate
 	) : Innhold()
+
+	data class EndreSluttaarsakInnhold(
+		val aarsak: DeltakerStatusAarsak
+	) : Innhold()
 }
 
-fun Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold? {
+fun Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold {
 	return when (this) {
 		is Innhold.LeggTilOppstartsdatoInnhold -> Endringsmelding.Innhold.LeggTilOppstartsdatoInnhold(this.oppstartsdato)
 		is Innhold.EndreOppstartsdatoInnhold -> Endringsmelding.Innhold.EndreOppstartsdatoInnhold(this.oppstartsdato)
@@ -46,5 +50,6 @@ fun Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold? {
 		is Innhold.AvsluttDeltakelseInnhold -> Endringsmelding.Innhold.AvsluttDeltakelseInnhold(this.sluttdato, this.aarsak)
 		is Innhold.DeltakerIkkeAktuellInnhold -> Endringsmelding.Innhold.DeltakerIkkeAktuellInnhold(this.aarsak)
 		is Innhold.EndreSluttdatoInnhold -> Endringsmelding.Innhold.EndreSluttdatoInnhold(this.sluttdato)
+		is Innhold.EndreSluttaarsakInnhold -> Endringsmelding.Innhold.EndreSluttaarsakInnhold(this.aarsak)
 	}
 }

@@ -5,17 +5,21 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.DeltakerIkkeAktuellRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreDeltakelsesprosentRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreOppstartsdatoRequest
+import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttaarsakRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
 import org.slf4j.LoggerFactory
@@ -84,6 +88,7 @@ class EndringsmeldingService(
 			}
 			EndringsmeldingRequest.EndringsmeldingType.DELTAKER_IKKE_AKTUELL -> amtTiltakClient.deltakerIkkeAktuell(deltakerId, DeltakerIkkeAktuellRequest((request.innhold as EndringsmeldingRequest.Innhold.DeltakerIkkeAktuellInnhold).aarsak))
 			EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTDATO -> amtTiltakClient.endreSluttdato(deltakerId, EndreSluttdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold).sluttdato))
+			EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTAARSAK -> endreSluttaarsak(deltakerMedDeltakerliste, request.innhold as EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold)
 		}
 
 		endringsmeldingRepository.lagreNyOgSlettTidligereEndringsmeldingMedSammeType(request.toEndringsmeldingDbo(endringsmeldingId = endringsmeldingId, deltakerId = deltakerId))
@@ -117,5 +122,13 @@ class EndringsmeldingService(
 			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator hos noen arrangører")
 		}
 		return ansatt
+	}
+
+	private fun endreSluttaarsak(deltakerMedDeltakerliste: DeltakerMedDeltakerlisteDbo, innhold: EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold): UUID {
+		if (deltakerMedDeltakerliste.deltaker.status != StatusType.HAR_SLUTTET || deltakerMedDeltakerliste.deltakerliste.erKurs) {
+			throw ValidationException("Kan ikke endre sluttaarsak på deltaker som har status ${deltakerMedDeltakerliste.deltaker.status} eller deltar på et kurs")
+		}
+
+		return amtTiltakClient.endreSluttaarsak(deltakerMedDeltakerliste.deltaker.id, EndreSluttaarsakRequest(innhold.aarsak))
 	}
 }

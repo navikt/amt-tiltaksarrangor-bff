@@ -4,6 +4,7 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.DeltakerIkkeAktuellRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreDeltakelsesprosentRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreOppstartsdatoRequest
+import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttaarsakRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
@@ -136,6 +137,22 @@ class AmtTiltakClient(
 		amtTiltakHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
 				handleUnsuccessfulUpdateResponse(response.code, "opprett ENDRE_SLUTTDATO endringsmelding på deltaker med id $deltakerId sluttdato: ${endreSluttdatoRequest.sluttdato}")
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+
+			return JsonUtils.fromJsonString<OpprettEndringsmeldingResponse>(body).id
+		}
+	}
+
+	fun endreSluttaarsak(deltakerId: UUID, endreSluttaarsakRequest: EndreSluttaarsakRequest): UUID {
+		val request = Request.Builder()
+			.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/sluttaarsak")
+			.patch(objectMapper.writeValueAsString(endreSluttaarsakRequest).toRequestBody(mediaTypeJson))
+			.build()
+
+		amtTiltakHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				handleUnsuccessfulUpdateResponse(response.code, "endre sluttårsak på deltaker $deltakerId")
 			}
 			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
