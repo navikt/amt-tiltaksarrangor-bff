@@ -216,7 +216,9 @@ class TiltaksarrangorServiceTest {
 				id = UUID.randomUUID(),
 				deltakerId = deltakerId,
 				type = EndringsmeldingType.ENDRE_SLUTTDATO,
-				innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now())
+				innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now()),
+				status = Endringsmelding.Status.AKTIV,
+				sendt = LocalDateTime.now()
 			)
 		)
 		val veilederId = UUID.randomUUID()

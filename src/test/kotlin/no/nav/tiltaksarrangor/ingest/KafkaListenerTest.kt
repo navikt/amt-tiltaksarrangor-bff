@@ -24,6 +24,7 @@ import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -630,7 +631,7 @@ class KafkaListenerTest : IntegrationTest() {
 			utfortAvNavAnsattId = null,
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
-			status = "AKTIV",
+			status = Endringsmelding.Status.AKTIV,
 			type = EndringsmeldingType.ENDRE_SLUTTDATO,
 			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 			createdAt = LocalDateTime.now()
@@ -658,7 +659,7 @@ class KafkaListenerTest : IntegrationTest() {
 			utfortAvNavAnsattId = null,
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
-			status = "AKTIV",
+			status = Endringsmelding.Status.AKTIV,
 			type = EndringsmeldingType.ENDRE_SLUTTDATO,
 			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 			createdAt = LocalDateTime.now()
@@ -679,7 +680,7 @@ class KafkaListenerTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `listen - utfort endringsmelding-melding pa endringmelding-topic og endringsmelding finnes i db - sletter endringsmelding fra db`() {
+	fun `listen - utfort endringsmelding-melding pa endringmelding-topic og endringsmelding finnes i db - oppdaterer endringsmelding i db`() {
 		val endringsmeldingId = UUID.randomUUID()
 		val endringsmeldingDto = EndringsmeldingDto(
 			id = endringsmeldingId,
@@ -687,7 +688,7 @@ class KafkaListenerTest : IntegrationTest() {
 			utfortAvNavAnsattId = null,
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
-			status = "AKTIV",
+			status = Endringsmelding.Status.AKTIV,
 			type = EndringsmeldingType.ENDRE_SLUTTDATO,
 			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 			createdAt = LocalDateTime.now()
@@ -699,7 +700,7 @@ class KafkaListenerTest : IntegrationTest() {
 			utfortAvNavAnsattId = null,
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
-			status = "UTFORT",
+			status = Endringsmelding.Status.UTFORT,
 			type = EndringsmeldingType.ENDRE_SLUTTDATO,
 			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 			createdAt = LocalDateTime.now()
@@ -714,7 +715,7 @@ class KafkaListenerTest : IntegrationTest() {
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			endringsmeldingRepository.getEndringsmelding(endringsmeldingId) == null
+			endringsmeldingRepository.getEndringsmelding(endringsmeldingId)?.status == Endringsmelding.Status.UTFORT
 		}
 	}
 }

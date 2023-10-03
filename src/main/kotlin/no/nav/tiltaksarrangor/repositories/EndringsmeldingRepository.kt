@@ -5,6 +5,7 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -37,7 +38,9 @@ class EndringsmeldingRepository(
 			id = UUID.fromString(rs.getString("id")),
 			deltakerId = UUID.fromString(rs.getString("deltaker_id")),
 			type = type,
-			innhold = parseInnholdJson(rs.getString("innhold"), type)
+			innhold = parseInnholdJson(rs.getString("innhold"), type),
+			status = Endringsmelding.Status.valueOf(rs.getString("status")),
+			sendt = rs.getTimestamp("sendt").toLocalDateTime()
 		)
 	}
 
@@ -48,7 +51,9 @@ class EndringsmeldingRepository(
 				id = UUID.fromString(rs.getString("endringsmeldingid")),
 				deltakerId = UUID.fromString(rs.getString("deltakerid")),
 				type = type,
-				innhold = parseInnholdJson(rs.getString("innhold"), type)
+				innhold = parseInnholdJson(rs.getString("innhold"), type),
+				status = Endringsmelding.Status.valueOf(rs.getString("em_status")),
+				sendt = rs.getTimestamp("sendt").toLocalDateTime()
 			),
 			deltakerDbo = DeltakerDbo(
 				id = UUID.fromString(rs.getString("deltakerid")),
@@ -95,15 +100,19 @@ class EndringsmeldingRepository(
 
 	fun insertOrUpdateEndringsmelding(endringsmeldingDbo: EndringsmeldingDbo) {
 		val sql = """
-			INSERT INTO endringsmelding(id, deltaker_id, type, innhold)
+			INSERT INTO endringsmelding(id, deltaker_id, type, innhold, status, sendt)
 			VALUES (:id,
 					:deltaker_id,
 					:type,
-					:innhold)
+					:innhold,
+					:status,
+					:sendt)
 			ON CONFLICT (id) DO UPDATE SET
 					deltaker_id     	= :deltaker_id,
 					type				= :type,
-					innhold 			= :innhold
+					innhold 			= :innhold,
+					status				= :status,
+					sendt				= :sendt
 		""".trimIndent()
 
 		template.update(
@@ -112,7 +121,9 @@ class EndringsmeldingRepository(
 				"id" to endringsmeldingDbo.id,
 				"deltaker_id" to endringsmeldingDbo.deltakerId,
 				"type" to endringsmeldingDbo.type.name,
-				"innhold" to endringsmeldingDbo.innhold?.toPGObject()
+				"innhold" to endringsmeldingDbo.innhold?.toPGObject(),
+				"status" to endringsmeldingDbo.status.name,
+				"sendt" to endringsmeldingDbo.sendt
 			)
 		)
 	}
@@ -124,10 +135,18 @@ class EndringsmeldingRepository(
 		)
 	}
 
-	fun lagreNyOgSlettTidligereEndringsmeldingMedSammeType(endringsmeldingDbo: EndringsmeldingDbo) {
+	fun tilbakekallEndringsmelding(endringsmeldingId: UUID): Int {
+		return template.update(
+			"UPDATE endringsmelding SET status = 'TILBAKEKALT', modified_at = CURRENT_TIMESTAMP WHERE id = :id",
+			sqlParameters("id" to endringsmeldingId)
+		)
+	}
+
+	fun lagreNyOgMerkAktiveEndringsmeldingMedSammeTypeSomUtfort(endringsmeldingDbo: EndringsmeldingDbo) {
 		template.update(
 			"""
-				DELETE FROM endringsmelding WHERE deltaker_id = :deltaker_id AND type = :type
+				UPDATE endringsmelding SET status = 'UTDATERT', modified_at = CURRENT_TIMESTAMP
+				WHERE deltaker_id = :deltaker_id AND type = :type AND status = 'AKTIV'
 			""".trimIndent(),
 			sqlParameters(
 				"deltaker_id" to endringsmeldingDbo.deltakerId,
@@ -151,6 +170,8 @@ class EndringsmeldingRepository(
 				SELECT endringsmelding.id as endringsmeldingid,
 						type,
 						innhold,
+						endringsmelding.status as em_status,
+						sendt,
 						deltaker.id as deltakerid,
 						deltakerliste_id,
 						personident,
@@ -189,7 +210,7 @@ class EndringsmeldingRepository(
 				FROM endringsmelding
 				         INNER JOIN deltaker ON deltaker.id = endringsmelding.deltaker_id
 				         INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
-				WHERE endringsmelding.id = :id
+				WHERE endringsmelding.id = :id AND endringsmelding.status = 'AKTIV'
 			""".trimIndent(),
 			sqlParameters("id" to endringsmeldingId),
 			endringsmeldingMedDeltakerOgDeltakerlisteRowMapper
@@ -201,7 +222,7 @@ class EndringsmeldingRepository(
 			return emptyList()
 		}
 		return template.query(
-			"SELECT * FROM endringsmelding WHERE deltaker_id in(:ids)",
+			"SELECT * FROM endringsmelding WHERE deltaker_id in(:ids) AND status = 'AKTIV'",
 			sqlParameters("ids" to deltakerIder),
 			endringsmeldingRowMapper
 		)

@@ -2,7 +2,9 @@ package no.nav.tiltaksarrangor.endringsmelding.controller.request
 
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
+import java.time.LocalDateTime
 import java.util.UUID
 
 fun EndringsmeldingRequest.toEndringsmeldingDbo(endringsmeldingId: UUID, deltakerId: UUID): EndringsmeldingDbo {
@@ -10,7 +12,9 @@ fun EndringsmeldingRequest.toEndringsmeldingDbo(endringsmeldingId: UUID, deltake
 		id = endringsmeldingId,
 		deltakerId = deltakerId,
 		type = EndringsmeldingType.valueOf(innhold.type.name),
-		innhold = innhold.toEndringsmeldingInnhold()
+		innhold = innhold.toEndringsmeldingInnhold(),
+		status = Endringsmelding.Status.AKTIV,
+		sendt = LocalDateTime.now()
 	)
 }
 

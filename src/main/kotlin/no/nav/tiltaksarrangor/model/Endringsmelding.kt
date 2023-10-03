@@ -19,6 +19,10 @@ data class Endringsmelding(
 		ENDRE_SLUTTDATO
 	}
 
+	enum class Status {
+		AKTIV, TILBAKEKALT, UTDATERT, UTFORT
+	}
+
 	sealed class Innhold {
 		data class LeggTilOppstartsdatoInnhold(
 			val oppstartsdato: LocalDate

@@ -10,6 +10,7 @@ import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -216,6 +217,8 @@ private fun getEndringsmelding(endringsmeldingId: UUID, deltakerId: UUID): Endri
 		id = endringsmeldingId,
 		deltakerId = deltakerId,
 		type = EndringsmeldingType.ENDRE_SLUTTDATO,
-		innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3))
+		innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
+		status = Endringsmelding.Status.AKTIV,
+		sendt = LocalDateTime.now()
 	)
 }

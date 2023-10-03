@@ -47,7 +47,7 @@ class EndringsmeldingService(
 		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
 			throw SkjultDeltakerException("Deltaker med id $deltakerId er skjult for tiltaksarrangør")
 		}
-		return endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).map { it.toEndringsmelding() }
+		return endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).filter { it.erAktiv() }.map { it.toEndringsmelding() }
 	}
 
 	fun opprettEndringsmelding(deltakerId: UUID, request: EndringsmeldingRequest, personIdent: String) {
@@ -86,7 +86,7 @@ class EndringsmeldingService(
 			EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTDATO -> amtTiltakClient.endreSluttdato(deltakerId, EndreSluttdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold).sluttdato))
 		}
 
-		endringsmeldingRepository.lagreNyOgSlettTidligereEndringsmeldingMedSammeType(request.toEndringsmeldingDbo(endringsmeldingId = endringsmeldingId, deltakerId = deltakerId))
+		endringsmeldingRepository.lagreNyOgMerkAktiveEndringsmeldingMedSammeTypeSomUtfort(request.toEndringsmeldingDbo(endringsmeldingId = endringsmeldingId, deltakerId = deltakerId))
 		log.info("Endringsmelding av type ${request.innhold.type.name} opprettet med id $endringsmeldingId for deltaker $deltakerId")
 	}
 
@@ -106,7 +106,7 @@ class EndringsmeldingService(
 		}
 
 		amtTiltakClient.tilbakekallEndringsmelding(endringsmeldingId)
-		endringsmeldingRepository.deleteEndringsmelding(endringsmeldingId)
+		endringsmeldingRepository.tilbakekallEndringsmelding(endringsmeldingId)
 		metricsService.incTilbakekaltEndringsmelding()
 		log.info("Tilbakekalt endringsmelding med id $endringsmeldingId")
 	}

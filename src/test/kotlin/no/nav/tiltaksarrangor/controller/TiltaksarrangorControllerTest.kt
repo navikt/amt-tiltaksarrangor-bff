@@ -9,6 +9,7 @@ import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.Vurderingstype
@@ -377,7 +378,9 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 						beskrivelse = "har blitt syk"
 					)
 				),
-				type = EndringsmeldingType.AVSLUTT_DELTAKELSE
+				type = EndringsmeldingType.AVSLUTT_DELTAKELSE,
+				status = Endringsmelding.Status.AKTIV,
+				sendt = LocalDateTime.now()
 			),
 			EndringsmeldingDbo(
 				id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),
@@ -385,7 +388,9 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 				innhold = Innhold.EndreSluttdatoInnhold(
 					sluttdato = LocalDate.of(2023, 5, 3)
 				),
-				type = EndringsmeldingType.ENDRE_SLUTTDATO
+				type = EndringsmeldingType.ENDRE_SLUTTDATO,
+				status = Endringsmelding.Status.AKTIV,
+				sendt = LocalDateTime.now()
 			)
 		)
 	}

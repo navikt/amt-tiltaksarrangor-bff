@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 class EndringsmeldingControllerTest : IntegrationTest() {
@@ -83,7 +85,9 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 					type = DeltakerStatusAarsak.Type.SYK,
 					beskrivelse = "har blitt syk"
 				)
-			)
+			),
+			status = Endringsmelding.Status.AKTIV,
+			sendt = LocalDateTime.now()
 		)
 		val endringsmelding2 = EndringsmeldingDbo(
 			id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),
@@ -91,10 +95,23 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 			type = EndringsmeldingType.ENDRE_SLUTTDATO,
 			innhold = Innhold.EndreSluttdatoInnhold(
 				sluttdato = LocalDate.of(2023, 5, 3)
-			)
+			),
+			status = Endringsmelding.Status.AKTIV,
+			sendt = LocalDateTime.now()
+		)
+		val endringsmelding3 = EndringsmeldingDbo(
+			id = UUID.randomUUID(),
+			deltakerId = deltakerId,
+			type = EndringsmeldingType.ENDRE_SLUTTDATO,
+			innhold = Innhold.EndreSluttdatoInnhold(
+				sluttdato = LocalDate.of(2021, 5, 3)
+			),
+			status = Endringsmelding.Status.UTFORT,
+			sendt = LocalDateTime.now()
 		)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding1)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding2)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding3)
 
 		val response = sendRequest(
 			method = "GET",
