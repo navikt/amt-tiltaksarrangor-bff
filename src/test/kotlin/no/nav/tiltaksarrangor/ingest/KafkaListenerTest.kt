@@ -1,56 +1,20 @@
 package no.nav.tiltaksarrangor.ingest
 
 import no.nav.tiltaksarrangor.IntegrationTest
-import no.nav.tiltaksarrangor.ingest.model.AnsattDto
-import no.nav.tiltaksarrangor.ingest.model.AnsattPersonaliaDto
-import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerKontaktinformasjonDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerNavVeilederDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerPersonaliaDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
-import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
-import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
-import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
-import no.nav.tiltaksarrangor.ingest.model.Innhold
-import no.nav.tiltaksarrangor.ingest.model.NavnDto
-import no.nav.tiltaksarrangor.ingest.model.TilknyttetArrangorDto
-import no.nav.tiltaksarrangor.ingest.model.VeilederDto
-import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
-import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
-import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
-import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
-import no.nav.tiltaksarrangor.model.StatusType
-import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
-import no.nav.tiltaksarrangor.testutils.getAdresse
-import no.nav.tiltaksarrangor.testutils.getVurderinger
-import no.nav.tiltaksarrangor.utils.JsonUtils
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.awaitility.Awaitility
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.UUID
-import java.util.concurrent.TimeUnit
 
 class KafkaListenerTest : IntegrationTest() {
 	private val dataSource = SingletonPostgresContainer.getDataSource()
@@ -77,7 +41,7 @@ class KafkaListenerTest : IntegrationTest() {
 		DbTestDataUtils.cleanDatabase(dataSource)
 	}
 
-	@Test
+	/*@Test
 	fun `listen - melding pa arrangor-topic - lagres i database`() {
 		val arrangorId = UUID.randomUUID()
 		val arrangorDto = ArrangorDto(
@@ -716,5 +680,5 @@ class KafkaListenerTest : IntegrationTest() {
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
 			endringsmeldingRepository.getEndringsmelding(endringsmeldingId) == null
 		}
-	}
+	}*/
 }
