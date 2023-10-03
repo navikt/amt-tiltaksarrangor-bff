@@ -236,7 +236,7 @@ class EndringsmeldingRepository(
 		)
 	}
 
-	private fun parseInnholdJson(innholdJson: String?, type: EndringsmeldingType): Innhold? {
+	private fun parseInnholdJson(innholdJson: String?, type: EndringsmeldingType): Innhold {
 		if (innholdJson == null) {
 			log.error("Kan ikke lese endringsmelding med type $type som mangler innhold")
 			throw IllegalStateException("Endringsmelding med type $type må ha innhold")
@@ -262,6 +262,9 @@ class EndringsmeldingRepository(
 
 			EndringsmeldingType.ENDRE_SLUTTDATO ->
 				fromJsonString<Innhold.EndreSluttdatoInnhold>(innholdJson)
+
+			EndringsmeldingType.ENDRE_SLUTTAARSAK ->
+				fromJsonString<Innhold.EndreSluttaarsakInnhold>(innholdJson)
 		}
 	}
 }

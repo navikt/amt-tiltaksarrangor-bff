@@ -18,7 +18,7 @@ fun EndringsmeldingRequest.toEndringsmeldingDbo(endringsmeldingId: UUID, deltake
 	)
 }
 
-fun EndringsmeldingRequest.Innhold.toEndringsmeldingInnhold(): Innhold? {
+fun EndringsmeldingRequest.Innhold.toEndringsmeldingInnhold(): Innhold {
 	return when (this) {
 		is EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold -> Innhold.LeggTilOppstartsdatoInnhold(this.oppstartsdato)
 		is EndringsmeldingRequest.Innhold.EndreOppstartsdatoInnhold -> Innhold.EndreOppstartsdatoInnhold(this.oppstartsdato)
@@ -27,5 +27,6 @@ fun EndringsmeldingRequest.Innhold.toEndringsmeldingInnhold(): Innhold? {
 		is EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold -> Innhold.AvsluttDeltakelseInnhold(this.sluttdato, this.aarsak)
 		is EndringsmeldingRequest.Innhold.DeltakerIkkeAktuellInnhold -> Innhold.DeltakerIkkeAktuellInnhold(this.aarsak)
 		is EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold -> Innhold.EndreSluttdatoInnhold(this.sluttdato)
+		is EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold -> Innhold.EndreSluttaarsakInnhold(this.aarsak)
 	}
 }

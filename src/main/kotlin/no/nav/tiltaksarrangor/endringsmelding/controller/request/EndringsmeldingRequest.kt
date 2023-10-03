@@ -14,7 +14,8 @@ data class EndringsmeldingRequest(
 		JsonSubTypes.Type(value = Innhold.AvsluttDeltakelseInnhold::class, name = "AVSLUTT_DELTAKELSE"),
 		JsonSubTypes.Type(value = Innhold.DeltakerIkkeAktuellInnhold::class, name = "DELTAKER_IKKE_AKTUELL"),
 		JsonSubTypes.Type(value = Innhold.EndreDeltakelseProsentInnhold::class, name = "ENDRE_DELTAKELSE_PROSENT"),
-		JsonSubTypes.Type(value = Innhold.EndreSluttdatoInnhold::class, name = "ENDRE_SLUTTDATO")
+		JsonSubTypes.Type(value = Innhold.EndreSluttdatoInnhold::class, name = "ENDRE_SLUTTDATO"),
+		JsonSubTypes.Type(value = Innhold.EndreSluttaarsakInnhold::class, name = "ENDRE_SLUTTAARSAK")
 	)
 	val innhold: Innhold
 ) {
@@ -25,7 +26,8 @@ data class EndringsmeldingRequest(
 		AVSLUTT_DELTAKELSE,
 		DELTAKER_IKKE_AKTUELL,
 		ENDRE_DELTAKELSE_PROSENT,
-		ENDRE_SLUTTDATO
+		ENDRE_SLUTTDATO,
+		ENDRE_SLUTTAARSAK
 	}
 
 	sealed class Innhold(val type: EndringsmeldingType) {
@@ -60,5 +62,9 @@ data class EndringsmeldingRequest(
 		data class EndreSluttdatoInnhold(
 			val sluttdato: LocalDate
 		) : Innhold(EndringsmeldingType.ENDRE_SLUTTDATO)
+
+		data class EndreSluttaarsakInnhold(
+			val aarsak: DeltakerStatusAarsak
+		) : Innhold(EndringsmeldingType.ENDRE_SLUTTAARSAK)
 	}
 }

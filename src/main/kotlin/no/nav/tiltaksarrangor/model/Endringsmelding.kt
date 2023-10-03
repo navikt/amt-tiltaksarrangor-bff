@@ -16,7 +16,8 @@ data class Endringsmelding(
 		AVSLUTT_DELTAKELSE,
 		DELTAKER_IKKE_AKTUELL,
 		ENDRE_DELTAKELSE_PROSENT,
-		ENDRE_SLUTTDATO
+		ENDRE_SLUTTDATO,
+		ENDRE_SLUTTAARSAK
 	}
 
 	enum class Status {
@@ -53,6 +54,10 @@ data class Endringsmelding(
 
 		data class EndreSluttdatoInnhold(
 			val sluttdato: LocalDate
+		) : Innhold()
+
+		data class EndreSluttaarsakInnhold(
+			val aarsak: DeltakerStatusAarsak
 		) : Innhold()
 	}
 }
