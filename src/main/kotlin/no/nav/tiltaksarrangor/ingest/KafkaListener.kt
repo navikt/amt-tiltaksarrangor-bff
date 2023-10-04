@@ -2,7 +2,6 @@ package no.nav.tiltaksarrangor.ingest
 
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
@@ -18,8 +17,6 @@ const val ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
 class KafkaListener(
 	val ingestService: IngestService
 ) {
-	private val log = LoggerFactory.getLogger(javaClass)
-
 	@KafkaListener(
 		topics = [ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC],
 		properties = ["auto.offset.reset = earliest"],
