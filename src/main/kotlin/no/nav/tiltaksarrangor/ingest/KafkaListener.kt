@@ -17,7 +17,6 @@ const val ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
 class KafkaListener(
 	val ingestService: IngestService
 ) {
-
 	@KafkaListener(
 		topics = [ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC],
 		properties = ["auto.offset.reset = earliest"],

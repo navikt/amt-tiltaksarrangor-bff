@@ -9,6 +9,7 @@ import no.nav.tiltaksarrangor.ingest.model.Kontaktadresse
 import no.nav.tiltaksarrangor.ingest.model.Matrikkeladresse
 import no.nav.tiltaksarrangor.ingest.model.Vegadresse
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
@@ -69,7 +70,9 @@ fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo {
 		id = UUID.randomUUID(),
 		deltakerId = deltakerId,
 		type = EndringsmeldingType.FORLENG_DELTAKELSE,
-		innhold = Innhold.ForlengDeltakelseInnhold(LocalDate.now().plusMonths(2))
+		innhold = Innhold.ForlengDeltakelseInnhold(LocalDate.now().plusMonths(2)),
+		status = Endringsmelding.Status.AKTIV,
+		sendt = LocalDateTime.now()
 	)
 }
 

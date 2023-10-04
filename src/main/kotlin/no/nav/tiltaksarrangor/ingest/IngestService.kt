@@ -96,16 +96,9 @@ class IngestService(
 		if (endringsmeldingDto == null) {
 			endringsmeldingRepository.deleteEndringsmelding(endringsmeldingId)
 			log.info("Slettet tombstonet endringsmelding med id $endringsmeldingId")
-		} else if (endringsmeldingDto.skalLagres()) {
+		} else {
 			endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDto.toEndringsmeldingDbo())
 			log.info("Lagret endringsmelding med id $endringsmeldingId")
-		} else {
-			val antallSlettedeEndringsmeldinger = endringsmeldingRepository.deleteEndringsmelding(endringsmeldingId)
-			if (antallSlettedeEndringsmeldinger > 0) {
-				log.info("Slettet endringsmelding med id $endringsmeldingId")
-			} else {
-				log.info("Ignorert endringsmelding med id $endringsmeldingId")
-			}
 		}
 	}
 
@@ -171,8 +164,4 @@ fun DeltakerlisteDto.skalLagres(): Boolean {
 		return true
 	}
 	return false
-}
-
-fun EndringsmeldingDto.skalLagres(): Boolean {
-	return status == "AKTIV"
 }

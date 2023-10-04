@@ -63,7 +63,7 @@ class TiltaksarrangorService(
 			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 		}
 
-		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).filter { it.erAktiv() }
 		val veiledere = ansattService.getVeiledereForDeltaker(deltakerId)
 
 		return tilDeltaker(deltakerMedDeltakerliste, veiledere, endringsmeldinger)

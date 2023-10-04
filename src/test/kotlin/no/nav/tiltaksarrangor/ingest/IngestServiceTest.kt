@@ -20,6 +20,7 @@ import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -449,7 +450,7 @@ class IngestServiceTest {
 			utfortAvNavAnsattId = null,
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
-			status = "AKTIV",
+			status = Endringsmelding.Status.AKTIV,
 			type = EndringsmeldingType.ENDRE_SLUTTDATO,
 			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 			createdAt = LocalDateTime.now()
@@ -461,7 +462,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreEndringsmelding - status UTDATERT - lagres ikke i db `() {
+	internal fun `lagreEndringsmelding - status UTDATERT - lagres i db `() {
 		val endringsmeldingId = UUID.randomUUID()
 		val endringsmeldingDto = EndringsmeldingDto(
 			id = endringsmeldingId,
@@ -469,7 +470,7 @@ class IngestServiceTest {
 			utfortAvNavAnsattId = null,
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			utfortTidspunkt = null,
-			status = "UTDATERT",
+			status = Endringsmelding.Status.UTDATERT,
 			type = EndringsmeldingType.ENDRE_SLUTTDATO,
 			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 			createdAt = LocalDateTime.now()
@@ -477,7 +478,6 @@ class IngestServiceTest {
 
 		ingestService.lagreEndringsmelding(endringsmeldingId, endringsmeldingDto)
 
-		verify(exactly = 0) { endringsmeldingRepository.insertOrUpdateEndringsmelding(any()) }
-		verify(exactly = 1) { endringsmeldingRepository.deleteEndringsmelding(endringsmeldingId) }
+		verify(exactly = 1) { endringsmeldingRepository.insertOrUpdateEndringsmelding(any()) }
 	}
 }

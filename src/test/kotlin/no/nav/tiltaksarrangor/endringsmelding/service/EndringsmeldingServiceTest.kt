@@ -162,6 +162,7 @@ class EndringsmeldingServiceTest {
 		)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo1)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo2)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(getEndringsmelding(deltakerId).copy(status = Endringsmelding.Status.UTFORT))
 
 		val endringsmeldinger = endringsmeldingService.getAktiveEndringsmeldinger(deltakerId, personIdent)
 		endringsmeldinger.size shouldBe 2
@@ -209,7 +210,7 @@ class EndringsmeldingServiceTest {
 	}
 
 	@Test
-	fun `slettEndringsmelding - ansatt har tilgang - sletter endringsmelding`() {
+	fun `slettEndringsmelding - ansatt har tilgang - merker endringsmelding som tilbakekalt`() {
 		coEvery { amtTiltakClient.tilbakekallEndringsmelding(any()) } just Runs
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
@@ -236,7 +237,7 @@ class EndringsmeldingServiceTest {
 
 		endringsmeldingService.slettEndringsmelding(endringsmelding.id, personIdent)
 
-		endringsmeldingRepository.getEndringsmelding(endringsmelding.id) shouldBe null
+		endringsmeldingRepository.getEndringsmelding(endringsmelding.id)?.status shouldBe Endringsmelding.Status.TILBAKEKALT
 		coVerify { amtTiltakClient.tilbakekallEndringsmelding(endringsmelding.id) }
 	}
 
@@ -388,7 +389,7 @@ class EndringsmeldingServiceTest {
 	}
 
 	@Test
-	fun `opprettEndringsmelding - har endringsmelding av samme type - sletter gammel endringsmelding og oppretter ny`() {
+	fun `opprettEndringsmelding - har endringsmelding av samme type - oppdaterer gammel endringsmelding og oppretter ny`() {
 		val endringsmeldingId = UUID.randomUUID()
 		coEvery { amtTiltakClient.forlengDeltakelse(any(), any()) } returns endringsmeldingId
 		val personIdent = "12345678910"
@@ -423,11 +424,60 @@ class EndringsmeldingServiceTest {
 		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
 
 		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
-		endringsmeldinger.size shouldBe 1
-		val endringsmelding = endringsmeldinger.first()
-		endringsmelding.id shouldBe endringsmeldingId
-		endringsmelding.type shouldBe EndringsmeldingType.FORLENG_DELTAKELSE
-		(endringsmelding.innhold as Innhold.ForlengDeltakelseInnhold).sluttdato shouldBe LocalDate.now()
+		endringsmeldinger.size shouldBe 2
+		val aktivEndringsmelding = endringsmeldinger.find { it.erAktiv() }
+		aktivEndringsmelding?.id shouldBe endringsmeldingId
+		aktivEndringsmelding?.type shouldBe EndringsmeldingType.FORLENG_DELTAKELSE
+		(aktivEndringsmelding?.innhold as Innhold.ForlengDeltakelseInnhold).sluttdato shouldBe LocalDate.now()
+		val utdatertEndringsmelding = endringsmeldinger.find { !it.erAktiv() }
+		utdatertEndringsmelding?.id shouldBe endringsmelding1.id
+		utdatertEndringsmelding?.status shouldBe Endringsmelding.Status.UTDATERT
+	}
+
+	@Test
+	fun `opprettEndringsmelding - har utfort endringsmelding av samme type - oppdaterer ikke gammel endringsmelding og oppretter ny`() {
+		val endringsmeldingId = UUID.randomUUID()
+		coEvery { amtTiltakClient.forlengDeltakelse(any(), any()) } returns endringsmeldingId
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmelding1 = getEndringsmelding(deltakerId).copy(status = Endringsmelding.Status.UTFORT)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding1)
+		val endringsmeldingRequest = EndringsmeldingRequest(
+			innhold = EndringsmeldingRequest.Innhold.ForlengDeltakelseInnhold(
+				sluttdato = LocalDate.now()
+			)
+		)
+
+		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
+
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		endringsmeldinger.size shouldBe 2
+		val aktivEndringsmelding = endringsmeldinger.find { it.erAktiv() }
+		aktivEndringsmelding?.id shouldBe endringsmeldingId
+		aktivEndringsmelding?.type shouldBe EndringsmeldingType.FORLENG_DELTAKELSE
+		(aktivEndringsmelding?.innhold as Innhold.ForlengDeltakelseInnhold).sluttdato shouldBe LocalDate.now()
+		val utdatertEndringsmelding = endringsmeldinger.find { !it.erAktiv() }
+		utdatertEndringsmelding?.id shouldBe endringsmelding1.id
+		utdatertEndringsmelding?.status shouldBe Endringsmelding.Status.UTFORT
 	}
 
 	@Test

@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.ingest.model
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import java.time.LocalDateTime
 import java.util.UUID
@@ -12,7 +13,7 @@ data class EndringsmeldingDto(
 	val utfortAvNavAnsattId: UUID?,
 	val opprettetAvArrangorAnsattId: UUID,
 	val utfortTidspunkt: LocalDateTime?,
-	val status: String,
+	val status: Endringsmelding.Status,
 	val type: EndringsmeldingType,
 	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
 	@JsonSubTypes(
@@ -34,6 +35,8 @@ fun EndringsmeldingDto.toEndringsmeldingDbo(): EndringsmeldingDbo {
 		id = id,
 		deltakerId = deltakerId,
 		type = type,
-		innhold = innhold
+		innhold = innhold,
+		status = status,
+		sendt = createdAt
 	)
 }

@@ -20,6 +20,10 @@ data class Endringsmelding(
 		ENDRE_SLUTTAARSAK
 	}
 
+	enum class Status {
+		AKTIV, TILBAKEKALT, UTDATERT, UTFORT
+	}
+
 	sealed class Innhold {
 		data class LeggTilOppstartsdatoInnhold(
 			val oppstartsdato: LocalDate
