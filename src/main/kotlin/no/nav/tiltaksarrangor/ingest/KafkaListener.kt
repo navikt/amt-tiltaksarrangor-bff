@@ -45,7 +45,8 @@ class KafkaListener(
 				if (cr.key() != "32873fe9-0c11-4593-b2a9-48466d6b5f92") {
 					ingestService.lagreEndringsmelding(
 						UUID.fromString(cr.key()),
-						cr.value()?.let { fromJsonString(it) })
+						cr.value()?.let { fromJsonString(it) }
+					)
 				}
 			}
 			else -> throw IllegalStateException("Mottok melding på ukjent topic: ${cr.topic()}")
