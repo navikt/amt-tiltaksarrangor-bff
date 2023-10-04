@@ -19,7 +19,9 @@ data class EndringsmeldingDbo(
 		return Endringsmelding(
 			id = id,
 			innhold = innhold?.toEndringsmeldingInnhold(),
-			type = Endringsmelding.Type.valueOf(type.name)
+			type = Endringsmelding.Type.valueOf(type.name),
+			status = status,
+			sendt = sendt.toLocalDate()
 		)
 	}
 

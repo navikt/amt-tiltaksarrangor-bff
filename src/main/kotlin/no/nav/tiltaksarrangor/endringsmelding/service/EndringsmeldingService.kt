@@ -11,6 +11,7 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.toEndringsmeldingDbo
+import no.nav.tiltaksarrangor.endringsmelding.controller.response.EndringsmeldingResponse
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
@@ -37,6 +38,18 @@ class EndringsmeldingService(
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	fun getAktiveEndringsmeldinger(deltakerId: UUID, personIdent: String): List<Endringsmelding> {
+		return getEndringsmeldinger(deltakerId, personIdent).filter { it.erAktiv() }
+	}
+
+	fun getAlleEndringsmeldinger(deltakerId: UUID, personIdent: String): EndringsmeldingResponse {
+		val endringsmeldinger = getEndringsmeldinger(deltakerId, personIdent)
+		return EndringsmeldingResponse(
+			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() },
+			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }
+		)
+	}
+
+	private fun getEndringsmeldinger(deltakerId: UUID, personIdent: String): List<Endringsmelding> {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 		val harTilgangTilDeltaker = ansattService.harTilgangTilDeltaker(
@@ -51,7 +64,7 @@ class EndringsmeldingService(
 		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
 			throw SkjultDeltakerException("Deltaker med id $deltakerId er skjult for tiltaksarrangør")
 		}
-		return endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).filter { it.erAktiv() }.map { it.toEndringsmelding() }
+		return endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).map { it.toEndringsmelding() }
 	}
 
 	fun opprettEndringsmelding(deltakerId: UUID, request: EndringsmeldingRequest, personIdent: String) {

@@ -63,7 +63,7 @@ class TiltaksarrangorService(
 			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 		}
 
-		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).filter { it.erAktiv() }
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
 		val veiledere = ansattService.getVeiledereForDeltaker(deltakerId)
 
 		return tilDeltaker(deltakerMedDeltakerliste, veiledere, endringsmeldinger)
@@ -172,7 +172,8 @@ class TiltaksarrangorService(
 				}
 			),
 			veiledere = veiledere,
-			aktiveEndringsmeldinger = endringsmeldinger.map { it.toEndringsmelding() },
+			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() }.map { it.toEndringsmelding() },
+			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }.map { it.toEndringsmelding() },
 			adresse = deltakerMedDeltakerliste.getAdresse(),
 			gjeldendeVurderingFraArrangor = deltakerMedDeltakerliste.deltaker.getGjeldendeVurdering(),
 			historiskeVurderingerFraArrangor = deltakerMedDeltakerliste.deltaker.getHistoriskeVurderinger()
