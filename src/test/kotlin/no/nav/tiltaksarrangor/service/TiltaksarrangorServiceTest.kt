@@ -261,6 +261,7 @@ class TiltaksarrangorServiceTest {
 		deltaker.aktiveEndringsmeldinger.size shouldBe 1
 		val endringsmelding = deltaker.aktiveEndringsmeldinger.first()
 		endringsmelding.type shouldBe Endringsmelding.Type.ENDRE_SLUTTDATO
+		deltaker.historiskeEndringsmeldinger.size shouldBe 0
 		val innhold = endringsmelding.innhold as Endringsmelding.Innhold.EndreSluttdatoInnhold
 		innhold.sluttdato shouldBe LocalDate.now()
 		deltaker.veiledere.size shouldBe 1

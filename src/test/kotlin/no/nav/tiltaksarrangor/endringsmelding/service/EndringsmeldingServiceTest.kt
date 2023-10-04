@@ -180,6 +180,122 @@ class EndringsmeldingServiceTest {
 	}
 
 	@Test
+	fun `getAlleEndringsmeldinger - ansatt har ikke rolle hos arrangor - returnerer unauthorized`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmelding = getEndringsmelding(deltakerId)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
+
+		assertThrows<UnauthorizedException> {
+			endringsmeldingService.getAlleEndringsmeldinger(deltakerId, personIdent)
+		}
+	}
+
+	@Test
+	fun `getAlleEndringsmeldinger - deltaker er skjult - returnerer skjult deltaker exception`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(skjultDato = LocalDateTime.now(), skjultAvAnsattId = UUID.randomUUID())
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmelding = getEndringsmelding(deltakerId)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
+
+		assertThrows<SkjultDeltakerException> {
+			endringsmeldingService.getAlleEndringsmeldinger(deltakerId, personIdent)
+		}
+	}
+
+	@Test
+	fun `getAlleEndringsmeldinger - ansatt har tilgang - henter endringsmeldinger`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)
+				),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER))
+			)
+		)
+		val endringsmeldingDbo1 = getEndringsmelding(deltakerId)
+		val endringsmeldingDbo2 = getEndringsmelding(deltakerId).copy(
+			type = EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT,
+			innhold = Innhold.EndreDeltakelseProsentInnhold(
+				nyDeltakelseProsent = 50,
+				dagerPerUke = 2,
+				gyldigFraDato = LocalDate.now()
+			)
+		)
+		val endringsmeldingDbo3 = getEndringsmelding(deltakerId).copy(status = Endringsmelding.Status.UTFORT)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo1)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo2)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo3)
+
+		val endringsmeldingResponse = endringsmeldingService.getAlleEndringsmeldinger(deltakerId, personIdent)
+		endringsmeldingResponse.aktiveEndringsmeldinger.size shouldBe 2
+		val endringsmelding1 = endringsmeldingResponse.aktiveEndringsmeldinger.find { it.id == endringsmeldingDbo1.id }
+		endringsmelding1?.type shouldBe Endringsmelding.Type.FORLENG_DELTAKELSE
+		endringsmelding1?.innhold shouldBe Endringsmelding.Innhold.ForlengDeltakelseInnhold(sluttdato = LocalDate.now().plusMonths(2))
+
+		val endringsmelding2 = endringsmeldingResponse.aktiveEndringsmeldinger.find { it.id == endringsmeldingDbo2.id }
+		endringsmelding2?.type shouldBe Endringsmelding.Type.ENDRE_DELTAKELSE_PROSENT
+		endringsmelding2?.innhold shouldBe Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(
+			deltakelseProsent = 50,
+			dagerPerUke = 2,
+			gyldigFraDato = LocalDate.now()
+		)
+		endringsmeldingResponse.historiskeEndringsmeldinger.size shouldBe 1
+		val historiskEndringsmelding = endringsmeldingResponse.historiskeEndringsmeldinger.first()
+		historiskEndringsmelding.id shouldBe endringsmeldingDbo3.id
+		historiskEndringsmelding.status shouldBe Endringsmelding.Status.UTFORT
+	}
+
+	@Test
 	fun `slettEndringsmelding - ansatt har ikke rolle hos arrangor - returnerer unauthorized`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()

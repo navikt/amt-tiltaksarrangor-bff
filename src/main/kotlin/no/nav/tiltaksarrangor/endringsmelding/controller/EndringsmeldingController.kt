@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.endringsmelding.controller
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
+import no.nav.tiltaksarrangor.endringsmelding.controller.response.EndringsmeldingResponse
 import no.nav.tiltaksarrangor.endringsmelding.service.EndringsmeldingService
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.service.TokenService
@@ -21,11 +22,19 @@ class EndringsmeldingController(
 	private val endringsmeldingService: EndringsmeldingService,
 	private val tokenService: TokenService
 ) {
+	@Deprecated("Erstattes av /deltaker/{deltakerId}/alle-endringsmeldinger")
 	@GetMapping("/deltaker/{deltakerId}/endringsmeldinger")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getAktiveEndringsmeldinger(@PathVariable deltakerId: UUID): List<Endringsmelding> {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		return endringsmeldingService.getAktiveEndringsmeldinger(deltakerId, personIdent)
+	}
+
+	@GetMapping("/deltaker/{deltakerId}/alle-endringsmeldinger")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun getAlleEndringsmeldinger(@PathVariable deltakerId: UUID): EndringsmeldingResponse {
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		return endringsmeldingService.getAlleEndringsmeldinger(deltakerId, personIdent)
 	}
 
 	@PostMapping("/deltaker/{deltakerId}/endringsmelding")

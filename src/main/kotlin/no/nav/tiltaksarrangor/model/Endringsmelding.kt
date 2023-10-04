@@ -6,8 +6,13 @@ import java.util.UUID
 data class Endringsmelding(
 	val id: UUID,
 	val innhold: Innhold?,
-	val type: Type
+	val type: Type,
+	val status: Status,
+	val sendt: LocalDate
 ) {
+	fun erAktiv(): Boolean {
+		return status == Status.AKTIV
+	}
 
 	enum class Type {
 		LEGG_TIL_OPPSTARTSDATO,

@@ -20,6 +20,7 @@ import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
 import no.nav.tiltaksarrangor.utils.JsonUtils
+import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
@@ -120,7 +121,90 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 		)
 
 		val expectedJson = """
-			[{"id":"27446cc8-30ad-4030-94e3-de438c2af3c6","innhold":{"sluttdato":"2023-03-30","aarsak":{"type":"SYK","beskrivelse":"har blitt syk"}},"type":"AVSLUTT_DELTAKELSE"},{"id":"362c7fdd-04e7-4f43-9e56-0939585856eb","innhold":{"sluttdato":"2023-05-03"},"type":"ENDRE_SLUTTDATO"}]
+			[{"id":"27446cc8-30ad-4030-94e3-de438c2af3c6","innhold":{"sluttdato":"2023-03-30","aarsak":{"type":"SYK","beskrivelse":"har blitt syk"}},"type":"AVSLUTT_DELTAKELSE","status":"AKTIV","sendt":${objectMapper.writeValueAsString(LocalDate.now())}},{"id":"362c7fdd-04e7-4f43-9e56-0939585856eb","innhold":{"sluttdato":"2023-05-03"},"type":"ENDRE_SLUTTDATO","status":"AKTIV","sendt":${objectMapper.writeValueAsString(LocalDate.now())}}]
+		""".trimIndent()
+		response.code shouldBe 200
+		response.body?.string() shouldBe expectedJson
+	}
+
+	@Test
+	fun `getAlleEndringsmeldinger - ikke autentisert - returnerer 401`() {
+		val response = sendRequest(
+			method = "GET",
+			path = "/tiltaksarrangor/deltaker/${UUID.randomUUID()}/alle-endringsmeldinger"
+		)
+
+		response.code shouldBe 401
+	}
+
+	@Test
+	fun `getAlleEndringsmeldinger - autentisert - returnerer 200`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(
+					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
+				),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList()
+			)
+		)
+		val endringsmelding1 = EndringsmeldingDbo(
+			id = UUID.fromString("27446cc8-30ad-4030-94e3-de438c2af3c6"),
+			deltakerId = deltakerId,
+			type = EndringsmeldingType.AVSLUTT_DELTAKELSE,
+			innhold = Innhold.AvsluttDeltakelseInnhold(
+				sluttdato = LocalDate.of(2023, 3, 30),
+				aarsak = DeltakerStatusAarsak(
+					type = DeltakerStatusAarsak.Type.SYK,
+					beskrivelse = "har blitt syk"
+				)
+			),
+			status = Endringsmelding.Status.AKTIV,
+			sendt = LocalDateTime.now()
+		)
+		val endringsmelding2 = EndringsmeldingDbo(
+			id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),
+			deltakerId = deltakerId,
+			type = EndringsmeldingType.ENDRE_SLUTTDATO,
+			innhold = Innhold.EndreSluttdatoInnhold(
+				sluttdato = LocalDate.of(2023, 5, 3)
+			),
+			status = Endringsmelding.Status.AKTIV,
+			sendt = LocalDateTime.now()
+		)
+		val endringsmelding3 = EndringsmeldingDbo(
+			id = UUID.fromString("f4199094-c864-48c3-a1ad-89b2b36f4a48"),
+			deltakerId = deltakerId,
+			type = EndringsmeldingType.ENDRE_SLUTTDATO,
+			innhold = Innhold.EndreSluttdatoInnhold(
+				sluttdato = LocalDate.of(2021, 5, 3)
+			),
+			status = Endringsmelding.Status.UTFORT,
+			sendt = LocalDateTime.now()
+		)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding1)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding2)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding3)
+
+		val response = sendRequest(
+			method = "GET",
+			path = "/tiltaksarrangor/deltaker/$deltakerId/alle-endringsmeldinger",
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
+		)
+
+		val expectedJson = """
+			{"aktiveEndringsmeldinger":[{"id":"27446cc8-30ad-4030-94e3-de438c2af3c6","innhold":{"sluttdato":"2023-03-30","aarsak":{"type":"SYK","beskrivelse":"har blitt syk"}},"type":"AVSLUTT_DELTAKELSE","status":"AKTIV","sendt":${objectMapper.writeValueAsString(LocalDate.now())}},{"id":"362c7fdd-04e7-4f43-9e56-0939585856eb","innhold":{"sluttdato":"2023-05-03"},"type":"ENDRE_SLUTTDATO","status":"AKTIV","sendt":${objectMapper.writeValueAsString(LocalDate.now())}}],"historiskeEndringsmeldinger":[{"id":"f4199094-c864-48c3-a1ad-89b2b36f4a48","innhold":{"sluttdato":"2021-05-03"},"type":"ENDRE_SLUTTDATO","status":"UTFORT","sendt":${objectMapper.writeValueAsString(LocalDate.now())}}]}
 		""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson

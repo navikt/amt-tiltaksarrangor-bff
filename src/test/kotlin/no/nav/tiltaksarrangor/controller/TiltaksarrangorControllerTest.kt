@@ -164,7 +164,8 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 			vurderingerFraArrangor = getVurderinger(deltakerId, gyldigFra)
 		)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
-		val endringsmeldinger = getAktiveEndringsmeldinger(deltakerId)
+		val sendt = LocalDateTime.now()
+		val endringsmeldinger = getEndringsmeldinger(deltakerId, sendt)
 		endringsmeldinger.forEach { endringsmeldingRepository.insertOrUpdateEndringsmelding(it) }
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
@@ -202,7 +203,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		)
 
 		val expectedJson = """
-			{"id":"977350f2-d6a5-49bb-a3a0-773f25f863d9","deltakerliste":{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","startDato":"2023-02-01","sluttDato":null,"erKurs":false},"fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","telefonnummer":"90909090","epost":"mail@test.no","status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00"},"startDato":"2023-02-01","sluttDato":null,"deltakelseProsent":null,"dagerPerUke":2.5,"soktInnPa":"Gjennomføring 1","soktInnDato":"2023-01-15T00:00:00","tiltakskode":"ARBFORB","bestillingTekst":"Tror deltakeren vil ha nytte av dette","fjernesDato":null,"navInformasjon":{"navkontor":"Nav Oslo","navVeileder":{"navn":"Veileder Veiledersen","epost":"epost@nav.no","telefon":"56565656"}},"veiledere":[{"ansattId":"2d5fc2f7-a9e6-4830-a987-4ff135a70c10","deltakerId":"977350f2-d6a5-49bb-a3a0-773f25f863d9","veiledertype":"VEILEDER","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn"},{"ansattId":"7c43b43b-43be-4d4b-8057-d907c5f1e5c5","deltakerId":"977350f2-d6a5-49bb-a3a0-773f25f863d9","veiledertype":"MEDVEILEDER","fornavn":"Per","mellomnavn":null,"etternavn":"Person"}],"aktiveEndringsmeldinger":[{"id":"27446cc8-30ad-4030-94e3-de438c2af3c6","innhold":{"sluttdato":"2023-03-30","aarsak":{"type":"SYK","beskrivelse":"har blitt syk"}},"type":"AVSLUTT_DELTAKELSE"},{"id":"362c7fdd-04e7-4f43-9e56-0939585856eb","innhold":{"sluttdato":"2023-05-03"},"type":"ENDRE_SLUTTDATO"}],"adresse":{"adressetype":"KONTAKTADRESSE","postnummer":"1234","poststed":"MOSS","tilleggsnavn":null,"adressenavn":"Gate 1"},"gjeldendeVurderingFraArrangor":{"vurderingstype":"OPPFYLLER_IKKE_KRAVENE","begrunnelse":"Mangler førerkort","gyldigFra":${objectMapper.writeValueAsString(gyldigFra)},"gyldigTil":null},"historiskeVurderingerFraArrangor":[]}
+			{"id":"977350f2-d6a5-49bb-a3a0-773f25f863d9","deltakerliste":{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","startDato":"2023-02-01","sluttDato":null,"erKurs":false},"fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","telefonnummer":"90909090","epost":"mail@test.no","status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00"},"startDato":"2023-02-01","sluttDato":null,"deltakelseProsent":null,"dagerPerUke":2.5,"soktInnPa":"Gjennomføring 1","soktInnDato":"2023-01-15T00:00:00","tiltakskode":"ARBFORB","bestillingTekst":"Tror deltakeren vil ha nytte av dette","fjernesDato":null,"navInformasjon":{"navkontor":"Nav Oslo","navVeileder":{"navn":"Veileder Veiledersen","epost":"epost@nav.no","telefon":"56565656"}},"veiledere":[{"ansattId":"2d5fc2f7-a9e6-4830-a987-4ff135a70c10","deltakerId":"977350f2-d6a5-49bb-a3a0-773f25f863d9","veiledertype":"VEILEDER","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn"},{"ansattId":"7c43b43b-43be-4d4b-8057-d907c5f1e5c5","deltakerId":"977350f2-d6a5-49bb-a3a0-773f25f863d9","veiledertype":"MEDVEILEDER","fornavn":"Per","mellomnavn":null,"etternavn":"Person"}],"aktiveEndringsmeldinger":[{"id":"27446cc8-30ad-4030-94e3-de438c2af3c6","innhold":{"sluttdato":"2023-03-30","aarsak":{"type":"SYK","beskrivelse":"har blitt syk"}},"type":"AVSLUTT_DELTAKELSE","status":"AKTIV","sendt":${objectMapper.writeValueAsString(sendt.toLocalDate())}},{"id":"362c7fdd-04e7-4f43-9e56-0939585856eb","innhold":{"sluttdato":"2023-05-03"},"type":"ENDRE_SLUTTDATO","status":"AKTIV","sendt":${objectMapper.writeValueAsString(sendt.toLocalDate())}}],"historiskeEndringsmeldinger":[{"id":"ab4d67a5-2556-4f63-b27a-ced04a231d0e","innhold":{"oppstartsdato":"2022-05-03"},"type":"LEGG_TIL_OPPSTARTSDATO","status":"UTFORT","sendt":${objectMapper.writeValueAsString(sendt.toLocalDate())}}],"adresse":{"adressetype":"KONTAKTADRESSE","postnummer":"1234","poststed":"MOSS","tilleggsnavn":null,"adressenavn":"Gate 1"},"gjeldendeVurderingFraArrangor":{"vurderingstype":"OPPFYLLER_IKKE_KRAVENE","begrunnelse":"Mangler førerkort","gyldigFra":${objectMapper.writeValueAsString(gyldigFra)},"gyldigTil":null},"historiskeVurderingerFraArrangor":[]}
 		""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
@@ -366,7 +367,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		deltakerFraDb?.skjultDato shouldNotBe null
 	}
 
-	private fun getAktiveEndringsmeldinger(deltakerId: UUID): List<EndringsmeldingDbo> {
+	private fun getEndringsmeldinger(deltakerId: UUID, sendt: LocalDateTime): List<EndringsmeldingDbo> {
 		return listOf(
 			EndringsmeldingDbo(
 				id = UUID.fromString("27446cc8-30ad-4030-94e3-de438c2af3c6"),
@@ -380,7 +381,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 				),
 				type = EndringsmeldingType.AVSLUTT_DELTAKELSE,
 				status = Endringsmelding.Status.AKTIV,
-				sendt = LocalDateTime.now()
+				sendt = sendt
 			),
 			EndringsmeldingDbo(
 				id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),
@@ -390,7 +391,17 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 				),
 				type = EndringsmeldingType.ENDRE_SLUTTDATO,
 				status = Endringsmelding.Status.AKTIV,
-				sendt = LocalDateTime.now()
+				sendt = sendt
+			),
+			EndringsmeldingDbo(
+				id = UUID.fromString("ab4d67a5-2556-4f63-b27a-ced04a231d0e"),
+				deltakerId = deltakerId,
+				innhold = Innhold.LeggTilOppstartsdatoInnhold(
+					oppstartsdato = LocalDate.of(2022, 5, 3)
+				),
+				type = EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO,
+				status = Endringsmelding.Status.UTFORT,
+				sendt = sendt
 			)
 		)
 	}

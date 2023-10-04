@@ -26,6 +26,7 @@ data class Deltaker(
 	val navInformasjon: NavInformasjon,
 	val veiledere: List<Veileder>,
 	val aktiveEndringsmeldinger: List<Endringsmelding>,
+	val historiskeEndringsmeldinger: List<Endringsmelding>,
 	val adresse: Adresse?,
 	val gjeldendeVurderingFraArrangor: Vurdering?,
 	val historiskeVurderingerFraArrangor: List<Vurdering>?
