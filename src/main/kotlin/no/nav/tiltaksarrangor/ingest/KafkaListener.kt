@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.ingest
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -32,16 +31,7 @@ class KafkaListener(
 			ARRANGOR_ANSATT_TOPIC -> ingestService.lagreAnsatt(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			DELTAKERLISTE_TOPIC -> ingestService.lagreDeltakerliste(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			DELTAKER_TOPIC -> ingestService.lagreDeltaker(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
-			ENDRINGSMELDING_TOPIC -> {
-				try {
-					ingestService.lagreEndringsmelding(
-						UUID.fromString(cr.key()),
-						cr.value()?.let { fromJsonString(it) }
-					)
-				} catch (e: InvalidFormatException) {
-					log.warn("Ignorerer melding med feil format, ${e.message}")
-				}
-			}
+			ENDRINGSMELDING_TOPIC -> ingestService.lagreEndringsmelding(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			else -> throw IllegalStateException("Mottok melding på ukjent topic: ${cr.topic()}")
 		}
 		acknowledgment.acknowledge()
