@@ -21,7 +21,11 @@ val endringsmeldingerSomIgnoreres = listOf(
 	"97ee9903-523c-47fd-88cd-38d3a654057f",
 	"1013326e-7d14-46cd-8a09-95d2533811f8",
 	"9ba30873-61a6-41c6-b0f2-2f726530e5aa",
-	"13560a66-9a48-49b5-82ac-34157ba6c2ce"
+	"13560a66-9a48-49b5-82ac-34157ba6c2ce",
+	"2bc631b3-72bc-4830-a29d-79cef24e9416",
+	"aa34dcc3-2a7c-4108-ac0f-b01211d6ddd0",
+	"b8b2a353-9254-4800-87df-38bf03c6b1c7",
+	"18db9910-fb46-45cb-9a9f-330e82f1c7ba"
 )
 
 @Component
