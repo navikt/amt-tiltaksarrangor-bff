@@ -13,6 +13,13 @@ const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforing
 const val DELTAKER_TOPIC = "amt.deltaker-v2"
 const val ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
 
+val endringsmeldingerSomIgnoreres = listOf(
+	"32873fe9-0c11-4593-b2a9-48466d6b5f92",
+	"ec8dd190-b1ef-4dc0-9c14-435c6614bd85",
+	"ea3127ba-aa11-4608-8896-0285e36043d4",
+	"9506ad02-322c-47fa-96f7-1245a3c12f20"
+)
+
 @Component
 class KafkaListener(
 	val ingestService: IngestService
@@ -42,7 +49,7 @@ class KafkaListener(
 	fun listenV2(cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
 		when (cr.topic()) {
 			ENDRINGSMELDING_TOPIC -> {
-				if (cr.key() != "32873fe9-0c11-4593-b2a9-48466d6b5f92") {
+				if (cr.key() !in endringsmeldingerSomIgnoreres) {
 					ingestService.lagreEndringsmelding(
 						UUID.fromString(cr.key()),
 						cr.value()?.let { fromJsonString(it) }
