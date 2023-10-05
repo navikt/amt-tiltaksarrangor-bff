@@ -172,8 +172,8 @@ class TiltaksarrangorService(
 				}
 			),
 			veiledere = veiledere,
-			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() }.map { it.toEndringsmelding() },
-			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }.map { it.toEndringsmelding() },
+			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() }.map { it.toEndringsmelding() }.sortedBy { it.sendt },
+			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }.map { it.toEndringsmelding() }.sortedBy { it.sendt },
 			adresse = deltakerMedDeltakerliste.getAdresse(),
 			gjeldendeVurderingFraArrangor = deltakerMedDeltakerliste.deltaker.getGjeldendeVurdering(),
 			historiskeVurderingerFraArrangor = deltakerMedDeltakerliste.deltaker.getHistoriskeVurderinger()

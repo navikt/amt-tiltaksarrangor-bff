@@ -171,7 +171,7 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 				)
 			),
 			status = Endringsmelding.Status.AKTIV,
-			sendt = LocalDateTime.now()
+			sendt = LocalDate.of(2023, 3, 29).atStartOfDay()
 		)
 		val endringsmelding2 = EndringsmeldingDbo(
 			id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),
@@ -181,7 +181,7 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 				sluttdato = LocalDate.of(2023, 5, 3)
 			),
 			status = Endringsmelding.Status.AKTIV,
-			sendt = LocalDateTime.now()
+			sendt = LocalDate.of(2023, 1, 3).atStartOfDay()
 		)
 		val endringsmelding3 = EndringsmeldingDbo(
 			id = UUID.fromString("f4199094-c864-48c3-a1ad-89b2b36f4a48"),
@@ -191,7 +191,7 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 				sluttdato = LocalDate.of(2021, 5, 3)
 			),
 			status = Endringsmelding.Status.UTFORT,
-			sendt = LocalDateTime.now()
+			sendt = LocalDate.of(2021, 2, 1).atStartOfDay()
 		)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding1)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding2)
@@ -204,7 +204,7 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 		)
 
 		val expectedJson = """
-			{"aktiveEndringsmeldinger":[{"id":"27446cc8-30ad-4030-94e3-de438c2af3c6","innhold":{"sluttdato":"2023-03-30","aarsak":{"type":"SYK","beskrivelse":"har blitt syk"}},"type":"AVSLUTT_DELTAKELSE","status":"AKTIV","sendt":${objectMapper.writeValueAsString(LocalDate.now())}},{"id":"362c7fdd-04e7-4f43-9e56-0939585856eb","innhold":{"sluttdato":"2023-05-03"},"type":"ENDRE_SLUTTDATO","status":"AKTIV","sendt":${objectMapper.writeValueAsString(LocalDate.now())}}],"historiskeEndringsmeldinger":[{"id":"f4199094-c864-48c3-a1ad-89b2b36f4a48","innhold":{"sluttdato":"2021-05-03"},"type":"ENDRE_SLUTTDATO","status":"UTFORT","sendt":${objectMapper.writeValueAsString(LocalDate.now())}}]}
+			{"aktiveEndringsmeldinger":[{"id":"362c7fdd-04e7-4f43-9e56-0939585856eb","innhold":{"sluttdato":"2023-05-03"},"type":"ENDRE_SLUTTDATO","status":"AKTIV","sendt":"2023-01-03"},{"id":"27446cc8-30ad-4030-94e3-de438c2af3c6","innhold":{"sluttdato":"2023-03-30","aarsak":{"type":"SYK","beskrivelse":"har blitt syk"}},"type":"AVSLUTT_DELTAKELSE","status":"AKTIV","sendt":"2023-03-29"}],"historiskeEndringsmeldinger":[{"id":"f4199094-c864-48c3-a1ad-89b2b36f4a48","innhold":{"sluttdato":"2021-05-03"},"type":"ENDRE_SLUTTDATO","status":"UTFORT","sendt":"2021-02-01"}]}
 		""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson

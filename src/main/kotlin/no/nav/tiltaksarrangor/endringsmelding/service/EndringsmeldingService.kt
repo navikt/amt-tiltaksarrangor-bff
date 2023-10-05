@@ -44,8 +44,8 @@ class EndringsmeldingService(
 	fun getAlleEndringsmeldinger(deltakerId: UUID, personIdent: String): EndringsmeldingResponse {
 		val endringsmeldinger = getEndringsmeldinger(deltakerId, personIdent)
 		return EndringsmeldingResponse(
-			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() },
-			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }
+			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() }.sortedBy { it.sendt },
+			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }.sortedBy { it.sendt }
 		)
 	}
 
