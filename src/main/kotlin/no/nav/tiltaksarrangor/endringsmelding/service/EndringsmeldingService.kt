@@ -37,10 +37,6 @@ class EndringsmeldingService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun getAktiveEndringsmeldinger(deltakerId: UUID, personIdent: String): List<Endringsmelding> {
-		return getEndringsmeldinger(deltakerId, personIdent).filter { it.erAktiv() }
-	}
-
 	fun getAlleEndringsmeldinger(deltakerId: UUID, personIdent: String): EndringsmeldingResponse {
 		val endringsmeldinger = getEndringsmeldinger(deltakerId, personIdent)
 		return EndringsmeldingResponse(
