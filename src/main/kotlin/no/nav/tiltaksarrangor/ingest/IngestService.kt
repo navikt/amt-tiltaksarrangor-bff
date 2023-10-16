@@ -103,7 +103,9 @@ class IngestService(
 	}
 
 	private fun DeltakerDto.skalLagres(): Boolean {
-		if (status.type in SKJULES_ALLTID_STATUSER) {
+		if (adressebeskyttelse != null) {
+			return false
+		} else if (status.type in SKJULES_ALLTID_STATUSER) {
 			return false
 		} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs && deltakerRepository.getDeltaker(id) == null) {
 			return false

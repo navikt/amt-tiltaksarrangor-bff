@@ -19,7 +19,8 @@ data class DeltakerDto(
 	val navVeileder: DeltakerNavVeilederDto?,
 	val skjult: DeltakerSkjultDto?,
 	val deltarPaKurs: Boolean,
-	val vurderingerFraArrangor: List<VurderingDto>?
+	val vurderingerFraArrangor: List<VurderingDto>?,
+	val adressebeskyttelse: String? = null
 )
 
 fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
