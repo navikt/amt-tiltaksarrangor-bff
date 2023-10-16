@@ -209,7 +209,8 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = null
+			vurderingerFraArrangor = null,
+			adressebeskyttelse = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -245,7 +246,8 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = null
+			vurderingerFraArrangor = null,
+			adressebeskyttelse = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -282,7 +284,8 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = null
+			vurderingerFraArrangor = null,
+			adressebeskyttelse = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -319,7 +322,8 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = getVurderinger(deltakerId)
+			vurderingerFraArrangor = getVurderinger(deltakerId),
+			adressebeskyttelse = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -356,7 +360,8 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = true,
-			vurderingerFraArrangor = null
+			vurderingerFraArrangor = null,
+			adressebeskyttelse = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -394,7 +399,8 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = true,
-			vurderingerFraArrangor = null
+			vurderingerFraArrangor = null,
+			adressebeskyttelse = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -432,7 +438,46 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = true,
-			vurderingerFraArrangor = null
+			vurderingerFraArrangor = null,
+			adressebeskyttelse = null
+		)
+
+		ingestService.lagreDeltaker(deltakerId, deltakerDto)
+
+		verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+		verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerId) }
+	}
+
+	@Test
+	internal fun `lagreDeltaker - har adressebeskyttelse - lagres ikke i db `() {
+		val deltakerId = UUID.randomUUID()
+		val deltakerDto = DeltakerDto(
+			id = deltakerId,
+			deltakerlisteId = UUID.randomUUID(),
+			personalia = DeltakerPersonaliaDto(
+				personident = "10987654321",
+				navn = NavnDto("Fornavn", null, "Etternavn"),
+				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+				skjermet = false,
+				adresse = getAdresse()
+			),
+			status = DeltakerStatusDto(
+				type = DeltakerStatus.DELTAR,
+				gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+				opprettetDato = LocalDateTime.now().minusWeeks(6)
+			),
+			dagerPerUke = null,
+			prosentStilling = null,
+			oppstartsdato = LocalDate.now().minusWeeks(5),
+			sluttdato = null,
+			innsoktDato = LocalDate.now().minusMonths(2),
+			bestillingTekst = "Bestilling",
+			navKontor = "NAV Oslo",
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
+			skjult = null,
+			deltarPaKurs = false,
+			vurderingerFraArrangor = null,
+			adressebeskyttelse = "STRENGT_FORTROLIG"
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
