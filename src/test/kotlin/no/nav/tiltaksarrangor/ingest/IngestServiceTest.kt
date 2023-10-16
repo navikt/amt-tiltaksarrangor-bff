@@ -192,7 +192,8 @@ class IngestServiceTest {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,
@@ -209,8 +210,7 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = null,
-			adressebeskyttelse = null
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -229,7 +229,8 @@ class IngestServiceTest {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.SOKT_INN,
@@ -246,8 +247,7 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = null,
-			adressebeskyttelse = null
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -267,7 +267,8 @@ class IngestServiceTest {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.HAR_SLUTTET,
@@ -284,8 +285,7 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = null,
-			adressebeskyttelse = null
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -305,7 +305,8 @@ class IngestServiceTest {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.HAR_SLUTTET,
@@ -322,8 +323,7 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = getVurderinger(deltakerId),
-			adressebeskyttelse = null
+			vurderingerFraArrangor = getVurderinger(deltakerId)
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -343,7 +343,8 @@ class IngestServiceTest {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.IKKE_AKTUELL,
@@ -360,8 +361,7 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = true,
-			vurderingerFraArrangor = null,
-			adressebeskyttelse = null
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -382,7 +382,8 @@ class IngestServiceTest {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.IKKE_AKTUELL,
@@ -399,8 +400,7 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = true,
-			vurderingerFraArrangor = null,
-			adressebeskyttelse = null
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -421,7 +421,8 @@ class IngestServiceTest {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.IKKE_AKTUELL,
@@ -438,8 +439,7 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = true,
-			vurderingerFraArrangor = null,
-			adressebeskyttelse = null
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
@@ -459,7 +459,8 @@ class IngestServiceTest {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = "STRENGT_FORTROLIG"
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,
@@ -476,8 +477,7 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = null,
-			adressebeskyttelse = "STRENGT_FORTROLIG"
+			vurderingerFraArrangor = null
 		)
 
 		ingestService.lagreDeltaker(deltakerId, deltakerDto)
