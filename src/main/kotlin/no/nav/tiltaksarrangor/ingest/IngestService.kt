@@ -103,7 +103,7 @@ class IngestService(
 	}
 
 	private fun DeltakerDto.skalLagres(): Boolean {
-		if (adressebeskyttelse != null) {
+		if (personalia.adressebeskyttelse != null) {
 			return false
 		} else if (status.type in SKJULES_ALLTID_STATUSER) {
 			return false

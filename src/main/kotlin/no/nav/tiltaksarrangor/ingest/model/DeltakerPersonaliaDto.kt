@@ -5,5 +5,6 @@ data class DeltakerPersonaliaDto(
 	val navn: NavnDto,
 	val kontaktinformasjon: DeltakerKontaktinformasjonDto,
 	val skjermet: Boolean,
-	val adresse: AdresseDto?
+	val adresse: AdresseDto?,
+	val adressebeskyttelse: String? = null
 )

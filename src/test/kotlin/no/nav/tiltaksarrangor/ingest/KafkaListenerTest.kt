@@ -432,7 +432,8 @@ class KafkaListenerTest : IntegrationTest() {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,
@@ -449,8 +450,7 @@ class KafkaListenerTest : IntegrationTest() {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = null,
-			adressebeskyttelse = null
+			vurderingerFraArrangor = null
 		)
 		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
 		val avsluttetDeltakerlisteDto = DeltakerlisteDto(
@@ -493,7 +493,8 @@ class KafkaListenerTest : IntegrationTest() {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,
@@ -510,8 +511,7 @@ class KafkaListenerTest : IntegrationTest() {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = getVurderinger(deltakerId),
-			adressebeskyttelse = null
+			vurderingerFraArrangor = getVurderinger(deltakerId)
 		)
 		testKafkaProducer.send(
 			ProducerRecord(
@@ -538,7 +538,8 @@ class KafkaListenerTest : IntegrationTest() {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,
@@ -555,8 +556,7 @@ class KafkaListenerTest : IntegrationTest() {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = null,
-			adressebeskyttelse = null
+			vurderingerFraArrangor = null
 		)
 		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
 		testKafkaProducer.send(
@@ -584,7 +584,8 @@ class KafkaListenerTest : IntegrationTest() {
 				navn = NavnDto("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
 				skjermet = false,
-				adresse = getAdresse()
+				adresse = getAdresse(),
+				adressebeskyttelse = null
 			),
 			status = DeltakerStatusDto(
 				type = DeltakerStatus.DELTAR,
@@ -601,8 +602,7 @@ class KafkaListenerTest : IntegrationTest() {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = false,
-			vurderingerFraArrangor = null,
-			adressebeskyttelse = null
+			vurderingerFraArrangor = null
 		)
 		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
 		val avsluttetDeltakerDto = deltakerDto.copy(
