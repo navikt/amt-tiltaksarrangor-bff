@@ -336,7 +336,7 @@ class DeltakerRepository(
 
 	fun getDeltakereSomSkalSlettes(slettesDato: LocalDate): List<UUID> {
 		return template.query(
-			"SELECT id FROM deltaker WHERE skjult_dato IS NOT NULL OR (status IN ('HAR_SLUTTET','IKKE_AKTUELL','AVBRUTT') AND status_gyldig_fra < :slettesDato)",
+			"SELECT id FROM deltaker WHERE skjult_dato IS NOT NULL OR (status IN ('HAR_SLUTTET','IKKE_AKTUELL','AVBRUTT','FULLFORT') AND status_gyldig_fra < :slettesDato)",
 			sqlParameters("slettesDato" to slettesDato)
 		) { rs, _ ->
 			UUID.fromString(rs.getString("id"))

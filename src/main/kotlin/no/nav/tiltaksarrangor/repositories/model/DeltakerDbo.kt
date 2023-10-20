@@ -52,5 +52,6 @@ data class DeltakerDbo(
 val STATUSER_SOM_KAN_SKJULES = listOf(
 	StatusType.IKKE_AKTUELL,
 	StatusType.HAR_SLUTTET,
+	StatusType.FULLFORT,
 	StatusType.AVBRUTT
 )
