@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.1.4"
+    id("org.springframework.boot") version "3.1.5"
     id("io.spring.dependency-management") version "1.1.3"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     kotlin("jvm") version "1.9.10"
@@ -24,7 +24,7 @@ val okHttpVersion = "4.12.0"
 val kotestVersion = "5.7.2"
 val testcontainersVersion = "1.19.1"
 val mockkVersion = "1.13.8"
-val commonVersion = "3.2023.09.13_04.55-a8ff452fbd94"
+val commonVersion = "3.2023.10.18_13.28-58db82ecb1a5"
 val unleashVersion = "8.4.0"
 
 dependencies {
@@ -35,6 +35,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-logging")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.yaml:snakeyaml:2.2") // overstyrer sårbar dependency
 
     implementation("org.springframework:spring-aspects")
 
