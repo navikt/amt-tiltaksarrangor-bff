@@ -208,4 +208,37 @@ class VeilederServiceTest {
 		mineDeltakere.find { it.id == deltaker.id } shouldNotBe null
 		mineDeltakere.find { it.id == deltaker2.id } shouldBe null
 	}
+
+	@Test
+	fun `getMineDeltakere - ansatt er veileder for deltakere som har sluttdato mer enn 15 dager frem i tid - filtrerer bort skjulte deltakere`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
+		val deltaker2 = deltaker.copy(id = UUID.randomUUID(), personident = "23456", sluttdato = LocalDate.now().minusDays(15))
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker2.copy())
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Ansatt",
+				mellomnavn = null,
+				etternavn = "Ansattsen",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(
+					VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+					VeilederDeltakerDbo(deltaker2.id, Veiledertype.MEDVEILEDER)
+				)
+			)
+		)
+
+		val mineDeltakere = veilederService.getMineDeltakere(personIdent)
+
+		mineDeltakere.size shouldBe 1
+		mineDeltakere.find { it.id == deltaker.id } shouldNotBe null
+		mineDeltakere.find { it.id == deltaker2.id } shouldBe null
+	}
 }
