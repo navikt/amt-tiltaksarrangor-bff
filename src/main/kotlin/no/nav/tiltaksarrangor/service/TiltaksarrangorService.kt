@@ -44,7 +44,13 @@ class TiltaksarrangorService(
 
 	fun getDeltaker(personIdent: String, deltakerId: UUID): Deltaker {
 		val ansatt = getAnsattMedRoller(personIdent)
-		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+
+		if (!deltakerMedDeltakerliste.deltaker.skalVises()) {
+			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		}
+
 		auditLoggerService.sendAuditLog(
 			ansattPersonIdent = ansatt.personIdent,
 			deltakerPersonIdent = deltakerMedDeltakerliste.deltaker.personident,
