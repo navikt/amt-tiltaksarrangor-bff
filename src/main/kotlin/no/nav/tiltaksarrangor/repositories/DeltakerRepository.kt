@@ -227,6 +227,7 @@ class DeltakerRepository(
 			sqlParameters("deltakerliste_id" to deltakerlisteId),
 			deltakerRowMapper
 		)
+			.filter { it.skalVises() }
 	}
 
 	fun getDeltakereMedDeltakerliste(deltakerIder: List<UUID>): List<DeltakerMedDeltakerlisteDbo> {

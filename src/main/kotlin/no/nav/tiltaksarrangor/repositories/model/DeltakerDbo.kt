@@ -47,6 +47,14 @@ data class DeltakerDbo(
 			null
 		}
 	}
+
+	fun skalVises(): Boolean {
+		if (sluttdato == null) {
+			return true
+		}
+
+		return sluttdato.isAfter(LocalDate.now().minusDays(14))
+	}
 }
 
 val STATUSER_SOM_KAN_SKJULES = listOf(
