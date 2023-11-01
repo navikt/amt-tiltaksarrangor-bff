@@ -4,8 +4,8 @@ plugins {
     id("org.springframework.boot") version "3.1.5"
     id("io.spring.dependency-management") version "1.1.3"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    kotlin("jvm") version "1.9.10"
-    kotlin("plugin.spring") version "1.9.10"
+    kotlin("jvm") version "1.9.20"
+    kotlin("plugin.spring") version "1.9.20"
 }
 
 group = "no.nav.amt-tiltaksarrangor-bff"
@@ -25,7 +25,7 @@ val kotestVersion = "5.7.2"
 val testcontainersVersion = "1.19.1"
 val mockkVersion = "1.13.8"
 val commonVersion = "3.2023.10.18_13.28-58db82ecb1a5"
-val unleashVersion = "8.4.0"
+val unleashVersion = "9.0.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
