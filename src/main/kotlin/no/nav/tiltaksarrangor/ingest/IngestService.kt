@@ -158,7 +158,7 @@ fun DeltakerlisteDto.skalLagres(): Boolean {
 	if (!stottedeTiltak.contains(tiltakstype.arenaKode)) {
 		return false
 	}
-	if (status == DeltakerlisteDto.Status.GJENNOMFORES || status == DeltakerlisteDto.Status.APENT_FOR_INNSOK) {
+	if (status == DeltakerlisteDto.Status.GJENNOMFORES || status == DeltakerlisteDto.Status.APENT_FOR_INNSOK || status == DeltakerlisteDto.Status.PLANLAGT) {
 		return true
 	} else if (status == DeltakerlisteDto.Status.AVSLUTTET && sluttDato != null && LocalDate.now()
 		.isBefore(sluttDato.plusDays(15))

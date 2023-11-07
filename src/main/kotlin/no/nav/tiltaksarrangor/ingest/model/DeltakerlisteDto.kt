@@ -21,6 +21,7 @@ data class DeltakerlisteDto(
 	)
 
 	enum class Status {
+		PLANLAGT,
 		GJENNOMFORES,
 		AVBRUTT,
 		AVLYST,
