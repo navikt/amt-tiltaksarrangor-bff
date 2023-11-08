@@ -1,5 +1,5 @@
 package no.nav.tiltaksarrangor.ingest.model
 
 enum class DeltakerlisteStatus {
-	PLANLAGT, GJENNOMFORES, AVSLUTTET
+	APENT_FOR_INNSOK, GJENNOMFORES, AVSLUTTET
 }

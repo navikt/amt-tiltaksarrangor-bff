@@ -8,6 +8,7 @@ import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.SKJULES_ALLTID_STATUSER
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
@@ -118,7 +119,7 @@ class IngestService(
 		return DeltakerlisteDbo(
 			id = deltakerlisteDto.id,
 			navn = deltakerlisteDto.navn,
-			status = deltakerlisteDto.toDeltakerlisteStatus(),
+			status = DeltakerlisteStatus.valueOf(deltakerlisteDto.status.name),
 			arrangorId = getArrangorId(deltakerlisteDto.virksomhetsnummer),
 			tiltakNavn = deltakerlisteDto.tiltakstype.navn,
 			tiltakType = deltakerlisteDto.tiltakstype.arenaKode,
@@ -157,7 +158,7 @@ fun DeltakerlisteDto.skalLagres(): Boolean {
 	if (!stottedeTiltak.contains(tiltakstype.arenaKode)) {
 		return false
 	}
-	if (status == DeltakerlisteDto.Status.GJENNOMFORES || status == DeltakerlisteDto.Status.APENT_FOR_INNSOK || status == DeltakerlisteDto.Status.PLANLAGT) {
+	if (status == DeltakerlisteDto.Status.GJENNOMFORES || status == DeltakerlisteDto.Status.APENT_FOR_INNSOK) {
 		return true
 	} else if (status == DeltakerlisteDto.Status.AVSLUTTET && sluttDato != null && LocalDate.now()
 		.isBefore(sluttDato.plusDays(15))
