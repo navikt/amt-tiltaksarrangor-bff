@@ -8,7 +8,6 @@ import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.SKJULES_ALLTID_STATUSER
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
@@ -119,7 +118,7 @@ class IngestService(
 		return DeltakerlisteDbo(
 			id = deltakerlisteDto.id,
 			navn = deltakerlisteDto.navn,
-			status = DeltakerlisteStatus.valueOf(deltakerlisteDto.status.name),
+			status = deltakerlisteDto.toDeltakerlisteStatus(),
 			arrangorId = getArrangorId(deltakerlisteDto.virksomhetsnummer),
 			tiltakNavn = deltakerlisteDto.tiltakstype.navn,
 			tiltakType = deltakerlisteDto.tiltakstype.arenaKode,

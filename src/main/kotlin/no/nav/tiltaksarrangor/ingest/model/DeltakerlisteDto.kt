@@ -47,4 +47,13 @@ data class DeltakerlisteDto(
 		"GRUPPEAMO",
 		"GRUFAGYRKE"
 	)
+
+	fun toDeltakerlisteStatus(): DeltakerlisteStatus {
+		return when (status) {
+			Status.PLANLAGT, Status.APENT_FOR_INNSOK -> DeltakerlisteStatus.PLANLAGT
+			Status.GJENNOMFORES -> DeltakerlisteStatus.GJENNOMFORES
+			Status.AVSLUTTET -> DeltakerlisteStatus.AVSLUTTET
+			else -> throw IllegalStateException("Ukjent status: $status")
+		}
+	}
 }

@@ -16,6 +16,7 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerPersonaliaDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
+import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
@@ -89,7 +90,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltakerliste - status APENT_FOR_INNSOK - lagres`() {
+	internal fun `lagreDeltakerliste - status APENT_FOR_INNSOK - lagres som PLANLAGT`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = deltakerlisteId,
@@ -108,7 +109,30 @@ class IngestServiceTest {
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
-		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
+		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(match { it.status == DeltakerlisteStatus.PLANLAGT }) }
+	}
+
+	@Test
+	internal fun `lagreDeltakerliste - status PLANLAGT - lagres`() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto = DeltakerlisteDto(
+			id = deltakerlisteId,
+			tiltakstype = DeltakerlisteDto.Tiltakstype(
+				id = UUID.randomUUID(),
+				navn = "Det flotte tiltaket",
+				arenaKode = "DIGIOPPARB"
+			),
+			navn = "Gjennomføring av tiltak",
+			startDato = LocalDate.now().minusYears(2),
+			sluttDato = null,
+			status = DeltakerlisteDto.Status.PLANLAGT,
+			virksomhetsnummer = "88888888",
+			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
+		)
+
+		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
+
+		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(match { it.status == DeltakerlisteStatus.PLANLAGT }) }
 	}
 
 	@Test
