@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.repositories.model
 
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import java.time.LocalDate
 import java.util.UUID
 

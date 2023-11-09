@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.koordinator.model
 
+import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import java.time.LocalDate
 import java.util.UUID
 
@@ -10,13 +11,9 @@ data class Deltakerliste(
 	val arrangorNavn: String,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
-	val status: Status,
+	val status: DeltakerlisteStatus,
 	val koordinatorer: List<Koordinator>,
 	val deltakere: List<Deltaker>,
 	val erKurs: Boolean,
 	val tiltakType: String
-) {
-	enum class Status {
-		PLANLAGT, GJENNOMFORES, AVSLUTTET
-	}
-}
+)

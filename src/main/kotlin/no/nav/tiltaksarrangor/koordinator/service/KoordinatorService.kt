@@ -185,7 +185,7 @@ class KoordinatorService(
 			arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn,
 			startDato = deltakerlisteMedArrangor.deltakerlisteDbo.startDato,
 			sluttDato = deltakerlisteMedArrangor.deltakerlisteDbo.sluttDato,
-			status = Deltakerliste.Status.valueOf(deltakerlisteMedArrangor.deltakerlisteDbo.status.name),
+			status = deltakerlisteMedArrangor.deltakerlisteDbo.status,
 			koordinatorer = koordinatorer.map {
 				Koordinator(
 					fornavn = it.fornavn,

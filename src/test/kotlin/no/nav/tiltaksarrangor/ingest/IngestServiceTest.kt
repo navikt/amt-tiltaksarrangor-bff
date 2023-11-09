@@ -16,11 +16,11 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerPersonaliaDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
+import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -463,6 +463,44 @@ class IngestServiceTest {
 			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
 			skjult = null,
 			deltarPaKurs = true,
+			vurderingerFraArrangor = null
+		)
+
+		ingestService.lagreDeltaker(deltakerId, deltakerDto)
+
+		verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+		verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerId) }
+	}
+
+	@Test
+	internal fun `lagreDeltaker - status HAR_SLUTTET for mindre enn to uker siden men sluttdato for mer enn 2 uker siden - lagres ikke i db `() {
+		val deltakerId = UUID.randomUUID()
+		val deltakerDto = DeltakerDto(
+			id = deltakerId,
+			deltakerlisteId = UUID.randomUUID(),
+			personalia = DeltakerPersonaliaDto(
+				personident = "10987654321",
+				navn = NavnDto("Fornavn", null, "Etternavn"),
+				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+				skjermet = false,
+				adresse = getAdresse(),
+				adressebeskyttelse = null
+			),
+			status = DeltakerStatusDto(
+				type = DeltakerStatus.HAR_SLUTTET,
+				gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
+				opprettetDato = LocalDateTime.now().minusWeeks(6)
+			),
+			dagerPerUke = null,
+			prosentStilling = null,
+			oppstartsdato = LocalDate.now().minusWeeks(5),
+			sluttdato = LocalDate.now().minusDays(15),
+			innsoktDato = LocalDate.now().minusMonths(2),
+			bestillingTekst = "Bestilling",
+			navKontor = "NAV Oslo",
+			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
+			skjult = null,
+			deltarPaKurs = false,
 			vurderingerFraArrangor = null
 		)
 

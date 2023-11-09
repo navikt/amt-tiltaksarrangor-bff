@@ -11,10 +11,9 @@ import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
-import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
+import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
@@ -330,7 +329,7 @@ class KoordinatorServiceTest {
 		koordinatorsDeltakerliste.arrangorNavn shouldBe "Overordnet arrangør AS"
 		koordinatorsDeltakerliste.startDato shouldBe LocalDate.of(2023, 2, 1)
 		koordinatorsDeltakerliste.sluttDato shouldBe null
-		koordinatorsDeltakerliste.status shouldBe Deltakerliste.Status.GJENNOMFORES
+		koordinatorsDeltakerliste.status shouldBe DeltakerlisteStatus.GJENNOMFORES
 		koordinatorsDeltakerliste.koordinatorer.size shouldBe 1
 		koordinatorsDeltakerliste.koordinatorer.find { it.fornavn == "Fornavn" && it.etternavn == "Etternavn" } shouldNotBe null
 		koordinatorsDeltakerliste.deltakere.size shouldBe 0
