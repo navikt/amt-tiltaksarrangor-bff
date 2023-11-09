@@ -17,6 +17,6 @@ data class Deltakerliste(
 	val tiltakType: String
 ) {
 	enum class Status {
-		PLANLAGT, APENT_FOR_INNSOK, GJENNOMFORES, AVSLUTTET
+		PLANLAGT, GJENNOMFORES, AVSLUTTET
 	}
 }
