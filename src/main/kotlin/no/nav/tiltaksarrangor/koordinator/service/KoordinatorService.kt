@@ -30,7 +30,6 @@ import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
 import no.nav.tiltaksarrangor.service.getGjeldendeVurdering
-import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -42,8 +41,7 @@ class KoordinatorService(
 	private val arrangorRepository: ArrangorRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
-	private val metricsService: MetricsService,
-	private val unleashService: UnleashService
+	private val metricsService: MetricsService
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -152,7 +150,7 @@ class KoordinatorService(
 			rolle = AnsattRolle.KOORDINATOR,
 			roller = ansatt.roller
 		)
-		if (harKoordinatorRolleHosArrangor && (!deltakerlisteMedArrangor.deltakerlisteDbo.erKurs || unleashService.skalViseKurs(deltakerlisteId))) {
+		if (harKoordinatorRolleHosArrangor) {
 			if (ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
 				return getDeltakerliste(deltakerlisteMedArrangor)
 			} else {
@@ -208,7 +206,7 @@ class KoordinatorService(
 
 	private fun getKoordinatorFor(koordinatorsDeltakerlister: List<KoordinatorDeltakerlisteDbo>): KoordinatorFor {
 		val deltakerlister = deltakerlisteRepository.getDeltakerlister(koordinatorsDeltakerlister.map { it.deltakerlisteId }).toDeltakerliste()
-		return KoordinatorFor(deltakerlister = deltakerlister.filter { !it.erKurs || unleashService.skalViseKurs(it.id) })
+		return KoordinatorFor(deltakerlister = deltakerlister)
 	}
 
 	private fun getAnsattMedKoordinatorRoller(personIdent: String): AnsattDbo {

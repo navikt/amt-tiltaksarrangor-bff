@@ -11,7 +11,6 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
-import no.nav.tiltaksarrangor.unleash.UnleashService
 import no.nav.tiltaksarrangor.veileder.model.Deltaker
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -20,8 +19,7 @@ import java.util.UUID
 class VeilederService(
 	private val ansattService: AnsattService,
 	private val deltakerRepository: DeltakerRepository,
-	private val endringsmeldingRepository: EndringsmeldingRepository,
-	private val unleashService: UnleashService
+	private val endringsmeldingRepository: EndringsmeldingRepository
 ) {
 	fun getMineDeltakere(personIdent: String): List<Deltaker> {
 		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
@@ -34,7 +32,6 @@ class VeilederService(
 
 		val deltakere = deltakerRepository.getDeltakereMedDeltakerliste(ansatt.veilederDeltakere.map { it.deltakerId })
 			.filter { ansattService.harRolleHosArrangor(it.deltakerliste.arrangorId, AnsattRolle.VEILEDER, ansatt.roller) }
-			.filter { !it.deltakerliste.erKurs || unleashService.skalViseKurs(it.deltakerliste.id) }
 			.filter { !it.deltaker.erSkjult() }
 			.filter { it.deltaker.skalVises() }
 
