@@ -25,7 +25,6 @@ import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
-import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -36,7 +35,6 @@ import java.util.UUID
 class DeltakerlisteAdminServiceTest {
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val metricsService = mockk<MetricsService>(relaxed = true)
-	private val unleashService = mockk<UnleashService>()
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val ansattRepository = AnsattRepository(template)
@@ -44,7 +42,7 @@ class DeltakerlisteAdminServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val arrangorRepository = ArrangorRepository(template)
-	private val deltakerlisteAdminService = DeltakerlisteAdminService(ansattService, deltakerlisteRepository, arrangorRepository, metricsService, unleashService)
+	private val deltakerlisteAdminService = DeltakerlisteAdminService(ansattService, deltakerlisteRepository, arrangorRepository, metricsService)
 
 	@AfterEach
 	internal fun tearDown() {

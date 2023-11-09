@@ -43,7 +43,6 @@ import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
-import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -57,7 +56,6 @@ class TiltaksarrangorServiceTest {
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val metricsService = mockk<MetricsService>(relaxed = true)
 	private val auditLoggerService = mockk<AuditLoggerService>(relaxed = true)
-	private val unleashService = mockk<UnleashService>()
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val ansattRepository = AnsattRepository(template)
@@ -71,8 +69,7 @@ class TiltaksarrangorServiceTest {
 		metricsService,
 		deltakerRepository,
 		endringsmeldingRepository,
-		auditLoggerService,
-		unleashService
+		auditLoggerService
 	)
 
 	@AfterEach
