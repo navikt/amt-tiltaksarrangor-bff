@@ -109,9 +109,14 @@ class IngestService(
 		} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs && deltakerRepository.getDeltaker(id) == null) {
 			return false
 		} else if (status.type in AVSLUTTENDE_STATUSER) {
-			return !LocalDateTime.now().isAfter(status.gyldigFra.plusWeeks(2))
+			return harNyligSluttet()
 		}
 		return true
+	}
+
+	private fun DeltakerDto.harNyligSluttet(): Boolean {
+		return !LocalDateTime.now().isAfter(status.gyldigFra.plusWeeks(2)) &&
+			(sluttdato == null || sluttdato.isAfter(LocalDate.now().minusDays(14)))
 	}
 
 	private fun toDeltakerlisteDbo(deltakerlisteDto: DeltakerlisteDto): DeltakerlisteDbo {
