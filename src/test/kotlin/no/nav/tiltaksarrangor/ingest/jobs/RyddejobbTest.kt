@@ -7,9 +7,9 @@ import io.mockk.mockk
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.ingest.jobs.leaderelection.LeaderElection
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype

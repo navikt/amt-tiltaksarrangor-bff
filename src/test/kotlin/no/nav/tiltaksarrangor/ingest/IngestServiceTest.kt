@@ -16,11 +16,11 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerPersonaliaDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatusDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
+import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository

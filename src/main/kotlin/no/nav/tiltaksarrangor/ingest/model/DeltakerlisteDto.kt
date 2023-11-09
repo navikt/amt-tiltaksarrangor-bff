@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.ingest.model
 
+import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import java.time.LocalDate
 import java.util.UUID
 

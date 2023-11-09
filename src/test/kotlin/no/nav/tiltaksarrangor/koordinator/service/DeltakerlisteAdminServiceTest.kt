@@ -10,7 +10,7 @@ import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
