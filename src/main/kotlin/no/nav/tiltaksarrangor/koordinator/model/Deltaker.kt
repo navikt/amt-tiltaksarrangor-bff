@@ -21,5 +21,5 @@ data class Deltaker(
 	val veiledere: List<Veileder>,
 	val navKontor: String?,
 	val aktiveEndringsmeldinger: List<Endringsmelding>,
-	val gjeldendeVurderingFraArrangor: Vurdering?
+	val gjeldendeVurderingFraArrangor: Vurdering?,
 )

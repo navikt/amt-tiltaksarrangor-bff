@@ -54,13 +54,14 @@ class EndringsmeldingServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
-	private val endringsmeldingService = EndringsmeldingService(
-		amtTiltakClient,
-		ansattService,
-		endringsmeldingRepository,
-		deltakerRepository,
-		metricsService
-	)
+	private val endringsmeldingService =
+		EndringsmeldingService(
+			amtTiltakClient,
+			ansattService,
+			endringsmeldingRepository,
+			deltakerRepository,
+			metricsService,
+		)
 
 	@AfterEach
 	internal fun tearDown() {
@@ -83,12 +84,13 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		val endringsmelding = getEndringsmelding(deltakerId)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
@@ -114,12 +116,13 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		val endringsmelding = getEndringsmelding(deltakerId)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
@@ -144,22 +147,25 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER),
+					),
 				deltakerlister = emptyList(),
-				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER))
-			)
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
+			),
 		)
 		val endringsmeldingDbo1 = getEndringsmelding(deltakerId)
-		val endringsmeldingDbo2 = getEndringsmelding(deltakerId).copy(
-			type = EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT,
-			innhold = Innhold.EndreDeltakelseProsentInnhold(
-				nyDeltakelseProsent = 50,
-				dagerPerUke = 2,
-				gyldigFraDato = LocalDate.now()
+		val endringsmeldingDbo2 =
+			getEndringsmelding(deltakerId).copy(
+				type = EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT,
+				innhold =
+					Innhold.EndreDeltakelseProsentInnhold(
+						nyDeltakelseProsent = 50,
+						dagerPerUke = 2,
+						gyldigFraDato = LocalDate.now(),
+					),
 			)
-		)
 		val endringsmeldingDbo3 = getEndringsmelding(deltakerId).copy(status = Endringsmelding.Status.UTFORT)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo1)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo2)
@@ -173,11 +179,12 @@ class EndringsmeldingServiceTest {
 
 		val endringsmelding2 = endringsmeldingResponse.aktiveEndringsmeldinger.find { it.id == endringsmeldingDbo2.id }
 		endringsmelding2?.type shouldBe Endringsmelding.Type.ENDRE_DELTAKELSE_PROSENT
-		endringsmelding2?.innhold shouldBe Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(
-			deltakelseProsent = 50,
-			dagerPerUke = 2,
-			gyldigFraDato = LocalDate.now()
-		)
+		endringsmelding2?.innhold shouldBe
+			Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(
+				deltakelseProsent = 50,
+				dagerPerUke = 2,
+				gyldigFraDato = LocalDate.now(),
+			)
 		endringsmeldingResponse.historiskeEndringsmeldinger.size shouldBe 1
 		val historiskEndringsmelding = endringsmeldingResponse.historiskeEndringsmeldinger.first()
 		historiskEndringsmelding.id shouldBe endringsmeldingDbo3.id
@@ -199,12 +206,13 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		val endringsmelding = getEndringsmelding(deltakerId)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
@@ -230,12 +238,13 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		val endringsmelding = getEndringsmelding(deltakerId)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
@@ -261,16 +270,18 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val endringsmeldingRequest =
+			EndringsmeldingRequest(
+				innhold = EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold(LocalDate.now()),
 			)
-		)
-		val endringsmeldingRequest = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold(LocalDate.now())
-		)
 
 		assertThrows<UnauthorizedException> {
 			endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
@@ -293,16 +304,18 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val endringsmeldingRequest =
+			EndringsmeldingRequest(
+				innhold = EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold(LocalDate.now()),
 			)
-		)
-		val endringsmeldingRequest = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold(LocalDate.now())
-		)
 
 		assertThrows<SkjultDeltakerException> {
 			endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
@@ -327,16 +340,18 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val endringsmeldingRequest =
+			EndringsmeldingRequest(
+				innhold = EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold(LocalDate.now()),
 			)
-		)
-		val endringsmeldingRequest = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold(LocalDate.now())
-		)
 
 		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
 
@@ -366,20 +381,23 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
-		val endringsmeldingRequest = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.EndreDeltakelseProsentInnhold(
-				deltakelseProsent = 50,
-				dagerPerUke = 4,
-				gyldigFraDato = LocalDate.now()
+		val endringsmeldingRequest =
+			EndringsmeldingRequest(
+				innhold =
+					EndringsmeldingRequest.Innhold.EndreDeltakelseProsentInnhold(
+						deltakelseProsent = 50,
+						dagerPerUke = 4,
+						gyldigFraDato = LocalDate.now(),
+					),
 			)
-		)
 
 		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
 
@@ -411,20 +429,23 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		val endringsmelding1 = getEndringsmelding(deltakerId)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding1)
-		val endringsmeldingRequest = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.ForlengDeltakelseInnhold(
-				sluttdato = LocalDate.now()
+		val endringsmeldingRequest =
+			EndringsmeldingRequest(
+				innhold =
+					EndringsmeldingRequest.Innhold.ForlengDeltakelseInnhold(
+						sluttdato = LocalDate.now(),
+					),
 			)
-		)
 
 		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
 
@@ -457,20 +478,23 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		val endringsmelding1 = getEndringsmelding(deltakerId).copy(status = Endringsmelding.Status.UTFORT)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding1)
-		val endringsmeldingRequest = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.ForlengDeltakelseInnhold(
-				sluttdato = LocalDate.now()
+		val endringsmeldingRequest =
+			EndringsmeldingRequest(
+				innhold =
+					EndringsmeldingRequest.Innhold.ForlengDeltakelseInnhold(
+						sluttdato = LocalDate.now(),
+					),
 			)
-		)
 
 		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
 
@@ -501,18 +525,21 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
-		val endringsmeldingRequest = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold(
-				DeltakerStatusAarsak(DeltakerStatusAarsak.Type.SYK, "")
+		val endringsmeldingRequest =
+			EndringsmeldingRequest(
+				innhold =
+					EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold(
+						DeltakerStatusAarsak(DeltakerStatusAarsak.Type.SYK, ""),
+					),
 			)
-		)
 
 		assertThrows<ValidationException> {
 			endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
@@ -535,18 +562,21 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
-		val endringsmeldingRequest = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold(
-				DeltakerStatusAarsak(DeltakerStatusAarsak.Type.SYK, "")
+		val endringsmeldingRequest =
+			EndringsmeldingRequest(
+				innhold =
+					EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold(
+						DeltakerStatusAarsak(DeltakerStatusAarsak.Type.SYK, ""),
+					),
 			)
-		)
 
 		assertThrows<ValidationException> {
 			endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
@@ -571,18 +601,20 @@ class EndringsmeldingServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		val aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.SYK, "")
 
-		val endringsmeldingRequest = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold(aarsak)
-		)
+		val endringsmeldingRequest =
+			EndringsmeldingRequest(
+				innhold = EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold(aarsak),
+			)
 
 		endringsmeldingService.opprettEndringsmelding(deltakerId, endringsmeldingRequest, personIdent)
 

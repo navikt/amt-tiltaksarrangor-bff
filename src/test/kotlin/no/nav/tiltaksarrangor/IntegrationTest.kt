@@ -39,9 +39,10 @@ class IntegrationTest {
 
 	fun serverUrl() = "http://localhost:$port"
 
-	private val client = OkHttpClient.Builder()
-		.callTimeout(Duration.ofMinutes(5))
-		.build()
+	private val client =
+		OkHttpClient.Builder()
+			.callTimeout(Duration.ofMinutes(5))
+			.build()
 
 	@AfterEach
 	fun cleanDatabase() {
@@ -62,10 +63,11 @@ class IntegrationTest {
 			registry.add("amt-arrangor.url", mockAmtArrangorServer::serverUrl)
 
 			val container = SingletonPostgresContainer.getContainer()
-			val kafkaContainer = KafkaContainer(DockerImageName.parse(getKafkaImage())).apply {
-				start()
-				System.setProperty("KAFKA_BROKERS", bootstrapServers)
-			}
+			val kafkaContainer =
+				KafkaContainer(DockerImageName.parse(getKafkaImage())).apply {
+					start()
+					System.setProperty("KAFKA_BROKERS", bootstrapServers)
+				}
 
 			registry.add("spring.datasource.url") { container.jdbcUrl }
 			registry.add("spring.datasource.username") { container.username }
@@ -78,11 +80,12 @@ class IntegrationTest {
 		method: String,
 		path: String,
 		body: RequestBody? = null,
-		headers: Map<String, String> = emptyMap()
+		headers: Map<String, String> = emptyMap(),
 	): Response {
-		val reqBuilder = Request.Builder()
-			.url("${serverUrl()}$path")
-			.method(method, body)
+		val reqBuilder =
+			Request.Builder()
+				.url("${serverUrl()}$path")
+				.method(method, body)
 
 		headers.forEach {
 			reqBuilder.addHeader(it.key, it.value)
@@ -96,12 +99,13 @@ class IntegrationTest {
 		audience: String = "amt-tiltaksarrangor-bff-client-id",
 		issuerId: String = Issuer.TOKEN_X,
 		clientId: String = "amt-tiltaksarrangor-flate",
-		claims: Map<String, Any> = mapOf(
-			"acr" to "Level4",
-			"idp" to "idporten",
-			"client_id" to clientId,
-			"pid" to fnr
-		)
+		claims: Map<String, Any> =
+			mapOf(
+				"acr" to "Level4",
+				"idp" to "idporten",
+				"client_id" to clientId,
+				"pid" to fnr,
+			),
 	): String {
 		return mockOAuth2Server.issueToken(
 			issuerId,
@@ -111,17 +115,18 @@ class IntegrationTest {
 				subject = UUID.randomUUID().toString(),
 				audience = listOf(audience),
 				claims = claims,
-				expiry = 3600
-			)
+				expiry = 3600,
+			),
 		).serialize()
 	}
 }
 
 private fun getKafkaImage(): String {
-	val tag = when (System.getProperty("os.arch")) {
-		"aarch64" -> "7.2.2-1-ubi8.arm64"
-		else -> "7.2.2"
-	}
+	val tag =
+		when (System.getProperty("os.arch")) {
+			"aarch64" -> "7.2.2-1-ubi8.arm64"
+			else -> "7.2.2"
+		}
 
 	return "confluentinc/cp-kafka:$tag"
 }

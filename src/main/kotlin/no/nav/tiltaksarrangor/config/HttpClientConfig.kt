@@ -17,11 +17,12 @@ class HttpClientConfig {
 	@Bean
 	fun amtTiltakHttpClient(
 		clientConfigurationProperties: ClientConfigurationProperties,
-		oAuth2AccessTokenService: OAuth2AccessTokenService
+		oAuth2AccessTokenService: OAuth2AccessTokenService,
 	): OkHttpClient {
 		val registrationName = "amt-tiltak-tokenx"
-		val clientProperties = clientConfigurationProperties.registration[registrationName]
-			?: throw RuntimeException("Fant ikke config for $registrationName")
+		val clientProperties =
+			clientConfigurationProperties.registration[registrationName]
+				?: throw RuntimeException("Fant ikke config for $registrationName")
 		return OkHttpClient.Builder()
 			.connectTimeout(5, TimeUnit.SECONDS)
 			.readTimeout(5, TimeUnit.SECONDS)
@@ -33,11 +34,12 @@ class HttpClientConfig {
 	@Bean
 	fun amtArrangorHttpClient(
 		clientConfigurationProperties: ClientConfigurationProperties,
-		oAuth2AccessTokenService: OAuth2AccessTokenService
+		oAuth2AccessTokenService: OAuth2AccessTokenService,
 	): OkHttpClient {
 		val registrationName = "amt-arrangor-tokenx"
-		val clientProperties = clientConfigurationProperties.registration[registrationName]
-			?: throw RuntimeException("Fant ikke config for $registrationName")
+		val clientProperties =
+			clientConfigurationProperties.registration[registrationName]
+				?: throw RuntimeException("Fant ikke config for $registrationName")
 		return OkHttpClient.Builder()
 			.connectTimeout(5, TimeUnit.SECONDS)
 			.readTimeout(5, TimeUnit.SECONDS)
@@ -50,11 +52,12 @@ class HttpClientConfig {
 	fun amtArrangorAADHttpClient(
 		restTemplateBuilder: RestTemplateBuilder,
 		clientConfigurationProperties: ClientConfigurationProperties,
-		oAuth2AccessTokenService: OAuth2AccessTokenService
+		oAuth2AccessTokenService: OAuth2AccessTokenService,
 	): OkHttpClient {
 		val registrationName = "amt-arrangor-aad"
-		val clientProperties = clientConfigurationProperties.registration[registrationName]
-			?: throw RuntimeException("Fant ikke config for $registrationName")
+		val clientProperties =
+			clientConfigurationProperties.registration[registrationName]
+				?: throw RuntimeException("Fant ikke config for $registrationName")
 		return OkHttpClient.Builder()
 			.connectTimeout(5, TimeUnit.SECONDS)
 			.readTimeout(5, TimeUnit.SECONDS)
@@ -74,14 +77,15 @@ class HttpClientConfig {
 
 	private fun bearerTokenInterceptor(
 		clientProperties: ClientProperties,
-		oAuth2AccessTokenService: OAuth2AccessTokenService
+		oAuth2AccessTokenService: OAuth2AccessTokenService,
 	): Interceptor {
 		return Interceptor { chain: Interceptor.Chain ->
 			val accessTokenResponse = oAuth2AccessTokenService.getAccessToken(clientProperties)
 			val request = chain.request()
-			val requestWithToken = request.newBuilder()
-				.addHeader("Authorization", "Bearer ${accessTokenResponse.accessToken}")
-				.build()
+			val requestWithToken =
+				request.newBuilder()
+					.addHeader("Authorization", "Bearer ${accessTokenResponse.accessToken}")
+					.build()
 			chain.proceed(requestWithToken)
 		}
 	}

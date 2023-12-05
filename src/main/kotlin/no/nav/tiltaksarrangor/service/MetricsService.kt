@@ -5,27 +5,32 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.tiltaksarrangor.model.Vurderingstype
 import org.springframework.stereotype.Service
 
-private const val innlogging_metric = "tiltaksarrangorbff_innlogging"
-private const val fjernet_deltaker_metric = "tiltaksarrangorbff_fjernet_deltaker"
-private const val lagt_til_deltakerliste_metric = "tiltaksarrangorbff_lagttil_deltakerliste"
-private const val fjernet_deltakerliste_metric = "tiltaksarrangorbff_fjernet_deltakerliste"
-private const val tildelt_veileder_metric = "tiltaksarrangorbff_tildelt_veileder"
-private const val tilbakekalt_em_metric = "tiltaksarrangorbff_tilbakekalt_em"
-private const val vurdering_opprettet_metric = "tiltaksarrangorbff_vurdering_opprettet"
+private const val INNLOGGING_METRIC = "tiltaksarrangorbff_innlogging"
+private const val FJERNET_DELTAKER_METRIC = "tiltaksarrangorbff_fjernet_deltaker"
+private const val LAGT_TIL_DELTAKERLISTE_METRIC = "tiltaksarrangorbff_lagttil_deltakerliste"
+private const val FJERNET_DELTAKERLISTE_METRIC = "tiltaksarrangorbff_fjernet_deltakerliste"
+private const val TILDELT_VEILEDER_METRIC = "tiltaksarrangorbff_tildelt_veileder"
+private const val TILBAKEKALT_EM_METRIC = "tiltaksarrangorbff_tilbakekalt_em"
+private const val VURDERING_OPPRETTET_METRIC = "tiltaksarrangorbff_vurdering_opprettet"
 
 @Service
 class MetricsService(
-	private val registry: MeterRegistry
+	private val registry: MeterRegistry,
 ) {
-	private val innloggetKoordinatorCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.KOORDINATOR.name)
-	private val innloggetVeilederCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.VEILEDER.name)
-	private val innloggetKoordinatorOgVeilederCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.KOORDINATOR_OG_VEILEDER.name)
-	private val innloggetTotaltCounter = registry.counter(innlogging_metric, "rolle", RollePermutasjon.TOTALT.name)
-	private val fjernetDeltakerCounter = registry.counter(fjernet_deltaker_metric)
-	private val lagtTilDeltakerlisteCounter = registry.counter(lagt_til_deltakerliste_metric)
-	private val fjernetDeltakerlisteCounter = registry.counter(fjernet_deltakerliste_metric)
-	private val tildeltVeilederCounter = registry.counter(tildelt_veileder_metric)
-	private val tilbakekaltEndringsmeldingCounter = registry.counter(tilbakekalt_em_metric)
+	private val innloggetKoordinatorCounter = registry.counter(INNLOGGING_METRIC, "rolle", RollePermutasjon.KOORDINATOR.name)
+	private val innloggetVeilederCounter = registry.counter(INNLOGGING_METRIC, "rolle", RollePermutasjon.VEILEDER.name)
+	private val innloggetKoordinatorOgVeilederCounter =
+		registry.counter(
+			INNLOGGING_METRIC,
+			"rolle",
+			RollePermutasjon.KOORDINATOR_OG_VEILEDER.name,
+		)
+	private val innloggetTotaltCounter = registry.counter(INNLOGGING_METRIC, "rolle", RollePermutasjon.TOTALT.name)
+	private val fjernetDeltakerCounter = registry.counter(FJERNET_DELTAKER_METRIC)
+	private val lagtTilDeltakerlisteCounter = registry.counter(LAGT_TIL_DELTAKERLISTE_METRIC)
+	private val fjernetDeltakerlisteCounter = registry.counter(FJERNET_DELTAKERLISTE_METRIC)
+	private val tildeltVeilederCounter = registry.counter(TILDELT_VEILEDER_METRIC)
+	private val tilbakekaltEndringsmeldingCounter = registry.counter(TILBAKEKALT_EM_METRIC)
 
 	fun incInnloggetAnsatt(roller: List<String>) {
 		if (roller.isEmpty()) {
@@ -64,13 +69,16 @@ class MetricsService(
 	}
 
 	fun incVurderingOpprettet(vurderingstype: Vurderingstype) {
-		Counter.builder(vurdering_opprettet_metric)
+		Counter.builder(VURDERING_OPPRETTET_METRIC)
 			.tags("vurderingstype", vurderingstype.name)
 			.register(registry)
 			.increment()
 	}
 
 	enum class RollePermutasjon {
-		KOORDINATOR, VEILEDER, KOORDINATOR_OG_VEILEDER, TOTALT
+		KOORDINATOR,
+		VEILEDER,
+		KOORDINATOR_OG_VEILEDER,
+		TOTALT,
 	}
 }

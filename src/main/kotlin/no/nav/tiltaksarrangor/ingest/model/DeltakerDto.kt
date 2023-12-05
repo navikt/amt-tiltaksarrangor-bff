@@ -19,7 +19,7 @@ data class DeltakerDto(
 	val navVeileder: DeltakerNavVeilederDto?,
 	val skjult: DeltakerSkjultDto?,
 	val deltarPaKurs: Boolean,
-	val vurderingerFraArrangor: List<VurderingDto>?
+	val vurderingerFraArrangor: List<VurderingDto>?,
 )
 
 fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
@@ -50,20 +50,22 @@ fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
 		navVeilederTelefon = navVeileder?.telefonnummer,
 		skjultAvAnsattId = skjult?.skjultAvAnsattId,
 		skjultDato = skjult?.dato,
-		vurderingerFraArrangor = vurderingerFraArrangor
+		vurderingerFraArrangor = vurderingerFraArrangor,
 	)
 }
 
-val SKJULES_ALLTID_STATUSER = listOf(
-	DeltakerStatus.SOKT_INN,
-	DeltakerStatus.VENTELISTE,
-	DeltakerStatus.PABEGYNT_REGISTRERING,
-	DeltakerStatus.FEILREGISTRERT
-)
+val SKJULES_ALLTID_STATUSER =
+	listOf(
+		DeltakerStatus.SOKT_INN,
+		DeltakerStatus.VENTELISTE,
+		DeltakerStatus.PABEGYNT_REGISTRERING,
+		DeltakerStatus.FEILREGISTRERT,
+	)
 
-val AVSLUTTENDE_STATUSER = listOf(
-	DeltakerStatus.HAR_SLUTTET,
-	DeltakerStatus.IKKE_AKTUELL,
-	DeltakerStatus.AVBRUTT,
-	DeltakerStatus.FULLFORT
-)
+val AVSLUTTENDE_STATUSER =
+	listOf(
+		DeltakerStatus.HAR_SLUTTET,
+		DeltakerStatus.IKKE_AKTUELL,
+		DeltakerStatus.AVBRUTT,
+		DeltakerStatus.FULLFORT,
+	)

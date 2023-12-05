@@ -17,9 +17,8 @@ import java.util.UUID
 @RequestMapping("/tiltaksarrangor/koordinator/admin")
 class DeltakerlisteAdminController(
 	private val deltakerlisteAdminService: DeltakerlisteAdminService,
-	private val tokenService: TokenService
+	private val tokenService: TokenService,
 ) {
-
 	@GetMapping("/deltakerlister")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getAlleDeltakerlister(): List<AdminDeltakerliste> {
@@ -30,7 +29,7 @@ class DeltakerlisteAdminController(
 	@PostMapping("/deltakerliste/{deltakerlisteId}")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun leggTilDeltakerliste(
-		@PathVariable deltakerlisteId: UUID
+		@PathVariable deltakerlisteId: UUID,
 	) {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		return deltakerlisteAdminService.leggTilDeltakerliste(deltakerlisteId, personIdent)
@@ -39,7 +38,7 @@ class DeltakerlisteAdminController(
 	@DeleteMapping("/deltakerliste/{deltakerlisteId}")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun fjernDeltakerliste(
-		@PathVariable deltakerlisteId: UUID
+		@PathVariable deltakerlisteId: UUID,
 	) {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		return deltakerlisteAdminService.fjernDeltakerliste(deltakerlisteId, personIdent)

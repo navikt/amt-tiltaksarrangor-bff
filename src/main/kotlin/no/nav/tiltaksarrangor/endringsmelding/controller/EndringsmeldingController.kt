@@ -19,11 +19,13 @@ import java.util.UUID
 @RequestMapping("/tiltaksarrangor")
 class EndringsmeldingController(
 	private val endringsmeldingService: EndringsmeldingService,
-	private val tokenService: TokenService
+	private val tokenService: TokenService,
 ) {
 	@GetMapping("/deltaker/{deltakerId}/alle-endringsmeldinger")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
-	fun getAlleEndringsmeldinger(@PathVariable deltakerId: UUID): EndringsmeldingResponse {
+	fun getAlleEndringsmeldinger(
+		@PathVariable deltakerId: UUID,
+	): EndringsmeldingResponse {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		return endringsmeldingService.getAlleEndringsmeldinger(deltakerId, personIdent)
 	}
@@ -32,7 +34,7 @@ class EndringsmeldingController(
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun opprettEndringsmelding(
 		@PathVariable deltakerId: UUID,
-		@RequestBody request: EndringsmeldingRequest
+		@RequestBody request: EndringsmeldingRequest,
 	) {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		endringsmeldingService.opprettEndringsmelding(deltakerId, request, personIdent)
@@ -41,7 +43,7 @@ class EndringsmeldingController(
 	@DeleteMapping("/endringsmelding/{endringsmeldingId}")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun slettEndringsmelding(
-		@PathVariable endringsmeldingId: UUID
+		@PathVariable endringsmeldingId: UUID,
 	) {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		endringsmeldingService.slettEndringsmelding(endringsmeldingId, personIdent)

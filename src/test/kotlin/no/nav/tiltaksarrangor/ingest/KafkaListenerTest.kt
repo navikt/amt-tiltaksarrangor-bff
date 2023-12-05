@@ -70,7 +70,13 @@ class KafkaListenerTest : IntegrationTest() {
 
 	@BeforeEach
 	internal fun subscribe() {
-		testKafkaConsumer.subscribeHvisIkkeSubscribed(ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC)
+		testKafkaConsumer.subscribeHvisIkkeSubscribed(
+			ARRANGOR_TOPIC,
+			ARRANGOR_ANSATT_TOPIC,
+			DELTAKERLISTE_TOPIC,
+			DELTAKER_TOPIC,
+			ENDRINGSMELDING_TOPIC,
+		)
 	}
 
 	@AfterEach
@@ -81,19 +87,20 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - melding pa arrangor-topic - lagres i database`() {
 		val arrangorId = UUID.randomUUID()
-		val arrangorDto = ArrangorDto(
-			id = arrangorId,
-			navn = "Arrangør AS",
-			organisasjonsnummer = "88888888",
-			overordnetArrangorId = UUID.randomUUID()
-		)
+		val arrangorDto =
+			ArrangorDto(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "88888888",
+				overordnetArrangorId = UUID.randomUUID(),
+			)
 		testKafkaProducer.send(
 			ProducerRecord(
 				ARRANGOR_TOPIC,
 				null,
 				arrangorId.toString(),
-				JsonUtils.objectMapper.writeValueAsString(arrangorDto)
-			)
+				JsonUtils.objectMapper.writeValueAsString(arrangorDto),
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -104,20 +111,21 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - tombstonemelding pa arrangor-topic - slettes i database`() {
 		val arrangorId = UUID.randomUUID()
-		val arrangorDto = ArrangorDto(
-			id = arrangorId,
-			navn = "Arrangør AS",
-			organisasjonsnummer = "77777777",
-			overordnetArrangorId = null
-		)
+		val arrangorDto =
+			ArrangorDto(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "77777777",
+				overordnetArrangorId = null,
+			)
 		arrangorRepository.insertOrUpdateArrangor(arrangorDto.toArrangorDbo())
 		testKafkaProducer.send(
 			ProducerRecord(
 				ARRANGOR_TOPIC,
 				null,
 				arrangorId.toString(),
-				null
-			)
+				null,
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -156,36 +164,40 @@ class KafkaListenerTest : IntegrationTest() {
 				navVeilederTelefon = null,
 				skjultAvAnsattId = null,
 				skjultDato = null,
-				vurderingerFraArrangor = getVurderinger(deltakerId)
-			)
+				vurderingerFraArrangor = getVurderinger(deltakerId),
+			),
 		)
 		val ansattId = UUID.randomUUID()
-		val ansattDto = AnsattDto(
-			id = ansattId,
-			personalia = AnsattPersonaliaDto(
-				personident = "12345678910",
-				navn = NavnDto(
-					fornavn = "Fornavn",
-					mellomnavn = null,
-					etternavn = "Etternavn"
-				)
-			),
-			arrangorer = listOf(
-				TilknyttetArrangorDto(
-					arrangorId = UUID.randomUUID(),
-					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
-					veileder = listOf(VeilederDto(deltakerId, Veiledertype.VEILEDER)),
-					koordinator = listOf(UUID.randomUUID())
-				)
+		val ansattDto =
+			AnsattDto(
+				id = ansattId,
+				personalia =
+					AnsattPersonaliaDto(
+						personident = "12345678910",
+						navn =
+							NavnDto(
+								fornavn = "Fornavn",
+								mellomnavn = null,
+								etternavn = "Etternavn",
+							),
+					),
+				arrangorer =
+					listOf(
+						TilknyttetArrangorDto(
+							arrangorId = UUID.randomUUID(),
+							roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
+							veileder = listOf(VeilederDto(deltakerId, Veiledertype.VEILEDER)),
+							koordinator = listOf(UUID.randomUUID()),
+						),
+					),
 			)
-		)
 		testKafkaProducer.send(
 			ProducerRecord(
 				ARRANGOR_ANSATT_TOPIC,
 				null,
 				ansattId.toString(),
-				JsonUtils.objectMapper.writeValueAsString(ansattDto)
-			)
+				JsonUtils.objectMapper.writeValueAsString(ansattDto),
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -227,37 +239,41 @@ class KafkaListenerTest : IntegrationTest() {
 				navVeilederTelefon = null,
 				skjultAvAnsattId = null,
 				skjultDato = null,
-				vurderingerFraArrangor = null
-			)
+				vurderingerFraArrangor = null,
+			),
 		)
 		val ansattId = UUID.randomUUID()
-		val ansattDto = AnsattDto(
-			id = ansattId,
-			personalia = AnsattPersonaliaDto(
-				personident = "12345678910",
-				navn = NavnDto(
-					fornavn = "Fornavn",
-					mellomnavn = null,
-					etternavn = "Etternavn"
-				)
-			),
-			arrangorer = listOf(
-				TilknyttetArrangorDto(
-					arrangorId = UUID.randomUUID(),
-					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
-					veileder = listOf(VeilederDto(deltakerId, Veiledertype.VEILEDER)),
-					koordinator = listOf(UUID.randomUUID())
-				)
+		val ansattDto =
+			AnsattDto(
+				id = ansattId,
+				personalia =
+					AnsattPersonaliaDto(
+						personident = "12345678910",
+						navn =
+							NavnDto(
+								fornavn = "Fornavn",
+								mellomnavn = null,
+								etternavn = "Etternavn",
+							),
+					),
+				arrangorer =
+					listOf(
+						TilknyttetArrangorDto(
+							arrangorId = UUID.randomUUID(),
+							roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
+							veileder = listOf(VeilederDto(deltakerId, Veiledertype.VEILEDER)),
+							koordinator = listOf(UUID.randomUUID()),
+						),
+					),
 			)
-		)
 		ansattRepository.insertOrUpdateAnsatt(ansattDto.toAnsattDbo())
 		testKafkaProducer.send(
 			ProducerRecord(
 				ARRANGOR_ANSATT_TOPIC,
 				null,
 				ansattId.toString(),
-				null
-			)
+				null,
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -299,29 +315,33 @@ class KafkaListenerTest : IntegrationTest() {
 				navVeilederTelefon = null,
 				skjultAvAnsattId = null,
 				skjultDato = null,
-				vurderingerFraArrangor = getVurderinger(deltakerId)
-			)
+				vurderingerFraArrangor = getVurderinger(deltakerId),
+			),
 		)
 		val ansattId = UUID.randomUUID()
-		val ansattDto = AnsattDto(
-			id = ansattId,
-			personalia = AnsattPersonaliaDto(
-				personident = "12345678910",
-				navn = NavnDto(
-					fornavn = "Fornavn",
-					mellomnavn = null,
-					etternavn = "Etternavn"
-				)
-			),
-			arrangorer = listOf(
-				TilknyttetArrangorDto(
-					arrangorId = UUID.randomUUID(),
-					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
-					veileder = listOf(VeilederDto(deltakerId, Veiledertype.VEILEDER)),
-					koordinator = listOf(UUID.randomUUID())
-				)
+		val ansattDto =
+			AnsattDto(
+				id = ansattId,
+				personalia =
+					AnsattPersonaliaDto(
+						personident = "12345678910",
+						navn =
+							NavnDto(
+								fornavn = "Fornavn",
+								mellomnavn = null,
+								etternavn = "Etternavn",
+							),
+					),
+				arrangorer =
+					listOf(
+						TilknyttetArrangorDto(
+							arrangorId = UUID.randomUUID(),
+							roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
+							veileder = listOf(VeilederDto(deltakerId, Veiledertype.VEILEDER)),
+							koordinator = listOf(UUID.randomUUID()),
+						),
+					),
 			)
-		)
 		ansattRepository.insertOrUpdateAnsatt(ansattDto.toAnsattDbo())
 
 		testKafkaProducer.send(
@@ -329,8 +349,8 @@ class KafkaListenerTest : IntegrationTest() {
 				ARRANGOR_ANSATT_TOPIC,
 				null,
 				ansattId.toString(),
-				JsonUtils.objectMapper.writeValueAsString(ansattDto.copy(arrangorer = emptyList()))
-			)
+				JsonUtils.objectMapper.writeValueAsString(ansattDto.copy(arrangorer = emptyList())),
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -343,35 +363,38 @@ class KafkaListenerTest : IntegrationTest() {
 
 	@Test
 	fun `listen - melding pa deltakerliste-topic - lagres i database`() {
-		val arrangorDto = ArrangorDto(
-			id = UUID.randomUUID(),
-			navn = "Arrangør AS",
-			organisasjonsnummer = "77777777",
-			overordnetArrangorId = null
-		)
+		val arrangorDto =
+			ArrangorDto(
+				id = UUID.randomUUID(),
+				navn = "Arrangør AS",
+				organisasjonsnummer = "77777777",
+				overordnetArrangorId = null,
+			)
 		arrangorRepository.insertOrUpdateArrangor(arrangorDto.toArrangorDbo())
 		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto = DeltakerlisteDto(
-			id = deltakerlisteId,
-			tiltakstype = DeltakerlisteDto.Tiltakstype(
-				id = UUID.randomUUID(),
-				navn = "Det flotte tiltaket",
-				arenaKode = "DIGIOPPARB"
-			),
-			navn = "Gjennomføring av tiltak",
-			startDato = LocalDate.of(2023, 5, 2),
-			sluttDato = null,
-			status = DeltakerlisteDto.Status.GJENNOMFORES,
-			virksomhetsnummer = arrangorDto.organisasjonsnummer,
-			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
-		)
+		val deltakerlisteDto =
+			DeltakerlisteDto(
+				id = deltakerlisteId,
+				tiltakstype =
+					DeltakerlisteDto.Tiltakstype(
+						id = UUID.randomUUID(),
+						navn = "Det flotte tiltaket",
+						arenaKode = "DIGIOPPARB",
+					),
+				navn = "Gjennomføring av tiltak",
+				startDato = LocalDate.of(2023, 5, 2),
+				sluttDato = null,
+				status = DeltakerlisteDto.Status.GJENNOMFORES,
+				virksomhetsnummer = arrangorDto.organisasjonsnummer,
+				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+			)
 		testKafkaProducer.send(
 			ProducerRecord(
 				DELTAKERLISTE_TOPIC,
 				null,
 				deltakerlisteId.toString(),
-				JsonUtils.objectMapper.writeValueAsString(deltakerlisteDto)
-			)
+				JsonUtils.objectMapper.writeValueAsString(deltakerlisteDto),
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -382,25 +405,26 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - tombstonemelding pa deltakerliste-topic - slettes i database`() {
 		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDbo = DeltakerlisteDbo(
-			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = UUID.randomUUID(),
-			tiltakNavn = "Det flotte tiltaket",
-			tiltakType = "DIGIOPPARB",
-			startDato = LocalDate.of(2023, 5, 2),
-			sluttDato = null,
-			erKurs = false
-		)
+		val deltakerlisteDbo =
+			DeltakerlisteDbo(
+				id = deltakerlisteId,
+				navn = "Gjennomføring av tiltak",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = UUID.randomUUID(),
+				tiltakNavn = "Det flotte tiltaket",
+				tiltakType = "DIGIOPPARB",
+				startDato = LocalDate.of(2023, 5, 2),
+				sluttDato = null,
+				erKurs = false,
+			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
 		testKafkaProducer.send(
 			ProducerRecord(
 				DELTAKERLISTE_TOPIC,
 				null,
 				deltakerlisteId.toString(),
-				null
-			)
+				null,
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -409,71 +433,77 @@ class KafkaListenerTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `listen - avsluttet deltakerliste-melding pa deltakerliste-topic og deltakerliste finnes i db - sletter deltakerliste og deltaker fra db`() {
+	fun `listen - avsluttet deltakerliste-melding pa deltakerliste-topic, deltakerliste finnes - sletter deltakerliste og deltaker fra db`() {
 		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDbo = DeltakerlisteDbo(
-			id = deltakerlisteId,
-			navn = "Gjennomføring av tiltak",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = UUID.randomUUID(),
-			tiltakNavn = "Avsluttet tiltak",
-			tiltakType = "DIGIOPPARB",
-			startDato = LocalDate.now().minusYears(2),
-			sluttDato = null,
-			erKurs = false
-		)
+		val deltakerlisteDbo =
+			DeltakerlisteDbo(
+				id = deltakerlisteId,
+				navn = "Gjennomføring av tiltak",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = UUID.randomUUID(),
+				tiltakNavn = "Avsluttet tiltak",
+				tiltakType = "DIGIOPPARB",
+				startDato = LocalDate.now().minusYears(2),
+				sluttDato = null,
+				erKurs = false,
+			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
 		val deltakerId = UUID.randomUUID()
-		val deltakerDto = DeltakerDto(
-			id = deltakerId,
-			deltakerlisteId = deltakerlisteId,
-			personalia = DeltakerPersonaliaDto(
-				personident = "10987654321",
-				navn = NavnDto("Fornavn", null, "Etternavn"),
-				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false,
-				adresse = getAdresse(),
-				adressebeskyttelse = null
-			),
-			status = DeltakerStatusDto(
-				type = DeltakerStatus.DELTAR,
-				gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
-				opprettetDato = LocalDateTime.now().minusWeeks(6)
-			),
-			dagerPerUke = null,
-			prosentStilling = null,
-			oppstartsdato = LocalDate.now().minusWeeks(5),
-			sluttdato = null,
-			innsoktDato = LocalDate.now().minusMonths(2),
-			bestillingTekst = "Bestilling",
-			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-			skjult = null,
-			deltarPaKurs = false,
-			vurderingerFraArrangor = null
-		)
+		val deltakerDto =
+			DeltakerDto(
+				id = deltakerId,
+				deltakerlisteId = deltakerlisteId,
+				personalia =
+					DeltakerPersonaliaDto(
+						personident = "10987654321",
+						navn = NavnDto("Fornavn", null, "Etternavn"),
+						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+						skjermet = false,
+						adresse = getAdresse(),
+						adressebeskyttelse = null,
+					),
+				status =
+					DeltakerStatusDto(
+						type = DeltakerStatus.DELTAR,
+						gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+						opprettetDato = LocalDateTime.now().minusWeeks(6),
+					),
+				dagerPerUke = null,
+				prosentStilling = null,
+				oppstartsdato = LocalDate.now().minusWeeks(5),
+				sluttdato = null,
+				innsoktDato = LocalDate.now().minusMonths(2),
+				bestillingTekst = "Bestilling",
+				navKontor = "NAV Oslo",
+				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
+				skjult = null,
+				deltarPaKurs = false,
+				vurderingerFraArrangor = null,
+			)
 		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
-		val avsluttetDeltakerlisteDto = DeltakerlisteDto(
-			id = deltakerlisteDbo.id,
-			tiltakstype = DeltakerlisteDto.Tiltakstype(
-				id = UUID.randomUUID(),
-				navn = deltakerlisteDbo.tiltakNavn,
-				arenaKode = deltakerlisteDbo.tiltakType
-			),
-			navn = deltakerlisteDbo.navn,
-			startDato = deltakerlisteDbo.startDato!!,
-			sluttDato = LocalDate.now().minusWeeks(4),
-			status = DeltakerlisteDto.Status.AVSLUTTET,
-			virksomhetsnummer = "888888888",
-			oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE
-		)
+		val avsluttetDeltakerlisteDto =
+			DeltakerlisteDto(
+				id = deltakerlisteDbo.id,
+				tiltakstype =
+					DeltakerlisteDto.Tiltakstype(
+						id = UUID.randomUUID(),
+						navn = deltakerlisteDbo.tiltakNavn,
+						arenaKode = deltakerlisteDbo.tiltakType,
+					),
+				navn = deltakerlisteDbo.navn,
+				startDato = deltakerlisteDbo.startDato!!,
+				sluttDato = LocalDate.now().minusWeeks(4),
+				status = DeltakerlisteDto.Status.AVSLUTTET,
+				virksomhetsnummer = "888888888",
+				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+			)
 		testKafkaProducer.send(
 			ProducerRecord(
 				DELTAKERLISTE_TOPIC,
 				null,
 				deltakerlisteId.toString(),
-				JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerlisteDto)
-			)
+				JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerlisteDto),
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -485,41 +515,44 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - melding pa deltaker-topic - lagres i database`() {
 		val deltakerId = UUID.randomUUID()
-		val deltakerDto = DeltakerDto(
-			id = deltakerId,
-			deltakerlisteId = UUID.randomUUID(),
-			personalia = DeltakerPersonaliaDto(
-				personident = "10987654321",
-				navn = NavnDto("Fornavn", null, "Etternavn"),
-				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false,
-				adresse = getAdresse(),
-				adressebeskyttelse = null
-			),
-			status = DeltakerStatusDto(
-				type = DeltakerStatus.DELTAR,
-				gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
-				opprettetDato = LocalDateTime.now().minusWeeks(6)
-			),
-			dagerPerUke = null,
-			prosentStilling = null,
-			oppstartsdato = LocalDate.now().minusWeeks(5),
-			sluttdato = null,
-			innsoktDato = LocalDate.now().minusMonths(2),
-			bestillingTekst = "Bestilling",
-			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-			skjult = null,
-			deltarPaKurs = false,
-			vurderingerFraArrangor = getVurderinger(deltakerId)
-		)
+		val deltakerDto =
+			DeltakerDto(
+				id = deltakerId,
+				deltakerlisteId = UUID.randomUUID(),
+				personalia =
+					DeltakerPersonaliaDto(
+						personident = "10987654321",
+						navn = NavnDto("Fornavn", null, "Etternavn"),
+						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+						skjermet = false,
+						adresse = getAdresse(),
+						adressebeskyttelse = null,
+					),
+				status =
+					DeltakerStatusDto(
+						type = DeltakerStatus.DELTAR,
+						gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+						opprettetDato = LocalDateTime.now().minusWeeks(6),
+					),
+				dagerPerUke = null,
+				prosentStilling = null,
+				oppstartsdato = LocalDate.now().minusWeeks(5),
+				sluttdato = null,
+				innsoktDato = LocalDate.now().minusMonths(2),
+				bestillingTekst = "Bestilling",
+				navKontor = "NAV Oslo",
+				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
+				skjult = null,
+				deltarPaKurs = false,
+				vurderingerFraArrangor = getVurderinger(deltakerId),
+			)
 		testKafkaProducer.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				null,
 				deltakerId.toString(),
-				JsonUtils.objectMapper.writeValueAsString(deltakerDto)
-			)
+				JsonUtils.objectMapper.writeValueAsString(deltakerDto),
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -530,42 +563,45 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - tombstonemelding pa deltaker-topic - slettes i database`() {
 		val deltakerId = UUID.randomUUID()
-		val deltakerDto = DeltakerDto(
-			id = deltakerId,
-			deltakerlisteId = UUID.randomUUID(),
-			personalia = DeltakerPersonaliaDto(
-				personident = "10987654321",
-				navn = NavnDto("Fornavn", null, "Etternavn"),
-				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false,
-				adresse = getAdresse(),
-				adressebeskyttelse = null
-			),
-			status = DeltakerStatusDto(
-				type = DeltakerStatus.DELTAR,
-				gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
-				opprettetDato = LocalDateTime.now().minusWeeks(6)
-			),
-			dagerPerUke = null,
-			prosentStilling = null,
-			oppstartsdato = LocalDate.now().minusWeeks(5),
-			sluttdato = null,
-			innsoktDato = LocalDate.now().minusMonths(2),
-			bestillingTekst = "Bestilling",
-			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-			skjult = null,
-			deltarPaKurs = false,
-			vurderingerFraArrangor = null
-		)
+		val deltakerDto =
+			DeltakerDto(
+				id = deltakerId,
+				deltakerlisteId = UUID.randomUUID(),
+				personalia =
+					DeltakerPersonaliaDto(
+						personident = "10987654321",
+						navn = NavnDto("Fornavn", null, "Etternavn"),
+						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+						skjermet = false,
+						adresse = getAdresse(),
+						adressebeskyttelse = null,
+					),
+				status =
+					DeltakerStatusDto(
+						type = DeltakerStatus.DELTAR,
+						gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+						opprettetDato = LocalDateTime.now().minusWeeks(6),
+					),
+				dagerPerUke = null,
+				prosentStilling = null,
+				oppstartsdato = LocalDate.now().minusWeeks(5),
+				sluttdato = null,
+				innsoktDato = LocalDate.now().minusMonths(2),
+				bestillingTekst = "Bestilling",
+				navKontor = "NAV Oslo",
+				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
+				skjult = null,
+				deltarPaKurs = false,
+				vurderingerFraArrangor = null,
+			)
 		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
 		testKafkaProducer.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				null,
 				deltakerId.toString(),
-				null
-			)
+				null,
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -576,49 +612,54 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - avsluttet deltaker-melding pa deltaker-topic og deltaker finnes i db - sletter deltaker fra db`() {
 		val deltakerId = UUID.randomUUID()
-		val deltakerDto = DeltakerDto(
-			id = deltakerId,
-			deltakerlisteId = UUID.randomUUID(),
-			personalia = DeltakerPersonaliaDto(
-				personident = "10987654321",
-				navn = NavnDto("Fornavn", null, "Etternavn"),
-				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-				skjermet = false,
-				adresse = getAdresse(),
-				adressebeskyttelse = null
-			),
-			status = DeltakerStatusDto(
-				type = DeltakerStatus.DELTAR,
-				gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
-				opprettetDato = LocalDateTime.now().minusWeeks(6)
-			),
-			dagerPerUke = null,
-			prosentStilling = null,
-			oppstartsdato = LocalDate.now().minusWeeks(5),
-			sluttdato = null,
-			innsoktDato = LocalDate.now().minusMonths(2),
-			bestillingTekst = "Bestilling",
-			navKontor = "NAV Oslo",
-			navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-			skjult = null,
-			deltarPaKurs = false,
-			vurderingerFraArrangor = null
-		)
-		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
-		val avsluttetDeltakerDto = deltakerDto.copy(
-			status = DeltakerStatusDto(
-				type = DeltakerStatus.HAR_SLUTTET,
-				gyldigFra = LocalDateTime.now().minusWeeks(4),
-				opprettetDato = LocalDateTime.now().minusWeeks(4)
+		val deltakerDto =
+			DeltakerDto(
+				id = deltakerId,
+				deltakerlisteId = UUID.randomUUID(),
+				personalia =
+					DeltakerPersonaliaDto(
+						personident = "10987654321",
+						navn = NavnDto("Fornavn", null, "Etternavn"),
+						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+						skjermet = false,
+						adresse = getAdresse(),
+						adressebeskyttelse = null,
+					),
+				status =
+					DeltakerStatusDto(
+						type = DeltakerStatus.DELTAR,
+						gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+						opprettetDato = LocalDateTime.now().minusWeeks(6),
+					),
+				dagerPerUke = null,
+				prosentStilling = null,
+				oppstartsdato = LocalDate.now().minusWeeks(5),
+				sluttdato = null,
+				innsoktDato = LocalDate.now().minusMonths(2),
+				bestillingTekst = "Bestilling",
+				navKontor = "NAV Oslo",
+				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
+				skjult = null,
+				deltarPaKurs = false,
+				vurderingerFraArrangor = null,
 			)
-		)
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
+		val avsluttetDeltakerDto =
+			deltakerDto.copy(
+				status =
+					DeltakerStatusDto(
+						type = DeltakerStatus.HAR_SLUTTET,
+						gyldigFra = LocalDateTime.now().minusWeeks(4),
+						opprettetDato = LocalDateTime.now().minusWeeks(4),
+					),
+			)
 		testKafkaProducer.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				null,
 				deltakerId.toString(),
-				JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerDto)
-			)
+				JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerDto),
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -629,24 +670,25 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - melding pa endringsmelding-topic - lagres i database`() {
 		val endringsmeldingId = UUID.randomUUID()
-		val endringsmeldingDto = EndringsmeldingDto(
-			id = endringsmeldingId,
-			deltakerId = UUID.randomUUID(),
-			utfortAvNavAnsattId = null,
-			opprettetAvArrangorAnsattId = UUID.randomUUID(),
-			utfortTidspunkt = null,
-			status = Endringsmelding.Status.AKTIV,
-			type = EndringsmeldingType.ENDRE_SLUTTDATO,
-			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
-			createdAt = LocalDateTime.now()
-		)
+		val endringsmeldingDto =
+			EndringsmeldingDto(
+				id = endringsmeldingId,
+				deltakerId = UUID.randomUUID(),
+				utfortAvNavAnsattId = null,
+				opprettetAvArrangorAnsattId = UUID.randomUUID(),
+				utfortTidspunkt = null,
+				status = Endringsmelding.Status.AKTIV,
+				type = EndringsmeldingType.ENDRE_SLUTTDATO,
+				innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
+				createdAt = LocalDateTime.now(),
+			)
 		testKafkaProducer.send(
 			ProducerRecord(
 				ENDRINGSMELDING_TOPIC,
 				null,
 				endringsmeldingId.toString(),
-				JsonUtils.objectMapper.writeValueAsString(endringsmeldingDto)
-			)
+				JsonUtils.objectMapper.writeValueAsString(endringsmeldingDto),
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -657,25 +699,26 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - tombstonemelding pa endringsmelding-topic - slettes i database`() {
 		val endringsmeldingId = UUID.randomUUID()
-		val endringsmeldingDto = EndringsmeldingDto(
-			id = endringsmeldingId,
-			deltakerId = UUID.randomUUID(),
-			utfortAvNavAnsattId = null,
-			opprettetAvArrangorAnsattId = UUID.randomUUID(),
-			utfortTidspunkt = null,
-			status = Endringsmelding.Status.AKTIV,
-			type = EndringsmeldingType.ENDRE_SLUTTDATO,
-			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
-			createdAt = LocalDateTime.now()
-		)
+		val endringsmeldingDto =
+			EndringsmeldingDto(
+				id = endringsmeldingId,
+				deltakerId = UUID.randomUUID(),
+				utfortAvNavAnsattId = null,
+				opprettetAvArrangorAnsattId = UUID.randomUUID(),
+				utfortTidspunkt = null,
+				status = Endringsmelding.Status.AKTIV,
+				type = EndringsmeldingType.ENDRE_SLUTTDATO,
+				innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
+				createdAt = LocalDateTime.now(),
+			)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDto.toEndringsmeldingDbo())
 		testKafkaProducer.send(
 			ProducerRecord(
 				ENDRINGSMELDING_TOPIC,
 				null,
 				endringsmeldingId.toString(),
-				null
-			)
+				null,
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
@@ -686,36 +729,38 @@ class KafkaListenerTest : IntegrationTest() {
 	@Test
 	fun `listen - utfort endringsmelding-melding pa endringmelding-topic og endringsmelding finnes i db - oppdaterer endringsmelding i db`() {
 		val endringsmeldingId = UUID.randomUUID()
-		val endringsmeldingDto = EndringsmeldingDto(
-			id = endringsmeldingId,
-			deltakerId = UUID.randomUUID(),
-			utfortAvNavAnsattId = null,
-			opprettetAvArrangorAnsattId = UUID.randomUUID(),
-			utfortTidspunkt = null,
-			status = Endringsmelding.Status.AKTIV,
-			type = EndringsmeldingType.ENDRE_SLUTTDATO,
-			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
-			createdAt = LocalDateTime.now()
-		)
+		val endringsmeldingDto =
+			EndringsmeldingDto(
+				id = endringsmeldingId,
+				deltakerId = UUID.randomUUID(),
+				utfortAvNavAnsattId = null,
+				opprettetAvArrangorAnsattId = UUID.randomUUID(),
+				utfortTidspunkt = null,
+				status = Endringsmelding.Status.AKTIV,
+				type = EndringsmeldingType.ENDRE_SLUTTDATO,
+				innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
+				createdAt = LocalDateTime.now(),
+			)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDto.toEndringsmeldingDbo())
-		val utfortEndringsmeldingDto = EndringsmeldingDto(
-			id = endringsmeldingId,
-			deltakerId = UUID.randomUUID(),
-			utfortAvNavAnsattId = null,
-			opprettetAvArrangorAnsattId = UUID.randomUUID(),
-			utfortTidspunkt = null,
-			status = Endringsmelding.Status.UTFORT,
-			type = EndringsmeldingType.ENDRE_SLUTTDATO,
-			innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
-			createdAt = LocalDateTime.now()
-		)
+		val utfortEndringsmeldingDto =
+			EndringsmeldingDto(
+				id = endringsmeldingId,
+				deltakerId = UUID.randomUUID(),
+				utfortAvNavAnsattId = null,
+				opprettetAvArrangorAnsattId = UUID.randomUUID(),
+				utfortTidspunkt = null,
+				status = Endringsmelding.Status.UTFORT,
+				type = EndringsmeldingType.ENDRE_SLUTTDATO,
+				innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
+				createdAt = LocalDateTime.now(),
+			)
 		testKafkaProducer.send(
 			ProducerRecord(
 				ENDRINGSMELDING_TOPIC,
 				null,
 				endringsmeldingId.toString(),
-				JsonUtils.objectMapper.writeValueAsString(utfortEndringsmeldingDto)
-			)
+				JsonUtils.objectMapper.writeValueAsString(utfortEndringsmeldingDto),
+			),
 		).get()
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {

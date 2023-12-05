@@ -19,7 +19,7 @@ import java.util.UUID
 @RequestMapping("/tiltaksarrangor")
 class TiltaksarrangorController(
 	private val tokenService: TokenService,
-	private val tiltaksarrangorService: TiltaksarrangorService
+	private val tiltaksarrangorService: TiltaksarrangorService,
 ) {
 	@GetMapping("/meg/roller")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
@@ -30,7 +30,9 @@ class TiltaksarrangorController(
 
 	@GetMapping("/deltaker/{deltakerId}")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
-	fun getDeltaker(@PathVariable deltakerId: UUID): Deltaker {
+	fun getDeltaker(
+		@PathVariable deltakerId: UUID,
+	): Deltaker {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		return tiltaksarrangorService.getDeltaker(personIdent, deltakerId)
 	}
@@ -39,7 +41,7 @@ class TiltaksarrangorController(
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun registrerVurdering(
 		@PathVariable deltakerId: UUID,
-		@RequestBody request: RegistrerVurderingRequest
+		@RequestBody request: RegistrerVurderingRequest,
 	) {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, request)
@@ -48,7 +50,7 @@ class TiltaksarrangorController(
 	@DeleteMapping("/deltaker/{deltakerId}")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun fjernDeltaker(
-		@PathVariable deltakerId: UUID
+		@PathVariable deltakerId: UUID,
 	) {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		tiltaksarrangorService.fjernDeltaker(personIdent, deltakerId)

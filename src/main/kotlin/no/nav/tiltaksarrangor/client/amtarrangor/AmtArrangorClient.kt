@@ -19,16 +19,17 @@ import java.util.UUID
 class AmtArrangorClient(
 	@Value("\${amt-arrangor.url}") private val amtArrangorUrl: String,
 	private val amtArrangorHttpClient: OkHttpClient,
-	private val amtArrangorAADHttpClient: OkHttpClient
+	private val amtArrangorAADHttpClient: OkHttpClient,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 	private val mediaTypeJson = "application/json".toMediaType()
 
 	fun getAnsatt(personIdent: String): AnsattDto? {
-		val request = Request.Builder()
-			.url("$amtArrangorUrl/api/ansatt")
-			.get()
-			.build()
+		val request =
+			Request.Builder()
+				.url("$amtArrangorUrl/api/ansatt")
+				.get()
+				.build()
 
 		amtArrangorHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
@@ -48,11 +49,16 @@ class AmtArrangorClient(
 		}
 	}
 
-	fun leggTilDeltakerlisteForKoordinator(ansattId: UUID, deltakerlisteId: UUID, arrangorId: UUID) {
-		val request = Request.Builder()
-			.url("$amtArrangorUrl/api/ansatt/koordinator/$arrangorId/$deltakerlisteId")
-			.post("".toRequestBody(mediaTypeJson))
-			.build()
+	fun leggTilDeltakerlisteForKoordinator(
+		ansattId: UUID,
+		deltakerlisteId: UUID,
+		arrangorId: UUID,
+	) {
+		val request =
+			Request.Builder()
+				.url("$amtArrangorUrl/api/ansatt/koordinator/$arrangorId/$deltakerlisteId")
+				.post("".toRequestBody(mediaTypeJson))
+				.build()
 
 		amtArrangorHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
@@ -69,11 +75,16 @@ class AmtArrangorClient(
 		log.info("Oppdatert amt-arrangor med deltakerliste $deltakerlisteId for ansatt $ansattId")
 	}
 
-	fun fjernDeltakerlisteForKoordinator(ansattId: UUID, deltakerlisteId: UUID, arrangorId: UUID) {
-		val request = Request.Builder()
-			.url("$amtArrangorUrl/api/ansatt/koordinator/$arrangorId/$deltakerlisteId")
-			.delete()
-			.build()
+	fun fjernDeltakerlisteForKoordinator(
+		ansattId: UUID,
+		deltakerlisteId: UUID,
+		arrangorId: UUID,
+	) {
+		val request =
+			Request.Builder()
+				.url("$amtArrangorUrl/api/ansatt/koordinator/$arrangorId/$deltakerlisteId")
+				.delete()
+				.build()
 
 		amtArrangorHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
@@ -90,11 +101,15 @@ class AmtArrangorClient(
 		log.info("Fjernet amt-arrangor deltakerliste $deltakerlisteId for ansatt $ansattId")
 	}
 
-	fun oppdaterVeilederForDeltaker(deltakerId: UUID, oppdaterVeiledereForDeltakerRequest: OppdaterVeiledereForDeltakerRequest) {
-		val request = Request.Builder()
-			.url("$amtArrangorUrl/api/ansatt/veiledere/$deltakerId")
-			.post(objectMapper.writeValueAsString(oppdaterVeiledereForDeltakerRequest).toRequestBody(mediaTypeJson))
-			.build()
+	fun oppdaterVeilederForDeltaker(
+		deltakerId: UUID,
+		oppdaterVeiledereForDeltakerRequest: OppdaterVeiledereForDeltakerRequest,
+	) {
+		val request =
+			Request.Builder()
+				.url("$amtArrangorUrl/api/ansatt/veiledere/$deltakerId")
+				.post(objectMapper.writeValueAsString(oppdaterVeiledereForDeltakerRequest).toRequestBody(mediaTypeJson))
+				.build()
 
 		amtArrangorHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
@@ -112,10 +127,11 @@ class AmtArrangorClient(
 	}
 
 	fun getArrangor(orgnummer: String): ArrangorMedOverordnetArrangor? {
-		val request = Request.Builder()
-			.url("$amtArrangorUrl/api/service/arrangor/organisasjonsnummer/$orgnummer")
-			.get()
-			.build()
+		val request =
+			Request.Builder()
+				.url("$amtArrangorUrl/api/service/arrangor/organisasjonsnummer/$orgnummer")
+				.get()
+				.build()
 
 		amtArrangorAADHttpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {

@@ -42,7 +42,8 @@ class DeltakerlisteAdminServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val arrangorRepository = ArrangorRepository(template)
-	private val deltakerlisteAdminService = DeltakerlisteAdminService(ansattService, deltakerlisteRepository, arrangorRepository, metricsService)
+	private val deltakerlisteAdminService =
+		DeltakerlisteAdminService(ansattService, deltakerlisteRepository, arrangorRepository, metricsService)
 
 	@AfterEach
 	internal fun tearDown() {
@@ -59,8 +60,8 @@ class DeltakerlisteAdminServiceTest {
 				id = arrangorId,
 				navn = "Arrangør AS",
 				organisasjonsnummer = "88888888",
-				overordnetArrangorId = null
-			)
+				overordnetArrangorId = null,
+			),
 		)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
@@ -71,8 +72,8 @@ class DeltakerlisteAdminServiceTest {
 				etternavn = "Etternavn",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(UUID.randomUUID())),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		assertThrows<UnauthorizedException> {
@@ -89,8 +90,8 @@ class DeltakerlisteAdminServiceTest {
 				id = arrangorId,
 				navn = "Arrangør AS",
 				organisasjonsnummer = "88888888",
-				overordnetArrangorId = null
-			)
+				overordnetArrangorId = null,
+			),
 		)
 		val overordnetArrangorId = UUID.randomUUID()
 		arrangorRepository.insertOrUpdateArrangor(
@@ -98,8 +99,8 @@ class DeltakerlisteAdminServiceTest {
 				id = overordnetArrangorId,
 				navn = "Overordnet arrangør AS",
 				organisasjonsnummer = "777777777",
-				overordnetArrangorId = null
-			)
+				overordnetArrangorId = null,
+			),
 		)
 		val arrangorId2 = UUID.randomUUID()
 		arrangorRepository.insertOrUpdateArrangor(
@@ -107,31 +108,33 @@ class DeltakerlisteAdminServiceTest {
 				id = arrangorId2,
 				navn = "Annen arrangør AS",
 				organisasjonsnummer = "99999999",
-				overordnetArrangorId = overordnetArrangorId
+				overordnetArrangorId = overordnetArrangorId,
+			),
+		)
+		val deltakerliste1 =
+			DeltakerlisteDbo(
+				id = UUID.randomUUID(),
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.of(2023, 2, 1),
+				sluttDato = null,
+				erKurs = false,
 			)
-		)
-		val deltakerliste1 = DeltakerlisteDbo(
-			id = UUID.randomUUID(),
-			navn = "Gjennomføring 1",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = arrangorId,
-			tiltakNavn = "Navn på tiltak",
-			tiltakType = "ARBFORB",
-			startDato = LocalDate.of(2023, 2, 1),
-			sluttDato = null,
-			erKurs = false
-		)
-		val deltakerliste2 = DeltakerlisteDbo(
-			id = UUID.randomUUID(),
-			navn = "Gjennomføring 2",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = arrangorId2,
-			tiltakNavn = "Annet tiltak",
-			tiltakType = "INDOPPFAG",
-			startDato = LocalDate.of(2023, 5, 1),
-			sluttDato = LocalDate.of(2023, 6, 1),
-			erKurs = false
-		)
+		val deltakerliste2 =
+			DeltakerlisteDbo(
+				id = UUID.randomUUID(),
+				navn = "Gjennomføring 2",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId2,
+				tiltakNavn = "Annet tiltak",
+				tiltakType = "INDOPPFAG",
+				startDato = LocalDate.of(2023, 5, 1),
+				sluttDato = LocalDate.of(2023, 6, 1),
+				erKurs = false,
+			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste1)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste2)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -143,8 +146,8 @@ class DeltakerlisteAdminServiceTest {
 				etternavn = "Etternavn",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR), AnsattRolleDbo(arrangorId2, AnsattRolle.KOORDINATOR)),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste1.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		val adminDeltakerlister = deltakerlisteAdminService.getAlleDeltakerlister(personIdent)
@@ -185,20 +188,21 @@ class DeltakerlisteAdminServiceTest {
 				etternavn = "Etternavn",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
 				deltakerlister = emptyList(),
-				veilederDeltakere = emptyList()
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = UUID.randomUUID(),
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = UUID.randomUUID(),
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.of(2023, 2, 1),
+				sluttDato = null,
+				erKurs = false,
 			)
-		)
-		val deltakerliste = DeltakerlisteDbo(
-			id = UUID.randomUUID(),
-			navn = "Gjennomføring 1",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = UUID.randomUUID(),
-			tiltakNavn = "Navn på tiltak",
-			tiltakType = "ARBFORB",
-			startDato = LocalDate.of(2023, 2, 1),
-			sluttDato = null,
-			erKurs = false
-		)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 
 		assertThrows<UnauthorizedException> {
@@ -210,17 +214,18 @@ class DeltakerlisteAdminServiceTest {
 	fun `leggTilDeltakerliste - ansatt har allerede lagt til deltakerliste - endrer ignenting`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = DeltakerlisteDbo(
-			id = UUID.randomUUID(),
-			navn = "Gjennomføring 1",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = arrangorId,
-			tiltakNavn = "Navn på tiltak",
-			tiltakType = "ARBFORB",
-			startDato = LocalDate.of(2023, 2, 1),
-			sluttDato = null,
-			erKurs = false
-		)
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = UUID.randomUUID(),
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.of(2023, 2, 1),
+				sluttDato = null,
+				erKurs = false,
+			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
@@ -231,8 +236,8 @@ class DeltakerlisteAdminServiceTest {
 				etternavn = "Etternavn",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		deltakerlisteAdminService.leggTilDeltakerliste(deltakerliste.id, personIdent)
@@ -246,17 +251,18 @@ class DeltakerlisteAdminServiceTest {
 
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = DeltakerlisteDbo(
-			id = UUID.randomUUID(),
-			navn = "Gjennomføring 1",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = arrangorId,
-			tiltakNavn = "Navn på tiltak",
-			tiltakType = "ARBFORB",
-			startDato = LocalDate.of(2023, 2, 1),
-			sluttDato = null,
-			erKurs = false
-		)
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = UUID.randomUUID(),
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.of(2023, 2, 1),
+				sluttDato = null,
+				erKurs = false,
+			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()
 		ansattRepository.insertOrUpdateAnsatt(
@@ -268,8 +274,8 @@ class DeltakerlisteAdminServiceTest {
 				etternavn = "Etternavn",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(UUID.randomUUID())),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		deltakerlisteAdminService.leggTilDeltakerliste(deltakerliste.id, personIdent)
@@ -294,20 +300,21 @@ class DeltakerlisteAdminServiceTest {
 				etternavn = "Etternavn",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
 				deltakerlister = emptyList(),
-				veilederDeltakere = emptyList()
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = UUID.randomUUID(),
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = UUID.randomUUID(),
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.of(2023, 2, 1),
+				sluttDato = null,
+				erKurs = false,
 			)
-		)
-		val deltakerliste = DeltakerlisteDbo(
-			id = UUID.randomUUID(),
-			navn = "Gjennomføring 1",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = UUID.randomUUID(),
-			tiltakNavn = "Navn på tiltak",
-			tiltakType = "ARBFORB",
-			startDato = LocalDate.of(2023, 2, 1),
-			sluttDato = null,
-			erKurs = false
-		)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 
 		assertThrows<UnauthorizedException> {
@@ -319,17 +326,18 @@ class DeltakerlisteAdminServiceTest {
 	fun `fjernDeltakerliste - ansatt har ikke lagt til deltakerliste - endrer ignenting`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = DeltakerlisteDbo(
-			id = UUID.randomUUID(),
-			navn = "Gjennomføring 1",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = arrangorId,
-			tiltakNavn = "Navn på tiltak",
-			tiltakType = "ARBFORB",
-			startDato = LocalDate.of(2023, 2, 1),
-			sluttDato = null,
-			erKurs = false
-		)
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = UUID.randomUUID(),
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.of(2023, 2, 1),
+				sluttDato = null,
+				erKurs = false,
+			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
@@ -340,8 +348,8 @@ class DeltakerlisteAdminServiceTest {
 				etternavn = "Etternavn",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
 				deltakerlister = emptyList(),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		deltakerlisteAdminService.fjernDeltakerliste(deltakerliste.id, personIdent)
@@ -355,17 +363,18 @@ class DeltakerlisteAdminServiceTest {
 
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = DeltakerlisteDbo(
-			id = UUID.randomUUID(),
-			navn = "Gjennomføring 1",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = arrangorId,
-			tiltakNavn = "Navn på tiltak",
-			tiltakType = "ARBFORB",
-			startDato = LocalDate.of(2023, 2, 1),
-			sluttDato = null,
-			erKurs = false
-		)
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = UUID.randomUUID(),
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.of(2023, 2, 1),
+				sluttDato = null,
+				erKurs = false,
+			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()
 		ansattRepository.insertOrUpdateAnsatt(
@@ -377,8 +386,8 @@ class DeltakerlisteAdminServiceTest {
 				etternavn = "Etternavn",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(UUID.randomUUID()), KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		deltakerlisteAdminService.fjernDeltakerliste(deltakerliste.id, personIdent)

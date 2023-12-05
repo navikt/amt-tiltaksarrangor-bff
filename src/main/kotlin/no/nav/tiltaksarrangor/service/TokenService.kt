@@ -7,18 +7,19 @@ import org.springframework.web.server.ResponseStatusException
 
 @Component
 class TokenService(
-	private val contextHolder: TokenValidationContextHolder
+	private val contextHolder: TokenValidationContextHolder,
 ) {
 	fun getPersonligIdentTilInnloggetAnsatt(): String {
 		val context = contextHolder.tokenValidationContext
 
-		val token = context.firstValidToken.orElseThrow {
-			throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authorized, valid token is missing")
-		}
+		val token =
+			context.firstValidToken.orElseThrow {
+				throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authorized, valid token is missing")
+			}
 
 		return token.jwtTokenClaims["pid"]?.toString() ?: throw ResponseStatusException(
 			HttpStatus.UNAUTHORIZED,
-			"PID is missing or is not a string"
+			"PID is missing or is not a string",
 		)
 	}
 }

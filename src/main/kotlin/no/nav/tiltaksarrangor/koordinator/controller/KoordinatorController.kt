@@ -21,7 +21,7 @@ import java.util.UUID
 @RequestMapping("/tiltaksarrangor/koordinator")
 class KoordinatorController(
 	private val tokenService: TokenService,
-	private val koordinatorService: KoordinatorService
+	private val koordinatorService: KoordinatorService,
 ) {
 	@GetMapping("/mine-deltakerlister")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
@@ -33,7 +33,7 @@ class KoordinatorController(
 	@GetMapping("/deltakerliste/{deltakerlisteId}")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getDeltakerliste(
-		@PathVariable deltakerlisteId: UUID
+		@PathVariable deltakerlisteId: UUID,
 	): Deltakerliste {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		return koordinatorService.getDeltakerliste(deltakerlisteId, personIdent)
@@ -42,7 +42,7 @@ class KoordinatorController(
 	@GetMapping("/{deltakerlisteId}/veiledere")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getTilgjengeligeVeiledere(
-		@PathVariable deltakerlisteId: UUID
+		@PathVariable deltakerlisteId: UUID,
 	): List<TilgjengeligVeileder> {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		return koordinatorService.getTilgjengeligeVeiledere(deltakerlisteId, personIdent)
@@ -52,7 +52,7 @@ class KoordinatorController(
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun tildelVeiledereForDeltaker(
 		@RequestParam("deltakerId") deltakerId: UUID,
-		@RequestBody request: LeggTilVeiledereRequest
+		@RequestBody request: LeggTilVeiledereRequest,
 	) {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		koordinatorService.tildelVeiledereForDeltaker(deltakerId, request, personIdent)

@@ -12,5 +12,5 @@ data class AdminDeltakerliste(
 	val arrangorParentNavn: String,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
-	val lagtTil: Boolean
+	val lagtTil: Boolean,
 )

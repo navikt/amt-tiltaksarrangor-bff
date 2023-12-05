@@ -17,11 +17,11 @@ data class Deltaker(
 	val status: DeltakerStatus,
 	val deltakerliste: Deltakerliste,
 	val veiledertype: Veiledertype,
-	val aktiveEndringsmeldinger: List<Endringsmelding>
+	val aktiveEndringsmeldinger: List<Endringsmelding>,
 ) {
 	data class Deltakerliste(
 		val id: UUID,
 		val type: String,
-		val navn: String
+		val navn: String,
 	)
 }

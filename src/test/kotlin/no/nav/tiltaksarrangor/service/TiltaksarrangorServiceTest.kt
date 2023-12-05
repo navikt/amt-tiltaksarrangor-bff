@@ -63,14 +63,15 @@ class TiltaksarrangorServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
-	private val tiltaksarrangorService = TiltaksarrangorService(
-		amtTiltakClient,
-		ansattService,
-		metricsService,
-		deltakerRepository,
-		endringsmeldingRepository,
-		auditLoggerService
-	)
+	private val tiltaksarrangorService =
+		TiltaksarrangorService(
+			amtTiltakClient,
+			ansattService,
+			metricsService,
+			deltakerRepository,
+			endringsmeldingRepository,
+			auditLoggerService,
+		)
 
 	@AfterEach
 	internal fun tearDown() {
@@ -93,12 +94,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = emptyList(),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		assertThrows<UnauthorizedException> {
@@ -122,12 +124,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		assertThrows<SkjultDeltakerException> {
@@ -144,27 +147,28 @@ class TiltaksarrangorServiceTest {
 		val deltakerId = UUID.randomUUID()
 		deltakerRepository.insertOrUpdateDeltaker(
 			getDeltaker(deltakerId, deltakerliste.id).copy(
-				vurderingerFraArrangor = listOf(
-					VurderingDto(
-						id = UUID.randomUUID(),
-						deltakerId = deltakerId,
-						vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
-						begrunnelse = "Mangler førerkort",
-						opprettetAvArrangorAnsattId = UUID.randomUUID(),
-						gyldigFra = LocalDateTime.now().minusWeeks(2),
-						gyldigTil = LocalDateTime.now()
+				vurderingerFraArrangor =
+					listOf(
+						VurderingDto(
+							id = UUID.randomUUID(),
+							deltakerId = deltakerId,
+							vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+							begrunnelse = "Mangler førerkort",
+							opprettetAvArrangorAnsattId = UUID.randomUUID(),
+							gyldigFra = LocalDateTime.now().minusWeeks(2),
+							gyldigTil = LocalDateTime.now(),
+						),
+						VurderingDto(
+							id = UUID.randomUUID(),
+							deltakerId = deltakerId,
+							vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+							begrunnelse = null,
+							opprettetAvArrangorAnsattId = UUID.randomUUID(),
+							gyldigFra = LocalDateTime.now(),
+							gyldigTil = null,
+						),
 					),
-					VurderingDto(
-						id = UUID.randomUUID(),
-						deltakerId = deltakerId,
-						vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
-						begrunnelse = null,
-						opprettetAvArrangorAnsattId = UUID.randomUUID(),
-						gyldigFra = LocalDateTime.now(),
-						gyldigTil = null
-					)
-				)
-			)
+			),
 		)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
@@ -173,12 +177,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		val deltaker = tiltaksarrangorService.getDeltaker(personIdent, deltakerId)
@@ -215,8 +220,8 @@ class TiltaksarrangorServiceTest {
 				type = EndringsmeldingType.ENDRE_SLUTTDATO,
 				innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now()),
 				status = Endringsmelding.Status.AKTIV,
-				sendt = LocalDateTime.now()
-			)
+				sendt = LocalDateTime.now(),
+			),
 		)
 		val veilederId = UUID.randomUUID()
 		ansattRepository.insertOrUpdateAnsatt(
@@ -226,12 +231,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Vei",
 				mellomnavn = null,
 				etternavn = "Leder",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER),
+					),
 				deltakerlister = emptyList(),
-				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER))
-			)
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
+			),
 		)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
@@ -240,12 +246,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		val deltaker = tiltaksarrangorService.getDeltaker(personIdent, deltakerId)
@@ -284,12 +291,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = emptyList(),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		assertThrows<UnauthorizedException> {
@@ -315,12 +323,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		tiltaksarrangorService.fjernDeltaker(personIdent, deltakerId)
@@ -348,12 +357,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		assertThrows<IllegalStateException> {
@@ -383,12 +393,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		assertThrows<RuntimeException> {
@@ -415,16 +426,21 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = emptyList(),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		assertThrows<UnauthorizedException> {
-			tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_IKKE_KRAVENE, "Ikke gode nok norskkunnskaper"))
+			tiltaksarrangorService.registrerVurdering(
+				personIdent,
+				deltakerId,
+				RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_IKKE_KRAVENE, "Ikke gode nok norskkunnskaper"),
+			)
 		}
 	}
 
@@ -432,36 +448,40 @@ class TiltaksarrangorServiceTest {
 	fun `registrerVurdering - deltaker har status vurderes og ansatt har tilgang - vurdering blir lagret`() {
 		val deltakerId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
-		val forsteVurdering = VurderingDto(
-			id = UUID.randomUUID(),
-			deltakerId = deltakerId,
-			vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
-			begrunnelse = "Mangler grunnkurs",
-			opprettetAvArrangorAnsattId = UUID.randomUUID(),
-			gyldigFra = LocalDateTime.now().minusWeeks(1),
-			gyldigTil = null
-		)
-		val andreVurdering = VurderingDto(
-			id = UUID.randomUUID(),
-			deltakerId = deltakerId,
-			vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
-			begrunnelse = null,
-			opprettetAvArrangorAnsattId = ansattId,
-			gyldigFra = LocalDateTime.now(),
-			gyldigTil = null
-		)
-		coEvery { amtTiltakClient.registrerVurdering(any(), any()) } returns listOf(
-			forsteVurdering.copy(gyldigTil = LocalDateTime.now()),
-			andreVurdering
-		)
+		val forsteVurdering =
+			VurderingDto(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+				begrunnelse = "Mangler grunnkurs",
+				opprettetAvArrangorAnsattId = UUID.randomUUID(),
+				gyldigFra = LocalDateTime.now().minusWeeks(1),
+				gyldigTil = null,
+			)
+		val andreVurdering =
+			VurderingDto(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+				begrunnelse = null,
+				opprettetAvArrangorAnsattId = ansattId,
+				gyldigFra = LocalDateTime.now(),
+				gyldigTil = null,
+			)
+		coEvery { amtTiltakClient.registrerVurdering(any(), any()) } returns
+			listOf(
+				forsteVurdering.copy(gyldigTil = LocalDateTime.now()),
+				andreVurdering,
+			)
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
-		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(
-			status = StatusType.VURDERES,
-			vurderingerFraArrangor = listOf(forsteVurdering)
-		)
+		val deltaker =
+			getDeltaker(deltakerId, deltakerliste.id).copy(
+				status = StatusType.VURDERES,
+				vurderingerFraArrangor = listOf(forsteVurdering),
+			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
@@ -470,12 +490,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null))
@@ -503,12 +524,13 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		assertThrows<IllegalStateException> {
@@ -536,16 +558,21 @@ class TiltaksarrangorServiceTest {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 
 		assertThrows<ValidationException> {
-			tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_IKKE_KRAVENE, null))
+			tiltaksarrangorService.registrerVurdering(
+				personIdent,
+				deltakerId,
+				RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_IKKE_KRAVENE, null),
+			)
 		}
 
 		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
@@ -570,44 +597,53 @@ class TiltaksarrangorServiceTest {
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "ARBFORB")
 		val deltakerId = UUID.randomUUID()
-		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(
-			adresse = AdresseDto(
-				bostedsadresse = Bostedsadresse(
-					coAdressenavn = "C/O Gutterommet",
-					vegadresse = null,
-					matrikkeladresse = Matrikkeladresse(
-						tilleggsnavn = "Gården",
-						postnummer = "0484",
-						poststed = "OSLO"
-					)
-				),
-				oppholdsadresse = Oppholdsadresse(
-					coAdressenavn = null,
-					vegadresse = Vegadresse(
-						husnummer = "1",
-						husbokstav = "B",
-						adressenavn = "Veien",
-						tilleggsnavn = null,
-						postnummer = "1234",
-						poststed = "MOSS"
+		val deltaker =
+			getDeltaker(deltakerId, deltakerliste.id).copy(
+				adresse =
+					AdresseDto(
+						bostedsadresse =
+							Bostedsadresse(
+								coAdressenavn = "C/O Gutterommet",
+								vegadresse = null,
+								matrikkeladresse =
+									Matrikkeladresse(
+										tilleggsnavn = "Gården",
+										postnummer = "0484",
+										poststed = "OSLO",
+									),
+							),
+						oppholdsadresse =
+							Oppholdsadresse(
+								coAdressenavn = null,
+								vegadresse =
+									Vegadresse(
+										husnummer = "1",
+										husbokstav = "B",
+										adressenavn = "Veien",
+										tilleggsnavn = null,
+										postnummer = "1234",
+										poststed = "MOSS",
+									),
+								matrikkeladresse =
+									Matrikkeladresse(
+										tilleggsnavn = "Fortet",
+										postnummer = "0101",
+										poststed = "ANDEBY",
+									),
+							),
+						kontaktadresse =
+							Kontaktadresse(
+								coAdressenavn = null,
+								vegadresse = null,
+								postboksadresse =
+									Postboksadresse(
+										postboks = "45451",
+										postnummer = "3312",
+										poststed = "VESTØYA",
+									),
+							),
 					),
-					matrikkeladresse = Matrikkeladresse(
-						tilleggsnavn = "Fortet",
-						postnummer = "0101",
-						poststed = "ANDEBY"
-					)
-				),
-				kontaktadresse = Kontaktadresse(
-					coAdressenavn = null,
-					vegadresse = null,
-					postboksadresse = Postboksadresse(
-						postboks = "45451",
-						postnummer = "3312",
-						poststed = "VESTØYA"
-					)
-				)
 			)
-		)
 		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
 
 		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()
@@ -624,36 +660,43 @@ class TiltaksarrangorServiceTest {
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "ARBFORB")
 		val deltakerId = UUID.randomUUID()
-		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(
-			adresse = AdresseDto(
-				bostedsadresse = Bostedsadresse(
-					coAdressenavn = "C/O Gutterommet",
-					vegadresse = null,
-					matrikkeladresse = Matrikkeladresse(
-						tilleggsnavn = "Gården",
-						postnummer = "0484",
-						poststed = "OSLO"
-					)
-				),
-				oppholdsadresse = Oppholdsadresse(
-					coAdressenavn = "C/O Pappa",
-					vegadresse = Vegadresse(
-						husnummer = "1",
-						husbokstav = "B",
-						adressenavn = "Veien",
-						tilleggsnavn = null,
-						postnummer = "1234",
-						poststed = "MOSS"
+		val deltaker =
+			getDeltaker(deltakerId, deltakerliste.id).copy(
+				adresse =
+					AdresseDto(
+						bostedsadresse =
+							Bostedsadresse(
+								coAdressenavn = "C/O Gutterommet",
+								vegadresse = null,
+								matrikkeladresse =
+									Matrikkeladresse(
+										tilleggsnavn = "Gården",
+										postnummer = "0484",
+										poststed = "OSLO",
+									),
+							),
+						oppholdsadresse =
+							Oppholdsadresse(
+								coAdressenavn = "C/O Pappa",
+								vegadresse =
+									Vegadresse(
+										husnummer = "1",
+										husbokstav = "B",
+										adressenavn = "Veien",
+										tilleggsnavn = null,
+										postnummer = "1234",
+										poststed = "MOSS",
+									),
+								matrikkeladresse =
+									Matrikkeladresse(
+										tilleggsnavn = "Fortet",
+										postnummer = "0101",
+										poststed = "ANDEBY",
+									),
+							),
+						kontaktadresse = null,
 					),
-					matrikkeladresse = Matrikkeladresse(
-						tilleggsnavn = "Fortet",
-						postnummer = "0101",
-						poststed = "ANDEBY"
-					)
-				),
-				kontaktadresse = null
 			)
-		)
 		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
 
 		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()
@@ -670,21 +713,25 @@ class TiltaksarrangorServiceTest {
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "ARBFORB")
 		val deltakerId = UUID.randomUUID()
-		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(
-			adresse = AdresseDto(
-				bostedsadresse = Bostedsadresse(
-					coAdressenavn = "C/O Gutterommet",
-					vegadresse = null,
-					matrikkeladresse = Matrikkeladresse(
-						tilleggsnavn = "Gården",
-						postnummer = "0484",
-						poststed = "OSLO"
-					)
-				),
-				oppholdsadresse = null,
-				kontaktadresse = null
+		val deltaker =
+			getDeltaker(deltakerId, deltakerliste.id).copy(
+				adresse =
+					AdresseDto(
+						bostedsadresse =
+							Bostedsadresse(
+								coAdressenavn = "C/O Gutterommet",
+								vegadresse = null,
+								matrikkeladresse =
+									Matrikkeladresse(
+										tilleggsnavn = "Gården",
+										postnummer = "0484",
+										poststed = "OSLO",
+									),
+							),
+						oppholdsadresse = null,
+						kontaktadresse = null,
+					),
 			)
-		)
 		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
 
 		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()

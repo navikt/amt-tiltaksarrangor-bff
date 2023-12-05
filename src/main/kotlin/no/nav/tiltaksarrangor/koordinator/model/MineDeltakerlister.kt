@@ -5,16 +5,16 @@ import java.util.UUID
 
 data class MineDeltakerlister(
 	val veilederFor: VeilederFor?,
-	val koordinatorFor: KoordinatorFor?
+	val koordinatorFor: KoordinatorFor?,
 )
 
 data class VeilederFor(
 	val veilederFor: Int,
-	val medveilederFor: Int
+	val medveilederFor: Int,
 )
 
 data class KoordinatorFor(
-	val deltakerlister: List<Deltakerliste>
+	val deltakerlister: List<Deltakerliste>,
 ) {
 	data class Deltakerliste(
 		val id: UUID,
@@ -22,6 +22,6 @@ data class KoordinatorFor(
 		val navn: String,
 		val startdato: LocalDate?,
 		val sluttdato: LocalDate?,
-		val erKurs: Boolean
+		val erKurs: Boolean,
 	)
 }

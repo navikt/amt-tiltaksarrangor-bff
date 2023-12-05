@@ -60,7 +60,9 @@ class RyddejobbTest : IntegrationTest() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(16)))
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(
+			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(16)),
+		)
 		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.DELTAR, LocalDateTime.now().minusDays(16)))
 		ansattRepository.insertOrUpdateAnsatt(getAnsatt(ansattId, deltakerlisteId, deltakerId))
 
@@ -75,7 +77,9 @@ class RyddejobbTest : IntegrationTest() {
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltakerliste avsluttet for 12 dager siden - sletter ikke deltakerliste`() {
 		val deltakerlisteId = UUID.randomUUID()
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(12)))
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(
+			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(12)),
+		)
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
@@ -88,8 +92,12 @@ class RyddejobbTest : IntegrationTest() {
 		val deltakerId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
 		val endringsmeldingId = UUID.randomUUID()
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)))
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(16)))
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(
+			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)),
+		)
+		deltakerRepository.insertOrUpdateDeltaker(
+			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(16)),
+		)
 		ansattRepository.insertOrUpdateAnsatt(getAnsatt(ansattId, deltakerlisteId, deltakerId))
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(getEndringsmelding(endringsmeldingId, deltakerId))
 
@@ -106,8 +114,12 @@ class RyddejobbTest : IntegrationTest() {
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 12 dager siden - sletter ikke deltaker`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)))
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(12)))
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(
+			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)),
+		)
+		deltakerRepository.insertOrUpdateDeltaker(
+			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(12)),
+		)
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
@@ -119,7 +131,9 @@ class RyddejobbTest : IntegrationTest() {
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker er skjult - sletter deltaker`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(12), erSkjult = true))
+		deltakerRepository.insertOrUpdateDeltaker(
+			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(12), erSkjult = true),
+		)
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
@@ -130,7 +144,9 @@ class RyddejobbTest : IntegrationTest() {
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - ingenting skal slettes - sletter ingenting`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)))
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(
+			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)),
+		)
 		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.DELTAR, LocalDateTime.now()))
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
@@ -143,7 +159,7 @@ class RyddejobbTest : IntegrationTest() {
 private fun getDeltakerliste(
 	deltakerlisteId: UUID,
 	status: DeltakerlisteStatus,
-	sluttdato: LocalDate
+	sluttdato: LocalDate,
 ): DeltakerlisteDbo {
 	return DeltakerlisteDbo(
 		id = deltakerlisteId,
@@ -154,7 +170,7 @@ private fun getDeltakerliste(
 		erKurs = false,
 		arrangorId = UUID.randomUUID(),
 		tiltakNavn = "Tiltak",
-		tiltakType = "AMO"
+		tiltakType = "AMO",
 	)
 }
 
@@ -163,7 +179,7 @@ private fun getDeltaker(
 	deltakerlisteId: UUID,
 	status: StatusType,
 	statusGyldigFraDato: LocalDateTime,
-	erSkjult: Boolean = false
+	erSkjult: Boolean = false,
 ): DeltakerDbo {
 	return DeltakerDbo(
 		id = deltakerId,
@@ -192,33 +208,41 @@ private fun getDeltaker(
 		navVeilederTelefon = null,
 		skjultAvAnsattId = if (erSkjult) UUID.randomUUID() else null,
 		skjultDato = if (erSkjult) LocalDateTime.now() else null,
-		vurderingerFraArrangor = null
+		vurderingerFraArrangor = null,
 	)
 }
 
-private fun getAnsatt(ansattId: UUID, deltakerlisteId: UUID, deltakerId: UUID): AnsattDbo {
+private fun getAnsatt(
+	ansattId: UUID,
+	deltakerlisteId: UUID,
+	deltakerId: UUID,
+): AnsattDbo {
 	return AnsattDbo(
 		id = ansattId,
 		personIdent = "12345678910",
 		fornavn = "Fornavn",
 		mellomnavn = null,
 		etternavn = "Etternavn",
-		roller = listOf(
-			AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR),
-			AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.VEILEDER)
-		),
+		roller =
+			listOf(
+				AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR),
+				AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.VEILEDER),
+			),
 		deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
-		veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER))
+		veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
 	)
 }
 
-private fun getEndringsmelding(endringsmeldingId: UUID, deltakerId: UUID): EndringsmeldingDbo {
+private fun getEndringsmelding(
+	endringsmeldingId: UUID,
+	deltakerId: UUID,
+): EndringsmeldingDbo {
 	return EndringsmeldingDbo(
 		id = endringsmeldingId,
 		deltakerId = deltakerId,
 		type = EndringsmeldingType.ENDRE_SLUTTDATO,
 		innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
 		status = Endringsmelding.Status.AKTIV,
-		sendt = LocalDateTime.now()
+		sendt = LocalDateTime.now(),
 	)
 }

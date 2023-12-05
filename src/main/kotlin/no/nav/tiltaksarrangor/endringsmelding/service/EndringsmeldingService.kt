@@ -33,27 +33,36 @@ class EndringsmeldingService(
 	private val ansattService: AnsattService,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val deltakerRepository: DeltakerRepository,
-	private val metricsService: MetricsService
+	private val metricsService: MetricsService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun getAlleEndringsmeldinger(deltakerId: UUID, personIdent: String): EndringsmeldingResponse {
+	fun getAlleEndringsmeldinger(
+		deltakerId: UUID,
+		personIdent: String,
+	): EndringsmeldingResponse {
 		val endringsmeldinger = getEndringsmeldinger(deltakerId, personIdent)
 		return EndringsmeldingResponse(
 			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() }.sortedBy { it.sendt },
-			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }.sortedByDescending { it.sendt }
+			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }.sortedByDescending { it.sendt },
 		)
 	}
 
-	private fun getEndringsmeldinger(deltakerId: UUID, personIdent: String): List<Endringsmelding> {
+	private fun getEndringsmeldinger(
+		deltakerId: UUID,
+		personIdent: String,
+	): List<Endringsmelding> {
 		val ansatt = getAnsattMedRoller(personIdent)
-		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
-		val harTilgangTilDeltaker = ansattService.harTilgangTilDeltaker(
-			deltakerId = deltakerId,
-			deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
-			deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
-			ansattDbo = ansatt
-		)
+		val deltakerMedDeltakerliste =
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		val harTilgangTilDeltaker =
+			ansattService.harTilgangTilDeltaker(
+				deltakerId = deltakerId,
+				deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
+				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
+				ansattDbo = ansatt,
+			)
 		if (!harTilgangTilDeltaker) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
@@ -63,15 +72,22 @@ class EndringsmeldingService(
 		return endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).map { it.toEndringsmelding() }
 	}
 
-	fun opprettEndringsmelding(deltakerId: UUID, request: EndringsmeldingRequest, personIdent: String) {
+	fun opprettEndringsmelding(
+		deltakerId: UUID,
+		request: EndringsmeldingRequest,
+		personIdent: String,
+	) {
 		val ansatt = getAnsattMedRoller(personIdent)
-		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
-		val harTilgangTilDeltaker = ansattService.harTilgangTilDeltaker(
-			deltakerId = deltakerId,
-			deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
-			deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
-			ansattDbo = ansatt
-		)
+		val deltakerMedDeltakerliste =
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		val harTilgangTilDeltaker =
+			ansattService.harTilgangTilDeltaker(
+				deltakerId = deltakerId,
+				deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
+				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
+				ansattDbo = ansatt,
+			)
 		if (!harTilgangTilDeltaker) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
@@ -79,44 +95,79 @@ class EndringsmeldingService(
 			throw SkjultDeltakerException("Deltaker med id $deltakerId er skjult for tiltaksarrangør")
 		}
 
-		val endringsmeldingId = when (request.innhold.type) {
-			EndringsmeldingRequest.EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO ->
-				amtTiltakClient.leggTilOppstartsdato(deltakerId, LeggTilOppstartsdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold).oppstartsdato))
+		val endringsmeldingId =
+			when (request.innhold.type) {
+				EndringsmeldingRequest.EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO ->
+					amtTiltakClient.leggTilOppstartsdato(
+						deltakerId,
+						LeggTilOppstartsdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.LeggTilOppstartsdatoInnhold).oppstartsdato),
+					)
 
-			EndringsmeldingRequest.EndringsmeldingType.ENDRE_OPPSTARTSDATO ->
-				amtTiltakClient.endreOppstartsdato(deltakerId, EndreOppstartsdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.EndreOppstartsdatoInnhold).oppstartsdato))
+				EndringsmeldingRequest.EndringsmeldingType.ENDRE_OPPSTARTSDATO ->
+					amtTiltakClient.endreOppstartsdato(
+						deltakerId,
+						EndreOppstartsdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.EndreOppstartsdatoInnhold).oppstartsdato),
+					)
 
-			EndringsmeldingRequest.EndringsmeldingType.AVSLUTT_DELTAKELSE -> {
-				val innhold = request.innhold as EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold
-				amtTiltakClient.avsluttDeltakelse(deltakerId, AvsluttDeltakelseRequest(innhold.sluttdato, innhold.aarsak))
+				EndringsmeldingRequest.EndringsmeldingType.AVSLUTT_DELTAKELSE -> {
+					val innhold = request.innhold as EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold
+					amtTiltakClient.avsluttDeltakelse(deltakerId, AvsluttDeltakelseRequest(innhold.sluttdato, innhold.aarsak))
+				}
+				EndringsmeldingRequest.EndringsmeldingType.FORLENG_DELTAKELSE ->
+					amtTiltakClient.forlengDeltakelse(
+						deltakerId,
+						ForlengDeltakelseRequest((request.innhold as EndringsmeldingRequest.Innhold.ForlengDeltakelseInnhold).sluttdato),
+					)
+				EndringsmeldingRequest.EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT -> {
+					val innhold = request.innhold as EndringsmeldingRequest.Innhold.EndreDeltakelseProsentInnhold
+					amtTiltakClient.endreDeltakelsesprosent(
+						deltakerId,
+						EndreDeltakelsesprosentRequest(innhold.deltakelseProsent, innhold.dagerPerUke, innhold.gyldigFraDato),
+					)
+				}
+				EndringsmeldingRequest.EndringsmeldingType.DELTAKER_IKKE_AKTUELL ->
+					amtTiltakClient.deltakerIkkeAktuell(
+						deltakerId,
+						DeltakerIkkeAktuellRequest((request.innhold as EndringsmeldingRequest.Innhold.DeltakerIkkeAktuellInnhold).aarsak),
+					)
+				EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTDATO ->
+					amtTiltakClient.endreSluttdato(
+						deltakerId,
+						EndreSluttdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold).sluttdato),
+					)
+				EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTAARSAK ->
+					endreSluttaarsak(
+						deltakerMedDeltakerliste,
+						request.innhold as EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold,
+					)
 			}
-			EndringsmeldingRequest.EndringsmeldingType.FORLENG_DELTAKELSE -> amtTiltakClient.forlengDeltakelse(deltakerId, ForlengDeltakelseRequest((request.innhold as EndringsmeldingRequest.Innhold.ForlengDeltakelseInnhold).sluttdato))
-			EndringsmeldingRequest.EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT -> {
-				val innhold = request.innhold as EndringsmeldingRequest.Innhold.EndreDeltakelseProsentInnhold
-				amtTiltakClient.endreDeltakelsesprosent(deltakerId, EndreDeltakelsesprosentRequest(innhold.deltakelseProsent, innhold.dagerPerUke, innhold.gyldigFraDato))
-			}
-			EndringsmeldingRequest.EndringsmeldingType.DELTAKER_IKKE_AKTUELL -> amtTiltakClient.deltakerIkkeAktuell(deltakerId, DeltakerIkkeAktuellRequest((request.innhold as EndringsmeldingRequest.Innhold.DeltakerIkkeAktuellInnhold).aarsak))
-			EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTDATO -> amtTiltakClient.endreSluttdato(deltakerId, EndreSluttdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold).sluttdato))
-			EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTAARSAK -> endreSluttaarsak(deltakerMedDeltakerliste, request.innhold as EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold)
-		}
 
-		endringsmeldingRepository.lagreNyOgMerkAktiveEndringsmeldingMedSammeTypeSomUtfort(request.toEndringsmeldingDbo(endringsmeldingId = endringsmeldingId, deltakerId = deltakerId))
+		endringsmeldingRepository.lagreNyOgMerkAktiveEndringsmeldingMedSammeTypeSomUtfort(
+			request.toEndringsmeldingDbo(endringsmeldingId = endringsmeldingId, deltakerId = deltakerId),
+		)
 		log.info("Endringsmelding av type ${request.innhold.type.name} opprettet med id $endringsmeldingId for deltaker $deltakerId")
 	}
 
-	fun slettEndringsmelding(endringsmeldingId: UUID, personIdent: String) {
+	fun slettEndringsmelding(
+		endringsmeldingId: UUID,
+		personIdent: String,
+	) {
 		val ansatt = getAnsattMedRoller(personIdent)
-		val endringsmeldingMedDeltakerOgDeltakerliste = endringsmeldingRepository.getEndringsmeldingMedDeltakerOgDeltakerliste(endringsmeldingId)
-			?: throw NoSuchElementException("Fant ikke endringsmelding med id $endringsmeldingId")
+		val endringsmeldingMedDeltakerOgDeltakerliste =
+			endringsmeldingRepository.getEndringsmeldingMedDeltakerOgDeltakerliste(endringsmeldingId)
+				?: throw NoSuchElementException("Fant ikke endringsmelding med id $endringsmeldingId")
 
-		val harTilgangTilDeltaker = ansattService.harTilgangTilDeltaker(
-			deltakerId = endringsmeldingMedDeltakerOgDeltakerliste.deltakerDbo.id,
-			deltakerlisteId = endringsmeldingMedDeltakerOgDeltakerliste.deltakerlisteDbo.id,
-			deltakerlisteArrangorId = endringsmeldingMedDeltakerOgDeltakerliste.deltakerlisteDbo.arrangorId,
-			ansattDbo = ansatt
-		)
+		val harTilgangTilDeltaker =
+			ansattService.harTilgangTilDeltaker(
+				deltakerId = endringsmeldingMedDeltakerOgDeltakerliste.deltakerDbo.id,
+				deltakerlisteId = endringsmeldingMedDeltakerOgDeltakerliste.deltakerlisteDbo.id,
+				deltakerlisteArrangorId = endringsmeldingMedDeltakerOgDeltakerliste.deltakerlisteDbo.arrangorId,
+				ansattDbo = ansatt,
+			)
 		if (!harTilgangTilDeltaker) {
-			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id ${endringsmeldingMedDeltakerOgDeltakerliste.deltakerDbo.id}")
+			throw UnauthorizedException(
+				"Ansatt ${ansatt.id} har ikke tilgang til deltaker med id ${endringsmeldingMedDeltakerOgDeltakerliste.deltakerDbo.id}",
+			)
 		}
 
 		amtTiltakClient.tilbakekallEndringsmelding(endringsmeldingId)
@@ -133,9 +184,14 @@ class EndringsmeldingService(
 		return ansatt
 	}
 
-	private fun endreSluttaarsak(deltakerMedDeltakerliste: DeltakerMedDeltakerlisteDbo, innhold: EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold): UUID {
+	private fun endreSluttaarsak(
+		deltakerMedDeltakerliste: DeltakerMedDeltakerlisteDbo,
+		innhold: EndringsmeldingRequest.Innhold.EndreSluttaarsakInnhold,
+	): UUID {
 		if (deltakerMedDeltakerliste.deltaker.status != StatusType.HAR_SLUTTET || deltakerMedDeltakerliste.deltakerliste.erKurs) {
-			throw ValidationException("Kan ikke endre sluttaarsak på deltaker som har status ${deltakerMedDeltakerliste.deltaker.status} eller deltar på et kurs")
+			throw ValidationException(
+				"Kan ikke endre sluttaarsak på deltaker som har status ${deltakerMedDeltakerliste.deltaker.status} eller deltar på et kurs",
+			)
 		}
 
 		return amtTiltakClient.endreSluttaarsak(deltakerMedDeltakerliste.deltaker.id, EndreSluttaarsakRequest(innhold.aarsak))

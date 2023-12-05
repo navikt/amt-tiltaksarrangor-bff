@@ -8,18 +8,19 @@ import org.postgresql.util.PGobject
 data class AdresseDto(
 	val bostedsadresse: Bostedsadresse?,
 	val oppholdsadresse: Oppholdsadresse?,
-	val kontaktadresse: Kontaktadresse?
+	val kontaktadresse: Kontaktadresse?,
 ) {
-	fun toPGObject() = PGobject().also {
-		it.type = "json"
-		it.value = objectMapper.writeValueAsString(this)
-	}
+	fun toPGObject() =
+		PGobject().also {
+			it.type = "json"
+			it.value = objectMapper.writeValueAsString(this)
+		}
 }
 
 data class Bostedsadresse(
 	val coAdressenavn: String?,
 	val vegadresse: Vegadresse?,
-	val matrikkeladresse: Matrikkeladresse?
+	val matrikkeladresse: Matrikkeladresse?,
 ) {
 	fun toAdresse(): Adresse {
 		if (vegadresse != null) {
@@ -28,7 +29,7 @@ data class Bostedsadresse(
 				postnummer = vegadresse.postnummer,
 				poststed = vegadresse.poststed,
 				tilleggsnavn = vegadresse.tilleggsnavn,
-				adressenavn = vegadresse.tilAdressenavn(coAdressenavn)
+				adressenavn = vegadresse.tilAdressenavn(coAdressenavn),
 			)
 		} else if (matrikkeladresse != null) {
 			return Adresse(
@@ -36,7 +37,7 @@ data class Bostedsadresse(
 				postnummer = matrikkeladresse.postnummer,
 				poststed = matrikkeladresse.poststed,
 				tilleggsnavn = matrikkeladresse.tilleggsnavn,
-				adressenavn = coAdressenavn
+				adressenavn = coAdressenavn,
 			)
 		} else {
 			throw IllegalStateException("Bostedsadresse må ha enten veiadresse eller matrikkeladresse")
@@ -47,7 +48,7 @@ data class Bostedsadresse(
 data class Oppholdsadresse(
 	val coAdressenavn: String?,
 	val vegadresse: Vegadresse?,
-	val matrikkeladresse: Matrikkeladresse?
+	val matrikkeladresse: Matrikkeladresse?,
 ) {
 	fun toAdresse(): Adresse {
 		if (vegadresse != null) {
@@ -56,7 +57,7 @@ data class Oppholdsadresse(
 				postnummer = vegadresse.postnummer,
 				poststed = vegadresse.poststed,
 				tilleggsnavn = vegadresse.tilleggsnavn,
-				adressenavn = vegadresse.tilAdressenavn(coAdressenavn)
+				adressenavn = vegadresse.tilAdressenavn(coAdressenavn),
 			)
 		} else if (matrikkeladresse != null) {
 			return Adresse(
@@ -64,7 +65,7 @@ data class Oppholdsadresse(
 				postnummer = matrikkeladresse.postnummer,
 				poststed = matrikkeladresse.poststed,
 				tilleggsnavn = matrikkeladresse.tilleggsnavn,
-				adressenavn = coAdressenavn
+				adressenavn = coAdressenavn,
 			)
 		} else {
 			throw IllegalStateException("Oppholdsadresse må ha enten veiadresse eller matrikkeladresse")
@@ -75,7 +76,7 @@ data class Oppholdsadresse(
 data class Kontaktadresse(
 	val coAdressenavn: String?,
 	val vegadresse: Vegadresse?,
-	val postboksadresse: Postboksadresse?
+	val postboksadresse: Postboksadresse?,
 ) {
 	fun toAdresse(): Adresse {
 		if (vegadresse != null) {
@@ -84,7 +85,7 @@ data class Kontaktadresse(
 				postnummer = vegadresse.postnummer,
 				poststed = vegadresse.poststed,
 				tilleggsnavn = vegadresse.tilleggsnavn,
-				adressenavn = vegadresse.tilAdressenavn(coAdressenavn)
+				adressenavn = vegadresse.tilAdressenavn(coAdressenavn),
 			)
 		} else if (postboksadresse != null) {
 			return Adresse(
@@ -92,7 +93,7 @@ data class Kontaktadresse(
 				postnummer = postboksadresse.postnummer,
 				poststed = postboksadresse.poststed,
 				tilleggsnavn = null,
-				adressenavn = postboksadresse.tilAdressenavn(coAdressenavn)
+				adressenavn = postboksadresse.tilAdressenavn(coAdressenavn),
 			)
 		} else {
 			throw IllegalStateException("Kontaktadresse må ha enten veiadresse eller postboksadresse")
@@ -106,7 +107,7 @@ data class Vegadresse(
 	val adressenavn: String?,
 	val tilleggsnavn: String?,
 	val postnummer: String,
-	val poststed: String
+	val poststed: String,
 ) {
 	fun tilAdressenavn(coAdressenavn: String?): String {
 		val adressenavn = "${(adressenavn ?: "")} ${(husnummer ?: "")}${(husbokstav ?: "")}"
@@ -120,13 +121,13 @@ data class Vegadresse(
 data class Matrikkeladresse(
 	val tilleggsnavn: String?,
 	val postnummer: String,
-	val poststed: String
+	val poststed: String,
 )
 
 data class Postboksadresse(
 	val postboks: String,
 	val postnummer: String,
-	val poststed: String
+	val poststed: String,
 ) {
 	fun tilAdressenavn(coAdressenavn: String?): String {
 		if (coAdressenavn.isNullOrEmpty()) {

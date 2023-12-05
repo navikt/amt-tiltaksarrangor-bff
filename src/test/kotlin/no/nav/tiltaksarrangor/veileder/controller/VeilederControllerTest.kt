@@ -35,10 +35,11 @@ class VeilederControllerTest : IntegrationTest() {
 
 	@Test
 	fun `getMineDeltakere - ikke autentisert - returnerer 401`() {
-		val response = sendRequest(
-			method = "GET",
-			path = "/tiltaksarrangor/veileder/mine-deltakere"
-		)
+		val response =
+			sendRequest(
+				method = "GET",
+				path = "/tiltaksarrangor/veileder/mine-deltakere",
+			)
 
 		response.code shouldBe 401
 	}
@@ -47,48 +48,50 @@ class VeilederControllerTest : IntegrationTest() {
 	fun `getMineDeltakere - autentisert - returnerer 200`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = DeltakerlisteDbo(
-			id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
-			navn = "Gjennomføring 1",
-			status = DeltakerlisteStatus.GJENNOMFORES,
-			arrangorId = arrangorId,
-			tiltakNavn = "Gruppe AMO",
-			tiltakType = "ARBFORB",
-			startDato = null,
-			sluttDato = null,
-			erKurs = false
-		)
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Gruppe AMO",
+				tiltakType = "ARBFORB",
+				startDato = null,
+				sluttDato = null,
+				erKurs = false,
+			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")
-		val deltaker = DeltakerDbo(
-			id = deltakerId,
-			deltakerlisteId = deltakerliste.id,
-			personident = "10987654321",
-			fornavn = "Fornavn",
-			mellomnavn = null,
-			etternavn = "Etternavn",
-			telefonnummer = null,
-			epost = null,
-			erSkjermet = false,
-			adresse = getAdresse(),
-			status = StatusType.DELTAR,
-			statusOpprettetDato = LocalDateTime.now(),
-			statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
-			dagerPerUke = null,
-			prosentStilling = null,
-			startdato = LocalDate.of(2023, 2, 15),
-			sluttdato = null,
-			innsoktDato = LocalDate.now(),
-			bestillingstekst = "tekst",
-			navKontor = null,
-			navVeilederId = null,
-			navVeilederEpost = null,
-			navVeilederNavn = null,
-			navVeilederTelefon = null,
-			skjultAvAnsattId = null,
-			skjultDato = null,
-			vurderingerFraArrangor = null
-		)
+		val deltaker =
+			DeltakerDbo(
+				id = deltakerId,
+				deltakerlisteId = deltakerliste.id,
+				personident = "10987654321",
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				telefonnummer = null,
+				epost = null,
+				erSkjermet = false,
+				adresse = getAdresse(),
+				status = StatusType.DELTAR,
+				statusOpprettetDato = LocalDateTime.now(),
+				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+				dagerPerUke = null,
+				prosentStilling = null,
+				startdato = LocalDate.of(2023, 2, 15),
+				sluttdato = null,
+				innsoktDato = LocalDate.now(),
+				bestillingstekst = "tekst",
+				navKontor = null,
+				navVeilederId = null,
+				navVeilederEpost = null,
+				navVeilederNavn = null,
+				navVeilederTelefon = null,
+				skjultAvAnsattId = null,
+				skjultDato = null,
+				vurderingerFraArrangor = null,
+			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
@@ -99,21 +102,24 @@ class VeilederControllerTest : IntegrationTest() {
 				etternavn = "Ansattsen",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
 				deltakerlister = emptyList(),
-				veilederDeltakere = listOf(
-					VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)
-				)
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER),
+					),
+			),
+		)
+
+		val response =
+			sendRequest(
+				method = "GET",
+				path = "/tiltaksarrangor/veileder/mine-deltakere",
+				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
-		)
 
-		val response = sendRequest(
-			method = "GET",
-			path = "/tiltaksarrangor/veileder/mine-deltakere",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
-		)
-
-		val expectedJson = """
+		val expectedJson =
+			"""
 			[{"id":"977350f2-d6a5-49bb-a3a0-773f25f863d9","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","startDato":"2023-02-15","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00"},"deltakerliste":{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Arbeidsmarkedsopplæring","navn":"Gjennomføring 1"},"veiledertype":"VEILEDER","aktiveEndringsmeldinger":[]}]
-		""".trimIndent()
+			""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
 	}

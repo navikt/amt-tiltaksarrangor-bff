@@ -13,7 +13,7 @@ data class EndringsmeldingDbo(
 	val type: EndringsmeldingType,
 	val innhold: Innhold?,
 	val status: Endringsmelding.Status,
-	val sendt: LocalDateTime
+	val sendt: LocalDateTime,
 ) {
 	fun toEndringsmelding(): Endringsmelding {
 		return Endringsmelding(
@@ -21,7 +21,7 @@ data class EndringsmeldingDbo(
 			innhold = innhold?.toEndringsmeldingInnhold(),
 			type = Endringsmelding.Type.valueOf(type.name),
 			status = status,
-			sendt = sendt.toLocalDate()
+			sendt = sendt.toLocalDate(),
 		)
 	}
 

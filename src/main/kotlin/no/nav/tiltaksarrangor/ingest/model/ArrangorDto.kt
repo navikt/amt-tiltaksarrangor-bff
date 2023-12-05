@@ -7,7 +7,7 @@ data class ArrangorDto(
 	val id: UUID,
 	val navn: String,
 	val organisasjonsnummer: String,
-	val overordnetArrangorId: UUID?
+	val overordnetArrangorId: UUID?,
 )
 
 fun ArrangorDto.toArrangorDbo(): ArrangorDbo {
@@ -15,6 +15,6 @@ fun ArrangorDto.toArrangorDbo(): ArrangorDbo {
 		id = id,
 		navn = navn,
 		organisasjonsnummer = organisasjonsnummer,
-		overordnetArrangorId = overordnetArrangorId
+		overordnetArrangorId = overordnetArrangorId,
 	)
 }

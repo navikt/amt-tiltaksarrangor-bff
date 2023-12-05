@@ -11,7 +11,7 @@ class FlywayConfiguration {
 	fun flywayCustomizer(): FlywayConfigurationCustomizer? {
 		return FlywayConfigurationCustomizer { configuration: FluentConfiguration ->
 			configuration.configuration(
-				mapOf("flyway.postgresql.transactional.lock" to "false")
+				mapOf("flyway.postgresql.transactional.lock" to "false"),
 			)
 		}
 	}

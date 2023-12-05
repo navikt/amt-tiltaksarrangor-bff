@@ -17,48 +17,53 @@ import java.util.UUID
 @Component
 class DeltakerlisteRepository(
 	private val template: NamedParameterJdbcTemplate,
-	private val deltakerRepository: DeltakerRepository
+	private val deltakerRepository: DeltakerRepository,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	private val deltakerlisteRowMapper = RowMapper { rs, _ ->
-		DeltakerlisteDbo(
-			id = UUID.fromString(rs.getString("id")),
-			navn = rs.getString("navn"),
-			status = DeltakerlisteStatus.valueOf(rs.getString("status")),
-			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
-			tiltakNavn = rs.getString("tiltak_navn"),
-			tiltakType = rs.getString("tiltak_type"),
-			startDato = rs.getNullableLocalDate("start_dato"),
-			sluttDato = rs.getNullableLocalDate("slutt_dato"),
-			erKurs = rs.getBoolean("er_kurs")
-		)
-	}
-
-	private val deltakerlisteMedArrangorRowMapper = RowMapper { rs, _ ->
-		DeltakerlisteMedArrangorDbo(
-			deltakerlisteDbo = DeltakerlisteDbo(
-				id = UUID.fromString(rs.getString("deltakerliste_id")),
-				navn = rs.getString("deltakerliste_navn"),
+	private val deltakerlisteRowMapper =
+		RowMapper { rs, _ ->
+			DeltakerlisteDbo(
+				id = UUID.fromString(rs.getString("id")),
+				navn = rs.getString("navn"),
 				status = DeltakerlisteStatus.valueOf(rs.getString("status")),
 				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 				tiltakNavn = rs.getString("tiltak_navn"),
 				tiltakType = rs.getString("tiltak_type"),
 				startDato = rs.getNullableLocalDate("start_dato"),
 				sluttDato = rs.getNullableLocalDate("slutt_dato"),
-				erKurs = rs.getBoolean("er_kurs")
-			),
-			arrangorDbo = ArrangorDbo(
-				id = UUID.fromString(rs.getString("arrangor_id")),
-				navn = rs.getString("arrangor_navn"),
-				organisasjonsnummer = rs.getString("organisasjonsnummer"),
-				overordnetArrangorId = rs.getNullableUUID("overordnet_arrangor_id")
+				erKurs = rs.getBoolean("er_kurs"),
 			)
-		)
-	}
+		}
+
+	private val deltakerlisteMedArrangorRowMapper =
+		RowMapper { rs, _ ->
+			DeltakerlisteMedArrangorDbo(
+				deltakerlisteDbo =
+					DeltakerlisteDbo(
+						id = UUID.fromString(rs.getString("deltakerliste_id")),
+						navn = rs.getString("deltakerliste_navn"),
+						status = DeltakerlisteStatus.valueOf(rs.getString("status")),
+						arrangorId = UUID.fromString(rs.getString("arrangor_id")),
+						tiltakNavn = rs.getString("tiltak_navn"),
+						tiltakType = rs.getString("tiltak_type"),
+						startDato = rs.getNullableLocalDate("start_dato"),
+						sluttDato = rs.getNullableLocalDate("slutt_dato"),
+						erKurs = rs.getBoolean("er_kurs"),
+					),
+				arrangorDbo =
+					ArrangorDbo(
+						id = UUID.fromString(rs.getString("arrangor_id")),
+						navn = rs.getString("arrangor_navn"),
+						organisasjonsnummer = rs.getString("organisasjonsnummer"),
+						overordnetArrangorId = rs.getNullableUUID("overordnet_arrangor_id"),
+					),
+			)
+		}
 
 	fun insertOrUpdateDeltakerliste(deltakerlisteDbo: DeltakerlisteDbo) {
-		val sql = """
+		val sql =
+			"""
 			INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltak_navn, tiltak_type, start_dato, slutt_dato, er_kurs)
 			VALUES (:id,
 					:navn,
@@ -78,7 +83,7 @@ class DeltakerlisteRepository(
 					start_dato				= :start_dato,
 					slutt_dato				= :slutt_dato,
 					er_kurs					= :er_kurs
-		""".trimIndent()
+			""".trimIndent()
 
 		template.update(
 			sql,
@@ -91,8 +96,8 @@ class DeltakerlisteRepository(
 				"tiltak_type" to deltakerlisteDbo.tiltakType,
 				"start_dato" to deltakerlisteDbo.startDato,
 				"slutt_dato" to deltakerlisteDbo.sluttDato,
-				"er_kurs" to deltakerlisteDbo.erKurs
-			)
+				"er_kurs" to deltakerlisteDbo.erKurs,
+			),
 		)
 	}
 
@@ -101,11 +106,11 @@ class DeltakerlisteRepository(
 		log.info("Slettet $slettedeDeltakere deltakere ved sletting av deltakerliste med id $deltakerlisteId")
 		template.update(
 			"DELETE FROM koordinator_deltakerliste WHERE deltakerliste_id = :deltakerliste_id",
-			sqlParameters("deltakerliste_id" to deltakerlisteId)
+			sqlParameters("deltakerliste_id" to deltakerlisteId),
 		)
 		return template.update(
 			"DELETE FROM deltakerliste WHERE id = :id",
-			sqlParameters("id" to deltakerlisteId)
+			sqlParameters("id" to deltakerlisteId),
 		)
 	}
 
@@ -113,7 +118,7 @@ class DeltakerlisteRepository(
 		return template.query(
 			"SELECT * FROM deltakerliste WHERE id = :id",
 			sqlParameters("id" to deltakerlisteId),
-			deltakerlisteRowMapper
+			deltakerlisteRowMapper,
 		).firstOrNull()
 	}
 
@@ -124,31 +129,31 @@ class DeltakerlisteRepository(
 		return template.query(
 			"SELECT * FROM deltakerliste WHERE id in(:ids)",
 			sqlParameters("ids" to deltakerlisteIder),
-			deltakerlisteRowMapper
+			deltakerlisteRowMapper,
 		)
 	}
 
 	fun getDeltakerlisteMedArrangor(deltakerlisteId: UUID): DeltakerlisteMedArrangorDbo? {
 		return template.query(
 			"""
-				SELECT deltakerliste.id as deltakerliste_id,
-						deltakerliste.navn as deltakerliste_navn,
-						status,
-						arrangor_id,
-						tiltak_navn,
-						tiltak_type,
-						start_dato,
-						slutt_dato,
-						er_kurs,
-						a.navn as arrangor_navn,
-						a.organisasjonsnummer,
-						a.overordnet_arrangor_id
-				FROM deltakerliste
-						 INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
-				WHERE deltakerliste.id = :id;
+			SELECT deltakerliste.id as deltakerliste_id,
+					deltakerliste.navn as deltakerliste_navn,
+					status,
+					arrangor_id,
+					tiltak_navn,
+					tiltak_type,
+					start_dato,
+					slutt_dato,
+					er_kurs,
+					a.navn as arrangor_navn,
+					a.organisasjonsnummer,
+					a.overordnet_arrangor_id
+			FROM deltakerliste
+					 INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
+			WHERE deltakerliste.id = :id;
 			""".trimIndent(),
 			sqlParameters("id" to deltakerlisteId),
-			deltakerlisteMedArrangorRowMapper
+			deltakerlisteMedArrangorRowMapper,
 		).firstOrNull()
 	}
 
@@ -158,31 +163,31 @@ class DeltakerlisteRepository(
 		}
 		return template.query(
 			"""
-				SELECT deltakerliste.id as deltakerliste_id,
-						deltakerliste.navn as deltakerliste_navn,
-						status,
-						arrangor_id,
-						tiltak_navn,
-						tiltak_type,
-						start_dato,
-						slutt_dato,
-						er_kurs,
-						a.navn as arrangor_navn,
-						a.organisasjonsnummer,
-						a.overordnet_arrangor_id
-				FROM deltakerliste
-						 INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
-				WHERE a.id in (:arrangorIds);
+			SELECT deltakerliste.id as deltakerliste_id,
+					deltakerliste.navn as deltakerliste_navn,
+					status,
+					arrangor_id,
+					tiltak_navn,
+					tiltak_type,
+					start_dato,
+					slutt_dato,
+					er_kurs,
+					a.navn as arrangor_navn,
+					a.organisasjonsnummer,
+					a.overordnet_arrangor_id
+			FROM deltakerliste
+					 INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
+			WHERE a.id in (:arrangorIds);
 			""".trimIndent(),
 			sqlParameters("arrangorIds" to arrangorIder),
-			deltakerlisteMedArrangorRowMapper
+			deltakerlisteMedArrangorRowMapper,
 		)
 	}
 
 	fun getDeltakerlisterSomSkalSlettes(slettesDato: LocalDate): List<UUID> {
 		return template.query(
 			"SELECT id from deltakerliste WHERE status='AVSLUTTET' AND slutt_dato is not NULL AND slutt_dato < :slettesDato",
-			sqlParameters("slettesDato" to slettesDato)
+			sqlParameters("slettesDato" to slettesDato),
 		) { rs, _ ->
 			UUID.fromString(rs.getString("id"))
 		}

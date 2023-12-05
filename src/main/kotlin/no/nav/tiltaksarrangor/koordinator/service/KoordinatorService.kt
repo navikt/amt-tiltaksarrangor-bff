@@ -41,7 +41,7 @@ class KoordinatorService(
 	private val arrangorRepository: ArrangorRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
-	private val metricsService: MetricsService
+	private val metricsService: MetricsService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -50,32 +50,39 @@ class KoordinatorService(
 		if (!ansattService.harRoller(ansatt.roller)) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator")
 		}
-		val veilederFor = if (ansattService.erVeileder(ansatt.roller)) {
-			getVeilederFor(ansatt.veilederDeltakere)
-		} else {
-			null
-		}
-		val koordinatorFor = if (ansattService.erKoordinator(ansatt.roller)) {
-			getKoordinatorFor(ansatt.deltakerlister)
-		} else {
-			null
-		}
+		val veilederFor =
+			if (ansattService.erVeileder(ansatt.roller)) {
+				getVeilederFor(ansatt.veilederDeltakere)
+			} else {
+				null
+			}
+		val koordinatorFor =
+			if (ansattService.erKoordinator(ansatt.roller)) {
+				getKoordinatorFor(ansatt.deltakerlister)
+			} else {
+				null
+			}
 		return MineDeltakerlister(
 			veilederFor = veilederFor,
-			koordinatorFor = koordinatorFor
+			koordinatorFor = koordinatorFor,
 		)
 	}
 
-	fun getTilgjengeligeVeiledere(deltakerlisteId: UUID, personIdent: String): List<TilgjengeligVeileder> {
+	fun getTilgjengeligeVeiledere(
+		deltakerlisteId: UUID,
+		personIdent: String,
+	): List<TilgjengeligVeileder> {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
-		val deltakerliste = deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
-			?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
+		val deltakerliste =
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
+				?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
 
-		val harKoordinatorRolleHosArrangor = ansattService.harRolleHosArrangor(
-			arrangorId = deltakerliste.arrangorId,
-			rolle = AnsattRolle.KOORDINATOR,
-			roller = ansatt.roller
-		)
+		val harKoordinatorRolleHosArrangor =
+			ansattService.harRolleHosArrangor(
+				arrangorId = deltakerliste.arrangorId,
+				rolle = AnsattRolle.KOORDINATOR,
+				roller = ansatt.roller,
+			)
 
 		if (harKoordinatorRolleHosArrangor && ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
 			return ansattService.getVeiledereForArrangor(deltakerliste.arrangorId).map {
@@ -83,7 +90,7 @@ class KoordinatorService(
 					ansattId = it.id,
 					fornavn = it.fornavn,
 					mellomnavn = it.mellomnavn,
-					etternavn = it.etternavn
+					etternavn = it.etternavn,
 				)
 			}
 		} else {
@@ -91,21 +98,27 @@ class KoordinatorService(
 		}
 	}
 
-	fun tildelVeiledereForDeltaker(deltakerId: UUID, request: LeggTilVeiledereRequest, personIdent: String) {
+	fun tildelVeiledereForDeltaker(
+		deltakerId: UUID,
+		request: LeggTilVeiledereRequest,
+		personIdent: String,
+	) {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
-		val deltakerMedDeltakerlisteDbo = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
-			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		val deltakerMedDeltakerlisteDbo =
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
-		val harKoordinatorRolleHosArrangor = ansattService.harRolleHosArrangor(
-			arrangorId = deltakerMedDeltakerlisteDbo.deltakerliste.arrangorId,
-			rolle = AnsattRolle.KOORDINATOR,
-			roller = ansatt.roller
-		)
+		val harKoordinatorRolleHosArrangor =
+			ansattService.harRolleHosArrangor(
+				arrangorId = deltakerMedDeltakerlisteDbo.deltakerliste.arrangorId,
+				rolle = AnsattRolle.KOORDINATOR,
+				roller = ansatt.roller,
+			)
 		if (harKoordinatorRolleHosArrangor && ansattService.deltakerlisteErLagtTil(ansatt, deltakerMedDeltakerlisteDbo.deltakerliste.id)) {
 			validerRequest(request)
 			if (!ansattService.erAlleAnsatteVeiledereHosArrangor(
 					ansattIder = request.veiledere.map { it.ansattId },
-					arrangorId = deltakerMedDeltakerlisteDbo.deltakerliste.arrangorId
+					arrangorId = deltakerMedDeltakerlisteDbo.deltakerliste.arrangorId,
 				)
 			) {
 				throw UnauthorizedException("Alle ansatte må ha veileder-rolle hos arrangør")
@@ -113,12 +126,13 @@ class KoordinatorService(
 			ansattService.tildelVeiledereForDeltaker(
 				deltakerId = deltakerId,
 				arrangorId = deltakerMedDeltakerlisteDbo.deltakerliste.arrangorId,
-				veiledereForDeltaker = request.veiledere.map {
-					VeilederForDeltakerDbo(
-						ansattId = it.ansattId,
-						veilederType = it.toVeiledertype()
-					)
-				}
+				veiledereForDeltaker =
+					request.veiledere.map {
+						VeilederForDeltakerDbo(
+							ansattId = it.ansattId,
+							veilederType = it.toVeiledertype(),
+						)
+					},
 			)
 			metricsService.incTildeltVeileder()
 			log.info("Lagt til veiledere for deltaker $deltakerId")
@@ -140,16 +154,21 @@ class KoordinatorService(
 		}
 	}
 
-	fun getDeltakerliste(deltakerlisteId: UUID, personIdent: String): Deltakerliste {
+	fun getDeltakerliste(
+		deltakerlisteId: UUID,
+		personIdent: String,
+	): Deltakerliste {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
-		val deltakerlisteMedArrangor = deltakerlisteRepository.getDeltakerlisteMedArrangor(deltakerlisteId)
-			?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
+		val deltakerlisteMedArrangor =
+			deltakerlisteRepository.getDeltakerlisteMedArrangor(deltakerlisteId)
+				?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
 
-		val harKoordinatorRolleHosArrangor = ansattService.harRolleHosArrangor(
-			arrangorId = deltakerlisteMedArrangor.deltakerlisteDbo.arrangorId,
-			rolle = AnsattRolle.KOORDINATOR,
-			roller = ansatt.roller
-		)
+		val harKoordinatorRolleHosArrangor =
+			ansattService.harRolleHosArrangor(
+				arrangorId = deltakerlisteMedArrangor.deltakerlisteDbo.arrangorId,
+				rolle = AnsattRolle.KOORDINATOR,
+				roller = ansatt.roller,
+			)
 		if (harKoordinatorRolleHosArrangor) {
 			if (ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
 				return getDeltakerliste(deltakerlisteMedArrangor)
@@ -163,15 +182,17 @@ class KoordinatorService(
 
 	private fun getDeltakerliste(deltakerlisteMedArrangor: DeltakerlisteMedArrangorDbo): Deltakerliste {
 		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
-		val koordinatorer = ansattService.getKoordinatorerForDeltakerliste(
-			deltakerlisteId = deltakerlisteMedArrangor.deltakerlisteDbo.id,
-			arrangorId = deltakerlisteMedArrangor.arrangorDbo.id
-		)
-			.sortedBy { it.etternavn } // sorteringen er kun for KoordinatorControllerTest sin skyld
+		val koordinatorer =
+			ansattService.getKoordinatorerForDeltakerliste(
+				deltakerlisteId = deltakerlisteMedArrangor.deltakerlisteDbo.id,
+				arrangorId = deltakerlisteMedArrangor.arrangorDbo.id,
+			)
+				.sortedBy { it.etternavn } // sorteringen er kun for KoordinatorControllerTest sin skyld
 
-		val deltakere = deltakerRepository.getDeltakereForDeltakerliste(deltakerlisteMedArrangor.deltakerlisteDbo.id)
-			.filter { !it.erSkjult() }
-			.filter { it.skalVises() }
+		val deltakere =
+			deltakerRepository.getDeltakereForDeltakerliste(deltakerlisteMedArrangor.deltakerlisteDbo.id)
+				.filter { !it.erSkjult() }
+				.filter { it.skalVises() }
 
 		val veiledereForDeltakerliste = ansattService.getVeiledereForDeltakere(deltakere.map { it.id })
 		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltakere(deltakere.map { it.id })
@@ -184,23 +205,24 @@ class KoordinatorService(
 			startDato = deltakerlisteMedArrangor.deltakerlisteDbo.startDato,
 			sluttDato = deltakerlisteMedArrangor.deltakerlisteDbo.sluttDato,
 			status = deltakerlisteMedArrangor.deltakerlisteDbo.status,
-			koordinatorer = koordinatorer.map {
-				Koordinator(
-					fornavn = it.fornavn,
-					mellomnavn = it.mellomnavn,
-					etternavn = it.etternavn
-				)
-			},
+			koordinatorer =
+				koordinatorer.map {
+					Koordinator(
+						fornavn = it.fornavn,
+						mellomnavn = it.mellomnavn,
+						etternavn = it.etternavn,
+					)
+				},
 			deltakere = tilKoordinatorsDeltakere(deltakere, veiledereForDeltakerliste, endringsmeldinger),
 			erKurs = deltakerlisteMedArrangor.deltakerlisteDbo.erKurs,
-			tiltakType = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType
+			tiltakType = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType,
 		)
 	}
 
 	private fun getVeilederFor(veilederDeltakere: List<VeilederDeltakerDbo>): VeilederFor {
 		return VeilederFor(
 			veilederFor = veilederDeltakere.filter { it.veilederType == Veiledertype.VEILEDER }.size,
-			medveilederFor = veilederDeltakere.filter { it.veilederType == Veiledertype.MEDVEILEDER }.size
+			medveilederFor = veilederDeltakere.filter { it.veilederType == Veiledertype.MEDVEILEDER }.size,
 		)
 	}
 
@@ -220,7 +242,7 @@ class KoordinatorService(
 	private fun tilKoordinatorsDeltakere(
 		deltakere: List<DeltakerDbo>,
 		veiledere: List<Veileder>,
-		endringsmeldinger: List<EndringsmeldingDbo>
+		endringsmeldinger: List<EndringsmeldingDbo>,
 	): List<Deltaker> {
 		return deltakere.map {
 			Deltaker(
@@ -232,23 +254,30 @@ class KoordinatorService(
 				soktInnDato = it.innsoktDato.atStartOfDay(),
 				startDato = it.startdato,
 				sluttDato = it.sluttdato,
-				status = DeltakerStatus(
-					type = it.status,
-					endretDato = it.statusGyldigFraDato
-				),
+				status =
+					DeltakerStatus(
+						type = it.status,
+						endretDato = it.statusGyldigFraDato,
+					),
 				veiledere = getVeiledereForDeltaker(it.id, veiledere),
 				navKontor = it.navKontor,
 				aktiveEndringsmeldinger = getEndringsmeldinger(it.id, endringsmeldinger),
-				gjeldendeVurderingFraArrangor = it.getGjeldendeVurdering()
+				gjeldendeVurderingFraArrangor = it.getGjeldendeVurdering(),
 			)
 		}
 	}
 
-	private fun getVeiledereForDeltaker(deltakerId: UUID, veiledereDeltakere: List<Veileder>): List<Veileder> {
+	private fun getVeiledereForDeltaker(
+		deltakerId: UUID,
+		veiledereDeltakere: List<Veileder>,
+	): List<Veileder> {
 		return veiledereDeltakere.filter { it.deltakerId == deltakerId }
 	}
 
-	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
+	private fun getEndringsmeldinger(
+		deltakerId: UUID,
+		endringsmeldinger: List<EndringsmeldingDbo>,
+	): List<Endringsmelding> {
 		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
 		return endringsmeldingerForDeltaker.map { it.toEndringsmelding() }
 	}
@@ -262,7 +291,7 @@ fun List<DeltakerlisteDbo>.toDeltakerliste(): List<KoordinatorFor.Deltakerliste>
 			type = it.cleanTiltaksnavn(),
 			startdato = it.startDato,
 			sluttdato = it.sluttDato,
-			erKurs = it.erKurs
+			erKurs = it.erKurs,
 		)
 	}
 }

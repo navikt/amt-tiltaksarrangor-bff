@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/unleash/api/feature")
 class UnleashController(
-	private val unleashService: UnleashService
+	private val unleashService: UnleashService,
 ) {
 	@GetMapping
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getFeaturetoggles(
-		@RequestParam("feature") features: List<String>
+		@RequestParam("feature") features: List<String>,
 	): Map<String, Boolean> {
 		return unleashService.getFeaturetoggles(features)
 	}

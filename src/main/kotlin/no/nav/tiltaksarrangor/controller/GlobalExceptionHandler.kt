@@ -16,12 +16,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 
 @ControllerAdvice
 class GlobalExceptionHandler(
-	@Value("\${rest.include-stacktrace: false}") private val includeStacktrace: Boolean
+	@Value("\${rest.include-stacktrace: false}") private val includeStacktrace: Boolean,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	@ExceptionHandler(Exception::class)
-	fun handleException(ex: Exception, request: HttpServletRequest): ResponseEntity<Response> {
+	fun handleException(
+		ex: Exception,
+		request: HttpServletRequest,
+	): ResponseEntity<Response> {
 		return when (ex) {
 			is ValidationException -> buildResponse(HttpStatus.BAD_REQUEST, ex)
 			is SkjultDeltakerException -> buildResponse(HttpStatus.BAD_REQUEST, ex)
@@ -38,7 +41,7 @@ class GlobalExceptionHandler(
 
 	private fun buildResponse(
 		status: HttpStatus,
-		exception: Throwable
+		exception: Throwable,
 	): ResponseEntity<Response> {
 		if (status.is4xxClientError) {
 			log.warn("Noe er feil med request: ${exception.message}, statuskode ${status.value()}", exception)
@@ -51,8 +54,8 @@ class GlobalExceptionHandler(
 				Response(
 					status = status.value(),
 					title = status,
-					stacktrace = if (includeStacktrace) ExceptionUtils.getStackTrace(exception) else null
-				)
+					stacktrace = if (includeStacktrace) ExceptionUtils.getStackTrace(exception) else null,
+				),
 			)
 	}
 
@@ -60,6 +63,6 @@ class GlobalExceptionHandler(
 	data class Response(
 		val status: Int,
 		val title: HttpStatus,
-		val stacktrace: String? = null
+		val stacktrace: String? = null,
 	)
 }

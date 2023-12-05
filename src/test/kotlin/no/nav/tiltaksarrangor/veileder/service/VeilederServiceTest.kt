@@ -60,8 +60,8 @@ class VeilederServiceTest {
 				etternavn = "Ansattsen",
 				roller = listOf(AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR)),
 				deltakerlister = emptyList(),
-				veilederDeltakere = listOf(VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER))
-			)
+				veilederDeltakere = listOf(VeilederDeltakerDbo(UUID.randomUUID(), Veiledertype.VEILEDER)),
+			),
 		)
 
 		assertThrows<UnauthorizedException> {
@@ -85,13 +85,15 @@ class VeilederServiceTest {
 		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker3)
 		val endringsmelding = getEndringsmelding(deltaker.id)
-		val endringsmelding2 = endringsmelding.copy(
-			id = UUID.randomUUID(),
-			type = EndringsmeldingType.ENDRE_OPPSTARTSDATO,
-			innhold = Innhold.EndreOppstartsdatoInnhold(
-				LocalDate.now().minusMonths(2)
+		val endringsmelding2 =
+			endringsmelding.copy(
+				id = UUID.randomUUID(),
+				type = EndringsmeldingType.ENDRE_OPPSTARTSDATO,
+				innhold =
+					Innhold.EndreOppstartsdatoInnhold(
+						LocalDate.now().minusMonths(2),
+					),
 			)
-		)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding2)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -103,12 +105,13 @@ class VeilederServiceTest {
 				etternavn = "Ansattsen",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER), AnsattRolleDbo(arrangorId2, AnsattRolle.VEILEDER)),
 				deltakerlister = emptyList(),
-				veilederDeltakere = listOf(
-					VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
-					VeilederDeltakerDbo(deltaker2.id, Veiledertype.MEDVEILEDER),
-					VeilederDeltakerDbo(deltaker3.id, Veiledertype.VEILEDER)
-				)
-			)
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+						VeilederDeltakerDbo(deltaker2.id, Veiledertype.MEDVEILEDER),
+						VeilederDeltakerDbo(deltaker3.id, Veiledertype.VEILEDER),
+					),
+			),
 		)
 
 		val mineDeltakere = veilederService.getMineDeltakere(personIdent)
@@ -158,12 +161,13 @@ class VeilederServiceTest {
 				etternavn = "Ansattsen",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
 				deltakerlister = emptyList(),
-				veilederDeltakere = listOf(
-					VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
-					VeilederDeltakerDbo(deltaker2.id, Veiledertype.MEDVEILEDER),
-					VeilederDeltakerDbo(deltaker3.id, Veiledertype.VEILEDER)
-				)
-			)
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+						VeilederDeltakerDbo(deltaker2.id, Veiledertype.MEDVEILEDER),
+						VeilederDeltakerDbo(deltaker3.id, Veiledertype.VEILEDER),
+					),
+			),
 		)
 
 		val mineDeltakere = veilederService.getMineDeltakere(personIdent)
@@ -193,11 +197,12 @@ class VeilederServiceTest {
 				etternavn = "Ansattsen",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
 				deltakerlister = emptyList(),
-				veilederDeltakere = listOf(
-					VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
-					VeilederDeltakerDbo(deltaker2.id, Veiledertype.MEDVEILEDER)
-				)
-			)
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+						VeilederDeltakerDbo(deltaker2.id, Veiledertype.MEDVEILEDER),
+					),
+			),
 		)
 
 		val mineDeltakere = veilederService.getMineDeltakere(personIdent)
@@ -208,7 +213,7 @@ class VeilederServiceTest {
 	}
 
 	@Test
-	fun `getMineDeltakere - ansatt er veileder for deltakere som har sluttdato mer enn 15 dager frem i tid - filtrerer bort skjulte deltakere`() {
+	fun `getMineDeltakere - ansatt er veileder for deltakere med sluttdato mer enn 15 dager frem i tid - filtrerer bort skjulte deltakere`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
@@ -226,11 +231,12 @@ class VeilederServiceTest {
 				etternavn = "Ansattsen",
 				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
 				deltakerlister = emptyList(),
-				veilederDeltakere = listOf(
-					VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
-					VeilederDeltakerDbo(deltaker2.id, Veiledertype.MEDVEILEDER)
-				)
-			)
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+						VeilederDeltakerDbo(deltaker2.id, Veiledertype.MEDVEILEDER),
+					),
+			),
 		)
 
 		val mineDeltakere = veilederService.getMineDeltakere(personIdent)

@@ -8,7 +8,7 @@ data class Endringsmelding(
 	val innhold: Innhold?,
 	val type: Type,
 	val status: Status,
-	val sendt: LocalDate
+	val sendt: LocalDate,
 ) {
 	fun erAktiv(): Boolean {
 		return status == Status.AKTIV
@@ -22,47 +22,50 @@ data class Endringsmelding(
 		DELTAKER_IKKE_AKTUELL,
 		ENDRE_DELTAKELSE_PROSENT,
 		ENDRE_SLUTTDATO,
-		ENDRE_SLUTTAARSAK
+		ENDRE_SLUTTAARSAK,
 	}
 
 	enum class Status {
-		AKTIV, TILBAKEKALT, UTDATERT, UTFORT
+		AKTIV,
+		TILBAKEKALT,
+		UTDATERT,
+		UTFORT,
 	}
 
 	sealed class Innhold {
 		data class LeggTilOppstartsdatoInnhold(
-			val oppstartsdato: LocalDate
+			val oppstartsdato: LocalDate,
 		) : Innhold()
 
 		data class EndreOppstartsdatoInnhold(
-			val oppstartsdato: LocalDate?
+			val oppstartsdato: LocalDate?,
 		) : Innhold()
 
 		data class EndreDeltakelseProsentInnhold(
 			val deltakelseProsent: Int,
 			val dagerPerUke: Int?,
-			val gyldigFraDato: LocalDate?
+			val gyldigFraDato: LocalDate?,
 		) : Innhold()
 
 		data class ForlengDeltakelseInnhold(
-			val sluttdato: LocalDate
+			val sluttdato: LocalDate,
 		) : Innhold()
 
 		data class AvsluttDeltakelseInnhold(
 			val sluttdato: LocalDate,
-			val aarsak: DeltakerStatusAarsak
+			val aarsak: DeltakerStatusAarsak,
 		) : Innhold()
 
 		data class DeltakerIkkeAktuellInnhold(
-			val aarsak: DeltakerStatusAarsak
+			val aarsak: DeltakerStatusAarsak,
 		) : Innhold()
 
 		data class EndreSluttdatoInnhold(
-			val sluttdato: LocalDate
+			val sluttdato: LocalDate,
 		) : Innhold()
 
 		data class EndreSluttaarsakInnhold(
-			val aarsak: DeltakerStatusAarsak
+			val aarsak: DeltakerStatusAarsak,
 		) : Innhold()
 	}
 }

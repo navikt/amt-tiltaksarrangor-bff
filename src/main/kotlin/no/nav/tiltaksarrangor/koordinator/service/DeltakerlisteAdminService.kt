@@ -18,7 +18,7 @@ class DeltakerlisteAdminService(
 	private val ansattService: AnsattService,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val arrangorRepository: ArrangorRepository,
-	private val metricsService: MetricsService
+	private val metricsService: MetricsService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -35,34 +35,45 @@ class DeltakerlisteAdminService(
 				id = it.deltakerlisteDbo.id,
 				navn = it.deltakerlisteDbo.navn,
 				tiltaksnavn = it.deltakerlisteDbo.cleanTiltaksnavn(),
-				arrangorNavn = it.arrangorDbo.overordnetArrangorId?.let { overordnetArrangorId ->
-					finnOverordnetArrangorNavn(overordnetArrangorId, overordnedeArrangorer)
-				} ?: it.arrangorDbo.navn,
+				arrangorNavn =
+					it.arrangorDbo.overordnetArrangorId?.let { overordnetArrangorId ->
+						finnOverordnetArrangorNavn(overordnetArrangorId, overordnedeArrangorer)
+					} ?: it.arrangorDbo.navn,
 				arrangorOrgnummer = it.arrangorDbo.organisasjonsnummer,
-				arrangorParentNavn = it.arrangorDbo.navn, // arrangørnavn og overordnet arrangørnavn er byttet om i frontend, frem til det fikses der må disse være motsatt av hva som er logisk
+				// arrangørnavn og overordnet arrangørnavn er byttet om i frontend, frem til det fikses der må disse være motsatt av hva som er logisk
+				arrangorParentNavn = it.arrangorDbo.navn,
 				startDato = it.deltakerlisteDbo.startDato,
 				sluttDato = it.deltakerlisteDbo.sluttDato,
-				lagtTil = ansatt.deltakerlister.find { koordinatorDeltakerliste -> koordinatorDeltakerliste.deltakerlisteId == it.deltakerlisteDbo.id } != null
+				lagtTil =
+					ansatt.deltakerlister.find {
+							koordinatorDeltakerliste ->
+						koordinatorDeltakerliste.deltakerlisteId == it.deltakerlisteDbo.id
+					} != null,
 			)
 		}
 	}
 
-	fun leggTilDeltakerliste(deltakerlisteId: UUID, personIdent: String) {
+	fun leggTilDeltakerliste(
+		deltakerlisteId: UUID,
+		personIdent: String,
+	) {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
-		val deltakerliste = deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
-			?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
+		val deltakerliste =
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
+				?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
 
-		val harKoordinatorRolleHosArrangor = ansattService.harRolleHosArrangor(
-			arrangorId = deltakerliste.arrangorId,
-			rolle = AnsattRolle.KOORDINATOR,
-			roller = ansatt.roller
-		)
+		val harKoordinatorRolleHosArrangor =
+			ansattService.harRolleHosArrangor(
+				arrangorId = deltakerliste.arrangorId,
+				rolle = AnsattRolle.KOORDINATOR,
+				roller = ansatt.roller,
+			)
 		if (harKoordinatorRolleHosArrangor) {
 			if (!ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
 				ansattService.leggTilDeltakerliste(
 					ansattId = ansatt.id,
 					deltakerlisteId = deltakerlisteId,
-					arrangorId = deltakerliste.arrangorId
+					arrangorId = deltakerliste.arrangorId,
 				)
 				metricsService.incLagtTilDeltakerliste()
 				log.info("Lagt til deltakerliste $deltakerlisteId for ansatt ${ansatt.id}")
@@ -74,22 +85,27 @@ class DeltakerlisteAdminService(
 		}
 	}
 
-	fun fjernDeltakerliste(deltakerlisteId: UUID, personIdent: String) {
+	fun fjernDeltakerliste(
+		deltakerlisteId: UUID,
+		personIdent: String,
+	) {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
-		val deltakerliste = deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
-			?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
+		val deltakerliste =
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
+				?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
 
-		val harKoordinatorRolleHosArrangor = ansattService.harRolleHosArrangor(
-			arrangorId = deltakerliste.arrangorId,
-			rolle = AnsattRolle.KOORDINATOR,
-			roller = ansatt.roller
-		)
+		val harKoordinatorRolleHosArrangor =
+			ansattService.harRolleHosArrangor(
+				arrangorId = deltakerliste.arrangorId,
+				rolle = AnsattRolle.KOORDINATOR,
+				roller = ansatt.roller,
+			)
 		if (harKoordinatorRolleHosArrangor) {
 			if (ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
 				ansattService.fjernDeltakerliste(
 					ansattId = ansatt.id,
 					deltakerlisteId = deltakerlisteId,
-					arrangorId = deltakerliste.arrangorId
+					arrangorId = deltakerliste.arrangorId,
 				)
 				metricsService.incFjernetDeltakerliste()
 				log.info("Fjernet deltakerliste $deltakerlisteId for ansatt ${ansatt.id}")
@@ -109,7 +125,10 @@ class DeltakerlisteAdminService(
 		return ansatt
 	}
 
-	private fun finnOverordnetArrangorNavn(overordnetArrangorId: UUID, overordnedeArrangorer: List<ArrangorDbo>): String? {
+	private fun finnOverordnetArrangorNavn(
+		overordnetArrangorId: UUID,
+		overordnedeArrangorer: List<ArrangorDbo>,
+	): String? {
 		return overordnedeArrangorer.find { it.id == overordnetArrangorId }?.navn
 	}
 }

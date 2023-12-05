@@ -8,5 +8,5 @@ data class Veileder(
 	val veiledertype: Veiledertype,
 	val fornavn: String,
 	val mellomnavn: String?,
-	val etternavn: String
+	val etternavn: String,
 )

@@ -24,10 +24,10 @@ data class EndringsmeldingDto(
 		JsonSubTypes.Type(value = Innhold.DeltakerIkkeAktuellInnhold::class, name = "DELTAKER_IKKE_AKTUELL"),
 		JsonSubTypes.Type(value = Innhold.EndreDeltakelseProsentInnhold::class, name = "ENDRE_DELTAKELSE_PROSENT"),
 		JsonSubTypes.Type(value = Innhold.EndreSluttdatoInnhold::class, name = "ENDRE_SLUTTDATO"),
-		JsonSubTypes.Type(value = Innhold.EndreSluttaarsakInnhold::class, name = "ENDRE_SLUTTAARSAK")
+		JsonSubTypes.Type(value = Innhold.EndreSluttaarsakInnhold::class, name = "ENDRE_SLUTTAARSAK"),
 	)
 	val innhold: Innhold?,
-	val createdAt: LocalDateTime
+	val createdAt: LocalDateTime,
 )
 
 fun EndringsmeldingDto.toEndringsmeldingDbo(): EndringsmeldingDbo {
@@ -37,6 +37,6 @@ fun EndringsmeldingDto.toEndringsmeldingDbo(): EndringsmeldingDbo {
 		type = type,
 		innhold = innhold,
 		status = status,
-		sendt = createdAt
+		sendt = createdAt,
 	)
 }

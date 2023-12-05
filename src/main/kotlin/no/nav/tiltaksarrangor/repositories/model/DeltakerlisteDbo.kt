@@ -13,26 +13,27 @@ data class DeltakerlisteDbo(
 	val tiltakType: String,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
-	val erKurs: Boolean
+	val erKurs: Boolean,
 ) {
-
-	fun cleanTiltaksnavn() = when (tiltakNavn) {
-		"Arbeidsforberedende trening (AFT)" -> "Arbeidsforberedende trening"
-		"Arbeidsrettet rehabilitering (dag)" -> "Arbeidsrettet rehabilitering"
-		"Digitalt oppfølgingstiltak for arbeidsledige (jobbklubb)" -> "Digitalt oppfølgingstiltak"
-		"Gruppe AMO" -> "Arbeidsmarkedsopplæring"
-		else -> tiltakNavn
-	}
+	fun cleanTiltaksnavn() =
+		when (tiltakNavn) {
+			"Arbeidsforberedende trening (AFT)" -> "Arbeidsforberedende trening"
+			"Arbeidsrettet rehabilitering (dag)" -> "Arbeidsrettet rehabilitering"
+			"Digitalt oppfølgingstiltak for arbeidsledige (jobbklubb)" -> "Digitalt oppfølgingstiltak"
+			"Gruppe AMO" -> "Arbeidsmarkedsopplæring"
+			else -> tiltakNavn
+		}
 
 	fun skalViseAdresseForDeltaker(): Boolean {
 		return tiltakstyperMedAdresse.contains(tiltakType)
 	}
 
-	private val tiltakstyperMedAdresse = setOf(
-		"INDOPPFAG",
-		"ARBFORB",
-		"AVKLARAG",
-		"VASV",
-		"ARBRRHDAG"
-	)
+	private val tiltakstyperMedAdresse =
+		setOf(
+			"INDOPPFAG",
+			"ARBFORB",
+			"AVKLARAG",
+			"VASV",
+			"ARBRRHDAG",
+		)
 }

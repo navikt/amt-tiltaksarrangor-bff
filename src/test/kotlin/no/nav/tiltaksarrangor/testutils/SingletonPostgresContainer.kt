@@ -10,10 +10,9 @@ import org.testcontainers.utility.DockerImageName
 import javax.sql.DataSource
 
 object SingletonPostgresContainer {
-
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	private const val postgresDockerImageName = "postgres:14-alpine"
+	private const val POSTGRES_DOCKER_IMAGE_NAME = "postgres:14-alpine"
 
 	private var postgresContainer: PostgreSQLContainer<Nothing>? = null
 
@@ -46,24 +45,25 @@ object SingletonPostgresContainer {
 	}
 
 	private fun applyMigrations(dataSource: DataSource) {
-		val flyway: Flyway = Flyway.configure()
-			.configuration(
-				mapOf(
-					// Disable transactional locks in order to support concurrent indexes
-					"flyway.postgresql.transactional.lock" to "false"
+		val flyway: Flyway =
+			Flyway.configure()
+				.configuration(
+					mapOf(
+						// Disable transactional locks in order to support concurrent indexes
+						"flyway.postgresql.transactional.lock" to "false",
+					),
 				)
-			)
-			.dataSource(dataSource)
-			.connectRetries(10)
-			.cleanDisabled(false)
-			.load()
+				.dataSource(dataSource)
+				.connectRetries(10)
+				.cleanDisabled(false)
+				.load()
 
 		flyway.clean()
 		flyway.migrate()
 	}
 
 	private fun createContainer(): PostgreSQLContainer<Nothing> {
-		return PostgreSQLContainer<Nothing>(DockerImageName.parse(postgresDockerImageName))
+		return PostgreSQLContainer<Nothing>(DockerImageName.parse(POSTGRES_DOCKER_IMAGE_NAME))
 			.waitingFor(HostPortWaitStrategy())
 	}
 
@@ -84,7 +84,7 @@ object SingletonPostgresContainer {
 			Thread {
 				log.info("Shutting down postgres database...")
 				postgresContainer?.stop()
-			}
+			},
 		)
 	}
 }

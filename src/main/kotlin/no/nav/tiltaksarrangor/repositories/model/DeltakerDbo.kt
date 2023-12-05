@@ -34,7 +34,7 @@ data class DeltakerDbo(
 	val navVeilederTelefon: String?,
 	val skjultAvAnsattId: UUID?,
 	val skjultDato: LocalDateTime?,
-	val vurderingerFraArrangor: List<VurderingDto>?
+	val vurderingerFraArrangor: List<VurderingDto>?,
 ) {
 	fun erSkjult(): Boolean {
 		return skjultDato != null
@@ -57,9 +57,10 @@ data class DeltakerDbo(
 	}
 }
 
-val STATUSER_SOM_KAN_SKJULES = listOf(
-	StatusType.IKKE_AKTUELL,
-	StatusType.HAR_SLUTTET,
-	StatusType.FULLFORT,
-	StatusType.AVBRUTT
-)
+val STATUSER_SOM_KAN_SKJULES =
+	listOf(
+		StatusType.IKKE_AKTUELL,
+		StatusType.HAR_SLUTTET,
+		StatusType.FULLFORT,
+		StatusType.AVBRUTT,
+	)

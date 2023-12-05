@@ -15,5 +15,5 @@ data class Deltakerliste(
 	val koordinatorer: List<Koordinator>,
 	val deltakere: List<Deltaker>,
 	val erKurs: Boolean,
-	val tiltakType: String
+	val tiltakType: String,
 )
