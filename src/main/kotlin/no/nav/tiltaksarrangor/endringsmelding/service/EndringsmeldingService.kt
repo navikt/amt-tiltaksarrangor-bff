@@ -43,8 +43,8 @@ class EndringsmeldingService(
 	): EndringsmeldingResponse {
 		val endringsmeldinger = getEndringsmeldinger(deltakerId, personIdent)
 		return EndringsmeldingResponse(
-			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() }.sortedBy { it.sendt },
-			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }.sortedByDescending { it.sendt },
+			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() },
+			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() },
 		)
 	}
 
@@ -69,7 +69,7 @@ class EndringsmeldingService(
 		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
 			throw SkjultDeltakerException("Deltaker med id $deltakerId er skjult for tiltaksarrangør")
 		}
-		return endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).map { it.toEndringsmelding() }
+		return endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).sortedBy { it.sendt }.map { it.toEndringsmelding() }
 	}
 
 	fun opprettEndringsmelding(
