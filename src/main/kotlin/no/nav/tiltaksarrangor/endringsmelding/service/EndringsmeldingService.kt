@@ -12,7 +12,6 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoReque
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.endringsmelding.controller.response.EndringsmeldingResponse
-import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
@@ -41,17 +40,6 @@ class EndringsmeldingService(
 		deltakerId: UUID,
 		personIdent: String,
 	): EndringsmeldingResponse {
-		val endringsmeldinger = getEndringsmeldinger(deltakerId, personIdent)
-		return EndringsmeldingResponse(
-			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() },
-			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() },
-		)
-	}
-
-	private fun getEndringsmeldinger(
-		deltakerId: UUID,
-		personIdent: String,
-	): List<Endringsmelding> {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
 			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
@@ -69,7 +57,11 @@ class EndringsmeldingService(
 		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
 			throw SkjultDeltakerException("Deltaker med id $deltakerId er skjult for tiltaksarrangør")
 		}
-		return endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId).sortedBy { it.sendt }.map { it.toEndringsmelding() }
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		return EndringsmeldingResponse(
+			aktiveEndringsmeldinger = endringsmeldinger.sortedBy { it.sendt }.filter { it.erAktiv() }.map { it.toEndringsmelding() },
+			historiskeEndringsmeldinger = endringsmeldinger.sortedByDescending { it.sendt }.filter { !it.erAktiv() }.map { it.toEndringsmelding() },
+		)
 	}
 
 	fun opprettEndringsmelding(
