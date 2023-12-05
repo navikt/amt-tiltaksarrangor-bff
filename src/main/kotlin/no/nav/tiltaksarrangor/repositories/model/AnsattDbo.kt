@@ -13,7 +13,7 @@ data class AnsattDbo(
 	val etternavn: String,
 	val roller: List<AnsattRolleDbo>,
 	val deltakerlister: List<KoordinatorDeltakerlisteDbo>,
-	val veilederDeltakere: List<VeilederDeltakerDbo>
+	val veilederDeltakere: List<VeilederDeltakerDbo>,
 )
 
 data class AnsattPersonaliaDbo(
@@ -21,36 +21,36 @@ data class AnsattPersonaliaDbo(
 	val personIdent: String,
 	val fornavn: String,
 	val mellomnavn: String?,
-	val etternavn: String
+	val etternavn: String,
 )
 
 data class AnsattRolleDbo(
 	val arrangorId: UUID,
-	val rolle: AnsattRolle
+	val rolle: AnsattRolle,
 )
 
 data class KoordinatorDeltakerlisteDbo(
-	val deltakerlisteId: UUID
+	val deltakerlisteId: UUID,
 )
 
 data class VeilederDeltakerDbo(
 	val deltakerId: UUID,
-	val veilederType: Veiledertype
+	val veilederType: Veiledertype,
 )
 
 data class AnsattRolleMedAnsattIdDbo(
 	val ansattId: UUID,
-	val ansattRolleDbo: AnsattRolleDbo
+	val ansattRolleDbo: AnsattRolleDbo,
 )
 
 data class VeilederForDeltakerDbo(
 	val ansattId: UUID,
-	val veilederType: Veiledertype
+	val veilederType: Veiledertype,
 )
 
 data class AnsattVeilederDbo(
 	val ansattPersonaliaDbo: AnsattPersonaliaDbo,
-	val veilederDeltakerDbo: VeilederDeltakerDbo
+	val veilederDeltakerDbo: VeilederDeltakerDbo,
 ) {
 	fun toVeileder(): Veileder {
 		return Veileder(
@@ -59,7 +59,7 @@ data class AnsattVeilederDbo(
 			veiledertype = veilederDeltakerDbo.veilederType,
 			fornavn = ansattPersonaliaDbo.fornavn,
 			mellomnavn = ansattPersonaliaDbo.mellomnavn,
-			etternavn = ansattPersonaliaDbo.etternavn
+			etternavn = ansattPersonaliaDbo.etternavn,
 		)
 	}
 }

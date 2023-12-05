@@ -12,7 +12,7 @@ import java.time.LocalDate
 class Ryddejobb(
 	private val leaderElection: LeaderElection,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
-	private val deltakerRepository: DeltakerRepository
+	private val deltakerRepository: DeltakerRepository,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 

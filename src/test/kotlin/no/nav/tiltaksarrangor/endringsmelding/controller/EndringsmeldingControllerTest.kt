@@ -44,10 +44,11 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 
 	@Test
 	fun `getAlleEndringsmeldinger - ikke autentisert - returnerer 401`() {
-		val response = sendRequest(
-			method = "GET",
-			path = "/tiltaksarrangor/deltaker/${UUID.randomUUID()}/alle-endringsmeldinger"
-		)
+		val response =
+			sendRequest(
+				method = "GET",
+				path = "/tiltaksarrangor/deltaker/${UUID.randomUUID()}/alle-endringsmeldinger",
+			)
 
 		response.code shouldBe 401
 	}
@@ -67,77 +68,90 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val endringsmelding1 =
+			EndringsmeldingDbo(
+				id = UUID.fromString("27446cc8-30ad-4030-94e3-de438c2af3c6"),
+				deltakerId = deltakerId,
+				type = EndringsmeldingType.AVSLUTT_DELTAKELSE,
+				innhold =
+					Innhold.AvsluttDeltakelseInnhold(
+						sluttdato = LocalDate.of(2023, 3, 30),
+						aarsak =
+							DeltakerStatusAarsak(
+								type = DeltakerStatusAarsak.Type.SYK,
+								beskrivelse = "har blitt syk",
+							),
+					),
+				status = Endringsmelding.Status.AKTIV,
+				sendt = LocalDate.of(2023, 3, 29).atStartOfDay(),
 			)
-		)
-		val endringsmelding1 = EndringsmeldingDbo(
-			id = UUID.fromString("27446cc8-30ad-4030-94e3-de438c2af3c6"),
-			deltakerId = deltakerId,
-			type = EndringsmeldingType.AVSLUTT_DELTAKELSE,
-			innhold = Innhold.AvsluttDeltakelseInnhold(
-				sluttdato = LocalDate.of(2023, 3, 30),
-				aarsak = DeltakerStatusAarsak(
-					type = DeltakerStatusAarsak.Type.SYK,
-					beskrivelse = "har blitt syk"
-				)
-			),
-			status = Endringsmelding.Status.AKTIV,
-			sendt = LocalDate.of(2023, 3, 29).atStartOfDay()
-		)
-		val endringsmelding2 = EndringsmeldingDbo(
-			id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),
-			deltakerId = deltakerId,
-			type = EndringsmeldingType.ENDRE_SLUTTDATO,
-			innhold = Innhold.EndreSluttdatoInnhold(
-				sluttdato = LocalDate.of(2023, 5, 3)
-			),
-			status = Endringsmelding.Status.AKTIV,
-			sendt = LocalDate.of(2023, 1, 3).atStartOfDay()
-		)
-		val endringsmelding3 = EndringsmeldingDbo(
-			id = UUID.fromString("f4199094-c864-48c3-a1ad-89b2b36f4a48"),
-			deltakerId = deltakerId,
-			type = EndringsmeldingType.ENDRE_SLUTTDATO,
-			innhold = Innhold.EndreSluttdatoInnhold(
-				sluttdato = LocalDate.of(2021, 5, 3)
-			),
-			status = Endringsmelding.Status.UTFORT,
-			sendt = LocalDate.of(2021, 2, 1).atStartOfDay()
-		)
+		val endringsmelding2 =
+			EndringsmeldingDbo(
+				id = UUID.fromString("362c7fdd-04e7-4f43-9e56-0939585856eb"),
+				deltakerId = deltakerId,
+				type = EndringsmeldingType.ENDRE_SLUTTDATO,
+				innhold =
+					Innhold.EndreSluttdatoInnhold(
+						sluttdato = LocalDate.of(2023, 5, 3),
+					),
+				status = Endringsmelding.Status.AKTIV,
+				sendt = LocalDate.of(2023, 1, 3).atStartOfDay(),
+			)
+		val endringsmelding3 =
+			EndringsmeldingDbo(
+				id = UUID.fromString("f4199094-c864-48c3-a1ad-89b2b36f4a48"),
+				deltakerId = deltakerId,
+				type = EndringsmeldingType.ENDRE_SLUTTDATO,
+				innhold =
+					Innhold.EndreSluttdatoInnhold(
+						sluttdato = LocalDate.of(2021, 5, 3),
+					),
+				status = Endringsmelding.Status.UTFORT,
+				sendt = LocalDate.of(2021, 2, 1).atStartOfDay(),
+			)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding1)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding2)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding3)
 
-		val response = sendRequest(
-			method = "GET",
-			path = "/tiltaksarrangor/deltaker/$deltakerId/alle-endringsmeldinger",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
-		)
+		val response =
+			sendRequest(
+				method = "GET",
+				path = "/tiltaksarrangor/deltaker/$deltakerId/alle-endringsmeldinger",
+				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+			)
 
-		val expectedJson = """
+		val expectedJson =
+			"""
 			{"aktiveEndringsmeldinger":[{"id":"362c7fdd-04e7-4f43-9e56-0939585856eb","innhold":{"sluttdato":"2023-05-03"},"type":"ENDRE_SLUTTDATO","status":"AKTIV","sendt":"2023-01-03"},{"id":"27446cc8-30ad-4030-94e3-de438c2af3c6","innhold":{"sluttdato":"2023-03-30","aarsak":{"type":"SYK","beskrivelse":"har blitt syk"}},"type":"AVSLUTT_DELTAKELSE","status":"AKTIV","sendt":"2023-03-29"}],"historiskeEndringsmeldinger":[{"id":"f4199094-c864-48c3-a1ad-89b2b36f4a48","innhold":{"sluttdato":"2021-05-03"},"type":"ENDRE_SLUTTDATO","status":"UTFORT","sendt":"2021-02-01"}]}
-		""".trimIndent()
+			""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
 	}
 
 	@Test
 	fun `opprettEndringsmelding - ikke autentisert - returnerer 401`() {
-		val requestBody = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
-				sluttdato = LocalDate.now(),
-				aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.FATT_JOBB, null)
+		val requestBody =
+			EndringsmeldingRequest(
+				innhold =
+					EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
+						sluttdato = LocalDate.now(),
+						aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.FATT_JOBB, null),
+					),
 			)
-		)
-		val response = sendRequest(
-			method = "POST",
-			path = "/tiltaksarrangor/deltaker/${UUID.randomUUID()}/endringsmelding",
-			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson)
-		)
+		val response =
+			sendRequest(
+				method = "POST",
+				path = "/tiltaksarrangor/deltaker/${UUID.randomUUID()}/endringsmelding",
+				body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
+			)
 
 		response.code shouldBe 401
 	}
@@ -157,28 +171,31 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		mockAmtTiltakServer.addAvsluttDeltakelseResponse(deltakerId)
-		val requestBody = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
-				sluttdato = LocalDate.now(),
-				aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.FATT_JOBB, null)
+		val requestBody =
+			EndringsmeldingRequest(
+				innhold =
+					EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold(
+						sluttdato = LocalDate.now(),
+						aarsak = DeltakerStatusAarsak(DeltakerStatusAarsak.Type.FATT_JOBB, null),
+					),
 			)
 
-		)
-
-		val response = sendRequest(
-			method = "POST",
-			path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
-			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
-		)
+		val response =
+			sendRequest(
+				method = "POST",
+				path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
+				body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
+				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+			)
 
 		response.code shouldBe 200
 
@@ -206,26 +223,30 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		mockAmtTiltakServer.addEndreSluttdatoResponse(deltakerId)
-		val requestBody = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold(
-				sluttdato = LocalDate.now()
+		val requestBody =
+			EndringsmeldingRequest(
+				innhold =
+					EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold(
+						sluttdato = LocalDate.now(),
+					),
 			)
-		)
 
-		val response = sendRequest(
-			method = "POST",
-			path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
-			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
-		)
+		val response =
+			sendRequest(
+				method = "POST",
+				path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
+				body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
+				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+			)
 
 		response.code shouldBe 200
 
@@ -251,24 +272,27 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		mockAmtTiltakServer.addEndreOppstartsdatoResponse(deltakerId)
-		val requestBody = EndringsmeldingRequest(
-			innhold = EndringsmeldingRequest.Innhold.EndreOppstartsdatoInnhold(null)
-		)
+		val requestBody =
+			EndringsmeldingRequest(
+				innhold = EndringsmeldingRequest.Innhold.EndreOppstartsdatoInnhold(null),
+			)
 
-		val response = sendRequest(
-			method = "POST",
-			path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
-			body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
-		)
+		val response =
+			sendRequest(
+				method = "POST",
+				path = "/tiltaksarrangor/deltaker/$deltakerId/endringsmelding",
+				body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
+				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+			)
 
 		response.code shouldBe 200
 
@@ -281,10 +305,11 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 
 	@Test
 	fun `slettEndringsmelding - ikke autentisert - returnerer 401`() {
-		val response = sendRequest(
-			method = "DELETE",
-			path = "/tiltaksarrangor/endringsmelding/${UUID.randomUUID()}"
-		)
+		val response =
+			sendRequest(
+				method = "DELETE",
+				path = "/tiltaksarrangor/endringsmelding/${UUID.randomUUID()}",
+			)
 
 		response.code shouldBe 401
 	}
@@ -304,23 +329,25 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 				fornavn = "Fornavn",
 				mellomnavn = null,
 				etternavn = "Etternavn",
-				roller = listOf(
-					AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)
-				),
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
 				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
-				veilederDeltakere = emptyList()
-			)
+				veilederDeltakere = emptyList(),
+			),
 		)
 		val endringsmeldingId = UUID.fromString("27446cc8-30ad-4030-94e3-de438c2af3c6")
 		val endringsmelding = getEndringsmelding(deltakerId).copy(id = endringsmeldingId)
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
 		mockAmtTiltakServer.addTilbakekallEndringsmeldingResponse(endringsmeldingId)
 
-		val response = sendRequest(
-			method = "DELETE",
-			path = "/tiltaksarrangor/endringsmelding/$endringsmeldingId",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}")
-		)
+		val response =
+			sendRequest(
+				method = "DELETE",
+				path = "/tiltaksarrangor/endringsmelding/$endringsmeldingId",
+				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+			)
 
 		response.code shouldBe 200
 	}

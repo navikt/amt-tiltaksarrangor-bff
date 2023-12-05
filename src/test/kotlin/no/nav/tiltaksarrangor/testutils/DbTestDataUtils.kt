@@ -10,7 +10,6 @@ import java.time.ZonedDateTime
 import javax.sql.DataSource
 
 object DbTestDataUtils {
-
 	private const val SCHEMA = "public"
 
 	private const val FLYWAY_SCHEMA_HISTORY_TABLE_NAME = "flyway_schema_history"
@@ -44,13 +43,19 @@ object DbTestDataUtils {
 		return MapSqlParameterSource().addValues(pairs.toMap())
 	}
 
-	private fun getAllTables(jdbcTemplate: JdbcTemplate, schema: String): List<String> {
+	private fun getAllTables(
+		jdbcTemplate: JdbcTemplate,
+		schema: String,
+	): List<String> {
 		val sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = ?"
 
 		return jdbcTemplate.query(sql, { rs, _ -> rs.getString(1) }, schema)
 	}
 
-	private fun getAllSequences(jdbcTemplate: JdbcTemplate, schema: String): List<String> {
+	private fun getAllSequences(
+		jdbcTemplate: JdbcTemplate,
+		schema: String,
+	): List<String> {
 		val sql = "SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = ?"
 
 		return jdbcTemplate.query(sql, { rs, _ -> rs.getString(1) }, schema)

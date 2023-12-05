@@ -29,11 +29,14 @@ fun getDeltakerliste(arrangorId: UUID): DeltakerlisteDbo {
 		tiltakType = "ARBFORB",
 		startDato = null,
 		sluttDato = null,
-		erKurs = false
+		erKurs = false,
 	)
 }
 
-fun getDeltaker(deltakerId: UUID, deltakerlisteId: UUID = UUID.randomUUID()): DeltakerDbo {
+fun getDeltaker(
+	deltakerId: UUID,
+	deltakerlisteId: UUID = UUID.randomUUID(),
+): DeltakerDbo {
 	return DeltakerDbo(
 		id = deltakerId,
 		deltakerlisteId = deltakerlisteId,
@@ -61,7 +64,7 @@ fun getDeltaker(deltakerId: UUID, deltakerlisteId: UUID = UUID.randomUUID()): De
 		navVeilederNavn = null,
 		navVeilederTelefon = null,
 		skjultAvAnsattId = null,
-		skjultDato = null
+		skjultDato = null,
 	)
 }
 
@@ -72,37 +75,44 @@ fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo {
 		type = EndringsmeldingType.FORLENG_DELTAKELSE,
 		innhold = Innhold.ForlengDeltakelseInnhold(LocalDate.now().plusMonths(2)),
 		status = Endringsmelding.Status.AKTIV,
-		sendt = LocalDateTime.now()
+		sendt = LocalDateTime.now(),
 	)
 }
 
 fun getAdresse(): AdresseDto =
 	AdresseDto(
-		bostedsadresse = Bostedsadresse(
-			coAdressenavn = "C/O Gutterommet",
-			vegadresse = null,
-			matrikkeladresse = Matrikkeladresse(
-				tilleggsnavn = "Gården",
-				postnummer = "0484",
-				poststed = "OSLO"
-			)
-		),
-		oppholdsadresse = null,
-		kontaktadresse = Kontaktadresse(
-			coAdressenavn = null,
-			vegadresse = Vegadresse(
-				husnummer = "1",
-				husbokstav = null,
-				adressenavn = "Gate",
-				tilleggsnavn = null,
-				postnummer = "1234",
-				poststed = "MOSS"
+		bostedsadresse =
+			Bostedsadresse(
+				coAdressenavn = "C/O Gutterommet",
+				vegadresse = null,
+				matrikkeladresse =
+					Matrikkeladresse(
+						tilleggsnavn = "Gården",
+						postnummer = "0484",
+						poststed = "OSLO",
+					),
 			),
-			postboksadresse = null
-		)
+		oppholdsadresse = null,
+		kontaktadresse =
+			Kontaktadresse(
+				coAdressenavn = null,
+				vegadresse =
+					Vegadresse(
+						husnummer = "1",
+						husbokstav = null,
+						adressenavn = "Gate",
+						tilleggsnavn = null,
+						postnummer = "1234",
+						poststed = "MOSS",
+					),
+				postboksadresse = null,
+			),
 	)
 
-fun getVurderinger(deltakerId: UUID, gyldigFra: LocalDateTime = LocalDateTime.now()): List<VurderingDto> {
+fun getVurderinger(
+	deltakerId: UUID,
+	gyldigFra: LocalDateTime = LocalDateTime.now(),
+): List<VurderingDto> {
 	return listOf(
 		VurderingDto(
 			id = UUID.randomUUID(),
@@ -111,7 +121,7 @@ fun getVurderinger(deltakerId: UUID, gyldigFra: LocalDateTime = LocalDateTime.no
 			begrunnelse = "Mangler førerkort",
 			opprettetAvArrangorAnsattId = UUID.randomUUID(),
 			gyldigFra = gyldigFra,
-			gyldigTil = null
-		)
+			gyldigTil = null,
+		),
 	)
 }

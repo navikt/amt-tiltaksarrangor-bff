@@ -12,13 +12,12 @@ data class DeltakerlisteDto(
 	val sluttDato: LocalDate? = null,
 	val status: Status,
 	val virksomhetsnummer: String,
-	val oppstart: Oppstartstype?
+	val oppstart: Oppstartstype?,
 ) {
-
 	data class Tiltakstype(
 		val id: UUID,
 		val navn: String,
-		val arenaKode: String
+		val arenaKode: String,
 	)
 
 	enum class Status {
@@ -27,12 +26,12 @@ data class DeltakerlisteDto(
 		AVBRUTT,
 		AVLYST,
 		AVSLUTTET,
-		APENT_FOR_INNSOK;
+		APENT_FOR_INNSOK,
 	}
 
 	enum class Oppstartstype {
 		LOPENDE,
-		FELLES
+		FELLES,
 	}
 
 	fun erKurs(): Boolean {
@@ -43,11 +42,12 @@ data class DeltakerlisteDto(
 		}
 	}
 
-	private val kursTiltak = setOf(
-		"JOBBK",
-		"GRUPPEAMO",
-		"GRUFAGYRKE"
-	)
+	private val kursTiltak =
+		setOf(
+			"JOBBK",
+			"GRUPPEAMO",
+			"GRUFAGYRKE",
+		)
 
 	fun toDeltakerlisteStatus(): DeltakerlisteStatus {
 		return when (status) {

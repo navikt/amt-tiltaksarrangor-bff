@@ -10,19 +10,21 @@ import java.util.UUID
 
 @Component
 class ArrangorRepository(
-	private val template: NamedParameterJdbcTemplate
+	private val template: NamedParameterJdbcTemplate,
 ) {
-	private val arrangorRowMapper = RowMapper { rs, _ ->
-		ArrangorDbo(
-			id = UUID.fromString(rs.getString("id")),
-			navn = rs.getString("navn"),
-			organisasjonsnummer = rs.getString("organisasjonsnummer"),
-			overordnetArrangorId = rs.getNullableUUID("overordnet_arrangor_id")
-		)
-	}
+	private val arrangorRowMapper =
+		RowMapper { rs, _ ->
+			ArrangorDbo(
+				id = UUID.fromString(rs.getString("id")),
+				navn = rs.getString("navn"),
+				organisasjonsnummer = rs.getString("organisasjonsnummer"),
+				overordnetArrangorId = rs.getNullableUUID("overordnet_arrangor_id"),
+			)
+		}
 
 	fun insertOrUpdateArrangor(arrangorDbo: ArrangorDbo) {
-		val sql = """
+		val sql =
+			"""
 			INSERT INTO arrangor(id, navn, organisasjonsnummer, overordnet_arrangor_id)
 			VALUES (:id,
 					:navn,
@@ -32,7 +34,7 @@ class ArrangorRepository(
 					navn     							 = :navn,
 					organisasjonsnummer					 = :organisasjonsnummer,
 					overordnet_arrangor_id 			     = :overordnet_arrangor_id
-		""".trimIndent()
+			""".trimIndent()
 
 		template.update(
 			sql,
@@ -40,15 +42,15 @@ class ArrangorRepository(
 				"id" to arrangorDbo.id,
 				"navn" to arrangorDbo.navn,
 				"organisasjonsnummer" to arrangorDbo.organisasjonsnummer,
-				"overordnet_arrangor_id" to arrangorDbo.overordnetArrangorId
-			)
+				"overordnet_arrangor_id" to arrangorDbo.overordnetArrangorId,
+			),
 		)
 	}
 
 	fun deleteArrangor(arrangorId: UUID): Int {
 		return template.update(
 			"DELETE FROM arrangor WHERE id = :id",
-			sqlParameters("id" to arrangorId)
+			sqlParameters("id" to arrangorId),
 		)
 	}
 
@@ -56,7 +58,7 @@ class ArrangorRepository(
 		return template.query(
 			"SELECT * FROM arrangor WHERE id = :id",
 			sqlParameters("id" to arrangorId),
-			arrangorRowMapper
+			arrangorRowMapper,
 		).firstOrNull()
 	}
 
@@ -64,7 +66,7 @@ class ArrangorRepository(
 		return template.query(
 			"SELECT * FROM arrangor WHERE organisasjonsnummer = :organisasjonsnummer",
 			sqlParameters("organisasjonsnummer" to organisasjonsnummer),
-			arrangorRowMapper
+			arrangorRowMapper,
 		).firstOrNull()
 	}
 
@@ -75,7 +77,7 @@ class ArrangorRepository(
 		return template.query(
 			"SELECT * FROM arrangor WHERE id in (:ids)",
 			sqlParameters("ids" to arrangorIder),
-			arrangorRowMapper
+			arrangorRowMapper,
 		)
 	}
 }

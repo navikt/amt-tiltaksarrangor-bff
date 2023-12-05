@@ -5,5 +5,5 @@ import java.util.UUID
 
 data class VeilederDto(
 	val deltakerId: UUID,
-	val type: Veiledertype
+	val type: Veiledertype,
 )

@@ -9,7 +9,7 @@ import java.util.UUID
 data class AnsattDto(
 	val id: UUID,
 	val personalia: AnsattPersonaliaDto,
-	val arrangorer: List<TilknyttetArrangorDto>
+	val arrangorer: List<TilknyttetArrangorDto>,
 )
 
 fun AnsattDto.toAnsattDbo(): AnsattDbo {
@@ -21,7 +21,7 @@ fun AnsattDto.toAnsattDbo(): AnsattDbo {
 		etternavn = personalia.navn.etternavn,
 		roller = arrangorer.flatMap { it.tilAnsattRolleDbo() },
 		deltakerlister = arrangorer.flatMap { it.tilKoordinatorDeltakerlisteDbo() },
-		veilederDeltakere = arrangorer.flatMap { it.tilVeilederDeltakerDbo() }
+		veilederDeltakere = arrangorer.flatMap { it.tilVeilederDeltakerDbo() },
 	)
 }
 

@@ -4,5 +4,5 @@ import no.nav.tiltaksarrangor.model.Vurderingstype
 
 data class RegistrerVurderingRequest(
 	val vurderingstype: Vurderingstype,
-	val begrunnelse: String?
+	val begrunnelse: String?,
 )

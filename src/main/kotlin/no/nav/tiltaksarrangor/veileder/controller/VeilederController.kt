@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/tiltaksarrangor/veileder")
 class VeilederController(
 	private val tokenService: TokenService,
-	private val veilederService: VeilederService
+	private val veilederService: VeilederService,
 ) {
 	@GetMapping("/mine-deltakere")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)

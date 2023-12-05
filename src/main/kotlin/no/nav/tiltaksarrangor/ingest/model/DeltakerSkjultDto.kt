@@ -5,5 +5,5 @@ import java.util.UUID
 
 data class DeltakerSkjultDto(
 	val skjultAvAnsattId: UUID,
-	val dato: LocalDateTime
+	val dato: LocalDateTime,
 )

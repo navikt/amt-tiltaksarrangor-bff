@@ -7,25 +7,28 @@ import org.junit.jupiter.api.Test
 class UnleashControllerTest : IntegrationTest() {
 	@Test
 	fun `getFeaturetoggles - ikke autentisert - returnerer 401`() {
-		val response = sendRequest(
-			method = "GET",
-			path = "/unleash/api/feature?feature=amt-tiltaksarrangor-flate.driftsmelding&amt-tiltaksarrangor-flate.eksponer-kurs"
-		)
+		val response =
+			sendRequest(
+				method = "GET",
+				path = "/unleash/api/feature?feature=amt-tiltaksarrangor-flate.driftsmelding&amt-tiltaksarrangor-flate.eksponer-kurs",
+			)
 
 		response.code shouldBe 401
 	}
 
 	@Test
 	fun `getFeaturetoggles - autentisert - returnerer toggles`() {
-		val response = sendRequest(
-			method = "GET",
-			path = "/unleash/api/feature?feature=amt-tiltaksarrangor-flate.driftsmelding&feature=amt-tiltaksarrangor-flate.eksponer-kurs",
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}")
-		)
+		val response =
+			sendRequest(
+				method = "GET",
+				path = "/unleash/api/feature?feature=amt-tiltaksarrangor-flate.driftsmelding&feature=amt-tiltaksarrangor-flate.eksponer-kurs",
+				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}"),
+			)
 
-		val expectedJson = """
+		val expectedJson =
+			"""
 			{"amt-tiltaksarrangor-flate.driftsmelding":false,"amt-tiltaksarrangor-flate.eksponer-kurs":false}
-		""".trimIndent()
+			""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
 	}

@@ -15,14 +15,17 @@ const val ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
 
 @Component
 class KafkaListener(
-	val ingestService: IngestService
+	val ingestService: IngestService,
 ) {
 	@KafkaListener(
 		topics = [ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC],
 		properties = ["auto.offset.reset = earliest"],
-		containerFactory = "kafkaListenerContainerFactory"
+		containerFactory = "kafkaListenerContainerFactory",
 	)
-	fun listen(cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
+	fun listen(
+		cr: ConsumerRecord<String, String>,
+		acknowledgment: Acknowledgment,
+	) {
 		when (cr.topic()) {
 			ARRANGOR_TOPIC -> ingestService.lagreArrangor(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			ARRANGOR_ANSATT_TOPIC -> ingestService.lagreAnsatt(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })

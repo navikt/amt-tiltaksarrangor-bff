@@ -33,11 +33,14 @@ class IngestService(
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
-	private val amtArrangorClient: AmtArrangorClient
+	private val amtArrangorClient: AmtArrangorClient,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun lagreArrangor(arrangorId: UUID, arrangor: ArrangorDto?) {
+	fun lagreArrangor(
+		arrangorId: UUID,
+		arrangor: ArrangorDto?,
+	) {
 		if (arrangor == null) {
 			arrangorRepository.deleteArrangor(arrangorId)
 			log.info("Slettet arrangør med id $arrangorId")
@@ -47,7 +50,10 @@ class IngestService(
 		}
 	}
 
-	fun lagreAnsatt(ansattId: UUID, ansatt: AnsattDto?) {
+	fun lagreAnsatt(
+		ansattId: UUID,
+		ansatt: AnsattDto?,
+	) {
 		if (ansatt == null || ansatt.arrangorer.isEmpty()) {
 			ansattRepository.deleteAnsatt(ansattId)
 			log.info("Slettet ansatt med id $ansattId")
@@ -57,7 +63,10 @@ class IngestService(
 		}
 	}
 
-	fun lagreDeltakerliste(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteDto?) {
+	fun lagreDeltakerliste(
+		deltakerlisteId: UUID,
+		deltakerlisteDto: DeltakerlisteDto?,
+	) {
 		if (deltakerlisteDto == null) {
 			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
 			log.info("Slettet tombstonet deltakerliste med id $deltakerlisteId")
@@ -74,7 +83,10 @@ class IngestService(
 		}
 	}
 
-	fun lagreDeltaker(deltakerId: UUID, deltakerDto: DeltakerDto?) {
+	fun lagreDeltaker(
+		deltakerId: UUID,
+		deltakerDto: DeltakerDto?,
+	) {
 		if (deltakerDto == null) {
 			deltakerRepository.deleteDeltaker(deltakerId)
 			log.info("Slettet tombstonet deltaker med id $deltakerId")
@@ -91,7 +103,10 @@ class IngestService(
 		}
 	}
 
-	fun lagreEndringsmelding(endringsmeldingId: UUID, endringsmeldingDto: EndringsmeldingDto?) {
+	fun lagreEndringsmelding(
+		endringsmeldingId: UUID,
+		endringsmeldingDto: EndringsmeldingDto?,
+	) {
 		if (endringsmeldingDto == null) {
 			endringsmeldingRepository.deleteEndringsmelding(endringsmeldingId)
 			log.info("Slettet tombstonet endringsmelding med id $endringsmeldingId")
@@ -129,7 +144,7 @@ class IngestService(
 			tiltakType = deltakerlisteDto.tiltakstype.arenaKode,
 			startDato = deltakerlisteDto.startDato,
 			sluttDato = deltakerlisteDto.sluttDato,
-			erKurs = deltakerlisteDto.erKurs()
+			erKurs = deltakerlisteDto.erKurs(),
 		)
 	}
 
@@ -139,33 +154,38 @@ class IngestService(
 			return arrangorId
 		}
 		log.info("Fant ikke arrangør med orgnummer $organisasjonsnummer i databasen, henter fra amt-arrangør")
-		val arrangor = amtArrangorClient.getArrangor(organisasjonsnummer)
-			?: throw RuntimeException("Kunne ikke hente arrangør med orgnummer $organisasjonsnummer")
+		val arrangor =
+			amtArrangorClient.getArrangor(organisasjonsnummer)
+				?: throw RuntimeException("Kunne ikke hente arrangør med orgnummer $organisasjonsnummer")
 		arrangorRepository.insertOrUpdateArrangor(arrangor.toArrangorDbo())
 		return arrangor.id
 	}
 }
 
-private val stottedeTiltak = setOf(
-	"INDOPPFAG",
-	"ARBFORB",
-	"AVKLARAG",
-	"VASV",
-	"ARBRRHDAG",
-	"DIGIOPPARB",
-	"JOBBK",
-	"GRUPPEAMO",
-	"GRUFAGYRKE"
-)
+private val stottedeTiltak =
+	setOf(
+		"INDOPPFAG",
+		"ARBFORB",
+		"AVKLARAG",
+		"VASV",
+		"ARBRRHDAG",
+		"DIGIOPPARB",
+		"JOBBK",
+		"GRUPPEAMO",
+		"GRUFAGYRKE",
+	)
 
 fun DeltakerlisteDto.skalLagres(): Boolean {
 	if (!stottedeTiltak.contains(tiltakstype.arenaKode)) {
 		return false
 	}
-	if (status == DeltakerlisteDto.Status.GJENNOMFORES || status == DeltakerlisteDto.Status.APENT_FOR_INNSOK || status == DeltakerlisteDto.Status.PLANLAGT) {
+	if (status == DeltakerlisteDto.Status.GJENNOMFORES || status == DeltakerlisteDto.Status.APENT_FOR_INNSOK ||
+		status == DeltakerlisteDto.Status.PLANLAGT
+	) {
 		return true
-	} else if (status == DeltakerlisteDto.Status.AVSLUTTET && sluttDato != null && LocalDate.now()
-		.isBefore(sluttDato.plusDays(15))
+	} else if (status == DeltakerlisteDto.Status.AVSLUTTET && sluttDato != null &&
+		LocalDate.now()
+			.isBefore(sluttDato.plusDays(15))
 	) {
 		return true
 	}

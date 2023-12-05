@@ -83,15 +83,18 @@ class AnsattServiceTest {
 
 		getSistInnlogget(ansattId) shouldBe null
 
-		val oppdaterteArrangorer = listOf(
-			TilknyttetArrangorDto(
-				arrangorId = UUID.randomUUID(),
-				roller = listOf(AnsattRolle.KOORDINATOR),
-				veileder = emptyList(),
-				koordinator = listOf(UUID.randomUUID())
+		val oppdaterteArrangorer =
+			listOf(
+				TilknyttetArrangorDto(
+					arrangorId = UUID.randomUUID(),
+					roller = listOf(AnsattRolle.KOORDINATOR),
+					veileder = emptyList(),
+					koordinator = listOf(UUID.randomUUID()),
+				),
 			)
-		)
-		coEvery { amtArrangorClient.getAnsatt(any()) } returns getAnsatt(ansattId, personIdent, deltakerId, deltakerId2).copy(arrangorer = oppdaterteArrangorer)
+		coEvery {
+			amtArrangorClient.getAnsatt(any())
+		} returns getAnsatt(ansattId, personIdent, deltakerId, deltakerId2).copy(arrangorer = oppdaterteArrangorer)
 
 		val roller = ansattService.oppdaterOgHentMineRoller(personIdent)
 
@@ -135,7 +138,7 @@ class AnsattServiceTest {
 		return template.queryForObject(
 			"SELECT EXISTS(SELECT id FROM ansatt WHERE personident = :personIdent)",
 			sqlParameters("personIdent" to personIdent),
-			Boolean::class.java
+			Boolean::class.java,
 		) ?: false
 	}
 
@@ -143,41 +146,49 @@ class AnsattServiceTest {
 		return template.queryForObject(
 			"SELECT sist_innlogget FROM ansatt WHERE id = :ansattId",
 			sqlParameters("ansattId" to ansattId),
-			LocalDateTime::class.java
+			LocalDateTime::class.java,
 		)
 	}
 
-	private fun getAnsatt(ansattId: UUID, personIdent: String, deltakerIdForVeileder: UUID, deltakerIdForVeileder2: UUID): AnsattDto {
+	private fun getAnsatt(
+		ansattId: UUID,
+		personIdent: String,
+		deltakerIdForVeileder: UUID,
+		deltakerIdForVeileder2: UUID,
+	): AnsattDto {
 		return AnsattDto(
 			id = ansattId,
-			personalia = AnsattPersonaliaDto(
-				personident = personIdent,
-				navn = NavnDto(
-					fornavn = "Fornavn",
-					mellomnavn = null,
-					etternavn = "Etternavn"
-				)
-			),
-			arrangorer = listOf(
-				TilknyttetArrangorDto(
-					arrangorId = UUID.randomUUID(),
-					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
-					veileder = listOf(VeilederDto(deltakerIdForVeileder, Veiledertype.VEILEDER)),
-					koordinator = listOf(UUID.randomUUID())
+			personalia =
+				AnsattPersonaliaDto(
+					personident = personIdent,
+					navn =
+						NavnDto(
+							fornavn = "Fornavn",
+							mellomnavn = null,
+							etternavn = "Etternavn",
+						),
 				),
-				TilknyttetArrangorDto(
-					arrangorId = UUID.randomUUID(),
-					roller = listOf(AnsattRolle.KOORDINATOR),
-					veileder = emptyList(),
-					koordinator = listOf(UUID.randomUUID())
+			arrangorer =
+				listOf(
+					TilknyttetArrangorDto(
+						arrangorId = UUID.randomUUID(),
+						roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
+						veileder = listOf(VeilederDto(deltakerIdForVeileder, Veiledertype.VEILEDER)),
+						koordinator = listOf(UUID.randomUUID()),
+					),
+					TilknyttetArrangorDto(
+						arrangorId = UUID.randomUUID(),
+						roller = listOf(AnsattRolle.KOORDINATOR),
+						veileder = emptyList(),
+						koordinator = listOf(UUID.randomUUID()),
+					),
+					TilknyttetArrangorDto(
+						arrangorId = UUID.randomUUID(),
+						roller = listOf(AnsattRolle.VEILEDER),
+						veileder = listOf(VeilederDto(deltakerIdForVeileder2, Veiledertype.MEDVEILEDER)),
+						koordinator = emptyList(),
+					),
 				),
-				TilknyttetArrangorDto(
-					arrangorId = UUID.randomUUID(),
-					roller = listOf(AnsattRolle.VEILEDER),
-					veileder = listOf(VeilederDto(deltakerIdForVeileder2, Veiledertype.MEDVEILEDER)),
-					koordinator = emptyList()
-				)
-			)
 		)
 	}
 }

@@ -5,5 +5,5 @@ import java.time.LocalDate
 
 data class AvsluttDeltakelseRequest(
 	val sluttdato: LocalDate,
-	val aarsak: DeltakerStatusAarsak
+	val aarsak: DeltakerStatusAarsak,
 )

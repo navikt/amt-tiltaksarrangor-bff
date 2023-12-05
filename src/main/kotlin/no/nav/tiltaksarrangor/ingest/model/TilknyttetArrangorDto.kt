@@ -6,5 +6,5 @@ data class TilknyttetArrangorDto(
 	val arrangorId: UUID,
 	val roller: List<AnsattRolle>,
 	val veileder: List<VeilederDto>,
-	val koordinator: List<UUID>
+	val koordinator: List<UUID>,
 )

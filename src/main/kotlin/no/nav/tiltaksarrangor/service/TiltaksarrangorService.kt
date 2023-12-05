@@ -32,7 +32,7 @@ class TiltaksarrangorService(
 	private val metricsService: MetricsService,
 	private val deltakerRepository: DeltakerRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
-	private val auditLoggerService: AuditLoggerService
+	private val auditLoggerService: AuditLoggerService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -40,10 +40,14 @@ class TiltaksarrangorService(
 		return ansattService.oppdaterOgHentMineRoller(personIdent).also { metricsService.incInnloggetAnsatt(roller = it) }
 	}
 
-	fun getDeltaker(personIdent: String, deltakerId: UUID): Deltaker {
+	fun getDeltaker(
+		personIdent: String,
+		deltakerId: UUID,
+	): Deltaker {
 		val ansatt = getAnsattMedRoller(personIdent)
-		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
-			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		val deltakerMedDeltakerliste =
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
 		if (!deltakerMedDeltakerliste.deltaker.skalVises()) {
 			throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
@@ -52,10 +56,16 @@ class TiltaksarrangorService(
 		auditLoggerService.sendAuditLog(
 			ansattPersonIdent = ansatt.personIdent,
 			deltakerPersonIdent = deltakerMedDeltakerliste.deltaker.personident,
-			arrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId
+			arrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
 		)
 
-		if (!ansattService.harTilgangTilDeltaker(deltakerId = deltakerId, deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id, deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId, ansattDbo = ansatt)) {
+		if (!ansattService.harTilgangTilDeltaker(
+				deltakerId = deltakerId,
+				deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
+				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
+				ansattDbo = ansatt,
+			)
+		) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
 
@@ -70,11 +80,23 @@ class TiltaksarrangorService(
 		return tilDeltaker(deltakerMedDeltakerliste, veiledere, endringsmeldinger)
 	}
 
-	fun registrerVurdering(personIdent: String, deltakerId: UUID, request: RegistrerVurderingRequest) {
+	fun registrerVurdering(
+		personIdent: String,
+		deltakerId: UUID,
+		request: RegistrerVurderingRequest,
+	) {
 		val ansatt = getAnsattMedRoller(personIdent)
-		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		val deltakerMedDeltakerliste =
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
-		if (!ansattService.harTilgangTilDeltaker(deltakerId = deltakerId, deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id, deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId, ansattDbo = ansatt)) {
+		if (!ansattService.harTilgangTilDeltaker(
+				deltakerId = deltakerId,
+				deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
+				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
+				ansattDbo = ansatt,
+			)
+		) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
 
@@ -83,7 +105,10 @@ class TiltaksarrangorService(
 			throw SkjultDeltakerException("Fant ikke deltaker med id $deltakerId")
 		}
 		if (deltakerMedDeltakerliste.deltaker.status != StatusType.VURDERES) {
-			throw IllegalStateException("Kan ikke registrere vurdering for deltaker med id $deltakerId med annen status enn VURDERES. Ugyldig status: ${deltakerMedDeltakerliste.deltaker.status.name}")
+			throw IllegalStateException(
+				"Kan ikke registrere vurdering for deltaker med id $deltakerId med annen status enn VURDERES. " +
+					"Ugyldig status: ${deltakerMedDeltakerliste.deltaker.status.name}",
+			)
 		}
 		if (request.vurderingstype == Vurderingstype.OPPFYLLER_IKKE_KRAVENE && request.begrunnelse.isNullOrEmpty()) {
 			throw ValidationException("Kan ikke registrere vurdering for deltaker med id $deltakerId. Begrunnelse mangler.")
@@ -95,11 +120,22 @@ class TiltaksarrangorService(
 		log.info("Registrert vurdering for deltaker med id $deltakerId")
 	}
 
-	fun fjernDeltaker(personIdent: String, deltakerId: UUID) {
+	fun fjernDeltaker(
+		personIdent: String,
+		deltakerId: UUID,
+	) {
 		val ansatt = getAnsattMedRoller(personIdent)
-		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId) ?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		val deltakerMedDeltakerliste =
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
-		if (!ansattService.harTilgangTilDeltaker(deltakerId = deltakerId, deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id, deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId, ansattDbo = ansatt)) {
+		if (!ansattService.harTilgangTilDeltaker(
+				deltakerId = deltakerId,
+				deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
+				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
+				ansattDbo = ansatt,
+			)
+		) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
 
@@ -110,7 +146,9 @@ class TiltaksarrangorService(
 				metricsService.incFjernetDeltaker()
 				log.info("Skjult deltaker med id $deltakerId")
 			} else {
-				throw IllegalStateException("Kan ikke skjule deltaker med id $deltakerId. Ugyldig status: ${deltakerMedDeltakerliste.deltaker.status.name}")
+				throw IllegalStateException(
+					"Kan ikke skjule deltaker med id $deltakerId. Ugyldig status: ${deltakerMedDeltakerliste.deltaker.status.name}",
+				)
 			}
 		}
 	}
@@ -130,26 +168,28 @@ class TiltaksarrangorService(
 	private fun tilDeltaker(
 		deltakerMedDeltakerliste: DeltakerMedDeltakerlisteDbo,
 		veiledere: List<Veileder>,
-		endringsmeldinger: List<EndringsmeldingDbo>
+		endringsmeldinger: List<EndringsmeldingDbo>,
 	): Deltaker {
 		return Deltaker(
 			id = deltakerMedDeltakerliste.deltaker.id,
-			deltakerliste = Deltaker.Deltakerliste(
-				id = deltakerMedDeltakerliste.deltakerliste.id,
-				startDato = deltakerMedDeltakerliste.deltakerliste.startDato,
-				sluttDato = deltakerMedDeltakerliste.deltakerliste.sluttDato,
-				erKurs = deltakerMedDeltakerliste.deltakerliste.erKurs
-			),
+			deltakerliste =
+				Deltaker.Deltakerliste(
+					id = deltakerMedDeltakerliste.deltakerliste.id,
+					startDato = deltakerMedDeltakerliste.deltakerliste.startDato,
+					sluttDato = deltakerMedDeltakerliste.deltakerliste.sluttDato,
+					erKurs = deltakerMedDeltakerliste.deltakerliste.erKurs,
+				),
 			fornavn = deltakerMedDeltakerliste.deltaker.fornavn,
 			mellomnavn = deltakerMedDeltakerliste.deltaker.mellomnavn,
 			etternavn = deltakerMedDeltakerliste.deltaker.etternavn,
 			fodselsnummer = deltakerMedDeltakerliste.deltaker.personident,
 			telefonnummer = deltakerMedDeltakerliste.deltaker.telefonnummer,
 			epost = deltakerMedDeltakerliste.deltaker.epost,
-			status = DeltakerStatus(
-				type = deltakerMedDeltakerliste.deltaker.status,
-				endretDato = deltakerMedDeltakerliste.deltaker.statusOpprettetDato
-			),
+			status =
+				DeltakerStatus(
+					type = deltakerMedDeltakerliste.deltaker.status,
+					endretDato = deltakerMedDeltakerliste.deltaker.statusOpprettetDato,
+				),
 			startDato = deltakerMedDeltakerliste.deltaker.startdato,
 			sluttDato = deltakerMedDeltakerliste.deltaker.sluttdato,
 			deltakelseProsent = deltakerMedDeltakerliste.deltaker.prosentStilling?.toInt(),
@@ -159,22 +199,24 @@ class TiltaksarrangorService(
 			tiltakskode = deltakerMedDeltakerliste.deltakerliste.tiltakType,
 			bestillingTekst = deltakerMedDeltakerliste.deltaker.bestillingstekst,
 			fjernesDato = deltakerMedDeltakerliste.deltaker.skalFjernesDato(),
-			navInformasjon = NavInformasjon(
-				navkontor = deltakerMedDeltakerliste.deltaker.navKontor,
-				navVeileder = deltakerMedDeltakerliste.deltaker.navVeilederId?.let {
-					NavVeileder(
-						navn = deltakerMedDeltakerliste.deltaker.navVeilederNavn ?: "",
-						epost = deltakerMedDeltakerliste.deltaker.navVeilederEpost,
-						telefon = deltakerMedDeltakerliste.deltaker.navVeilederTelefon
-					)
-				}
-			),
+			navInformasjon =
+				NavInformasjon(
+					navkontor = deltakerMedDeltakerliste.deltaker.navKontor,
+					navVeileder =
+						deltakerMedDeltakerliste.deltaker.navVeilederId?.let {
+							NavVeileder(
+								navn = deltakerMedDeltakerliste.deltaker.navVeilederNavn ?: "",
+								epost = deltakerMedDeltakerliste.deltaker.navVeilederEpost,
+								telefon = deltakerMedDeltakerliste.deltaker.navVeilederTelefon,
+							)
+						},
+				),
 			veiledere = veiledere,
 			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() }.map { it.toEndringsmelding() }.sortedBy { it.sendt },
 			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }.map { it.toEndringsmelding() }.sortedByDescending { it.sendt },
 			adresse = deltakerMedDeltakerliste.getAdresse(),
 			gjeldendeVurderingFraArrangor = deltakerMedDeltakerliste.deltaker.getGjeldendeVurdering(),
-			historiskeVurderingerFraArrangor = deltakerMedDeltakerliste.deltaker.getHistoriskeVurderinger()
+			historiskeVurderingerFraArrangor = deltakerMedDeltakerliste.deltaker.getHistoriskeVurderinger(),
 		)
 	}
 }

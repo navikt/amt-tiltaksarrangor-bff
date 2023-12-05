@@ -6,5 +6,5 @@ data class Vurdering(
 	val vurderingstype: Vurderingstype,
 	val begrunnelse: String?,
 	val gyldigFra: LocalDateTime,
-	val gyldigTil: LocalDateTime?
+	val gyldigTil: LocalDateTime?,
 )

@@ -29,13 +29,13 @@ data class Deltaker(
 	val historiskeEndringsmeldinger: List<Endringsmelding>,
 	val adresse: Adresse?,
 	val gjeldendeVurderingFraArrangor: Vurdering?,
-	val historiskeVurderingerFraArrangor: List<Vurdering>?
+	val historiskeVurderingerFraArrangor: List<Vurdering>?,
 ) {
 	data class Deltakerliste(
 		val id: UUID,
 		val startDato: LocalDate?,
 		val sluttDato: LocalDate?,
-		val erKurs: Boolean
+		val erKurs: Boolean,
 	)
 }
 
@@ -44,9 +44,11 @@ data class Adresse(
 	val postnummer: String,
 	val poststed: String,
 	val tilleggsnavn: String?,
-	val adressenavn: String?
+	val adressenavn: String?,
 )
 
 enum class Adressetype {
-	KONTAKTADRESSE, OPPHOLDSADRESSE, BOSTEDSADRESSE
+	KONTAKTADRESSE,
+	OPPHOLDSADRESSE,
+	BOSTEDSADRESSE,
 }

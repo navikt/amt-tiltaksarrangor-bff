@@ -4,11 +4,12 @@ import no.nav.tiltaksarrangor.model.Veiledertype
 import java.util.UUID
 
 data class LeggTilVeiledereRequest(
-	val veiledere: List<VeilederRequest>
+	val veiledere: List<VeilederRequest>,
 )
+
 data class VeilederRequest(
 	val ansattId: UUID,
-	val erMedveileder: Boolean
+	val erMedveileder: Boolean,
 ) {
 	fun toVeiledertype(): Veiledertype {
 		if (erMedveileder) {

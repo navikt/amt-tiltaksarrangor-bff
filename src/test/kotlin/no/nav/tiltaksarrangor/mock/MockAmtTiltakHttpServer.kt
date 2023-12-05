@@ -12,7 +12,7 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/avslutt-deltakelse",
 			MockResponse()
 				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(OpprettEndringsmeldingResponse(UUID.randomUUID())))
+				.setBody(JsonUtils.objectMapper.writeValueAsString(OpprettEndringsmeldingResponse(UUID.randomUUID()))),
 		)
 	}
 
@@ -21,7 +21,7 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/er-aktuell",
 			MockResponse()
 				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(OpprettEndringsmeldingResponse(UUID.randomUUID())))
+				.setBody(JsonUtils.objectMapper.writeValueAsString(OpprettEndringsmeldingResponse(UUID.randomUUID()))),
 		)
 	}
 
@@ -30,7 +30,7 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/oppstartsdato",
 			MockResponse()
 				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(OpprettEndringsmeldingResponse(UUID.randomUUID())))
+				.setBody(JsonUtils.objectMapper.writeValueAsString(OpprettEndringsmeldingResponse(UUID.randomUUID()))),
 		)
 	}
 
@@ -39,7 +39,7 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/endre-sluttdato",
 			MockResponse()
 				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(OpprettEndringsmeldingResponse(UUID.randomUUID())))
+				.setBody(JsonUtils.objectMapper.writeValueAsString(OpprettEndringsmeldingResponse(UUID.randomUUID()))),
 		)
 	}
 
@@ -47,7 +47,7 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/endringsmelding/$endringsmeldingId/tilbakekall",
 			MockResponse()
-				.setResponseCode(200)
+				.setResponseCode(200),
 		)
 	}
 
@@ -55,16 +55,19 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/skjul",
 			MockResponse()
-				.setResponseCode(200)
+				.setResponseCode(200),
 		)
 	}
 
-	fun addRegistrerVurderingResponse(deltakerId: UUID, vurderinger: List<VurderingDto>) {
+	fun addRegistrerVurderingResponse(
+		deltakerId: UUID,
+		vurderinger: List<VurderingDto>,
+	) {
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/vurdering",
 			MockResponse()
 				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(vurderinger))
+				.setBody(JsonUtils.objectMapper.writeValueAsString(vurderinger)),
 		)
 	}
 }

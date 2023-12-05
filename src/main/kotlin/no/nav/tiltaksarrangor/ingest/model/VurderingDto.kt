@@ -14,19 +14,20 @@ data class VurderingDto(
 	val begrunnelse: String?,
 	val opprettetAvArrangorAnsattId: UUID,
 	val gyldigFra: LocalDateTime,
-	val gyldigTil: LocalDateTime?
+	val gyldigTil: LocalDateTime?,
 ) {
 	fun toVurdering(): Vurdering {
 		return Vurdering(
 			vurderingstype = vurderingstype,
 			begrunnelse = begrunnelse,
 			gyldigFra = gyldigFra,
-			gyldigTil = gyldigTil
+			gyldigTil = gyldigTil,
 		)
 	}
 }
 
-fun List<VurderingDto>.toPGObject() = PGobject().also {
-	it.type = "json"
-	it.value = JsonUtils.objectMapper.writeValueAsString(this)
-}
+fun List<VurderingDto>.toPGObject() =
+	PGobject().also {
+		it.type = "json"
+		it.value = JsonUtils.objectMapper.writeValueAsString(this)
+	}

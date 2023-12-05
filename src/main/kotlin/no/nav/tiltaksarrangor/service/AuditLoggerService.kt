@@ -11,7 +11,7 @@ import java.util.UUID
 @Component
 class AuditLoggerService(
 	private val auditLogger: AuditLogger,
-	private val arrangorRepository: ArrangorRepository
+	private val arrangorRepository: ArrangorRepository,
 ) {
 	companion object {
 		const val APPLICATION_NAME = "amt-tiltaksarrangor-bff"
@@ -25,33 +25,35 @@ class AuditLoggerService(
 	fun sendAuditLog(
 		ansattPersonIdent: String,
 		deltakerPersonIdent: String,
-		arrangorId: UUID
+		arrangorId: UUID,
 	) {
-		val arrangorOrgnummer = arrangorRepository.getArrangor(arrangorId)?.organisasjonsnummer
-			?: throw IllegalStateException("Fant ikke organisasjonsnummer for arrangørId $arrangorId")
+		val arrangorOrgnummer =
+			arrangorRepository.getArrangor(arrangorId)?.organisasjonsnummer
+				?: throw IllegalStateException("Fant ikke organisasjonsnummer for arrangørId $arrangorId")
 		sendAuditLog(
 			ansattPersonIdent = ansattPersonIdent,
 			deltakerPersonIdent = deltakerPersonIdent,
-			arrangorOrgnummer = arrangorOrgnummer
+			arrangorOrgnummer = arrangorOrgnummer,
 		)
 	}
 
 	private fun sendAuditLog(
 		ansattPersonIdent: String,
 		deltakerPersonIdent: String,
-		arrangorOrgnummer: String
+		arrangorOrgnummer: String,
 	) {
 		val extensions = mapOf("cn1" to arrangorOrgnummer)
 
-		val builder = CefMessage.builder()
-			.applicationName(APPLICATION_NAME)
-			.event(CefMessageEvent.ACCESS)
-			.name(AUDIT_LOG_NAME)
-			.severity(CefMessageSeverity.INFO)
-			.sourceUserId(ansattPersonIdent)
-			.destinationUserId(deltakerPersonIdent)
-			.timeEnded(System.currentTimeMillis())
-			.extension(MESSAGE_EXTENSION, TILTAKSARRANGOR_ANSATT_DELTAKER_OPPSLAG_AUDIT_LOG_REASON)
+		val builder =
+			CefMessage.builder()
+				.applicationName(APPLICATION_NAME)
+				.event(CefMessageEvent.ACCESS)
+				.name(AUDIT_LOG_NAME)
+				.severity(CefMessageSeverity.INFO)
+				.sourceUserId(ansattPersonIdent)
+				.destinationUserId(deltakerPersonIdent)
+				.timeEnded(System.currentTimeMillis())
+				.extension(MESSAGE_EXTENSION, TILTAKSARRANGOR_ANSATT_DELTAKER_OPPSLAG_AUDIT_LOG_REASON)
 
 		extensions.forEach {
 			builder.extension(it.key, it.value)

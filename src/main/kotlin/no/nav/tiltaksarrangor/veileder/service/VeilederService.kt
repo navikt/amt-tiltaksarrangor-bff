@@ -19,7 +19,7 @@ import java.util.UUID
 class VeilederService(
 	private val ansattService: AnsattService,
 	private val deltakerRepository: DeltakerRepository,
-	private val endringsmeldingRepository: EndringsmeldingRepository
+	private val endringsmeldingRepository: EndringsmeldingRepository,
 ) {
 	fun getMineDeltakere(personIdent: String): List<Deltaker> {
 		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
@@ -30,10 +30,11 @@ class VeilederService(
 			return emptyList()
 		}
 
-		val deltakere = deltakerRepository.getDeltakereMedDeltakerliste(ansatt.veilederDeltakere.map { it.deltakerId })
-			.filter { ansattService.harRolleHosArrangor(it.deltakerliste.arrangorId, AnsattRolle.VEILEDER, ansatt.roller) }
-			.filter { !it.deltaker.erSkjult() }
-			.filter { it.deltaker.skalVises() }
+		val deltakere =
+			deltakerRepository.getDeltakereMedDeltakerliste(ansatt.veilederDeltakere.map { it.deltakerId })
+				.filter { ansattService.harRolleHosArrangor(it.deltakerliste.arrangorId, AnsattRolle.VEILEDER, ansatt.roller) }
+				.filter { !it.deltaker.erSkjult() }
+				.filter { it.deltaker.skalVises() }
 
 		if (deltakere.isEmpty()) {
 			return emptyList()
@@ -46,38 +47,46 @@ class VeilederService(
 	private fun tilVeiledersDeltakere(
 		deltakere: List<DeltakerMedDeltakerlisteDbo>,
 		ansattsVeilederDeltakere: List<VeilederDeltakerDbo>,
-		endringsmeldinger: List<EndringsmeldingDbo>
+		endringsmeldinger: List<EndringsmeldingDbo>,
 	): List<Deltaker> {
 		return deltakere.map {
 			Deltaker(
 				id = it.deltaker.id,
-				deltakerliste = Deltaker.Deltakerliste(
-					id = it.deltakerliste.id,
-					type = it.deltakerliste.cleanTiltaksnavn(),
-					navn = it.deltakerliste.navn
-				),
+				deltakerliste =
+					Deltaker.Deltakerliste(
+						id = it.deltakerliste.id,
+						type = it.deltakerliste.cleanTiltaksnavn(),
+						navn = it.deltakerliste.navn,
+					),
 				fornavn = it.deltaker.fornavn,
 				mellomnavn = it.deltaker.mellomnavn,
 				etternavn = it.deltaker.etternavn,
 				fodselsnummer = it.deltaker.personident,
-				status = DeltakerStatus(
-					type = it.deltaker.status,
-					endretDato = it.deltaker.statusGyldigFraDato
-				),
+				status =
+					DeltakerStatus(
+						type = it.deltaker.status,
+						endretDato = it.deltaker.statusGyldigFraDato,
+					),
 				startDato = it.deltaker.startdato,
 				sluttDato = it.deltaker.sluttdato,
 				veiledertype = getVeiledertype(it.deltaker.id, ansattsVeilederDeltakere),
-				aktiveEndringsmeldinger = getEndringsmeldinger(it.deltaker.id, endringsmeldinger)
+				aktiveEndringsmeldinger = getEndringsmeldinger(it.deltaker.id, endringsmeldinger),
 			)
 		}
 	}
 
-	private fun getVeiledertype(deltakerId: UUID, ansattsVeilederDeltakere: List<VeilederDeltakerDbo>): Veiledertype {
+	private fun getVeiledertype(
+		deltakerId: UUID,
+		ansattsVeilederDeltakere: List<VeilederDeltakerDbo>,
+	): Veiledertype {
 		return ansattsVeilederDeltakere.find { it.deltakerId == deltakerId }?.veilederType
 			?: throw IllegalStateException("Deltaker med id $deltakerId mangler fra listen, skal ikke kunne skje!")
 	}
 
-	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
+	private fun getEndringsmeldinger(
+		deltakerId: UUID,
+		endringsmeldinger: List<EndringsmeldingDbo>,
+	): List<Endringsmelding> {
 		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
 		return endringsmeldingerForDeltaker.map { it.toEndringsmelding() }
 	}

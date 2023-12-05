@@ -6,38 +6,38 @@ import java.time.LocalDate
 
 sealed class Innhold {
 	data class LeggTilOppstartsdatoInnhold(
-		val oppstartsdato: LocalDate
+		val oppstartsdato: LocalDate,
 	) : Innhold()
 
 	data class EndreOppstartsdatoInnhold(
-		val oppstartsdato: LocalDate?
+		val oppstartsdato: LocalDate?,
 	) : Innhold()
 
 	data class ForlengDeltakelseInnhold(
-		val sluttdato: LocalDate
+		val sluttdato: LocalDate,
 	) : Innhold()
 
 	data class AvsluttDeltakelseInnhold(
 		val sluttdato: LocalDate,
-		val aarsak: DeltakerStatusAarsak
+		val aarsak: DeltakerStatusAarsak,
 	) : Innhold()
 
 	data class DeltakerIkkeAktuellInnhold(
-		val aarsak: DeltakerStatusAarsak
+		val aarsak: DeltakerStatusAarsak,
 	) : Innhold()
 
 	data class EndreDeltakelseProsentInnhold(
 		val nyDeltakelseProsent: Int,
 		val dagerPerUke: Int?,
-		val gyldigFraDato: LocalDate?
+		val gyldigFraDato: LocalDate?,
 	) : Innhold()
 
 	data class EndreSluttdatoInnhold(
-		val sluttdato: LocalDate
+		val sluttdato: LocalDate,
 	) : Innhold()
 
 	data class EndreSluttaarsakInnhold(
-		val aarsak: DeltakerStatusAarsak
+		val aarsak: DeltakerStatusAarsak,
 	) : Innhold()
 }
 
@@ -46,7 +46,12 @@ fun Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold {
 		is Innhold.LeggTilOppstartsdatoInnhold -> Endringsmelding.Innhold.LeggTilOppstartsdatoInnhold(this.oppstartsdato)
 		is Innhold.EndreOppstartsdatoInnhold -> Endringsmelding.Innhold.EndreOppstartsdatoInnhold(this.oppstartsdato)
 		is Innhold.ForlengDeltakelseInnhold -> Endringsmelding.Innhold.ForlengDeltakelseInnhold(this.sluttdato)
-		is Innhold.EndreDeltakelseProsentInnhold -> Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(this.nyDeltakelseProsent, this.dagerPerUke, this.gyldigFraDato)
+		is Innhold.EndreDeltakelseProsentInnhold ->
+			Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(
+				this.nyDeltakelseProsent,
+				this.dagerPerUke,
+				this.gyldigFraDato,
+			)
 		is Innhold.AvsluttDeltakelseInnhold -> Endringsmelding.Innhold.AvsluttDeltakelseInnhold(this.sluttdato, this.aarsak)
 		is Innhold.DeltakerIkkeAktuellInnhold -> Endringsmelding.Innhold.DeltakerIkkeAktuellInnhold(this.aarsak)
 		is Innhold.EndreSluttdatoInnhold -> Endringsmelding.Innhold.EndreSluttdatoInnhold(this.sluttdato)
