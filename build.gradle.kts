@@ -27,7 +27,7 @@ val kotestVersion = "5.8.0"
 val testcontainersVersion = "1.19.3"
 val mockkVersion = "1.13.8"
 val commonVersion = "3.2023.10.18_13.28-58db82ecb1a5"
-val unleashVersion = "9.1.1"
+val unleashVersion = "9.2.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
