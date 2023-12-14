@@ -12,8 +12,10 @@ enum class DeltakerStatus {
 	VURDERES,
 	VENTELISTE,
 	AVBRUTT,
-	FULLFORT, // kursstatuser
+	FULLFORT,
 	PABEGYNT_REGISTRERING,
+	UTKAST_TIL_PAMELDING,
+	AVBRUTT_UTKAST,
 }
 
 fun DeltakerStatus.toStatusType(erKurs: Boolean): StatusType {
