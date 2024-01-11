@@ -10,14 +10,13 @@ class TokenService(
 	private val contextHolder: TokenValidationContextHolder,
 ) {
 	fun getPersonligIdentTilInnloggetAnsatt(): String {
-		val context = contextHolder.tokenValidationContext
+		val context = contextHolder.getTokenValidationContext()
 
 		val token =
-			context.firstValidToken.orElseThrow {
-				throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authorized, valid token is missing")
-			}
+			context.firstValidToken
+				?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authorized, valid token is missing")
 
-		return token.jwtTokenClaims["pid"]?.toString() ?: throw ResponseStatusException(
+		return token.jwtTokenClaims.getStringClaim("pid") ?: throw ResponseStatusException(
 			HttpStatus.UNAUTHORIZED,
 			"PID is missing or is not a string",
 		)

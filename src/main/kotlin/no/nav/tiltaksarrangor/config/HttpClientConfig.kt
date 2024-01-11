@@ -4,6 +4,7 @@ import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
 import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client
+import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -80,7 +81,9 @@ class HttpClientConfig {
 		oAuth2AccessTokenService: OAuth2AccessTokenService,
 	): Interceptor {
 		return Interceptor { chain: Interceptor.Chain ->
-			val accessTokenResponse = oAuth2AccessTokenService.getAccessToken(clientProperties)
+			val accessTokenResponse =
+				oAuth2AccessTokenService.getAccessToken(clientProperties)
+					?: throw UnauthorizedException("Kunne ikke hente accesstoken")
 			val request = chain.request()
 			val requestWithToken =
 				request.newBuilder()

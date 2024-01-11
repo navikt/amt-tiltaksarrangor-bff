@@ -171,7 +171,6 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 				vurderingerFraArrangor = getVurderinger(deltakerId, gyldigFra),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
-		val sendt = LocalDateTime.now()
 		val endringsmeldinger = getEndringsmeldinger(deltakerId)
 		endringsmeldinger.forEach { endringsmeldingRepository.insertOrUpdateEndringsmelding(it) }
 		ansattRepository.insertOrUpdateAnsatt(
