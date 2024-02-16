@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.ingest.model
 
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
+import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
 import java.time.LocalDate
 import java.util.UUID
 
@@ -17,12 +18,15 @@ data class DeltakerDto(
 	val bestillingTekst: String?,
 	val navKontor: String?,
 	val navVeileder: DeltakerNavVeilederDto?,
-	val skjult: DeltakerSkjultDto?,
 	val deltarPaKurs: Boolean,
 	val vurderingerFraArrangor: List<VurderingDto>?,
 )
 
-fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
+fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
+	val oppdatertStatus = status.type.toStatusType(deltarPaKurs)
+
+	val skalFortsattSkjules = lagretDeltaker?.erSkjult() == true && oppdatertStatus in STATUSER_SOM_KAN_SKJULES
+
 	return DeltakerDbo(
 		id = id,
 		deltakerlisteId = deltakerlisteId,
@@ -34,7 +38,7 @@ fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
 		epost = personalia.kontaktinformasjon.epost,
 		erSkjermet = personalia.skjermet,
 		adresse = personalia.adresse,
-		status = status.type.toStatusType(deltarPaKurs),
+		status = oppdatertStatus,
 		statusOpprettetDato = status.opprettetDato,
 		statusGyldigFraDato = status.gyldigFra,
 		dagerPerUke = dagerPerUke,
@@ -48,8 +52,18 @@ fun DeltakerDto.toDeltakerDbo(): DeltakerDbo {
 		navVeilederNavn = navVeileder?.navn,
 		navVeilederEpost = navVeileder?.epost,
 		navVeilederTelefon = navVeileder?.telefonnummer,
-		skjultAvAnsattId = skjult?.skjultAvAnsattId,
-		skjultDato = skjult?.dato,
+		skjultAvAnsattId =
+			if (skalFortsattSkjules) {
+				lagretDeltaker?.skjultAvAnsattId
+			} else {
+				null
+			},
+		skjultDato =
+			if (skalFortsattSkjules) {
+				lagretDeltaker?.skjultDato
+			} else {
+				null
+			},
 		vurderingerFraArrangor = vurderingerFraArrangor,
 	)
 }

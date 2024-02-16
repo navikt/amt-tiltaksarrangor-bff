@@ -476,11 +476,10 @@ class KafkaListenerTest : IntegrationTest() {
 				bestillingTekst = "Bestilling",
 				navKontor = "NAV Oslo",
 				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				skjult = null,
 				deltarPaKurs = false,
 				vurderingerFraArrangor = null,
 			)
-		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 		val avsluttetDeltakerlisteDto =
 			DeltakerlisteDto(
 				id = deltakerlisteDbo.id,
@@ -542,7 +541,6 @@ class KafkaListenerTest : IntegrationTest() {
 				bestillingTekst = "Bestilling",
 				navKontor = "NAV Oslo",
 				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				skjult = null,
 				deltarPaKurs = false,
 				vurderingerFraArrangor = getVurderinger(deltakerId),
 			)
@@ -590,11 +588,10 @@ class KafkaListenerTest : IntegrationTest() {
 				bestillingTekst = "Bestilling",
 				navKontor = "NAV Oslo",
 				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				skjult = null,
 				deltarPaKurs = false,
 				vurderingerFraArrangor = null,
 			)
-		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 		testKafkaProducer.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
@@ -639,11 +636,10 @@ class KafkaListenerTest : IntegrationTest() {
 				bestillingTekst = "Bestilling",
 				navKontor = "NAV Oslo",
 				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				skjult = null,
 				deltarPaKurs = false,
 				vurderingerFraArrangor = null,
 			)
-		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 		val avsluttetDeltakerDto =
 			deltakerDto.copy(
 				status =
