@@ -377,7 +377,6 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
 			),
 		)
-		mockAmtTiltakServer.addSkjulDeltakerResponse(deltakerId)
 
 		val response =
 			sendRequest(

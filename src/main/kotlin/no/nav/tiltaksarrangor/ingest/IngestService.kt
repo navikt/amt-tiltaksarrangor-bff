@@ -19,6 +19,7 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -90,8 +91,11 @@ class IngestService(
 		if (deltakerDto == null) {
 			deltakerRepository.deleteDeltaker(deltakerId)
 			log.info("Slettet tombstonet deltaker med id $deltakerId")
-		} else if (deltakerDto.skalLagres()) {
-			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo())
+			return
+		}
+		val lagretDeltaker = deltakerRepository.getDeltaker(deltakerId)
+		if (deltakerDto.skalLagres(lagretDeltaker)) {
+			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
 			log.info("Lagret deltaker med id $deltakerId")
 		} else {
 			val antallSlettedeDeltakere = deltakerRepository.deleteDeltaker(deltakerId)
@@ -116,12 +120,12 @@ class IngestService(
 		}
 	}
 
-	private fun DeltakerDto.skalLagres(): Boolean {
+	private fun DeltakerDto.skalLagres(lagretDeltaker: DeltakerDbo?): Boolean {
 		if (personalia.adressebeskyttelse != null) {
 			return false
 		} else if (status.type in SKJULES_ALLTID_STATUSER) {
 			return false
-		} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs && deltakerRepository.getDeltaker(id) == null) {
+		} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs && lagretDeltaker == null) {
 			return false
 		} else if (status.type in AVSLUTTENDE_STATUSER) {
 			return harNyligSluttet()

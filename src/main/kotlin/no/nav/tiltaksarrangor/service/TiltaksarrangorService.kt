@@ -141,7 +141,6 @@ class TiltaksarrangorService(
 
 		if (!deltakerMedDeltakerliste.deltaker.erSkjult()) {
 			if (kanSkjules(deltakerMedDeltakerliste.deltaker)) {
-				amtTiltakClient.skjulDeltakerForTiltaksarrangor(deltakerId)
 				deltakerRepository.skjulDeltaker(deltakerId = deltakerId, ansattId = ansatt.id)
 				metricsService.incFjernetDeltaker()
 				log.info("Skjult deltaker med id $deltakerId")
