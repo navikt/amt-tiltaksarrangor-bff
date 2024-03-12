@@ -32,10 +32,7 @@ class AmtTiltakClient(
 	private val log = LoggerFactory.getLogger(javaClass)
 	private val mediaTypeJson = "application/json".toMediaType()
 
-	fun leggTilOppstartsdato(
-		deltakerId: UUID,
-		leggTilOppstartsdatoRequest: LeggTilOppstartsdatoRequest,
-	): UUID {
+	fun leggTilOppstartsdato(deltakerId: UUID, leggTilOppstartsdatoRequest: LeggTilOppstartsdatoRequest): UUID {
 		val request =
 			Request.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/oppstartsdato")
@@ -52,10 +49,7 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun endreOppstartsdato(
-		deltakerId: UUID,
-		endreOppstartsdatoRequest: EndreOppstartsdatoRequest,
-	): UUID {
+	fun endreOppstartsdato(deltakerId: UUID, endreOppstartsdatoRequest: EndreOppstartsdatoRequest): UUID {
 		val request =
 			Request.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/oppstartsdato")
@@ -72,10 +66,7 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun avsluttDeltakelse(
-		deltakerId: UUID,
-		avsluttDeltakelseRequest: AvsluttDeltakelseRequest,
-	): UUID {
+	fun avsluttDeltakelse(deltakerId: UUID, avsluttDeltakelseRequest: AvsluttDeltakelseRequest): UUID {
 		val request =
 			Request.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/avslutt-deltakelse")
@@ -92,10 +83,7 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun forlengDeltakelse(
-		deltakerId: UUID,
-		forlengDeltakelseRequest: ForlengDeltakelseRequest,
-	): UUID {
+	fun forlengDeltakelse(deltakerId: UUID, forlengDeltakelseRequest: ForlengDeltakelseRequest): UUID {
 		val request =
 			Request.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/forleng-deltakelse")
@@ -112,10 +100,7 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun endreDeltakelsesprosent(
-		deltakerId: UUID,
-		endreDeltakelsesprosentRequest: EndreDeltakelsesprosentRequest,
-	): UUID {
+	fun endreDeltakelsesprosent(deltakerId: UUID, endreDeltakelsesprosentRequest: EndreDeltakelsesprosentRequest): UUID {
 		val request =
 			Request.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/deltakelse-prosent")
@@ -132,10 +117,7 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun deltakerIkkeAktuell(
-		deltakerId: UUID,
-		deltakerIkkeAktuellRequest: DeltakerIkkeAktuellRequest,
-	): UUID {
+	fun deltakerIkkeAktuell(deltakerId: UUID, deltakerIkkeAktuellRequest: DeltakerIkkeAktuellRequest): UUID {
 		val request =
 			Request.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/ikke-aktuell")
@@ -152,10 +134,7 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun endreSluttdato(
-		deltakerId: UUID,
-		endreSluttdatoRequest: EndreSluttdatoRequest,
-	): UUID {
+	fun endreSluttdato(deltakerId: UUID, endreSluttdatoRequest: EndreSluttdatoRequest): UUID {
 		val request =
 			Request.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/endre-sluttdato")
@@ -175,10 +154,7 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun endreSluttaarsak(
-		deltakerId: UUID,
-		endreSluttaarsakRequest: EndreSluttaarsakRequest,
-	): UUID {
+	fun endreSluttaarsak(deltakerId: UUID, endreSluttaarsakRequest: EndreSluttaarsakRequest): UUID {
 		val request =
 			Request.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/sluttaarsak")
@@ -209,10 +185,7 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun registrerVurdering(
-		deltakerId: UUID,
-		registrerVurderingRequest: RegistrerVurderingRequest,
-	): List<VurderingDto> {
+	fun registrerVurdering(deltakerId: UUID, registrerVurderingRequest: RegistrerVurderingRequest): List<VurderingDto> {
 		val request =
 			Request.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/vurdering")
@@ -229,10 +202,7 @@ class AmtTiltakClient(
 		}
 	}
 
-	private fun handleUnsuccessfulUpdateResponse(
-		responseCode: Int,
-		requestedResource: String,
-	) {
+	private fun handleUnsuccessfulUpdateResponse(responseCode: Int, requestedResource: String) {
 		when (responseCode) {
 			401 -> throw UnauthorizedException("Ikke tilgang til å $requestedResource")
 			403 -> throw UnauthorizedException("Ikke tilgang til å $requestedResource")

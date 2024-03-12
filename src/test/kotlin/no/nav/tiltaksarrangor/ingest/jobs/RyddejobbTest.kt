@@ -233,10 +233,7 @@ private fun getAnsatt(
 	)
 }
 
-private fun getEndringsmelding(
-	endringsmeldingId: UUID,
-	deltakerId: UUID,
-): EndringsmeldingDbo {
+private fun getEndringsmelding(endringsmeldingId: UUID, deltakerId: UUID): EndringsmeldingDbo {
 	return EndringsmeldingDbo(
 		id = endringsmeldingId,
 		deltakerId = deltakerId,

@@ -26,8 +26,7 @@ data class VurderingDto(
 	}
 }
 
-fun List<VurderingDto>.toPGObject() =
-	PGobject().also {
-		it.type = "json"
-		it.value = JsonUtils.objectMapper.writeValueAsString(this)
-	}
+fun List<VurderingDto>.toPGObject() = PGobject().also {
+	it.type = "json"
+	it.value = JsonUtils.objectMapper.writeValueAsString(this)
+}

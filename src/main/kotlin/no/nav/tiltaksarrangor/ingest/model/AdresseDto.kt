@@ -10,11 +10,10 @@ data class AdresseDto(
 	val oppholdsadresse: Oppholdsadresse?,
 	val kontaktadresse: Kontaktadresse?,
 ) {
-	fun toPGObject() =
-		PGobject().also {
-			it.type = "json"
-			it.value = objectMapper.writeValueAsString(this)
-		}
+	fun toPGObject() = PGobject().also {
+		it.type = "json"
+		it.value = objectMapper.writeValueAsString(this)
+	}
 }
 
 data class Bostedsadresse(

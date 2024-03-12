@@ -7,10 +7,7 @@ import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import java.time.LocalDateTime
 import java.util.UUID
 
-fun EndringsmeldingRequest.toEndringsmeldingDbo(
-	endringsmeldingId: UUID,
-	deltakerId: UUID,
-): EndringsmeldingDbo {
+fun EndringsmeldingRequest.toEndringsmeldingDbo(endringsmeldingId: UUID, deltakerId: UUID): EndringsmeldingDbo {
 	return EndringsmeldingDbo(
 		id = endringsmeldingId,
 		deltakerId = deltakerId,

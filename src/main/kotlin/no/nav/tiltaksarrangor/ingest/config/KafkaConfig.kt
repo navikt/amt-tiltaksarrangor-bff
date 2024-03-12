@@ -24,24 +24,22 @@ class KafkaConfig(
 	private val javaKeystore = "JKS"
 	private val pkcs12 = "PKCS12"
 
-	fun commonConfig() =
-		mapOf(
-			BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
-		) + securityConfig()
+	fun commonConfig() = mapOf(
+		BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
+	) + securityConfig()
 
-	private fun securityConfig() =
-		mapOf(
-			CommonClientConfigs.SECURITY_PROTOCOL_CONFIG to kafkaSecurityProtocol,
-			// Disable server host name verification
-			SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG to "",
-			SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG to javaKeystore,
-			SslConfigs.SSL_KEYSTORE_TYPE_CONFIG to pkcs12,
-			SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG to kafkaTruststorePath,
-			SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG to kafkaCredstorePassword,
-			SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG to kafkaKeystorePath,
-			SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG to kafkaCredstorePassword,
-			SslConfigs.SSL_KEY_PASSWORD_CONFIG to kafkaCredstorePassword,
-		)
+	private fun securityConfig() = mapOf(
+		CommonClientConfigs.SECURITY_PROTOCOL_CONFIG to kafkaSecurityProtocol,
+		// Disable server host name verification
+		SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG to "",
+		SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG to javaKeystore,
+		SslConfigs.SSL_KEYSTORE_TYPE_CONFIG to pkcs12,
+		SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG to kafkaTruststorePath,
+		SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG to kafkaCredstorePassword,
+		SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG to kafkaKeystorePath,
+		SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG to kafkaCredstorePassword,
+		SslConfigs.SSL_KEY_PASSWORD_CONFIG to kafkaCredstorePassword,
+	)
 
 	@Bean
 	fun kafkaListenerContainerFactory(kafkaErrorHandler: KafkaErrorHandler): ConcurrentKafkaListenerContainerFactory<String, String> {

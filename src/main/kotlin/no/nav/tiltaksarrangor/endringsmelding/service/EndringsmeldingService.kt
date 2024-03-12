@@ -36,10 +36,7 @@ class EndringsmeldingService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun getAlleEndringsmeldinger(
-		deltakerId: UUID,
-		personIdent: String,
-	): EndringsmeldingResponse {
+	fun getAlleEndringsmeldinger(deltakerId: UUID, personIdent: String): EndringsmeldingResponse {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
 			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
@@ -59,8 +56,10 @@ class EndringsmeldingService(
 		}
 		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
 		return EndringsmeldingResponse(
-			aktiveEndringsmeldinger = endringsmeldinger.sortedBy { it.sendt }.filter { it.erAktiv() }.map { it.toEndringsmelding() },
-			historiskeEndringsmeldinger = endringsmeldinger.sortedByDescending { it.sendt }.filter { !it.erAktiv() }.map { it.toEndringsmelding() },
+			aktiveEndringsmeldinger = endringsmeldinger.sortedBy { it.sendt }.filter { it.erAktiv() }
+				.map { it.toEndringsmelding() },
+			historiskeEndringsmeldinger = endringsmeldinger.sortedByDescending { it.sendt }.filter { !it.erAktiv() }
+				.map { it.toEndringsmelding() },
 		)
 	}
 
@@ -103,30 +102,42 @@ class EndringsmeldingService(
 
 				EndringsmeldingRequest.EndringsmeldingType.AVSLUTT_DELTAKELSE -> {
 					val innhold = request.innhold as EndringsmeldingRequest.Innhold.AvsluttDeltakelseInnhold
-					amtTiltakClient.avsluttDeltakelse(deltakerId, AvsluttDeltakelseRequest(innhold.sluttdato, innhold.aarsak))
+					amtTiltakClient.avsluttDeltakelse(
+						deltakerId,
+						AvsluttDeltakelseRequest(innhold.sluttdato, innhold.aarsak),
+					)
 				}
+
 				EndringsmeldingRequest.EndringsmeldingType.FORLENG_DELTAKELSE ->
 					amtTiltakClient.forlengDeltakelse(
 						deltakerId,
 						ForlengDeltakelseRequest((request.innhold as EndringsmeldingRequest.Innhold.ForlengDeltakelseInnhold).sluttdato),
 					)
+
 				EndringsmeldingRequest.EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT -> {
 					val innhold = request.innhold as EndringsmeldingRequest.Innhold.EndreDeltakelseProsentInnhold
 					amtTiltakClient.endreDeltakelsesprosent(
 						deltakerId,
-						EndreDeltakelsesprosentRequest(innhold.deltakelseProsent, innhold.dagerPerUke, innhold.gyldigFraDato),
+						EndreDeltakelsesprosentRequest(
+							innhold.deltakelseProsent,
+							innhold.dagerPerUke,
+							innhold.gyldigFraDato,
+						),
 					)
 				}
+
 				EndringsmeldingRequest.EndringsmeldingType.DELTAKER_IKKE_AKTUELL ->
 					amtTiltakClient.deltakerIkkeAktuell(
 						deltakerId,
 						DeltakerIkkeAktuellRequest((request.innhold as EndringsmeldingRequest.Innhold.DeltakerIkkeAktuellInnhold).aarsak),
 					)
+
 				EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTDATO ->
 					amtTiltakClient.endreSluttdato(
 						deltakerId,
 						EndreSluttdatoRequest((request.innhold as EndringsmeldingRequest.Innhold.EndreSluttdatoInnhold).sluttdato),
 					)
+
 				EndringsmeldingRequest.EndringsmeldingType.ENDRE_SLUTTAARSAK ->
 					endreSluttaarsak(
 						deltakerMedDeltakerliste,
@@ -140,10 +151,7 @@ class EndringsmeldingService(
 		log.info("Endringsmelding av type ${request.innhold.type.name} opprettet med id $endringsmeldingId for deltaker $deltakerId")
 	}
 
-	fun slettEndringsmelding(
-		endringsmeldingId: UUID,
-		personIdent: String,
-	) {
+	fun slettEndringsmelding(endringsmeldingId: UUID, personIdent: String) {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val endringsmeldingMedDeltakerOgDeltakerliste =
 			endringsmeldingRepository.getEndringsmeldingMedDeltakerOgDeltakerliste(endringsmeldingId)
@@ -186,6 +194,9 @@ class EndringsmeldingService(
 			)
 		}
 
-		return amtTiltakClient.endreSluttaarsak(deltakerMedDeltakerliste.deltaker.id, EndreSluttaarsakRequest(innhold.aarsak))
+		return amtTiltakClient.endreSluttaarsak(
+			deltakerMedDeltakerliste.deltaker.id,
+			EndreSluttaarsakRequest(innhold.aarsak),
+		)
 	}
 }

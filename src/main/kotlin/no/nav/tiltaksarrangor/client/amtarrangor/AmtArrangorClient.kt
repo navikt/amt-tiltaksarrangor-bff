@@ -101,10 +101,7 @@ class AmtArrangorClient(
 		log.info("Fjernet amt-arrangor deltakerliste $deltakerlisteId for ansatt $ansattId")
 	}
 
-	fun oppdaterVeilederForDeltaker(
-		deltakerId: UUID,
-		oppdaterVeiledereForDeltakerRequest: OppdaterVeiledereForDeltakerRequest,
-	) {
+	fun oppdaterVeilederForDeltaker(deltakerId: UUID, oppdaterVeiledereForDeltakerRequest: OppdaterVeiledereForDeltakerRequest) {
 		val request =
 			Request.Builder()
 				.url("$amtArrangorUrl/api/ansatt/veiledere/$deltakerId")

@@ -40,10 +40,7 @@ class TiltaksarrangorService(
 		return ansattService.oppdaterOgHentMineRoller(personIdent).also { metricsService.incInnloggetAnsatt(roller = it) }
 	}
 
-	fun getDeltaker(
-		personIdent: String,
-		deltakerId: UUID,
-	): Deltaker {
+	fun getDeltaker(personIdent: String, deltakerId: UUID): Deltaker {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
 			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
@@ -120,10 +117,7 @@ class TiltaksarrangorService(
 		log.info("Registrert vurdering for deltaker med id $deltakerId")
 	}
 
-	fun fjernDeltaker(
-		personIdent: String,
-		deltakerId: UUID,
-	) {
+	fun fjernDeltaker(personIdent: String, deltakerId: UUID) {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
 			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)

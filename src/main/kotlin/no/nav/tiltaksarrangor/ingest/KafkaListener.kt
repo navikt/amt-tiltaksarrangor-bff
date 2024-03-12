@@ -22,10 +22,7 @@ class KafkaListener(
 		properties = ["auto.offset.reset = earliest"],
 		containerFactory = "kafkaListenerContainerFactory",
 	)
-	fun listen(
-		cr: ConsumerRecord<String, String>,
-		acknowledgment: Acknowledgment,
-	) {
+	fun listen(cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
 		when (cr.topic()) {
 			ARRANGOR_TOPIC -> ingestService.lagreArrangor(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			ARRANGOR_ANSATT_TOPIC -> ingestService.lagreAnsatt(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })

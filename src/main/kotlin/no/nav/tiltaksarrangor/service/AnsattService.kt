@@ -95,10 +95,7 @@ class AnsattService(
 		)
 	}
 
-	fun getKoordinatorerForDeltakerliste(
-		deltakerlisteId: UUID,
-		arrangorId: UUID,
-	): List<AnsattPersonaliaDbo> {
+	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID, arrangorId: UUID): List<AnsattPersonaliaDbo> {
 		return ansattRepository.getKoordinatorerForDeltakerliste(deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
 	}
 
@@ -106,10 +103,7 @@ class AnsattService(
 		return ansattRepository.getVeiledereForArrangor(arrangorId)
 	}
 
-	fun erAlleAnsatteVeiledereHosArrangor(
-		ansattIder: List<UUID>,
-		arrangorId: UUID,
-	): Boolean {
+	fun erAlleAnsatteVeiledereHosArrangor(ansattIder: List<UUID>, arrangorId: UUID): Boolean {
 		if (ansattIder.isEmpty()) {
 			return true
 		}
@@ -165,10 +159,7 @@ class AnsattService(
 		return false
 	}
 
-	fun deltakerlisteErLagtTil(
-		ansattDbo: AnsattDbo,
-		deltakerlisteId: UUID,
-	): Boolean {
+	fun deltakerlisteErLagtTil(ansattDbo: AnsattDbo, deltakerlisteId: UUID): Boolean {
 		return ansattDbo.deltakerlister.find { it.deltakerlisteId == deltakerlisteId } != null
 	}
 
