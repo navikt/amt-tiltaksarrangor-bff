@@ -54,11 +54,10 @@ class LeaderElection(
 		throw RuntimeException(message)
 	}
 
-	private fun getHttpPath(url: String): String =
-		when (url.startsWith("http://")) {
-			true -> url
-			else -> "http://$url"
-		}
+	private fun getHttpPath(url: String): String = when (url.startsWith("http://")) {
+		true -> url
+		else -> "http://$url"
+	}
 
 	private data class Leader(val name: String)
 }

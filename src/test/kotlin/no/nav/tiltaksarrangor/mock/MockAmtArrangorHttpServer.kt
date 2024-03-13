@@ -12,10 +12,7 @@ import okhttp3.mockwebserver.MockResponse
 import java.util.UUID
 
 class MockAmtArrangorHttpServer : MockHttpServer(name = "Amt-Arrangor Mock Server") {
-	fun addAnsattResponse(
-		ansattId: UUID = UUID.randomUUID(),
-		personIdent: String,
-	) {
+	fun addAnsattResponse(ansattId: UUID = UUID.randomUUID(), personIdent: String) {
 		addResponseHandler(
 			path = "/api/ansatt",
 			MockResponse()
@@ -24,10 +21,7 @@ class MockAmtArrangorHttpServer : MockHttpServer(name = "Amt-Arrangor Mock Serve
 		)
 	}
 
-	fun addLeggTilEllerFjernDeltakerlisteResponse(
-		arrangorId: UUID,
-		deltakerlisteId: UUID,
-	) {
+	fun addLeggTilEllerFjernDeltakerlisteResponse(arrangorId: UUID, deltakerlisteId: UUID) {
 		addResponseHandler(
 			path = "/api/ansatt/koordinator/$arrangorId/$deltakerlisteId",
 			MockResponse()
@@ -43,10 +37,7 @@ class MockAmtArrangorHttpServer : MockHttpServer(name = "Amt-Arrangor Mock Serve
 		)
 	}
 
-	private fun getAnsatt(
-		ansattId: UUID,
-		personIdent: String,
-	): AnsattDto {
+	private fun getAnsatt(ansattId: UUID, personIdent: String): AnsattDto {
 		return AnsattDto(
 			id = ansattId,
 			personalia =

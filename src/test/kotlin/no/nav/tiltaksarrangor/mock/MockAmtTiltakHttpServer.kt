@@ -51,10 +51,7 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
-	fun addRegistrerVurderingResponse(
-		deltakerId: UUID,
-		vurderinger: List<VurderingDto>,
-	) {
+	fun addRegistrerVurderingResponse(deltakerId: UUID, vurderinger: List<VurderingDto>) {
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/vurdering",
 			MockResponse()

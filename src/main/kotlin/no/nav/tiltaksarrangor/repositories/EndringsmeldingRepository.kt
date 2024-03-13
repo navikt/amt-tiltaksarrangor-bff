@@ -242,10 +242,7 @@ class EndringsmeldingRepository(
 		)
 	}
 
-	private fun parseInnholdJson(
-		innholdJson: String?,
-		type: EndringsmeldingType,
-	): Innhold {
+	private fun parseInnholdJson(innholdJson: String?, type: EndringsmeldingType): Innhold {
 		if (innholdJson == null) {
 			log.error("Kan ikke lese endringsmelding med type $type som mangler innhold")
 			throw IllegalStateException("Endringsmelding med type $type må ha innhold")
@@ -278,8 +275,7 @@ class EndringsmeldingRepository(
 	}
 }
 
-fun Innhold.toPGObject() =
-	PGobject().also {
-		it.type = "json"
-		it.value = objectMapper.writeValueAsString(this)
-	}
+fun Innhold.toPGObject() = PGobject().also {
+	it.type = "json"
+	it.value = objectMapper.writeValueAsString(this)
+}

@@ -63,11 +63,11 @@ class IntegrationTest {
 			registry.add("amt-arrangor.url", mockAmtArrangorServer::serverUrl)
 
 			val container = SingletonPostgresContainer.getContainer()
-			val kafkaContainer =
-				KafkaContainer(DockerImageName.parse(getKafkaImage())).apply {
-					start()
-					System.setProperty("KAFKA_BROKERS", bootstrapServers)
-				}
+
+			KafkaContainer(DockerImageName.parse(getKafkaImage())).apply {
+				start()
+				System.setProperty("KAFKA_BROKERS", bootstrapServers)
+			}
 
 			registry.add("spring.datasource.url") { container.jdbcUrl }
 			registry.add("spring.datasource.username") { container.username }

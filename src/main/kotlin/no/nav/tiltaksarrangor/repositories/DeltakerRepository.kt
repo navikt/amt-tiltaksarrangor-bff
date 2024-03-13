@@ -354,10 +354,7 @@ class DeltakerRepository(
 		}
 	}
 
-	fun skjulDeltaker(
-		deltakerId: UUID,
-		ansattId: UUID,
-	) {
+	fun skjulDeltaker(deltakerId: UUID, ansattId: UUID) {
 		val sql =
 			"""
 			UPDATE deltaker SET skjult_dato = CURRENT_TIMESTAMP, skjult_av_ansatt_id = :ansattId WHERE id = :deltakerId
@@ -372,10 +369,7 @@ class DeltakerRepository(
 		)
 	}
 
-	fun oppdaterVurderingerForDeltaker(
-		deltakerId: UUID,
-		oppdaterteVurderinger: List<VurderingDto>,
-	) {
+	fun oppdaterVurderingerForDeltaker(deltakerId: UUID, oppdaterteVurderinger: List<VurderingDto>) {
 		val sql =
 			"""
 			UPDATE deltaker SET vurderinger = :vurderinger WHERE id = :deltakerId

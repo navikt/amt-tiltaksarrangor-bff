@@ -75,18 +75,12 @@ class VeilederService(
 		}
 	}
 
-	private fun getVeiledertype(
-		deltakerId: UUID,
-		ansattsVeilederDeltakere: List<VeilederDeltakerDbo>,
-	): Veiledertype {
+	private fun getVeiledertype(deltakerId: UUID, ansattsVeilederDeltakere: List<VeilederDeltakerDbo>): Veiledertype {
 		return ansattsVeilederDeltakere.find { it.deltakerId == deltakerId }?.veilederType
 			?: throw IllegalStateException("Deltaker med id $deltakerId mangler fra listen, skal ikke kunne skje!")
 	}
 
-	private fun getEndringsmeldinger(
-		deltakerId: UUID,
-		endringsmeldinger: List<EndringsmeldingDbo>,
-	): List<Endringsmelding> {
+	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
 		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
 		return endringsmeldingerForDeltaker.map { it.toEndringsmelding() }
 	}

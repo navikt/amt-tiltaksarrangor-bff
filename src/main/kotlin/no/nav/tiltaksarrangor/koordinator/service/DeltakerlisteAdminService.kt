@@ -53,10 +53,7 @@ class DeltakerlisteAdminService(
 		}
 	}
 
-	fun leggTilDeltakerliste(
-		deltakerlisteId: UUID,
-		personIdent: String,
-	) {
+	fun leggTilDeltakerliste(deltakerlisteId: UUID, personIdent: String) {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val deltakerliste =
 			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
@@ -85,10 +82,7 @@ class DeltakerlisteAdminService(
 		}
 	}
 
-	fun fjernDeltakerliste(
-		deltakerlisteId: UUID,
-		personIdent: String,
-	) {
+	fun fjernDeltakerliste(deltakerlisteId: UUID, personIdent: String) {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val deltakerliste =
 			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
@@ -125,10 +119,7 @@ class DeltakerlisteAdminService(
 		return ansatt
 	}
 
-	private fun finnOverordnetArrangorNavn(
-		overordnetArrangorId: UUID,
-		overordnedeArrangorer: List<ArrangorDbo>,
-	): String? {
+	private fun finnOverordnetArrangorNavn(overordnetArrangorId: UUID, overordnedeArrangorer: List<ArrangorDbo>): String? {
 		return overordnedeArrangorer.find { it.id == overordnetArrangorId }?.navn
 	}
 }

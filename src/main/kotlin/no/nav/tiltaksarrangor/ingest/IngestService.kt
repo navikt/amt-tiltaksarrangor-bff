@@ -38,10 +38,7 @@ class IngestService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun lagreArrangor(
-		arrangorId: UUID,
-		arrangor: ArrangorDto?,
-	) {
+	fun lagreArrangor(arrangorId: UUID, arrangor: ArrangorDto?) {
 		if (arrangor == null) {
 			arrangorRepository.deleteArrangor(arrangorId)
 			log.info("Slettet arrangør med id $arrangorId")
@@ -51,10 +48,7 @@ class IngestService(
 		}
 	}
 
-	fun lagreAnsatt(
-		ansattId: UUID,
-		ansatt: AnsattDto?,
-	) {
+	fun lagreAnsatt(ansattId: UUID, ansatt: AnsattDto?) {
 		if (ansatt == null || ansatt.arrangorer.isEmpty()) {
 			ansattRepository.deleteAnsatt(ansattId)
 			log.info("Slettet ansatt med id $ansattId")
@@ -64,10 +58,7 @@ class IngestService(
 		}
 	}
 
-	fun lagreDeltakerliste(
-		deltakerlisteId: UUID,
-		deltakerlisteDto: DeltakerlisteDto?,
-	) {
+	fun lagreDeltakerliste(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteDto?) {
 		if (deltakerlisteDto == null) {
 			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
 			log.info("Slettet tombstonet deltakerliste med id $deltakerlisteId")
@@ -84,10 +75,7 @@ class IngestService(
 		}
 	}
 
-	fun lagreDeltaker(
-		deltakerId: UUID,
-		deltakerDto: DeltakerDto?,
-	) {
+	fun lagreDeltaker(deltakerId: UUID, deltakerDto: DeltakerDto?) {
 		if (deltakerDto == null) {
 			deltakerRepository.deleteDeltaker(deltakerId)
 			log.info("Slettet tombstonet deltaker med id $deltakerId")
@@ -107,10 +95,7 @@ class IngestService(
 		}
 	}
 
-	fun lagreEndringsmelding(
-		endringsmeldingId: UUID,
-		endringsmeldingDto: EndringsmeldingDto?,
-	) {
+	fun lagreEndringsmelding(endringsmeldingId: UUID, endringsmeldingDto: EndringsmeldingDto?) {
 		if (endringsmeldingDto == null) {
 			endringsmeldingRepository.deleteEndringsmelding(endringsmeldingId)
 			log.info("Slettet tombstonet endringsmelding med id $endringsmeldingId")

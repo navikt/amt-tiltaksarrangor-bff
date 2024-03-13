@@ -28,6 +28,7 @@ val testcontainersVersion = "1.19.7"
 val mockkVersion = "1.13.10"
 val commonVersion = "3.2023.12.12_13.53-510909d4aa1a"
 val unleashVersion = "9.2.0"
+val ktlintVersion = "1.2.1"
 
 extra["postgresql.version"] = "42.7.2"
 
@@ -84,6 +85,10 @@ tasks.withType<KotlinCompile> {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "21"
     }
+}
+
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    version.set(ktlintVersion)
 }
 
 tasks.withType<Test> {

@@ -68,10 +68,7 @@ class KoordinatorService(
 		)
 	}
 
-	fun getTilgjengeligeVeiledere(
-		deltakerlisteId: UUID,
-		personIdent: String,
-	): List<TilgjengeligVeileder> {
+	fun getTilgjengeligeVeiledere(deltakerlisteId: UUID, personIdent: String): List<TilgjengeligVeileder> {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val deltakerliste =
 			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
@@ -154,10 +151,7 @@ class KoordinatorService(
 		}
 	}
 
-	fun getDeltakerliste(
-		deltakerlisteId: UUID,
-		personIdent: String,
-	): Deltakerliste {
+	fun getDeltakerliste(deltakerlisteId: UUID, personIdent: String): Deltakerliste {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val deltakerlisteMedArrangor =
 			deltakerlisteRepository.getDeltakerlisteMedArrangor(deltakerlisteId)
@@ -267,17 +261,11 @@ class KoordinatorService(
 		}
 	}
 
-	private fun getVeiledereForDeltaker(
-		deltakerId: UUID,
-		veiledereDeltakere: List<Veileder>,
-	): List<Veileder> {
+	private fun getVeiledereForDeltaker(deltakerId: UUID, veiledereDeltakere: List<Veileder>): List<Veileder> {
 		return veiledereDeltakere.filter { it.deltakerId == deltakerId }
 	}
 
-	private fun getEndringsmeldinger(
-		deltakerId: UUID,
-		endringsmeldinger: List<EndringsmeldingDbo>,
-	): List<Endringsmelding> {
+	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
 		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
 		return endringsmeldingerForDeltaker.map { it.toEndringsmelding() }
 	}

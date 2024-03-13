@@ -15,13 +15,12 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 class TestKafkaConfig(
 	private val kafkaConfig: KafkaConfig,
 ) {
-	fun testConsumerProps(groupId: String) =
-		mapOf(
-			ConsumerConfig.GROUP_ID_CONFIG to groupId,
-			ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
-			ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
-			ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
-		) + kafkaConfig.commonConfig()
+	fun testConsumerProps(groupId: String) = mapOf(
+		ConsumerConfig.GROUP_ID_CONFIG to groupId,
+		ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
+		ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
+		ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
+	) + kafkaConfig.commonConfig()
 
 	@Bean
 	fun testKafkaConsumer(): Consumer<String, String> {

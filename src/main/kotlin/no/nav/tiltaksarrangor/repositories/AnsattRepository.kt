@@ -98,10 +98,7 @@ class AnsattRepository(
 		template.update(sql, sqlParameters("ansattId" to ansattId))
 	}
 
-	fun insertKoordinatorDeltakerliste(
-		ansattId: UUID,
-		deltakerliste: KoordinatorDeltakerlisteDbo,
-	) {
+	fun insertKoordinatorDeltakerliste(ansattId: UUID, deltakerliste: KoordinatorDeltakerlisteDbo) {
 		val sql =
 			"""
 			INSERT INTO koordinator_deltakerliste(ansatt_id, deltakerliste_id)
@@ -119,10 +116,7 @@ class AnsattRepository(
 		)
 	}
 
-	fun updateVeiledereForDeltaker(
-		deltakerId: UUID,
-		veiledere: List<VeilederForDeltakerDbo>,
-	) {
+	fun updateVeiledereForDeltaker(deltakerId: UUID, veiledere: List<VeilederForDeltakerDbo>) {
 		template.update(
 			"DELETE FROM veileder_deltaker WHERE deltaker_id = :deltaker_id",
 			sqlParameters("deltaker_id" to deltakerId),
@@ -151,10 +145,7 @@ class AnsattRepository(
 		}
 	}
 
-	fun deleteKoordinatorDeltakerliste(
-		ansattId: UUID,
-		deltakerliste: KoordinatorDeltakerlisteDbo,
-	) {
+	fun deleteKoordinatorDeltakerliste(ansattId: UUID, deltakerliste: KoordinatorDeltakerlisteDbo) {
 		val sql =
 			"""
 			DELETE FROM koordinator_deltakerliste WHERE ansatt_id = :ansatt_id AND deltakerliste_id = :deltakerliste_id
@@ -206,10 +197,7 @@ class AnsattRepository(
 		insertOrUpdateVeilederDeltaker(ansattDbo.id, ansattDbo.veilederDeltakere.distinct())
 	}
 
-	private fun insertOrUpdateAnsattRolle(
-		ansattId: UUID,
-		roller: List<AnsattRolleDbo>,
-	) {
+	private fun insertOrUpdateAnsattRolle(ansattId: UUID, roller: List<AnsattRolleDbo>) {
 		template.update(
 			"DELETE FROM ansatt_rolle WHERE ansatt_id = :ansatt_id",
 			sqlParameters("ansatt_id" to ansattId),
@@ -238,10 +226,7 @@ class AnsattRepository(
 		}
 	}
 
-	private fun insertOrUpdateKoordinatorDeltakerliste(
-		ansattId: UUID,
-		deltakerlister: List<KoordinatorDeltakerlisteDbo>,
-	) {
+	private fun insertOrUpdateKoordinatorDeltakerliste(ansattId: UUID, deltakerlister: List<KoordinatorDeltakerlisteDbo>) {
 		template.update(
 			"DELETE FROM koordinator_deltakerliste WHERE ansatt_id = :ansatt_id",
 			sqlParameters("ansatt_id" to ansattId),
@@ -265,10 +250,7 @@ class AnsattRepository(
 		}
 	}
 
-	private fun insertOrUpdateVeilederDeltaker(
-		ansattId: UUID,
-		veilederDeltakere: List<VeilederDeltakerDbo>,
-	) {
+	private fun insertOrUpdateVeilederDeltaker(ansattId: UUID, veilederDeltakere: List<VeilederDeltakerDbo>) {
 		template.update(
 			"DELETE FROM veileder_deltaker WHERE ansatt_id = :ansatt_id",
 			sqlParameters("ansatt_id" to ansattId),
@@ -374,10 +356,7 @@ class AnsattRepository(
 		)
 	}
 
-	fun getKoordinatorerForDeltakerliste(
-		deltakerlisteId: UUID,
-		arrangorId: UUID,
-	): List<AnsattPersonaliaDbo> {
+	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID, arrangorId: UUID): List<AnsattPersonaliaDbo> {
 		return template.query(
 			"""
 			SELECT distinct a.*
