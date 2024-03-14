@@ -213,13 +213,13 @@ class VeilederServiceTest {
 	}
 
 	@Test
-	fun `getMineDeltakere - ansatt er veileder for deltakere med sluttdato mer enn 15 dager frem i tid - filtrerer bort skjulte deltakere`() {
+	fun `getMineDeltakere - ansatt er veileder for deltakere med sluttdato mer enn 41 dager frem i tid - filtrerer bort skjulte deltakere`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
-		val deltaker2 = deltaker.copy(id = UUID.randomUUID(), personident = "23456", sluttdato = LocalDate.now().minusDays(15))
+		val deltaker2 = deltaker.copy(id = UUID.randomUUID(), personident = "23456", sluttdato = LocalDate.now().minusDays(41))
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker2.copy())
 		ansattRepository.insertOrUpdateAnsatt(

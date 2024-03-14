@@ -316,7 +316,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status HAR_SLUTTET for mer enn to uker siden - lagres ikke i db `() {
+	internal fun `lagreDeltaker - status HAR_SLUTTET for mer enn 40 dager siden - lagres ikke i db `() {
 		every { deltakerRepository.getDeltaker(any()) } returns null
 		val deltakerId = UUID.randomUUID()
 		val deltakerDto =
@@ -335,7 +335,7 @@ class IngestServiceTest {
 				status =
 					DeltakerStatusDto(
 						type = DeltakerStatus.HAR_SLUTTET,
-						gyldigFra = LocalDate.now().minusWeeks(3).atStartOfDay(),
+						gyldigFra = LocalDate.now().minusDays(43).atStartOfDay(),
 						opprettetDato = LocalDateTime.now().minusWeeks(6),
 					),
 				dagerPerUke = null,
@@ -357,7 +357,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status HAR_SLUTTET for mindre enn to uker siden - lagres i db `() {
+	internal fun `lagreDeltaker - status HAR_SLUTTET for mindre enn 40 dager siden - lagres i db `() {
 		every { deltakerRepository.getDeltaker(any()) } returns null
 		val deltakerId = UUID.randomUUID()
 		val deltakerDto =
@@ -376,7 +376,7 @@ class IngestServiceTest {
 				status =
 					DeltakerStatusDto(
 						type = DeltakerStatus.HAR_SLUTTET,
-						gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
+						gyldigFra = LocalDate.now().minusDays(30).atStartOfDay(),
 						opprettetDato = LocalDateTime.now().minusWeeks(6),
 					),
 				dagerPerUke = null,
@@ -479,7 +479,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status IKKE_AKTUELL for mer enn to uker siden, deltar pa kurs, finnes i db fra for - lagres ikke i db `() {
+	internal fun `lagreDeltaker - status IKKE_AKTUELL for mer enn 40 dager siden, deltar pa kurs, finnes i db fra for - lagres ikke i db `() {
 		val deltakerId = UUID.randomUUID()
 		every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerId)
 		val deltakerDto =
@@ -498,7 +498,7 @@ class IngestServiceTest {
 				status =
 					DeltakerStatusDto(
 						type = DeltakerStatus.IKKE_AKTUELL,
-						gyldigFra = LocalDate.now().minusWeeks(3).atStartOfDay(),
+						gyldigFra = LocalDate.now().minusDays(43).atStartOfDay(),
 						opprettetDato = LocalDateTime.now().minusWeeks(6),
 					),
 				dagerPerUke = null,
@@ -520,7 +520,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status HAR_SLUTTET for mindre enn to uker siden, sluttdato for mer enn 2 uker siden - lagres ikke i db `() {
+	internal fun `lagreDeltaker - status HAR_SLUTTET mindre enn 40 dager siden, sluttdato mer enn 40 dager siden - lagres ikke i db `() {
 		every { deltakerRepository.getDeltaker(any()) } returns null
 		val deltakerId = UUID.randomUUID()
 		val deltakerDto =
@@ -545,7 +545,7 @@ class IngestServiceTest {
 				dagerPerUke = null,
 				prosentStilling = null,
 				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = LocalDate.now().minusDays(15),
+				sluttdato = LocalDate.now().minusDays(50),
 				innsoktDato = LocalDate.now().minusMonths(2),
 				bestillingTekst = "Bestilling",
 				navKontor = "NAV Oslo",
