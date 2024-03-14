@@ -74,3 +74,12 @@ spec:
       value: prod-gcp:amt:amt-arrangor
     - name: AMT_ARRANGOR_AAD_CLIENT_ID
       value: api://prod-gcp.amt.amt-arrangor/.default
+
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki
