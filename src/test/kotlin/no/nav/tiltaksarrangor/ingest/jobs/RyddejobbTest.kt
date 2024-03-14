@@ -56,14 +56,14 @@ class RyddejobbTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltakerliste avsluttet for 16 dager siden - sletter deltakerliste og deltaker`() {
+	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltakerliste avsluttet for 42 dager siden - sletter deltakerliste og deltaker`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(
-			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(16)),
+			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(42)),
 		)
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.DELTAR, LocalDateTime.now().minusDays(16)))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.DELTAR, LocalDateTime.now().minusDays(42)))
 		ansattRepository.insertOrUpdateAnsatt(getAnsatt(ansattId, deltakerlisteId, deltakerId))
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
@@ -75,10 +75,10 @@ class RyddejobbTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltakerliste avsluttet for 12 dager siden - sletter ikke deltakerliste`() {
+	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltakerliste avsluttet for 38 dager siden - sletter ikke deltakerliste`() {
 		val deltakerlisteId = UUID.randomUUID()
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(
-			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(12)),
+			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(38)),
 		)
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
@@ -87,7 +87,7 @@ class RyddejobbTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 16 dager siden - sletter deltaker`() {
+	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 42 dager siden - sletter deltaker`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
@@ -96,7 +96,7 @@ class RyddejobbTest : IntegrationTest() {
 			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)),
 		)
 		deltakerRepository.insertOrUpdateDeltaker(
-			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(16)),
+			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(42)),
 		)
 		ansattRepository.insertOrUpdateAnsatt(getAnsatt(ansattId, deltakerlisteId, deltakerId))
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(getEndringsmelding(endringsmeldingId, deltakerId))
@@ -111,14 +111,14 @@ class RyddejobbTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 12 dager siden - sletter ikke deltaker`() {
+	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 38 dager siden - sletter ikke deltaker`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(
 			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)),
 		)
 		deltakerRepository.insertOrUpdateDeltaker(
-			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(12)),
+			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(38)),
 		)
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
@@ -132,7 +132,7 @@ class RyddejobbTest : IntegrationTest() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()
 		deltakerRepository.insertOrUpdateDeltaker(
-			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(12), erSkjult = true),
+			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(38), erSkjult = true),
 		)
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()

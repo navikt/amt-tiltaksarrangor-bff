@@ -645,8 +645,8 @@ class KafkaListenerTest : IntegrationTest() {
 				status =
 					DeltakerStatusDto(
 						type = DeltakerStatus.HAR_SLUTTET,
-						gyldigFra = LocalDateTime.now().minusWeeks(4),
-						opprettetDato = LocalDateTime.now().minusWeeks(4),
+						gyldigFra = LocalDateTime.now().minusDays(50),
+						opprettetDato = LocalDateTime.now().minusDays(50),
 					),
 			)
 		testKafkaProducer.send(

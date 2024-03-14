@@ -42,7 +42,7 @@ data class DeltakerDbo(
 
 	fun skalFjernesDato(): LocalDateTime? {
 		return if (status in STATUSER_SOM_KAN_SKJULES) {
-			statusGyldigFraDato.plusWeeks(2)
+			statusGyldigFraDato.plusDays(DAGER_AVSLUTTET_DELTAKER_VISES)
 		} else {
 			null
 		}
@@ -53,7 +53,7 @@ data class DeltakerDbo(
 			return true
 		}
 
-		return sluttdato.isAfter(LocalDate.now().minusDays(14))
+		return sluttdato.isAfter(LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES))
 	}
 }
 
@@ -64,3 +64,5 @@ val STATUSER_SOM_KAN_SKJULES =
 		StatusType.FULLFORT,
 		StatusType.AVBRUTT,
 	)
+
+const val DAGER_AVSLUTTET_DELTAKER_VISES = 40L

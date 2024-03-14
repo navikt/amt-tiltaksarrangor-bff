@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.ingest.jobs
 import no.nav.tiltaksarrangor.ingest.jobs.leaderelection.LeaderElection
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -19,7 +20,7 @@ class Ryddejobb(
 	@Scheduled(cron = "0 0 3 * * *") // kl 03.00 hver natt
 	fun slettUtdaterteDeltakerlisterOgDeltakere() {
 		if (leaderElection.isLeader()) {
-			val slettesDato = LocalDate.now().minusDays(14)
+			val slettesDato = LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES)
 			val deltakerlisterSomSkalSlettes = deltakerlisteRepository.getDeltakerlisterSomSkalSlettes(slettesDato)
 			deltakerlisterSomSkalSlettes.forEach { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(it) }
 			log.info("Slettet ${deltakerlisterSomSkalSlettes.size} deltakerlister med deltakere")
