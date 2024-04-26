@@ -26,7 +26,7 @@ val okHttpVersion = "4.12.0"
 val kotestVersion = "5.8.1"
 val testcontainersVersion = "1.19.7"
 val mockkVersion = "1.13.10"
-val commonVersion = "3.2024.02.21_11.18-8f9b43befae1"
+val commonVersion = "3.2024.04.22_13.50-7815154a2573"
 val unleashVersion = "9.2.0"
 val ktlintVersion = "1.2.1"
 
