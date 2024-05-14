@@ -27,7 +27,7 @@ val kotestVersion = "5.9.0"
 val testcontainersVersion = "1.19.8"
 val mockkVersion = "1.13.10"
 val commonVersion = "3.2024.04.22_13.50-7815154a2573"
-val unleashVersion = "9.2.1"
+val unleashVersion = "9.2.2"
 val ktlintVersion = "1.2.1"
 
 extra["postgresql.version"] = "42.7.2"
