@@ -35,6 +35,7 @@ class VeilederService(
 				.filter { ansattService.harRolleHosArrangor(it.deltakerliste.arrangorId, AnsattRolle.VEILEDER, ansatt.roller) }
 				.filter { !it.deltaker.erSkjult() }
 				.filter { it.deltaker.skalVises() }
+				.filter { it.deltakerliste.erTilgjengeligForArrangor() }
 
 		if (deltakere.isEmpty()) {
 			return emptyList()

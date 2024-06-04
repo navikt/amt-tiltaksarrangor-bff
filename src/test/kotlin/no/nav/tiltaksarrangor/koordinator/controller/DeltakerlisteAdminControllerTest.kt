@@ -69,6 +69,7 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		val deltakerliste2 =
 			DeltakerlisteDbo(
@@ -81,6 +82,7 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 5, 1),
 				sluttDato = LocalDate.of(2023, 6, 1),
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().minusYears(1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste1)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste2)
@@ -140,6 +142,7 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()
@@ -199,6 +202,7 @@ class DeltakerlisteAdminControllerTest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()

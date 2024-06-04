@@ -33,6 +33,7 @@ class DeltakerlisteRepository(
 				startDato = rs.getNullableLocalDate("start_dato"),
 				sluttDato = rs.getNullableLocalDate("slutt_dato"),
 				erKurs = rs.getBoolean("er_kurs"),
+				tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
 			)
 		}
 
@@ -50,6 +51,7 @@ class DeltakerlisteRepository(
 						startDato = rs.getNullableLocalDate("start_dato"),
 						sluttDato = rs.getNullableLocalDate("slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),
+						tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
 					),
 				arrangorDbo =
 					ArrangorDbo(
@@ -64,7 +66,7 @@ class DeltakerlisteRepository(
 	fun insertOrUpdateDeltakerliste(deltakerlisteDbo: DeltakerlisteDbo) {
 		val sql =
 			"""
-			INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltak_navn, tiltak_type, start_dato, slutt_dato, er_kurs)
+			INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltak_navn, tiltak_type, start_dato, slutt_dato, er_kurs, tilgjengelig_fom)
 			VALUES (:id,
 					:navn,
 					:status,
@@ -73,7 +75,8 @@ class DeltakerlisteRepository(
 					:tiltak_type,
 					:start_dato,
 					:slutt_dato,
-					:er_kurs)
+					:er_kurs,
+					:tilgjengelig_fom)
 			ON CONFLICT (id) DO UPDATE SET
 					navn     				= :navn,
 					status					= :status,
@@ -82,7 +85,8 @@ class DeltakerlisteRepository(
 					tiltak_type				= :tiltak_type,
 					start_dato				= :start_dato,
 					slutt_dato				= :slutt_dato,
-					er_kurs					= :er_kurs
+					er_kurs					= :er_kurs,
+					tilgjengelig_fom		= :tilgjengelig_fom
 			""".trimIndent()
 
 		template.update(
@@ -97,6 +101,7 @@ class DeltakerlisteRepository(
 				"start_dato" to deltakerlisteDbo.startDato,
 				"slutt_dato" to deltakerlisteDbo.sluttDato,
 				"er_kurs" to deltakerlisteDbo.erKurs,
+				"tilgjengelig_fom" to deltakerlisteDbo.tilgjengeligForArrangorFraOgMedDato,
 			),
 		)
 	}
@@ -145,6 +150,7 @@ class DeltakerlisteRepository(
 					start_dato,
 					slutt_dato,
 					er_kurs,
+					tilgjengelig_fom,
 					a.navn as arrangor_navn,
 					a.organisasjonsnummer,
 					a.overordnet_arrangor_id
@@ -172,6 +178,7 @@ class DeltakerlisteRepository(
 					start_dato,
 					slutt_dato,
 					er_kurs,
+					tilgjengelig_fom,
 					a.navn as arrangor_navn,
 					a.organisasjonsnummer,
 					a.overordnet_arrangor_id

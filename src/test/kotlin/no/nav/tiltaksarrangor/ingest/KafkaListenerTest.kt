@@ -387,6 +387,7 @@ class KafkaListenerTest : IntegrationTest() {
 				status = DeltakerlisteDto.Status.GJENNOMFORES,
 				virksomhetsnummer = arrangorDto.organisasjonsnummer,
 				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		testKafkaProducer.send(
 			ProducerRecord(
@@ -416,6 +417,7 @@ class KafkaListenerTest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 5, 2),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
 		testKafkaProducer.send(
@@ -446,6 +448,7 @@ class KafkaListenerTest : IntegrationTest() {
 				startDato = LocalDate.now().minusYears(2),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().minusYears(2),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
 		val deltakerId = UUID.randomUUID()
@@ -495,6 +498,7 @@ class KafkaListenerTest : IntegrationTest() {
 				status = DeltakerlisteDto.Status.AVSLUTTET,
 				virksomhetsnummer = "888888888",
 				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				tilgjengeligForArrangorFraOgMedDato = deltakerlisteDbo.tilgjengeligForArrangorFraOgMedDato,
 			)
 		testKafkaProducer.send(
 			ProducerRecord(

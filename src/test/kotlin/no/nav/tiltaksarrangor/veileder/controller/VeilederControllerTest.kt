@@ -56,9 +56,10 @@ class VeilederControllerTest : IntegrationTest() {
 				arrangorId = arrangorId,
 				tiltakNavn = "Gruppe AMO",
 				tiltakType = "ARBFORB",
-				startDato = null,
+				startDato = LocalDate.now(),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")

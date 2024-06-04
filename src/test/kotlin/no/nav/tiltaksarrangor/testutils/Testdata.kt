@@ -27,9 +27,10 @@ fun getDeltakerliste(arrangorId: UUID): DeltakerlisteDbo {
 		arrangorId = arrangorId,
 		tiltakNavn = "Tiltaksnavnet",
 		tiltakType = "ARBFORB",
-		startDato = null,
+		startDato = LocalDate.now().minusDays(1),
 		sluttDato = null,
 		erKurs = false,
+		tilgjengeligForArrangorFraOgMedDato = null,
 	)
 }
 

@@ -43,7 +43,7 @@ class TiltaksarrangorService(
 	fun getDeltaker(personIdent: String, deltakerId: UUID): Deltaker {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
-			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
 		if (!deltakerMedDeltakerliste.deltaker.skalVises()) {
@@ -84,7 +84,7 @@ class TiltaksarrangorService(
 	) {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
-			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
 		if (!ansattService.harTilgangTilDeltaker(
@@ -120,7 +120,7 @@ class TiltaksarrangorService(
 	fun fjernDeltaker(personIdent: String, deltakerId: UUID) {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
-			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
 		if (!ansattService.harTilgangTilDeltaker(

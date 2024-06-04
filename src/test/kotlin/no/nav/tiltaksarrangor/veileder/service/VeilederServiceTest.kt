@@ -245,4 +245,40 @@ class VeilederServiceTest {
 		mineDeltakere.find { it.id == deltaker.id } shouldNotBe null
 		mineDeltakere.find { it.id == deltaker2.id } shouldBe null
 	}
+
+	@Test
+	fun `getMineDeltakere - ansatt har veilederrolle hos en arrangor, deltakerliste ikke tilgjengelig - filtrerer bort deltakere`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		val deltakerliste2 = deltakerliste.copy(id = UUID.randomUUID(), startDato = null, navn = "Deltakerliste 2")
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste2)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
+		val deltaker2 = getDeltaker(UUID.randomUUID(), deltakerliste2.id).copy(personident = "34567")
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Ansatt",
+				mellomnavn = null,
+				etternavn = "Ansattsen",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+						VeilederDeltakerDbo(deltaker2.id, Veiledertype.VEILEDER),
+					),
+			),
+		)
+
+		val mineDeltakere = veilederService.getMineDeltakere(personIdent)
+
+		mineDeltakere.size shouldBe 1
+		mineDeltakere.find { it.id == deltaker.id } shouldNotBe null
+		mineDeltakere.find { it.id == deltaker2.id } shouldBe null
+	}
 }

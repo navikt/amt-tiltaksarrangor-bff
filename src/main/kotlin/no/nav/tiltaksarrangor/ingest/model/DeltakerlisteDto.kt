@@ -13,6 +13,7 @@ data class DeltakerlisteDto(
 	val status: Status,
 	val virksomhetsnummer: String,
 	val oppstart: Oppstartstype?,
+	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
 ) {
 	data class Tiltakstype(
 		val id: UUID,

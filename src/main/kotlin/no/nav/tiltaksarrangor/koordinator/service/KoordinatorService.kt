@@ -71,7 +71,7 @@ class KoordinatorService(
 	fun getTilgjengeligeVeiledere(deltakerlisteId: UUID, personIdent: String): List<TilgjengeligVeileder> {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val deltakerliste =
-			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)?.takeIf { it.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
 
 		val harKoordinatorRolleHosArrangor =
@@ -102,7 +102,7 @@ class KoordinatorService(
 	) {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val deltakerMedDeltakerlisteDbo =
-			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
 		val harKoordinatorRolleHosArrangor =
@@ -154,7 +154,7 @@ class KoordinatorService(
 	fun getDeltakerliste(deltakerlisteId: UUID, personIdent: String): Deltakerliste {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val deltakerlisteMedArrangor =
-			deltakerlisteRepository.getDeltakerlisteMedArrangor(deltakerlisteId)
+			deltakerlisteRepository.getDeltakerlisteMedArrangor(deltakerlisteId)?.takeIf { it.deltakerlisteDbo.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
 
 		val harKoordinatorRolleHosArrangor =
@@ -221,7 +221,8 @@ class KoordinatorService(
 	}
 
 	private fun getKoordinatorFor(koordinatorsDeltakerlister: List<KoordinatorDeltakerlisteDbo>): KoordinatorFor {
-		val deltakerlister = deltakerlisteRepository.getDeltakerlister(koordinatorsDeltakerlister.map { it.deltakerlisteId }).toDeltakerliste()
+		val deltakerlister = deltakerlisteRepository.getDeltakerlister(koordinatorsDeltakerlister.map { it.deltakerlisteId })
+			.filter { it.erTilgjengeligForArrangor() }.toDeltakerliste()
 		return KoordinatorFor(deltakerlister = deltakerlister)
 	}
 

@@ -99,6 +99,7 @@ class EndringsmeldingRepository(
 						startDato = rs.getNullableLocalDate("deltakerliste_start_dato"),
 						sluttDato = rs.getNullableLocalDate("delakerliste_slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),
+						tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
 					),
 			)
 		}
@@ -212,7 +213,8 @@ class EndringsmeldingRepository(
 					tiltak_type,
 					deltakerliste.start_dato as deltakerliste_start_dato,
 					deltakerliste.slutt_dato as delakerliste_slutt_dato,
-					er_kurs
+					er_kurs,
+					tilgjengelig_fom
 			FROM endringsmelding
 			         INNER JOIN deltaker ON deltaker.id = endringsmelding.deltaker_id
 			         INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id

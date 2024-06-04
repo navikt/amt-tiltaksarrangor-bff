@@ -133,6 +133,51 @@ class EndringsmeldingServiceTest {
 	}
 
 	@Test
+	fun `getAlleEndringsmeldinger - deltakerliste er ikke tilgjengelig - returnerer NoSuchElementException`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId).copy(
+			startDato = LocalDate.now().plusMonths(1),
+			tilgjengeligForArrangorFraOgMedDato = LocalDate.now().plusDays(2),
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER),
+					),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
+			),
+		)
+		val endringsmeldingDbo1 = getEndringsmelding(deltakerId)
+		val endringsmeldingDbo2 =
+			getEndringsmelding(deltakerId).copy(
+				type = EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT,
+				innhold =
+					Innhold.EndreDeltakelseProsentInnhold(
+						nyDeltakelseProsent = 50,
+						dagerPerUke = 2,
+						gyldigFraDato = LocalDate.now(),
+					),
+			)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo1)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo2)
+
+		assertThrows<NoSuchElementException> {
+			endringsmeldingService.getAlleEndringsmeldinger(deltakerId, personIdent)
+		}
+	}
+
+	@Test
 	fun `getAlleEndringsmeldinger - ansatt har tilgang - henter endringsmeldinger`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()

@@ -39,7 +39,7 @@ class EndringsmeldingService(
 	fun getAlleEndringsmeldinger(deltakerId: UUID, personIdent: String): EndringsmeldingResponse {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
-			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 		val harTilgangTilDeltaker =
 			ansattService.harTilgangTilDeltaker(
@@ -70,7 +70,7 @@ class EndringsmeldingService(
 	) {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
-			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 		val harTilgangTilDeltaker =
 			ansattService.harTilgangTilDeltaker(
@@ -154,7 +154,9 @@ class EndringsmeldingService(
 	fun slettEndringsmelding(endringsmeldingId: UUID, personIdent: String) {
 		val ansatt = getAnsattMedRoller(personIdent)
 		val endringsmeldingMedDeltakerOgDeltakerliste =
-			endringsmeldingRepository.getEndringsmeldingMedDeltakerOgDeltakerliste(endringsmeldingId)
+			endringsmeldingRepository.getEndringsmeldingMedDeltakerOgDeltakerliste(endringsmeldingId)?.takeIf {
+				it.deltakerlisteDbo.erTilgjengeligForArrangor()
+			}
 				?: throw NoSuchElementException("Fant ikke endringsmelding med id $endringsmeldingId")
 
 		val harTilgangTilDeltaker =

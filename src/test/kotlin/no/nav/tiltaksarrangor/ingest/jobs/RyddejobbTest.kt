@@ -171,6 +171,7 @@ private fun getDeltakerliste(
 		arrangorId = UUID.randomUUID(),
 		tiltakNavn = "Tiltak",
 		tiltakType = "AMO",
+		tilgjengeligForArrangorFraOgMedDato = null,
 	)
 }
 

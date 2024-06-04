@@ -25,7 +25,9 @@ class DeltakerlisteAdminService(
 	fun getAlleDeltakerlister(personIdent: String): List<AdminDeltakerliste> {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val koordinatorHosArrangorer = ansatt.roller.filter { it.rolle == AnsattRolle.KOORDINATOR }.map { it.arrangorId }
-		val alleDeltakerlister = deltakerlisteRepository.getDeltakerlisterMedArrangor(koordinatorHosArrangorer)
+		val alleDeltakerlister = deltakerlisteRepository.getDeltakerlisterMedArrangor(koordinatorHosArrangorer).filter {
+			it.deltakerlisteDbo.erTilgjengeligForArrangor()
+		}
 
 		val unikeOverordnedeArrangorIder = alleDeltakerlister.mapNotNull { it.arrangorDbo.overordnetArrangorId }.distinct()
 		val overordnedeArrangorer = arrangorRepository.getArrangorer(unikeOverordnedeArrangorIder)
@@ -56,7 +58,7 @@ class DeltakerlisteAdminService(
 	fun leggTilDeltakerliste(deltakerlisteId: UUID, personIdent: String) {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val deltakerliste =
-			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)?.takeIf { it.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
 
 		val harKoordinatorRolleHosArrangor =
@@ -85,7 +87,7 @@ class DeltakerlisteAdminService(
 	fun fjernDeltakerliste(deltakerlisteId: UUID, personIdent: String) {
 		val ansatt = getAnsattMedKoordinatorRoller(personIdent)
 		val deltakerliste =
-			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteId)?.takeIf { it.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
 
 		val harKoordinatorRolleHosArrangor =
