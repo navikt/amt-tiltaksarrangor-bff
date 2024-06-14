@@ -10,4 +10,8 @@ class UnleashService(
 	fun getFeaturetoggles(features: List<String>): Map<String, Boolean> {
 		return features.associateWith { unleash.isEnabled(it) }
 	}
+
+	fun skalLagreAdressebeskyttedeDeltakere(): Boolean {
+		return unleash.isEnabled("amt.enable-adressebeskyttede-deltakere")
+	}
 }
