@@ -135,6 +135,7 @@ class IngestService(
 			startDato = deltakerlisteDto.startDato,
 			sluttDato = deltakerlisteDto.sluttDato,
 			erKurs = deltakerlisteDto.erKurs(),
+			tilgjengeligForArrangorFraOgMedDato = deltakerlisteDto.tilgjengeligForArrangorFraOgMedDato,
 		)
 	}
 

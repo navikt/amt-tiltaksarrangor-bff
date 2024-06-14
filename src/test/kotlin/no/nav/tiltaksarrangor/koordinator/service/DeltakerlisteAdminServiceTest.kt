@@ -122,6 +122,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		val deltakerliste2 =
 			DeltakerlisteDbo(
@@ -134,6 +135,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 5, 1),
 				sluttDato = LocalDate.of(2023, 6, 1),
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 4, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste1)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste2)
@@ -176,6 +178,59 @@ class DeltakerlisteAdminServiceTest {
 	}
 
 	@Test
+	fun `getAlleDeltakerlister - deltakerliste ikke tilgjengelig - returnerer tom liste`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "88888888",
+				overordnetArrangorId = null,
+			),
+		)
+		val overordnetArrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = overordnetArrangorId,
+				navn = "Overordnet arrangør AS",
+				organisasjonsnummer = "777777777",
+				overordnetArrangorId = null,
+			),
+		)
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = UUID.randomUUID(),
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.now().plusMonths(1),
+				sluttDato = null,
+				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
+			)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = emptyList(),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		val adminDeltakerlister = deltakerlisteAdminService.getAlleDeltakerlister(personIdent)
+
+		adminDeltakerlister.size shouldBe 0
+	}
+
+	@Test
 	fun `leggTilDeltakerliste - ansatt er ikke koordinator hos arrangor - returnerer unauthorized`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
@@ -202,6 +257,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 
@@ -211,7 +267,7 @@ class DeltakerlisteAdminServiceTest {
 	}
 
 	@Test
-	fun `leggTilDeltakerliste - ansatt har allerede lagt til deltakerliste - endrer ignenting`() {
+	fun `leggTilDeltakerliste - ansatt har allerede lagt til deltakerliste - endrer ingenting`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste =
@@ -225,6 +281,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -262,6 +319,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()
@@ -285,6 +343,45 @@ class DeltakerlisteAdminServiceTest {
 		ansattFraDb?.deltakerlister?.find { it.deltakerlisteId == deltakerliste.id } shouldNotBe null
 
 		coVerify(exactly = 1) { amtArrangorClient.leggTilDeltakerlisteForKoordinator(ansattId, deltakerliste.id, arrangorId) }
+	}
+
+	@Test
+	fun `leggTilDeltakerliste - deltakerliste ikke tilgjengelig - kaster NoSuchElementException`() {
+		coEvery { amtArrangorClient.leggTilDeltakerlisteForKoordinator(any(), any(), any()) } just Runs
+
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = UUID.randomUUID(),
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.now().plusDays(10),
+				sluttDato = null,
+				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().plusDays(2),
+			)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(UUID.randomUUID())),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		assertThrows<NoSuchElementException> {
+			deltakerlisteAdminService.leggTilDeltakerliste(deltakerliste.id, personIdent)
+		}
 	}
 
 	@Test
@@ -314,6 +411,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 
@@ -337,6 +435,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -374,6 +473,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()

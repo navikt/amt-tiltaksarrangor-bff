@@ -100,8 +100,9 @@ class DeltakerRepository(
 						tiltakNavn = rs.getString("tiltak_navn"),
 						tiltakType = rs.getString("tiltak_type"),
 						startDato = rs.getNullableLocalDate("deltakerliste_start_dato"),
-						sluttDato = rs.getNullableLocalDate("delakerliste_slutt_dato"),
+						sluttDato = rs.getNullableLocalDate("deltakerliste_slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),
+						tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
 					),
 			)
 		}
@@ -271,8 +272,9 @@ class DeltakerRepository(
 					tiltak_navn,
 					tiltak_type,
 					deltakerliste.start_dato as deltakerliste_start_dato,
-					deltakerliste.slutt_dato as delakerliste_slutt_dato,
-					er_kurs
+					deltakerliste.slutt_dato as deltakerliste_slutt_dato,
+					er_kurs,
+					tilgjengelig_fom
 			FROM deltaker
 					 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 			WHERE deltaker.id IN (:ids);
@@ -318,8 +320,9 @@ class DeltakerRepository(
 					tiltak_navn,
 					tiltak_type,
 					deltakerliste.start_dato as deltakerliste_start_dato,
-					deltakerliste.slutt_dato as delakerliste_slutt_dato,
-					er_kurs
+					deltakerliste.slutt_dato as deltakerliste_slutt_dato,
+					er_kurs,
+					tilgjengelig_fom
 			FROM deltaker
 					 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 			WHERE deltaker.id = :id;

@@ -14,7 +14,20 @@ data class DeltakerlisteDbo(
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
 	val erKurs: Boolean,
+	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
 ) {
+	fun erTilgjengeligForArrangor(): Boolean {
+		return if (startDato != null) {
+			if (tilgjengeligForArrangorFraOgMedDato != null) {
+				!tilgjengeligForArrangorFraOgMedDato.isAfter(LocalDate.now())
+			} else {
+				!startDato.isAfter(LocalDate.now().plusDays(14))
+			}
+		} else {
+			false
+		}
+	}
+
 	fun cleanTiltaksnavn() = when (tiltakNavn) {
 		"Arbeidsforberedende trening (AFT)" -> "Arbeidsforberedende trening"
 		"Arbeidsrettet rehabilitering (dag)" -> "Arbeidsrettet rehabilitering"

@@ -204,6 +204,61 @@ class TiltaksarrangorServiceTest {
 	}
 
 	@Test
+	fun `getDeltaker - deltakerliste er ikke tilgjengelig - returnerer NoSuchElementException`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId).copy(
+			startDato = LocalDate.now().plusMonths(1),
+		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(
+			getDeltaker(deltakerId, deltakerliste.id).copy(
+				vurderingerFraArrangor =
+					listOf(
+						VurderingDto(
+							id = UUID.randomUUID(),
+							deltakerId = deltakerId,
+							vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+							begrunnelse = "Mangler førerkort",
+							opprettetAvArrangorAnsattId = UUID.randomUUID(),
+							gyldigFra = LocalDateTime.now().minusWeeks(2),
+							gyldigTil = LocalDateTime.now(),
+						),
+						VurderingDto(
+							id = UUID.randomUUID(),
+							deltakerId = deltakerId,
+							vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+							begrunnelse = null,
+							opprettetAvArrangorAnsattId = UUID.randomUUID(),
+							gyldigFra = LocalDateTime.now(),
+							gyldigTil = null,
+						),
+					),
+			),
+		)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		assertThrows<NoSuchElementException> {
+			tiltaksarrangorService.getDeltaker(personIdent, deltakerId)
+		}
+	}
+
+	@Test
 	fun `getDeltaker - deltaker som har veiledere og endringsmeldinger finnes og ansatt har tilgang - returnerer deltaker`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()

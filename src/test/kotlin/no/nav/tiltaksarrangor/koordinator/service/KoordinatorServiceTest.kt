@@ -259,6 +259,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -312,6 +313,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -340,6 +342,60 @@ class KoordinatorServiceTest {
 		koordinatorsDeltakerliste.koordinatorer.find { it.fornavn == "Fornavn" && it.etternavn == "Etternavn" } shouldNotBe null
 		koordinatorsDeltakerliste.deltakere.size shouldBe 0
 		koordinatorsDeltakerliste.erKurs shouldBe false
+	}
+
+	@Test
+	fun `getDeltakerliste - deltakerliste ikke tilgjengelig - returnerer NoSuchElementException`() {
+		val personIdent = "12345678910"
+		val deltakerlisteId = UUID.randomUUID()
+		val overordnetArrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = overordnetArrangorId,
+				navn = "Overordnet arrangør AS",
+				organisasjonsnummer = "99999999",
+				overordnetArrangorId = null,
+			),
+		)
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "88888888",
+				overordnetArrangorId = overordnetArrangorId,
+			),
+		)
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = deltakerlisteId,
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.now().plusDays(20),
+				sluttDato = null,
+				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().plusDays(7),
+			)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		assertThrows<NoSuchElementException> {
+			koordinatorService.getDeltakerliste(deltakerlisteId, personIdent)
+		}
 	}
 
 	@Test
@@ -447,6 +503,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -483,6 +540,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -517,6 +575,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId1 = UUID.randomUUID()
@@ -585,6 +644,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -627,6 +687,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -675,6 +736,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -721,6 +783,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -769,6 +832,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -858,6 +922,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()

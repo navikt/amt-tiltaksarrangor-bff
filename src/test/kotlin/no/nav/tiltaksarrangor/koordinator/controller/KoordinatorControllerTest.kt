@@ -69,9 +69,10 @@ class KoordinatorControllerTest : IntegrationTest() {
 				arrangorId = arrangorId,
 				tiltakNavn = "Tiltaksnavnet",
 				tiltakType = "ARBFORB",
-				startDato = null,
+				startDato = LocalDate.of(2024, 1, 3),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId1 = UUID.randomUUID()
@@ -113,7 +114,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 
 		val expectedJson =
 			"""
-			{"veilederFor":{"veilederFor":2,"medveilederFor":3},"koordinatorFor":{"deltakerlister":[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Tiltaksnavnet","navn":"Gjennomføring 1","startdato":null,"sluttdato":null,"erKurs":false}]}}
+			{"veilederFor":{"veilederFor":2,"medveilederFor":3},"koordinatorFor":{"deltakerlister":[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Tiltaksnavnet","navn":"Gjennomføring 1","startdato":"2024-01-03","sluttdato":null,"erKurs":false}]}}
 			""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
@@ -142,9 +143,10 @@ class KoordinatorControllerTest : IntegrationTest() {
 				arrangorId = arrangorId,
 				tiltakNavn = "Tiltaksnavnet",
 				tiltakType = "ARBFORB",
-				startDato = null,
+				startDato = LocalDate.now(),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -236,9 +238,10 @@ class KoordinatorControllerTest : IntegrationTest() {
 				arrangorId = arrangorId,
 				tiltakNavn = "Tiltaksnavnet",
 				tiltakType = "ARBFORB",
-				startDato = null,
+				startDato = LocalDate.now(),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("da4c9568-cea2-42e3-95a3-42f6b809ad08")
@@ -351,6 +354,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(

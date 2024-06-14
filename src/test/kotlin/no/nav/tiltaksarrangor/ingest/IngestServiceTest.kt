@@ -101,6 +101,7 @@ class IngestServiceTest {
 				status = DeltakerlisteDto.Status.GJENNOMFORES,
 				virksomhetsnummer = "88888888",
 				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -126,6 +127,7 @@ class IngestServiceTest {
 				status = DeltakerlisteDto.Status.APENT_FOR_INNSOK,
 				virksomhetsnummer = "88888888",
 				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().minusYears(2),
 			)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -151,6 +153,7 @@ class IngestServiceTest {
 				status = DeltakerlisteDto.Status.PLANLAGT,
 				virksomhetsnummer = "88888888",
 				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -176,6 +179,7 @@ class IngestServiceTest {
 				status = DeltakerlisteDto.Status.AVSLUTTET,
 				virksomhetsnummer = "88888888",
 				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -202,6 +206,7 @@ class IngestServiceTest {
 				status = DeltakerlisteDto.Status.AVSLUTTET,
 				virksomhetsnummer = "88888888",
 				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
@@ -227,6 +232,7 @@ class IngestServiceTest {
 				status = DeltakerlisteDto.Status.GJENNOMFORES,
 				virksomhetsnummer = "88888888",
 				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
