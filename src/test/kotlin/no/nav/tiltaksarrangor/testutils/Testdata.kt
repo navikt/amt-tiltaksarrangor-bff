@@ -34,7 +34,11 @@ fun getDeltakerliste(arrangorId: UUID): DeltakerlisteDbo {
 	)
 }
 
-fun getDeltaker(deltakerId: UUID, deltakerlisteId: UUID = UUID.randomUUID()): DeltakerDbo {
+fun getDeltaker(
+	deltakerId: UUID,
+	deltakerlisteId: UUID = UUID.randomUUID(),
+	adressebeskyttet: Boolean = false,
+): DeltakerDbo {
 	return DeltakerDbo(
 		id = deltakerId,
 		deltakerlisteId = deltakerlisteId,
@@ -63,6 +67,7 @@ fun getDeltaker(deltakerId: UUID, deltakerlisteId: UUID = UUID.randomUUID()): De
 		navVeilederTelefon = null,
 		skjultAvAnsattId = null,
 		skjultDato = null,
+		adressebeskyttet = adressebeskyttet,
 	)
 }
 

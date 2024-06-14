@@ -485,6 +485,93 @@ class KoordinatorServiceTest {
 		} shouldNotBe null
 		koordinatorsDeltaker?.aktiveEndringsmeldinger?.size shouldBe 1
 		koordinatorsDeltaker?.aktiveEndringsmeldinger?.find { it.type == Endringsmelding.Type.FORLENG_DELTAKELSE } shouldNotBe null
+		koordinatorsDeltaker?.adressebeskyttet shouldBe false
+	}
+
+	@Test
+	fun `getDeltakerliste - har tilgang, lagt til deltakerliste, adressebeskyttet deltaker - returnerer deltaker med tomme felter`() {
+		val personIdent = "12345678910"
+		val overordnetArrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = overordnetArrangorId,
+				navn = "Overordnet arrangør AS",
+				organisasjonsnummer = "99999999",
+				overordnetArrangorId = null,
+			),
+		)
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "88888888",
+				overordnetArrangorId = overordnetArrangorId,
+			),
+		)
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn1",
+				mellomnavn = null,
+				etternavn = "Etternavn1",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn2",
+				mellomnavn = null,
+				etternavn = "Etternavn2",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id, adressebeskyttet = true)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val endringsmelding = getEndringsmelding(deltaker.id)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn3",
+				mellomnavn = null,
+				etternavn = "Etternavn3",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+					),
+			),
+		)
+
+		val koordinatorsDeltakerliste = koordinatorService.getDeltakerliste(deltakerliste.id, personIdent)
+
+		koordinatorsDeltakerliste.id shouldBe deltakerliste.id
+		koordinatorsDeltakerliste.koordinatorer.size shouldBe 2
+		koordinatorsDeltakerliste.deltakere.size shouldBe 1
+		val koordinatorsDeltaker = koordinatorsDeltakerliste.deltakere.find { it.id == deltaker.id }
+		koordinatorsDeltaker?.fodselsnummer shouldBe ""
+		koordinatorsDeltaker?.fornavn shouldBe ""
+		koordinatorsDeltaker?.etternavn shouldBe ""
+		koordinatorsDeltaker?.status?.type shouldBe StatusType.DELTAR
+		koordinatorsDeltaker?.veiledere?.size shouldBe 1
+		koordinatorsDeltaker?.veiledere?.find {
+			it.fornavn == "Fornavn3" && it.etternavn == "Etternavn3" && it.veiledertype == Veiledertype.VEILEDER
+		} shouldNotBe null
+		koordinatorsDeltaker?.aktiveEndringsmeldinger?.size shouldBe 0
+		koordinatorsDeltaker?.gjeldendeVurderingFraArrangor shouldBe null
+		koordinatorsDeltaker?.adressebeskyttet shouldBe true
 	}
 
 	@Test

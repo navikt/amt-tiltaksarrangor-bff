@@ -201,6 +201,7 @@ class TiltaksarrangorServiceTest {
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
 		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 1
 		deltaker.historiskeVurderingerFraArrangor?.firstOrNull()?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
+		deltaker.adressebeskyttet shouldBe false
 	}
 
 	@Test
@@ -327,6 +328,155 @@ class TiltaksarrangorServiceTest {
 		veileder.veiledertype shouldBe Veiledertype.VEILEDER
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
 		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 0
+	}
+
+	@Test
+	fun `getDeltaker - deltaker er adressebeskyttet og ansatt er veileder - returnerer deltaker uten adresse`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltakerDbo = getDeltaker(deltakerId, deltakerliste.id, adressebeskyttet = true).copy(
+			vurderingerFraArrangor =
+				listOf(
+					VurderingDto(
+						id = UUID.randomUUID(),
+						deltakerId = deltakerId,
+						vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+						begrunnelse = "Mangler førerkort",
+						opprettetAvArrangorAnsattId = UUID.randomUUID(),
+						gyldigFra = LocalDateTime.now().minusWeeks(2),
+						gyldigTil = LocalDateTime.now(),
+					),
+					VurderingDto(
+						id = UUID.randomUUID(),
+						deltakerId = deltakerId,
+						vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+						begrunnelse = null,
+						opprettetAvArrangorAnsattId = UUID.randomUUID(),
+						gyldigFra = LocalDateTime.now(),
+						gyldigTil = null,
+					),
+				),
+		)
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDbo)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER),
+					),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.MEDVEILEDER)),
+			),
+		)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(
+			EndringsmeldingDbo(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				type = EndringsmeldingType.ENDRE_SLUTTDATO,
+				innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now()),
+				status = Endringsmelding.Status.AKTIV,
+				sendt = LocalDateTime.now(),
+			),
+		)
+
+		val deltaker = tiltaksarrangorService.getDeltaker(personIdent, deltakerId)
+
+		deltaker.id shouldBe deltakerId
+		deltaker.fornavn shouldBe deltakerDbo.fornavn
+		deltaker.fodselsnummer shouldBe deltakerDbo.personident
+		deltaker.bestillingTekst shouldNotBe null
+		deltaker.deltakerliste.id shouldBe deltakerliste.id
+		deltaker.soktInnPa shouldBe deltakerliste.navn
+		deltaker.tiltakskode shouldBe deltakerliste.tiltakType
+		deltaker.aktiveEndringsmeldinger.size shouldBe 1
+		deltaker.veiledere.size shouldBe 1
+		deltaker.adresse shouldBe null
+		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
+		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 1
+		deltaker.historiskeVurderingerFraArrangor?.firstOrNull()?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
+		deltaker.adressebeskyttet shouldBe true
+	}
+
+	@Test
+	fun `getDeltaker - deltaker er adressebeskyttet og ansatt er koordinator - returnerer deltaker med tomme felter`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltakerDbo = getDeltaker(deltakerId, deltakerliste.id, adressebeskyttet = true).copy(
+			vurderingerFraArrangor =
+				listOf(
+					VurderingDto(
+						id = UUID.randomUUID(),
+						deltakerId = deltakerId,
+						vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+						begrunnelse = "Mangler førerkort",
+						opprettetAvArrangorAnsattId = UUID.randomUUID(),
+						gyldigFra = LocalDateTime.now().minusWeeks(2),
+						gyldigTil = LocalDateTime.now(),
+					),
+					VurderingDto(
+						id = UUID.randomUUID(),
+						deltakerId = deltakerId,
+						vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+						begrunnelse = null,
+						opprettetAvArrangorAnsattId = UUID.randomUUID(),
+						gyldigFra = LocalDateTime.now(),
+						gyldigTil = null,
+					),
+				),
+		)
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDbo)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(
+			EndringsmeldingDbo(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				type = EndringsmeldingType.ENDRE_SLUTTDATO,
+				innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now()),
+				status = Endringsmelding.Status.AKTIV,
+				sendt = LocalDateTime.now(),
+			),
+		)
+
+		val deltaker = tiltaksarrangorService.getDeltaker(personIdent, deltakerId)
+
+		deltaker.id shouldBe deltakerId
+		deltaker.fornavn shouldBe ""
+		deltaker.fodselsnummer shouldBe ""
+		deltaker.bestillingTekst shouldBe null
+		deltaker.deltakerliste.id shouldBe deltakerliste.id
+		deltaker.soktInnPa shouldBe deltakerliste.navn
+		deltaker.tiltakskode shouldBe deltakerliste.tiltakType
+		deltaker.aktiveEndringsmeldinger.size shouldBe 0
+		deltaker.veiledere.size shouldBe 0
+		deltaker.adresse shouldBe null
+		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe null
+		deltaker.historiskeVurderingerFraArrangor shouldBe null
+		deltaker.adressebeskyttet shouldBe true
 	}
 
 	@Test
@@ -592,6 +742,114 @@ class TiltaksarrangorServiceTest {
 
 		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
 		deltakerFraDb?.vurderingerFraArrangor shouldBe null
+	}
+
+	@Test
+	fun `registrerVurdering - deltaker har status vurderes, er adressebeskyttet, ansatt er veileder - vurdering blir lagret`() {
+		val deltakerId = UUID.randomUUID()
+		val ansattId = UUID.randomUUID()
+		val forsteVurdering =
+			VurderingDto(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+				begrunnelse = "Mangler grunnkurs",
+				opprettetAvArrangorAnsattId = UUID.randomUUID(),
+				gyldigFra = LocalDateTime.now().minusWeeks(1),
+				gyldigTil = null,
+			)
+		val andreVurdering =
+			VurderingDto(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
+				begrunnelse = null,
+				opprettetAvArrangorAnsattId = ansattId,
+				gyldigFra = LocalDateTime.now(),
+				gyldigTil = null,
+			)
+		coEvery { amtTiltakClient.registrerVurdering(any(), any()) } returns
+			listOf(
+				forsteVurdering.copy(gyldigTil = LocalDateTime.now()),
+				andreVurdering,
+			)
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltaker =
+			getDeltaker(deltakerId, deltakerliste.id, adressebeskyttet = true).copy(
+				status = StatusType.VURDERES,
+				vurderingerFraArrangor = listOf(forsteVurdering),
+			)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER),
+					),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
+			),
+		)
+
+		tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null))
+
+		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
+		deltakerFraDb?.vurderingerFraArrangor?.size shouldBe 2
+		deltakerFraDb?.vurderingerFraArrangor?.find { it.gyldigTil == null }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
+		deltakerFraDb?.vurderingerFraArrangor?.find { it.gyldigTil != null }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
+	}
+
+	@Test
+	fun `registrerVurdering - deltaker har status vurderes, er adressebeskyttet, ansatt er koordinator - returnerer UnauthorizedException`() {
+		val deltakerId = UUID.randomUUID()
+		val ansattId = UUID.randomUUID()
+		val forsteVurdering =
+			VurderingDto(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+				begrunnelse = "Mangler grunnkurs",
+				opprettetAvArrangorAnsattId = UUID.randomUUID(),
+				gyldigFra = LocalDateTime.now().minusWeeks(1),
+				gyldigTil = null,
+			)
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltaker =
+			getDeltaker(deltakerId, deltakerliste.id, adressebeskyttet = true).copy(
+				status = StatusType.VURDERES,
+				vurderingerFraArrangor = listOf(forsteVurdering),
+			)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		assertThrows<UnauthorizedException> {
+			tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null))
+		}
 	}
 
 	@Test

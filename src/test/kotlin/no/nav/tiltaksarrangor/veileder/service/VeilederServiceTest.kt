@@ -120,9 +120,12 @@ class VeilederServiceTest {
 
 		val minDeltaker1 = mineDeltakere.find { it.id == deltaker.id }
 		minDeltaker1?.fodselsnummer shouldBe deltaker.personident
+		minDeltaker1?.fornavn shouldNotBe ""
+		minDeltaker1?.etternavn shouldNotBe ""
 		minDeltaker1?.deltakerliste?.id shouldBe deltakerliste.id
 		minDeltaker1?.veiledertype shouldBe Veiledertype.VEILEDER
 		minDeltaker1?.aktiveEndringsmeldinger?.size shouldBe 2
+		minDeltaker1?.adressebeskyttet shouldBe false
 
 		val minDeltaker2 = mineDeltakere.find { it.id == deltaker2.id }
 		minDeltaker2?.fodselsnummer shouldBe deltaker2.personident
@@ -176,6 +179,41 @@ class VeilederServiceTest {
 		mineDeltakere.find { it.id == deltaker.id } shouldNotBe null
 		mineDeltakere.find { it.id == deltaker2.id } shouldNotBe null
 		mineDeltakere.find { it.id == deltaker3.id } shouldBe null
+	}
+
+	@Test
+	fun `getMineDeltakere - ansatt er veileder for adressebeskyttet deltaker - returnerer deltaker med tomme felter`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id, adressebeskyttet = true).copy(personident = "12345")
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Ansatt",
+				mellomnavn = null,
+				etternavn = "Ansattsen",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+					),
+			),
+		)
+
+		val mineDeltakere = veilederService.getMineDeltakere(personIdent)
+
+		mineDeltakere.size shouldBe 1
+		val minDeltaker = mineDeltakere.find { it.id == deltaker.id }
+		minDeltaker?.fodselsnummer shouldBe ""
+		minDeltaker?.fornavn shouldBe ""
+		minDeltaker?.etternavn shouldBe ""
+		minDeltaker?.deltakerliste?.id shouldBe deltakerliste.id
+		minDeltaker?.veiledertype shouldBe Veiledertype.VEILEDER
 	}
 
 	@Test

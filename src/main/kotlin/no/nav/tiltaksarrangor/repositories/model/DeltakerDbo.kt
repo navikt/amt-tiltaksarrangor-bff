@@ -35,6 +35,7 @@ data class DeltakerDbo(
 	val skjultAvAnsattId: UUID?,
 	val skjultDato: LocalDateTime?,
 	val vurderingerFraArrangor: List<VurderingDto>?,
+	val adressebeskyttet: Boolean,
 ) {
 	fun erSkjult(): Boolean {
 		return skjultDato != null

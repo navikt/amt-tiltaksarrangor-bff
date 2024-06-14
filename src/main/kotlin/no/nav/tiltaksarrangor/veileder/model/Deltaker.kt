@@ -18,6 +18,7 @@ data class Deltaker(
 	val deltakerliste: Deltakerliste,
 	val veiledertype: Veiledertype,
 	val aktiveEndringsmeldinger: List<Endringsmelding>,
+	val adressebeskyttet: Boolean,
 ) {
 	data class Deltakerliste(
 		val id: UUID,

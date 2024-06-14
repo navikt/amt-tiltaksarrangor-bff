@@ -210,6 +210,7 @@ private fun getDeltaker(
 		skjultAvAnsattId = if (erSkjult) UUID.randomUUID() else null,
 		skjultDato = if (erSkjult) LocalDateTime.now() else null,
 		vurderingerFraArrangor = null,
+		adressebeskyttet = false,
 	)
 }
 

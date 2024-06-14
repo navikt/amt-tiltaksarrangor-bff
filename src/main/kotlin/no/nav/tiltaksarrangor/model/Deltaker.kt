@@ -30,6 +30,7 @@ data class Deltaker(
 	val adresse: Adresse?,
 	val gjeldendeVurderingFraArrangor: Vurdering?,
 	val historiskeVurderingerFraArrangor: List<Vurdering>?,
+	val adressebeskyttet: Boolean,
 ) {
 	data class Deltakerliste(
 		val id: UUID,

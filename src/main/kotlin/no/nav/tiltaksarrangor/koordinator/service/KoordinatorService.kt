@@ -240,12 +240,13 @@ class KoordinatorService(
 		endringsmeldinger: List<EndringsmeldingDbo>,
 	): List<Deltaker> {
 		return deltakere.map {
+			val adressebeskyttet = it.adressebeskyttet
 			Deltaker(
 				id = it.id,
-				fornavn = it.fornavn,
-				mellomnavn = it.mellomnavn,
-				etternavn = it.etternavn,
-				fodselsnummer = it.personident,
+				fornavn = if (adressebeskyttet) "" else it.fornavn,
+				mellomnavn = if (adressebeskyttet) null else it.mellomnavn,
+				etternavn = if (adressebeskyttet) "" else it.etternavn,
+				fodselsnummer = if (adressebeskyttet) "" else it.personident,
 				soktInnDato = it.innsoktDato.atStartOfDay(),
 				startDato = it.startdato,
 				sluttDato = it.sluttdato,
@@ -255,9 +256,10 @@ class KoordinatorService(
 						endretDato = it.statusGyldigFraDato,
 					),
 				veiledere = getVeiledereForDeltaker(it.id, veiledere),
-				navKontor = it.navKontor,
-				aktiveEndringsmeldinger = getEndringsmeldinger(it.id, endringsmeldinger),
-				gjeldendeVurderingFraArrangor = it.getGjeldendeVurdering(),
+				navKontor = if (adressebeskyttet) null else it.navKontor,
+				aktiveEndringsmeldinger = if (adressebeskyttet) emptyList() else getEndringsmeldinger(it.id, endringsmeldinger),
+				gjeldendeVurderingFraArrangor = if (adressebeskyttet) null else it.getGjeldendeVurdering(),
+				adressebeskyttet = adressebeskyttet,
 			)
 		}
 	}

@@ -71,10 +71,20 @@ class TiltaksarrangorService(
 			throw SkjultDeltakerException("Fant ikke deltaker med id $deltakerId")
 		}
 
-		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		val ansattErVeileder = ansattService.erVeilederForDeltaker(
+			deltakerId = deltakerId,
+			deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
+			ansattDbo = ansatt,
+		)
+
+		val endringsmeldinger = if (deltakerMedDeltakerliste.deltaker.adressebeskyttet && !ansattErVeileder) {
+			emptyList()
+		} else {
+			endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		}
 		val veiledere = ansattService.getVeiledereForDeltaker(deltakerId)
 
-		return tilDeltaker(deltakerMedDeltakerliste, veiledere, endringsmeldinger)
+		return tilDeltaker(deltakerMedDeltakerliste, veiledere, endringsmeldinger, ansattErVeileder)
 	}
 
 	fun registrerVurdering(
@@ -87,13 +97,13 @@ class TiltaksarrangorService(
 			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
-		if (!ansattService.harTilgangTilDeltaker(
-				deltakerId = deltakerId,
-				deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
-				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
-				ansattDbo = ansatt,
-			)
-		) {
+		val harTilgangTilDeltaker = ansattService.harTilgangTilDeltaker(
+			deltakerId = deltakerId,
+			deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
+			deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
+			ansattDbo = ansatt,
+		)
+		if (!harTilgangTilDeltaker || !ansattService.harTilgangTilEndringsmeldingerOgVurderingForDeltaker(deltakerMedDeltakerliste, ansatt)) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
 
@@ -162,8 +172,10 @@ class TiltaksarrangorService(
 		deltakerMedDeltakerliste: DeltakerMedDeltakerlisteDbo,
 		veiledere: List<Veileder>,
 		endringsmeldinger: List<EndringsmeldingDbo>,
+		ansattErVeileder: Boolean,
 	): Deltaker {
-		return Deltaker(
+		val adressebeskyttet = deltakerMedDeltakerliste.deltaker.adressebeskyttet
+		val deltaker = Deltaker(
 			id = deltakerMedDeltakerliste.deltaker.id,
 			deltakerliste =
 				Deltaker.Deltakerliste(
@@ -207,10 +219,35 @@ class TiltaksarrangorService(
 			veiledere = veiledere,
 			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() }.sortedBy { it.sendt }.map { it.toEndringsmelding() },
 			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }.sortedByDescending { it.sendt }.map { it.toEndringsmelding() },
-			adresse = deltakerMedDeltakerliste.getAdresse(),
+			adresse = if (adressebeskyttet) null else deltakerMedDeltakerliste.getAdresse(),
 			gjeldendeVurderingFraArrangor = deltakerMedDeltakerliste.deltaker.getGjeldendeVurdering(),
 			historiskeVurderingerFraArrangor = deltakerMedDeltakerliste.deltaker.getHistoriskeVurderinger(),
+			adressebeskyttet = adressebeskyttet,
 		)
+
+		return if (!adressebeskyttet || ansattErVeileder) {
+			deltaker
+		} else {
+			deltaker.copy(
+				fornavn = "",
+				mellomnavn = null,
+				etternavn = "",
+				fodselsnummer = "",
+				telefonnummer = null,
+				epost = null,
+				deltakelseProsent = null,
+				dagerPerUke = null,
+				bestillingTekst = null,
+				navInformasjon = NavInformasjon(
+					navkontor = null,
+					navVeileder = null,
+				),
+				aktiveEndringsmeldinger = emptyList(),
+				historiskeEndringsmeldinger = emptyList(),
+				gjeldendeVurderingFraArrangor = null,
+				historiskeVurderingerFraArrangor = null,
+			)
+		}
 	}
 }
 

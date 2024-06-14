@@ -48,7 +48,7 @@ class EndringsmeldingService(
 				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
 				ansattDbo = ansatt,
 			)
-		if (!harTilgangTilDeltaker) {
+		if (!harTilgangTilDeltaker || !ansattService.harTilgangTilEndringsmeldingerOgVurderingForDeltaker(deltakerMedDeltakerliste, ansatt)) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
 		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
@@ -79,7 +79,7 @@ class EndringsmeldingService(
 				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
 				ansattDbo = ansatt,
 			)
-		if (!harTilgangTilDeltaker) {
+		if (!harTilgangTilDeltaker || !ansattService.harTilgangTilEndringsmeldingerOgVurderingForDeltaker(deltakerMedDeltakerliste, ansatt)) {
 			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
 		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
@@ -166,7 +166,14 @@ class EndringsmeldingService(
 				deltakerlisteArrangorId = endringsmeldingMedDeltakerOgDeltakerliste.deltakerlisteDbo.arrangorId,
 				ansattDbo = ansatt,
 			)
-		if (!harTilgangTilDeltaker) {
+		if (!harTilgangTilDeltaker || !ansattService.harTilgangTilEndringsmeldingerOgVurderingForDeltaker(
+				DeltakerMedDeltakerlisteDbo(
+					endringsmeldingMedDeltakerOgDeltakerliste.deltakerDbo,
+					endringsmeldingMedDeltakerOgDeltakerliste.deltakerlisteDbo,
+				),
+				ansatt,
+			)
+		) {
 			throw UnauthorizedException(
 				"Ansatt ${ansatt.id} har ikke tilgang til deltaker med id ${endringsmeldingMedDeltakerOgDeltakerliste.deltakerDbo.id}",
 			)

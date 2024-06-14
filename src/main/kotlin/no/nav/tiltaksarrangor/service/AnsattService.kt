@@ -10,6 +10,7 @@ import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattPersonaliaDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import org.slf4j.LoggerFactory
@@ -149,14 +150,40 @@ class AnsattService(
 		ansattDbo: AnsattDbo,
 	): Boolean {
 		val erKoordinatorHosArrangor = harRolleHosArrangor(deltakerlisteArrangorId, AnsattRolle.KOORDINATOR, ansattDbo.roller)
-		val erVeilederHosArrangor = harRolleHosArrangor(deltakerlisteArrangorId, AnsattRolle.VEILEDER, ansattDbo.roller)
+		val erVeilederForDeltaker = erVeilederForDeltaker(
+			deltakerId = deltakerId,
+			deltakerlisteArrangorId = deltakerlisteArrangorId,
+			ansattDbo = ansattDbo,
+		)
 
 		if (erKoordinatorHosArrangor && ansattDbo.deltakerlister.find { it.deltakerlisteId == deltakerlisteId } != null) {
 			return true
-		} else if (erVeilederHosArrangor && ansattDbo.veilederDeltakere.find { it.deltakerId == deltakerId } != null) {
+		} else if (erVeilederForDeltaker) {
 			return true
 		}
 		return false
+	}
+
+	fun erVeilederForDeltaker(
+		deltakerId: UUID,
+		deltakerlisteArrangorId: UUID,
+		ansattDbo: AnsattDbo,
+	): Boolean {
+		val erVeilederHosArrangor = harRolleHosArrangor(deltakerlisteArrangorId, AnsattRolle.VEILEDER, ansattDbo.roller)
+		return erVeilederHosArrangor && ansattDbo.veilederDeltakere.find { it.deltakerId == deltakerId } != null
+	}
+
+	fun harTilgangTilEndringsmeldingerOgVurderingForDeltaker(
+		deltakerMedDeltakerliste: DeltakerMedDeltakerlisteDbo,
+		ansatt: AnsattDbo,
+	): Boolean {
+		return !deltakerMedDeltakerliste.deltaker.adressebeskyttet || (
+			deltakerMedDeltakerliste.deltaker.adressebeskyttet && erVeilederForDeltaker(
+				deltakerId = deltakerMedDeltakerliste.deltaker.id,
+				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
+				ansattDbo = ansatt,
+			)
+		)
 	}
 
 	fun deltakerlisteErLagtTil(ansattDbo: AnsattDbo, deltakerlisteId: UUID): Boolean {

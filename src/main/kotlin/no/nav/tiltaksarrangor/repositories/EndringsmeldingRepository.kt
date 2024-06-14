@@ -87,6 +87,7 @@ class EndringsmeldingRepository(
 						navVeilederTelefon = rs.getString("navveileder_telefon"),
 						skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 						skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
+						adressebeskyttet = rs.getBoolean("adressebeskyttet"),
 					),
 				deltakerlisteDbo =
 					DeltakerlisteDbo(
@@ -206,6 +207,7 @@ class EndringsmeldingRepository(
 					navveileder_telefon,
 					skjult_av_ansatt_id,
 					skjult_dato,
+					adressebeskyttet,
 					navn,
 					deltakerliste.status as deltakerliste_status,
 					arrangor_id,
