@@ -165,6 +165,7 @@ class KafkaListenerTest : IntegrationTest() {
 				skjultAvAnsattId = null,
 				skjultDato = null,
 				vurderingerFraArrangor = getVurderinger(deltakerId),
+				adressebeskyttet = false,
 			),
 		)
 		val ansattId = UUID.randomUUID()
@@ -240,6 +241,7 @@ class KafkaListenerTest : IntegrationTest() {
 				skjultAvAnsattId = null,
 				skjultDato = null,
 				vurderingerFraArrangor = null,
+				adressebeskyttet = false,
 			),
 		)
 		val ansattId = UUID.randomUUID()
@@ -316,6 +318,7 @@ class KafkaListenerTest : IntegrationTest() {
 				skjultAvAnsattId = null,
 				skjultDato = null,
 				vurderingerFraArrangor = getVurderinger(deltakerId),
+				adressebeskyttet = false,
 			),
 		)
 		val ansattId = UUID.randomUUID()

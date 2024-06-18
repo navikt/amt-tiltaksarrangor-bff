@@ -65,6 +65,7 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 				null
 			},
 		vurderingerFraArrangor = vurderingerFraArrangor,
+		adressebeskyttet = personalia.adressebeskyttelse != null,
 	)
 }
 

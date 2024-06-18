@@ -237,6 +237,70 @@ class EndringsmeldingServiceTest {
 	}
 
 	@Test
+	fun `getAlleEndringsmeldinger - ansatt er koordinator, deltaker adressebeskyttet - returnerer unauthorized`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id, adressebeskyttet = true))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val endringsmeldingDbo = getEndringsmelding(deltakerId)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo)
+
+		assertThrows<UnauthorizedException> {
+			endringsmeldingService.getAlleEndringsmeldinger(deltakerId, personIdent)
+		}
+	}
+
+	@Test
+	fun `getAlleEndringsmeldinger - ansatt er veileder, deltaker adressebeskyttet - henter endringsmeldinger`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id, adressebeskyttet = true))
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER),
+					),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
+			),
+		)
+		val endringsmeldingDbo = getEndringsmelding(deltakerId)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDbo)
+
+		val endringsmeldingResponse = endringsmeldingService.getAlleEndringsmeldinger(deltakerId, personIdent)
+		endringsmeldingResponse.aktiveEndringsmeldinger.size shouldBe 1
+		val endringsmelding = endringsmeldingResponse.aktiveEndringsmeldinger.find { it.id == endringsmeldingDbo.id }
+		endringsmelding?.type shouldBe Endringsmelding.Type.FORLENG_DELTAKELSE
+		endringsmelding?.innhold shouldBe Endringsmelding.Innhold.ForlengDeltakelseInnhold(sluttdato = LocalDate.now().plusMonths(2))
+	}
+
+	@Test
 	fun `slettEndringsmelding - ansatt har ikke rolle hos arrangor - returnerer unauthorized`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()

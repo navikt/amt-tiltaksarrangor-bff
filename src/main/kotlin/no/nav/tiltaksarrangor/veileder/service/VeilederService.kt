@@ -51,6 +51,7 @@ class VeilederService(
 		endringsmeldinger: List<EndringsmeldingDbo>,
 	): List<Deltaker> {
 		return deltakere.map {
+			val adressebeskyttet = it.deltaker.adressebeskyttet
 			Deltaker(
 				id = it.deltaker.id,
 				deltakerliste =
@@ -59,10 +60,10 @@ class VeilederService(
 						type = it.deltakerliste.cleanTiltaksnavn(),
 						navn = it.deltakerliste.navn,
 					),
-				fornavn = it.deltaker.fornavn,
-				mellomnavn = it.deltaker.mellomnavn,
-				etternavn = it.deltaker.etternavn,
-				fodselsnummer = it.deltaker.personident,
+				fornavn = if (adressebeskyttet) "" else it.deltaker.fornavn,
+				mellomnavn = if (adressebeskyttet) null else it.deltaker.mellomnavn,
+				etternavn = if (adressebeskyttet) "" else it.deltaker.etternavn,
+				fodselsnummer = if (adressebeskyttet) "" else it.deltaker.personident,
 				status =
 					DeltakerStatus(
 						type = it.deltaker.status,
@@ -72,6 +73,7 @@ class VeilederService(
 				sluttDato = it.deltaker.sluttdato,
 				veiledertype = getVeiledertype(it.deltaker.id, ansattsVeilederDeltakere),
 				aktiveEndringsmeldinger = getEndringsmeldinger(it.deltaker.id, endringsmeldinger),
+				adressebeskyttet = adressebeskyttet,
 			)
 		}
 	}

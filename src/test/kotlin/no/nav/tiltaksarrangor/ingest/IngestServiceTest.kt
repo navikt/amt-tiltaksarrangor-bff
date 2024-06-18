@@ -31,6 +31,7 @@ import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getVurderinger
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -44,6 +45,7 @@ class IngestServiceTest {
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val endringsmeldingRepository = mockk<EndringsmeldingRepository>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
+	private val unleashService = mockk<UnleashService>()
 	private val ingestService =
 		IngestService(
 			arrangorRepository,
@@ -52,6 +54,7 @@ class IngestServiceTest {
 			deltakerRepository,
 			endringsmeldingRepository,
 			amtArrangorClient,
+			unleashService,
 		)
 
 	private val arrangor =
@@ -71,6 +74,7 @@ class IngestServiceTest {
 			deltakerRepository,
 			endringsmeldingRepository,
 			amtArrangorClient,
+			unleashService,
 		)
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
 		every { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(any()) } returns 1
@@ -81,6 +85,7 @@ class IngestServiceTest {
 		every { arrangorRepository.getArrangor("88888888") } returns null
 		every { arrangorRepository.insertOrUpdateArrangor(any()) } just Runs
 		coEvery { amtArrangorClient.getArrangor("88888888") } returns arrangor
+		coEvery { unleashService.skalLagreAdressebeskyttedeDeltakere() } returns false
 	}
 
 	@Test
@@ -605,6 +610,47 @@ class IngestServiceTest {
 
 		verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 		verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerId) }
+	}
+
+	@Test
+	internal fun `lagreDeltaker - har adressebeskyttelse, unleashtoggle aktivert - lagres i db `() {
+		every { deltakerRepository.getDeltaker(any()) } returns null
+		coEvery { unleashService.skalLagreAdressebeskyttedeDeltakere() } returns true
+		val deltakerId = UUID.randomUUID()
+		val deltakerDto =
+			DeltakerDto(
+				id = deltakerId,
+				deltakerlisteId = UUID.randomUUID(),
+				personalia =
+					DeltakerPersonaliaDto(
+						personident = "10987654321",
+						navn = NavnDto("Fornavn", null, "Etternavn"),
+						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+						skjermet = false,
+						adresse = null,
+						adressebeskyttelse = "STRENGT_FORTROLIG",
+					),
+				status =
+					DeltakerStatusDto(
+						type = DeltakerStatus.DELTAR,
+						gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
+						opprettetDato = LocalDateTime.now().minusWeeks(6),
+					),
+				dagerPerUke = null,
+				prosentStilling = null,
+				oppstartsdato = LocalDate.now().minusWeeks(5),
+				sluttdato = null,
+				innsoktDato = LocalDate.now().minusMonths(2),
+				bestillingTekst = "Bestilling",
+				navKontor = "NAV Oslo",
+				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
+				deltarPaKurs = false,
+				vurderingerFraArrangor = null,
+			)
+
+		ingestService.lagreDeltaker(deltakerId, deltakerDto)
+
+		verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 	}
 
 	@Test

@@ -22,4 +22,5 @@ data class Deltaker(
 	val navKontor: String?,
 	val aktiveEndringsmeldinger: List<Endringsmelding>,
 	val gjeldendeVurderingFraArrangor: Vurdering?,
+	val adressebeskyttet: Boolean,
 )

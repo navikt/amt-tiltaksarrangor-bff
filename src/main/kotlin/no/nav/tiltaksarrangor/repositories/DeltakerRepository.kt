@@ -55,6 +55,7 @@ class DeltakerRepository(
 				navVeilederTelefon = rs.getString("navveileder_telefon"),
 				skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 				skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
+				adressebeskyttet = rs.getBoolean("adressebeskyttet"),
 			)
 		}
 
@@ -90,6 +91,7 @@ class DeltakerRepository(
 						navVeilederTelefon = rs.getString("navveileder_telefon"),
 						skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 						skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
+						adressebeskyttet = rs.getBoolean("adressebeskyttet"),
 					),
 				deltakerliste =
 					DeltakerlisteDbo(
@@ -114,7 +116,7 @@ class DeltakerRepository(
 								 er_skjermet, status, status_gyldig_fra, status_opprettet_dato, dager_per_uke, prosent_stilling,
 								 start_dato, slutt_dato,
 								 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
-								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger)
+								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet)
 			VALUES (:id,
 					:deltakerliste_id,
 					:personident,
@@ -141,7 +143,8 @@ class DeltakerRepository(
 					:skjult_av_ansatt_id,
 					:skjult_dato,
 					:adresse,
-					:vurderinger)
+					:vurderinger,
+					:adressebeskyttet)
 			ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
 										   personident           = :personident,
 										   fornavn               = :fornavn,
@@ -167,7 +170,8 @@ class DeltakerRepository(
 										   skjult_av_ansatt_id   = :skjult_av_ansatt_id,
 										   skjult_dato           = :skjult_dato,
 										   adresse				 = :adresse,
-										   vurderinger			 = :vurderinger
+										   vurderinger			 = :vurderinger,
+										   adressebeskyttet		 = :adressebeskyttet
 			""".trimIndent()
 
 		template.update(
@@ -200,6 +204,7 @@ class DeltakerRepository(
 				"skjult_dato" to deltakerDbo.skjultDato,
 				"adresse" to deltakerDbo.adresse?.toPGObject(),
 				"vurderinger" to deltakerDbo.vurderingerFraArrangor?.toPGObject(),
+				"adressebeskyttet" to deltakerDbo.adressebeskyttet,
 			),
 		)
 	}
@@ -266,6 +271,7 @@ class DeltakerRepository(
 					navveileder_telefon,
 					skjult_av_ansatt_id,
 					skjult_dato,
+					adressebeskyttet,
 					navn,
 					deltakerliste.status as deltakerliste_status,
 					arrangor_id,
@@ -314,6 +320,7 @@ class DeltakerRepository(
 					navveileder_telefon,
 					skjult_av_ansatt_id,
 					skjult_dato,
+					adressebeskyttet,
 					navn,
 					deltakerliste.status as deltakerliste_status,
 					arrangor_id,
