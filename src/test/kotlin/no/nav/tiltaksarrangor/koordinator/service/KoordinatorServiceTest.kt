@@ -486,6 +486,101 @@ class KoordinatorServiceTest {
 		koordinatorsDeltaker?.aktiveEndringsmeldinger?.size shouldBe 1
 		koordinatorsDeltaker?.aktiveEndringsmeldinger?.find { it.type == Endringsmelding.Type.FORLENG_DELTAKELSE } shouldNotBe null
 		koordinatorsDeltaker?.adressebeskyttet shouldBe false
+		koordinatorsDeltaker?.erVeilederForDeltaker shouldBe false
+	}
+
+	@Test
+	fun `getDeltakerliste - har tilgang, lagt til deltakerliste, veileder - returnerer deltakerliste med deltakere, erVeilederForDeltaker`() {
+		val personIdent = "12345678910"
+		val overordnetArrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = overordnetArrangorId,
+				navn = "Overordnet arrangør AS",
+				organisasjonsnummer = "99999999",
+				overordnetArrangorId = null,
+			),
+		)
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "88888888",
+				overordnetArrangorId = overordnetArrangorId,
+			),
+		)
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn1",
+				mellomnavn = null,
+				etternavn = "Etternavn1",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR), AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltaker.id, Veiledertype.MEDVEILEDER)),
+			),
+		)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn2",
+				mellomnavn = null,
+				etternavn = "Etternavn2",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val endringsmelding = getEndringsmelding(deltaker.id)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
+		val deltaker2 =
+			getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(
+				skjultDato = LocalDateTime.now(),
+				skjultAvAnsattId = UUID.randomUUID(),
+			)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn3",
+				mellomnavn = null,
+				etternavn = "Etternavn3",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+						VeilederDeltakerDbo(deltaker2.id, Veiledertype.VEILEDER),
+					),
+			),
+		)
+
+		val koordinatorsDeltakerliste = koordinatorService.getDeltakerliste(deltakerliste.id, personIdent)
+
+		koordinatorsDeltakerliste.id shouldBe deltakerliste.id
+		koordinatorsDeltakerliste.koordinatorer.size shouldBe 2
+		koordinatorsDeltakerliste.deltakere.size shouldBe 1
+		val koordinatorsDeltaker = koordinatorsDeltakerliste.deltakere.find { it.id == deltaker.id }
+		koordinatorsDeltaker?.status?.type shouldBe StatusType.DELTAR
+		koordinatorsDeltaker?.veiledere?.size shouldBe 2
+		koordinatorsDeltaker?.veiledere?.find {
+			it.fornavn == "Fornavn3" && it.etternavn == "Etternavn3" && it.veiledertype == Veiledertype.VEILEDER
+		} shouldNotBe null
+		koordinatorsDeltaker?.veiledere?.find {
+			it.fornavn == "Fornavn1" && it.etternavn == "Etternavn1" && it.veiledertype == Veiledertype.MEDVEILEDER
+		} shouldNotBe null
+		koordinatorsDeltaker?.aktiveEndringsmeldinger?.size shouldBe 1
+		koordinatorsDeltaker?.aktiveEndringsmeldinger?.find { it.type == Endringsmelding.Type.FORLENG_DELTAKELSE } shouldNotBe null
+		koordinatorsDeltaker?.adressebeskyttet shouldBe false
+		koordinatorsDeltaker?.erVeilederForDeltaker shouldBe true
 	}
 
 	@Test
@@ -572,6 +667,7 @@ class KoordinatorServiceTest {
 		koordinatorsDeltaker?.aktiveEndringsmeldinger?.size shouldBe 0
 		koordinatorsDeltaker?.gjeldendeVurderingFraArrangor shouldBe null
 		koordinatorsDeltaker?.adressebeskyttet shouldBe true
+		koordinatorsDeltaker?.erVeilederForDeltaker shouldBe false
 	}
 
 	@Test

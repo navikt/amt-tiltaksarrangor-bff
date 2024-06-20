@@ -23,4 +23,5 @@ data class Deltaker(
 	val aktiveEndringsmeldinger: List<Endringsmelding>,
 	val gjeldendeVurderingFraArrangor: Vurdering?,
 	val adressebeskyttet: Boolean,
+	val erVeilederForDeltaker: Boolean,
 )

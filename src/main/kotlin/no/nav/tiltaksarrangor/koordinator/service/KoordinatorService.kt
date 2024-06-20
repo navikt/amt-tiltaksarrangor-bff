@@ -165,7 +165,7 @@ class KoordinatorService(
 			)
 		if (harKoordinatorRolleHosArrangor) {
 			if (ansattService.deltakerlisteErLagtTil(ansatt, deltakerlisteId)) {
-				return getDeltakerliste(deltakerlisteMedArrangor)
+				return getDeltakerliste(deltakerlisteMedArrangor, ansatt.id)
 			} else {
 				throw UnauthorizedException("Ansatt ${ansatt.id} kan ikke hente deltakerliste med id $deltakerlisteId før den er lagt til")
 			}
@@ -174,7 +174,7 @@ class KoordinatorService(
 		}
 	}
 
-	private fun getDeltakerliste(deltakerlisteMedArrangor: DeltakerlisteMedArrangorDbo): Deltakerliste {
+	private fun getDeltakerliste(deltakerlisteMedArrangor: DeltakerlisteMedArrangorDbo, ansattId: UUID): Deltakerliste {
 		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
 		val koordinatorer =
 			ansattService.getKoordinatorerForDeltakerliste(
@@ -207,7 +207,7 @@ class KoordinatorService(
 						etternavn = it.etternavn,
 					)
 				},
-			deltakere = tilKoordinatorsDeltakere(deltakere, veiledereForDeltakerliste, endringsmeldinger),
+			deltakere = tilKoordinatorsDeltakere(deltakere, veiledereForDeltakerliste, endringsmeldinger, ansattId),
 			erKurs = deltakerlisteMedArrangor.deltakerlisteDbo.erKurs,
 			tiltakType = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType,
 		)
@@ -238,9 +238,11 @@ class KoordinatorService(
 		deltakere: List<DeltakerDbo>,
 		veiledere: List<Veileder>,
 		endringsmeldinger: List<EndringsmeldingDbo>,
+		ansattId: UUID,
 	): List<Deltaker> {
 		return deltakere.map {
 			val adressebeskyttet = it.adressebeskyttet
+			val veiledereForDeltaker = getVeiledereForDeltaker(it.id, veiledere)
 			Deltaker(
 				id = it.id,
 				fornavn = if (adressebeskyttet) "" else it.fornavn,
@@ -255,17 +257,22 @@ class KoordinatorService(
 						type = it.status,
 						endretDato = it.statusGyldigFraDato,
 					),
-				veiledere = getVeiledereForDeltaker(it.id, veiledere),
+				veiledere = veiledereForDeltaker,
 				navKontor = if (adressebeskyttet) null else it.navKontor,
 				aktiveEndringsmeldinger = if (adressebeskyttet) emptyList() else getEndringsmeldinger(it.id, endringsmeldinger),
 				gjeldendeVurderingFraArrangor = if (adressebeskyttet) null else it.getGjeldendeVurdering(),
 				adressebeskyttet = adressebeskyttet,
+				erVeilederForDeltaker = erVeilederForDeltaker(ansattId, veiledereForDeltaker),
 			)
 		}
 	}
 
 	private fun getVeiledereForDeltaker(deltakerId: UUID, veiledereDeltakere: List<Veileder>): List<Veileder> {
 		return veiledereDeltakere.filter { it.deltakerId == deltakerId }
+	}
+
+	private fun erVeilederForDeltaker(ansattId: UUID, veiledereDeltakere: List<Veileder>): Boolean {
+		return veiledereDeltakere.find { it.ansattId == ansattId } != null
 	}
 
 	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
