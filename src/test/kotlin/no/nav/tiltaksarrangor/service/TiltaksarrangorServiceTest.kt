@@ -61,6 +61,7 @@ class TiltaksarrangorServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
+	private val tilgangskontrollService = TilgangskontrollService(ansattService)
 	private val tiltaksarrangorService =
 		TiltaksarrangorService(
 			amtTiltakClient,
@@ -69,6 +70,7 @@ class TiltaksarrangorServiceTest {
 			deltakerRepository,
 			endringsmeldingRepository,
 			auditLoggerService,
+			tilgangskontrollService,
 		)
 
 	@AfterEach

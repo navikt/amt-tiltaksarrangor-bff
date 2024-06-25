@@ -11,12 +11,9 @@ import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Vurdering
 import no.nav.tiltaksarrangor.model.Vurderingstype
-import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
-import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
@@ -33,6 +30,7 @@ class TiltaksarrangorService(
 	private val deltakerRepository: DeltakerRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val auditLoggerService: AuditLoggerService,
+	private val tilgangskontrollService: TilgangskontrollService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -41,7 +39,7 @@ class TiltaksarrangorService(
 	}
 
 	fun getDeltaker(personIdent: String, deltakerId: UUID): Deltaker {
-		val ansatt = getAnsattMedRoller(personIdent)
+		val ansatt = ansattService.getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
 			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
@@ -56,20 +54,7 @@ class TiltaksarrangorService(
 			arrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
 		)
 
-		if (!ansattService.harTilgangTilDeltaker(
-				deltakerId = deltakerId,
-				deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
-				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
-				ansattDbo = ansatt,
-			)
-		) {
-			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
-		}
-
-		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
-			log.warn("Har forsøkt å hente deltaker som er fjernet")
-			throw SkjultDeltakerException("Fant ikke deltaker med id $deltakerId")
-		}
+		tilgangskontrollService.verifiserTilgangTilDeltaker(ansatt, deltakerMedDeltakerliste)
 
 		val ansattErVeileder = ansattService.erVeilederForDeltaker(
 			deltakerId = deltakerId,
@@ -92,25 +77,13 @@ class TiltaksarrangorService(
 		deltakerId: UUID,
 		request: RegistrerVurderingRequest,
 	) {
-		val ansatt = getAnsattMedRoller(personIdent)
+		val ansatt = ansattService.getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
 			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
-		val harTilgangTilDeltaker = ansattService.harTilgangTilDeltaker(
-			deltakerId = deltakerId,
-			deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
-			deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
-			ansattDbo = ansatt,
-		)
-		if (!harTilgangTilDeltaker || !ansattService.harTilgangTilEndringsmeldingerOgVurderingForDeltaker(deltakerMedDeltakerliste, ansatt)) {
-			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
-		}
+		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)
 
-		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
-			log.warn("Har forsøkt å registrere vurdering for deltaker som er fjernet")
-			throw SkjultDeltakerException("Fant ikke deltaker med id $deltakerId")
-		}
 		if (deltakerMedDeltakerliste.deltaker.status != StatusType.VURDERES) {
 			throw IllegalStateException(
 				"Kan ikke registrere vurdering for deltaker med id $deltakerId med annen status enn VURDERES. " +
@@ -128,40 +101,22 @@ class TiltaksarrangorService(
 	}
 
 	fun fjernDeltaker(personIdent: String, deltakerId: UUID) {
-		val ansatt = getAnsattMedRoller(personIdent)
+		val ansatt = ansattService.getAnsattMedRoller(personIdent)
 		val deltakerMedDeltakerliste =
 			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
-		if (!ansattService.harTilgangTilDeltaker(
-				deltakerId = deltakerId,
-				deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
-				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
-				ansattDbo = ansatt,
+		tilgangskontrollService.verifiserTilgangTilDeltaker(ansatt, deltakerMedDeltakerliste)
+
+		if (kanSkjules(deltakerMedDeltakerliste.deltaker)) {
+			deltakerRepository.skjulDeltaker(deltakerId = deltakerId, ansattId = ansatt.id)
+			metricsService.incFjernetDeltaker()
+			log.info("Skjult deltaker med id $deltakerId")
+		} else {
+			throw IllegalStateException(
+				"Kan ikke skjule deltaker med id $deltakerId. Ugyldig status: ${deltakerMedDeltakerliste.deltaker.status.name}",
 			)
-		) {
-			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
 		}
-
-		if (!deltakerMedDeltakerliste.deltaker.erSkjult()) {
-			if (kanSkjules(deltakerMedDeltakerliste.deltaker)) {
-				deltakerRepository.skjulDeltaker(deltakerId = deltakerId, ansattId = ansatt.id)
-				metricsService.incFjernetDeltaker()
-				log.info("Skjult deltaker med id $deltakerId")
-			} else {
-				throw IllegalStateException(
-					"Kan ikke skjule deltaker med id $deltakerId. Ugyldig status: ${deltakerMedDeltakerliste.deltaker.status.name}",
-				)
-			}
-		}
-	}
-
-	private fun getAnsattMedRoller(personIdent: String): AnsattDbo {
-		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
-		if (!ansattService.harRoller(ansatt.roller)) {
-			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator hos noen arrangører")
-		}
-		return ansatt
 	}
 
 	private fun kanSkjules(deltakerDbo: DeltakerDbo): Boolean {

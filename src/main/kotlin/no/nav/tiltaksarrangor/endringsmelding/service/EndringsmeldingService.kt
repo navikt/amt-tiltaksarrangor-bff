@@ -13,15 +13,13 @@ import no.nav.tiltaksarrangor.endringsmelding.controller.request.Endringsmelding
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.endringsmelding.controller.response.EndringsmeldingResponse
 import no.nav.tiltaksarrangor.model.StatusType
-import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
-import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
+import no.nav.tiltaksarrangor.service.TilgangskontrollService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -33,27 +31,18 @@ class EndringsmeldingService(
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val metricsService: MetricsService,
+	private val tilgangskontrollService: TilgangskontrollService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	fun getAlleEndringsmeldinger(deltakerId: UUID, personIdent: String): EndringsmeldingResponse {
-		val ansatt = getAnsattMedRoller(personIdent)
-		val deltakerMedDeltakerliste =
-			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
-				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
-		val harTilgangTilDeltaker =
-			ansattService.harTilgangTilDeltaker(
-				deltakerId = deltakerId,
-				deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
-				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
-				ansattDbo = ansatt,
-			)
-		if (!harTilgangTilDeltaker || !ansattService.harTilgangTilEndringsmeldingerOgVurderingForDeltaker(deltakerMedDeltakerliste, ansatt)) {
-			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
-		}
-		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
-			throw SkjultDeltakerException("Deltaker med id $deltakerId er skjult for tiltaksarrangør")
-		}
+		val ansatt = ansattService.getAnsattMedRoller(personIdent)
+		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+			?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
+			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+
+		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)
+
 		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
 		return EndringsmeldingResponse(
 			aktiveEndringsmeldinger = endringsmeldinger.sortedBy { it.sendt }.filter { it.erAktiv() }
@@ -68,23 +57,11 @@ class EndringsmeldingService(
 		request: EndringsmeldingRequest,
 		personIdent: String,
 	) {
-		val ansatt = getAnsattMedRoller(personIdent)
-		val deltakerMedDeltakerliste =
-			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
-				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
-		val harTilgangTilDeltaker =
-			ansattService.harTilgangTilDeltaker(
-				deltakerId = deltakerId,
-				deltakerlisteId = deltakerMedDeltakerliste.deltakerliste.id,
-				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
-				ansattDbo = ansatt,
-			)
-		if (!harTilgangTilDeltaker || !ansattService.harTilgangTilEndringsmeldingerOgVurderingForDeltaker(deltakerMedDeltakerliste, ansatt)) {
-			throw UnauthorizedException("Ansatt ${ansatt.id} har ikke tilgang til deltaker med id $deltakerId")
-		}
-		if (deltakerMedDeltakerliste.deltaker.erSkjult()) {
-			throw SkjultDeltakerException("Deltaker med id $deltakerId er skjult for tiltaksarrangør")
-		}
+		val ansatt = ansattService.getAnsattMedRoller(personIdent)
+		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+			?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
+			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)
 
 		val endringsmeldingId =
 			when (request.innhold.type) {
@@ -152,45 +129,25 @@ class EndringsmeldingService(
 	}
 
 	fun slettEndringsmelding(endringsmeldingId: UUID, personIdent: String) {
-		val ansatt = getAnsattMedRoller(personIdent)
+		val ansatt = ansattService.getAnsattMedRoller(personIdent)
 		val endringsmeldingMedDeltakerOgDeltakerliste =
 			endringsmeldingRepository.getEndringsmeldingMedDeltakerOgDeltakerliste(endringsmeldingId)?.takeIf {
 				it.deltakerlisteDbo.erTilgjengeligForArrangor()
 			}
 				?: throw NoSuchElementException("Fant ikke endringsmelding med id $endringsmeldingId")
 
-		val harTilgangTilDeltaker =
-			ansattService.harTilgangTilDeltaker(
-				deltakerId = endringsmeldingMedDeltakerOgDeltakerliste.deltakerDbo.id,
-				deltakerlisteId = endringsmeldingMedDeltakerOgDeltakerliste.deltakerlisteDbo.id,
-				deltakerlisteArrangorId = endringsmeldingMedDeltakerOgDeltakerliste.deltakerlisteDbo.arrangorId,
-				ansattDbo = ansatt,
-			)
-		if (!harTilgangTilDeltaker || !ansattService.harTilgangTilEndringsmeldingerOgVurderingForDeltaker(
-				DeltakerMedDeltakerlisteDbo(
-					endringsmeldingMedDeltakerOgDeltakerliste.deltakerDbo,
-					endringsmeldingMedDeltakerOgDeltakerliste.deltakerlisteDbo,
-				),
-				ansatt,
-			)
-		) {
-			throw UnauthorizedException(
-				"Ansatt ${ansatt.id} har ikke tilgang til deltaker med id ${endringsmeldingMedDeltakerOgDeltakerliste.deltakerDbo.id}",
-			)
-		}
+		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(
+			ansatt,
+			DeltakerMedDeltakerlisteDbo(
+				endringsmeldingMedDeltakerOgDeltakerliste.deltakerDbo,
+				endringsmeldingMedDeltakerOgDeltakerliste.deltakerlisteDbo,
+			),
+		)
 
 		amtTiltakClient.tilbakekallEndringsmelding(endringsmeldingId)
 		endringsmeldingRepository.tilbakekallEndringsmelding(endringsmeldingId)
 		metricsService.incTilbakekaltEndringsmelding()
 		log.info("Tilbakekalt endringsmelding med id $endringsmeldingId")
-	}
-
-	private fun getAnsattMedRoller(personIdent: String): AnsattDbo {
-		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
-		if (!ansattService.harRoller(ansatt.roller)) {
-			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator hos noen arrangører")
-		}
-		return ansatt
 	}
 
 	private fun endreSluttaarsak(
