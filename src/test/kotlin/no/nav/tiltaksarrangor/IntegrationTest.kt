@@ -8,9 +8,11 @@ import no.nav.tiltaksarrangor.mock.MockAmtTiltakHttpServer
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.utils.Issuer
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.extension.ExtendWith
@@ -39,7 +41,7 @@ class IntegrationTest {
 
 	fun serverUrl() = "http://localhost:$port"
 
-	private val client =
+	val client =
 		OkHttpClient.Builder()
 			.callTimeout(Duration.ofMinutes(5))
 			.build()
@@ -118,6 +120,11 @@ class IntegrationTest {
 				expiry = 3600,
 			),
 		).serialize()
+	}
+
+	fun emptyRequest(): RequestBody {
+		val mediaTypeHtml = "application/json".toMediaType()
+		return "".toRequestBody(mediaTypeHtml)
 	}
 }
 

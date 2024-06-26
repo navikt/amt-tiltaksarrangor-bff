@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.testutils
 
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
+import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.Bostedsadresse
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
@@ -12,9 +13,13 @@ import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Vurderingstype
+import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
+import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
+import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
+import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -124,3 +129,33 @@ fun getVurderinger(deltakerId: UUID, gyldigFra: LocalDateTime = LocalDateTime.no
 		),
 	)
 }
+
+fun getArrangor(
+	id: UUID = UUID.randomUUID(),
+	navn: String = "Arrangor navn",
+	organisasjonsnummer: String = (1000..90000000).random().toString(),
+) = ArrangorDbo(
+	id = id,
+	navn = navn,
+	organisasjonsnummer = organisasjonsnummer,
+	overordnetArrangorId = null,
+)
+
+fun getKoordinator(
+	id: UUID = UUID.randomUUID(),
+	deltakerlisteId: UUID = UUID.randomUUID(),
+	arrangorId: UUID = UUID.randomUUID(),
+	personident: String = (10000..9000000).random().toString(),
+	fornavn: String = "Fornavn",
+	mellomnavn: String? = null,
+	etternavn: String = "Etternavn",
+) = AnsattDbo(
+	id = id,
+	personIdent = personident,
+	fornavn = fornavn,
+	mellomnavn = mellomnavn,
+	etternavn = etternavn,
+	roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+	deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+	veilederDeltakere = emptyList(),
+)
