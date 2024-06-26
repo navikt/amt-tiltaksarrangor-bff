@@ -2,10 +2,12 @@ package no.nav.tiltaksarrangor.melding.forslag
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
+import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.TilgangskontrollService
 import no.nav.tiltaksarrangor.service.TokenService
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import no.nav.tiltaksarrangor.utils.Issuer
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -22,6 +24,7 @@ class ForslagController(
 	private val ansattService: AnsattService,
 	private val deltakerRepository: DeltakerRepository,
 	private val forslagService: ForslagService,
+	private val unleashService: UnleashService,
 ) {
 	@PostMapping("/forleng")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
@@ -29,6 +32,10 @@ class ForslagController(
 		@PathVariable deltakerId: UUID,
 		@RequestBody request: ForlengDeltakelseRequest,
 	) {
+		if (!unleashService.erForslagSkruddPa()) {
+			throw UnauthorizedException("Endepunkt er utilgjenglig")
+		}
+
 		val personident = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		val ansatt = ansattService.getAnsattMedRoller(personident)
 		val deltakerMedDeltakerliste =

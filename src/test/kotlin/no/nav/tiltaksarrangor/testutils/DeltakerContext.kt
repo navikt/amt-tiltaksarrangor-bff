@@ -14,14 +14,14 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 open class DeltakerContext(
-    val arrangor: ArrangorDbo = getArrangor(),
-    val deltakerliste: DeltakerlisteDbo = getDeltakerliste(arrangorId = arrangor.id),
-    val koordinator: AnsattDbo = getKoordinator(
-        id = UUID.randomUUID(),
-        arrangorId = arrangor.id,
-        deltakerlisteId = deltakerliste.id,
-    ),
-    val deltaker: DeltakerDbo = getDeltaker(UUID.randomUUID(), deltakerlisteId = deltakerliste.id),
+	val arrangor: ArrangorDbo = getArrangor(),
+	val deltakerliste: DeltakerlisteDbo = getDeltakerliste(arrangorId = arrangor.id),
+	val koordinator: AnsattDbo = getKoordinator(
+		id = UUID.randomUUID(),
+		arrangorId = arrangor.id,
+		deltakerlisteId = deltakerliste.id,
+	),
+	val deltaker: DeltakerDbo = getDeltaker(UUID.randomUUID(), deltakerlisteId = deltakerliste.id),
 ) {
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)

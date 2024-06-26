@@ -1,5 +1,7 @@
 package no.nav.tiltaksarrangor
 
+import io.getunleash.FakeUnleash
+import io.getunleash.Unleash
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
@@ -19,6 +21,9 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -136,4 +141,15 @@ private fun getKafkaImage(): String {
 		}
 
 	return "confluentinc/cp-kafka:$tag"
+}
+
+@Profile("test")
+@Configuration
+class UnleashConfig {
+	@Bean
+	open fun unleashClient(): Unleash {
+		val fakeUnleash = FakeUnleash()
+		fakeUnleash.enableAll()
+		return fakeUnleash
+	}
 }
