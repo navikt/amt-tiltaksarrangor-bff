@@ -37,7 +37,7 @@ class MeldingProducer(
 }
 
 @Configuration
-@Profile("prod")
+@Profile("default")
 class KafkaProducerConfig {
 	@Bean
 	fun config(): KafkaConfig {
