@@ -32,15 +32,15 @@ class ForslagController(
 		@PathVariable deltakerId: UUID,
 		@RequestBody request: ForlengDeltakelseRequest,
 	) {
-		if (!unleashService.erForslagSkruddPa()) {
-			throw UnauthorizedException("Endepunkt er utilgjenglig")
-		}
-
 		val personident = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		val ansatt = ansattService.getAnsattMedRoller(personident)
 		val deltakerMedDeltakerliste =
 			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+
+		if (!unleashService.erForslagSkruddPa(deltakerMedDeltakerliste.deltakerliste.tiltakType)) {
+			throw UnauthorizedException("Endepunkt er utilgjenglig")
+		}
 
 		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)
 
