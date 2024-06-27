@@ -1,5 +1,7 @@
 package no.nav.tiltaksarrangor
 
+import io.getunleash.FakeUnleash
+import io.getunleash.Unleash
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
@@ -8,15 +10,20 @@ import no.nav.tiltaksarrangor.mock.MockAmtTiltakHttpServer
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.utils.Issuer
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -39,7 +46,7 @@ class IntegrationTest {
 
 	fun serverUrl() = "http://localhost:$port"
 
-	private val client =
+	val client =
 		OkHttpClient.Builder()
 			.callTimeout(Duration.ofMinutes(5))
 			.build()
@@ -119,6 +126,11 @@ class IntegrationTest {
 			),
 		).serialize()
 	}
+
+	fun emptyRequest(): RequestBody {
+		val mediaTypeHtml = "application/json".toMediaType()
+		return "".toRequestBody(mediaTypeHtml)
+	}
 }
 
 private fun getKafkaImage(): String {
@@ -129,4 +141,15 @@ private fun getKafkaImage(): String {
 		}
 
 	return "confluentinc/cp-kafka:$tag"
+}
+
+@Profile("test")
+@Configuration
+class UnleashConfig {
+	@Bean
+	open fun unleashClient(): Unleash {
+		val fakeUnleash = FakeUnleash()
+		fakeUnleash.enableAll()
+		return fakeUnleash
+	}
 }

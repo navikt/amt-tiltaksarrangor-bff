@@ -30,6 +30,7 @@ import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
+import no.nav.tiltaksarrangor.service.TilgangskontrollService
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
@@ -54,6 +55,7 @@ class EndringsmeldingServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
+	private val tilgangskontrollService = TilgangskontrollService(ansattService)
 	private val endringsmeldingService =
 		EndringsmeldingService(
 			amtTiltakClient,
@@ -61,6 +63,7 @@ class EndringsmeldingServiceTest {
 			endringsmeldingRepository,
 			deltakerRepository,
 			metricsService,
+			tilgangskontrollService,
 		)
 
 	@AfterEach

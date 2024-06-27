@@ -29,6 +29,7 @@ val mockkVersion = "1.13.11"
 val commonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 val unleashVersion = "9.2.2"
 val ktlintVersion = "1.2.1"
+val amtLibVersion = "1.2024.06.25_07.43-f8de15457006"
 
 extra["postgresql.version"] = "42.7.2"
 
@@ -65,6 +66,9 @@ dependencies {
 
     implementation("org.postgresql:postgresql")
 
+    implementation("no.nav.amt.lib:models:$amtLibVersion")
+    implementation("no.nav.amt.lib:kafka:$amtLibVersion")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude("com.vaadin.external.google", "android-json")
     }
@@ -75,6 +79,8 @@ dependencies {
     testImplementation("org.testcontainers:kafka:$testcontainersVersion")
     testImplementation("org.awaitility:awaitility")
     testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("no.nav.amt.lib:testing:$amtLibVersion")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {

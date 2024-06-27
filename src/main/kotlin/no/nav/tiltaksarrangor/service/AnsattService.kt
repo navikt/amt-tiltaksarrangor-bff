@@ -6,6 +6,7 @@ import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.model.Veileder
+import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattPersonaliaDbo
@@ -41,6 +42,14 @@ class AnsattService(
 
 	fun getAnsatt(personIdent: String): AnsattDbo? {
 		return ansattRepository.getAnsatt(personIdent)
+	}
+
+	fun getAnsattMedRoller(personIdent: String): AnsattDbo {
+		val ansatt = getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
+		if (!harRoller(ansatt.roller)) {
+			throw UnauthorizedException("Ansatt ${ansatt.id} er ikke veileder eller koordinator hos noen arrangører")
+		}
+		return ansatt
 	}
 
 	fun getVeiledereForDeltaker(deltakerId: UUID): List<Veileder> {

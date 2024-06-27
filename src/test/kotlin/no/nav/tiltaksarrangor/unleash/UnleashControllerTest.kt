@@ -27,7 +27,7 @@ class UnleashControllerTest : IntegrationTest() {
 
 		val expectedJson =
 			"""
-			{"amt-tiltaksarrangor-flate.driftsmelding":false,"amt-tiltaksarrangor-flate.eksponer-kurs":false}
+			{"amt-tiltaksarrangor-flate.driftsmelding":true,"amt-tiltaksarrangor-flate.eksponer-kurs":true}
 			""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
