@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.Kontaktadresse
 import no.nav.tiltaksarrangor.ingest.model.Matrikkeladresse
+import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.Vegadresse
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
@@ -158,4 +159,12 @@ fun getKoordinator(
 	roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
 	deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
 	veilederDeltakere = emptyList(),
+)
+
+fun getNavAnsatt(id: UUID = UUID.randomUUID()) = NavAnsatt(
+	id = id,
+	navident = (100000..999999).random().toString(),
+	navn = "Veileder Veiledersen",
+	epost = "epost@nav.no",
+	telefon = "99999999",
 )
