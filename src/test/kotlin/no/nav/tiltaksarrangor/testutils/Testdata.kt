@@ -8,6 +8,7 @@ import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.Kontaktadresse
 import no.nav.tiltaksarrangor.ingest.model.Matrikkeladresse
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
+import no.nav.tiltaksarrangor.ingest.model.NavEnhet
 import no.nav.tiltaksarrangor.ingest.model.Vegadresse
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
@@ -167,4 +168,10 @@ fun getNavAnsatt(id: UUID = UUID.randomUUID()) = NavAnsatt(
 	navn = "Veileder Veiledersen",
 	epost = "epost@nav.no",
 	telefon = "99999999",
+)
+
+fun getNavEnhet() = NavEnhet(
+	id = UUID.randomUUID(),
+	enhetId = (100000..999999).random().toString(),
+	navn = "NAV Grünerløkka",
 )
