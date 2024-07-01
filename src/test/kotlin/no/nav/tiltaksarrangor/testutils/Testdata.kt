@@ -170,8 +170,8 @@ fun getNavAnsatt(id: UUID = UUID.randomUUID()) = NavAnsatt(
 	telefon = "99999999",
 )
 
-fun getNavEnhet() = NavEnhet(
-	id = UUID.randomUUID(),
+fun getNavEnhet(id: UUID = UUID.randomUUID()) = NavEnhet(
+	id = id,
 	enhetId = (100000..999999).random().toString(),
 	navn = "NAV Grünerløkka",
 )
