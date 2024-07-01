@@ -1,15 +1,20 @@
 package no.nav.tiltaksarrangor.melding.forslag
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
+import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.utils.JsonUtils
+import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 class ForslagControllerTest : IntegrationTest() {
@@ -39,11 +44,19 @@ class ForslagControllerTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `forleng - nytt forslag - skal returnere 200`() {
+	fun `forleng - nytt forslag - skal returnere 200 og riktig response`() {
 		with(DeltakerContext()) {
 			val response = sendForlengDeltakelseRequest(deltaker.id, koordinator.personIdent)
 
 			response.code shouldBe 200
+
+			val aktivtForslag = objectMapper.readValue<AktivtForslagResponse>(response.body!!.string())
+			aktivtForslag.status shouldBe ForslagResponse.Status.VenterPaSvar
+			aktivtForslag.begrunnelse shouldBe forlengDeltakelseRequest.begrunnelse
+			aktivtForslag.opprettet shouldBeCloseTo LocalDateTime.now()
+
+			val endring = aktivtForslag.endring as Forslag.ForlengDeltakelse
+			endring.sluttdato shouldBe forlengDeltakelseRequest.sluttdato
 		}
 	}
 

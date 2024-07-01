@@ -31,7 +31,7 @@ class ForslagController(
 	fun forleng(
 		@PathVariable deltakerId: UUID,
 		@RequestBody request: ForlengDeltakelseRequest,
-	) {
+	): AktivtForslagResponse {
 		val personident = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		val ansatt = ansattService.getAnsattMedRoller(personident)
 		val deltakerMedDeltakerliste =
@@ -44,10 +44,12 @@ class ForslagController(
 
 		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)
 
-		forslagService.opprettForslag(
+		val forslag = forslagService.opprettForslag(
 			request,
 			ansatt,
 			deltakerMedDeltakerliste,
 		)
+
+		return forslag.tilAktivtForslagResponse()
 	}
 }

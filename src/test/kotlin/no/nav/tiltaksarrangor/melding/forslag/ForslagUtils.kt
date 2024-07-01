@@ -5,9 +5,11 @@ import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.AsyncUtils
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
+import no.nav.tiltaksarrangor.ingest.model.NavEnhet
 import no.nav.tiltaksarrangor.kafka.stringStringConsumer
 import no.nav.tiltaksarrangor.melding.MELDING_TOPIC
 import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
+import no.nav.tiltaksarrangor.repositories.NavEnhetRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
@@ -19,6 +21,7 @@ import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getKoordinator
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
+import no.nav.tiltaksarrangor.testutils.getNavEnhet
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
@@ -44,9 +47,12 @@ class ForslagCtx(
 	) {
 	var navAnsatt: NavAnsatt? = null
 
+	var navEnhet: NavEnhet? = null
+
 	private val template = NamedParameterJdbcTemplate(SingletonPostgresContainer.getDataSource())
 	private val navAnsattRepository = NavAnsattRepository(template)
 	private val forslagRepository = ForslagRepository(template)
+	private val navEnhetRepository = NavEnhetRepository(template)
 
 	init {
 		opprettNavAnsattForForslag()
@@ -72,13 +78,15 @@ class ForslagCtx(
 			Forslag.Status.VenterPaSvar -> null
 		}
 
-		navAnsatt = if (forslagNavAnsatt != null) {
-			getNavAnsatt(id = forslagNavAnsatt.id)
+		if (forslagNavAnsatt != null) {
+			navAnsatt = getNavAnsatt(id = forslagNavAnsatt.id)
+			navEnhet = getNavEnhet(id = forslagNavAnsatt.enhetId)
+			navAnsatt?.let { navAnsattRepository.upsert(it) }
+			navEnhet?.let { navEnhetRepository.upsert(it) }
 		} else {
-			null
+			navAnsatt = null
+			navEnhet = null
 		}
-
-		navAnsatt?.let { navAnsattRepository.upsert(it) }
 	}
 }
 
