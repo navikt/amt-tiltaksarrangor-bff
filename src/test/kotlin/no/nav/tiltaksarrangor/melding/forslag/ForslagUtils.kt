@@ -68,6 +68,38 @@ class ForslagCtx(
 		opprettNavAnsattForForslag()
 	}
 
+	fun medInaktiveForslag() {
+		leggTilForslagMedStatus(
+			Forslag.Status.Tilbakekalt(
+				UUID.randomUUID(),
+				LocalDateTime.now(),
+			),
+		)
+		leggTilForslagMedStatus(
+			Forslag.Status.Godkjent(
+				Forslag.NavAnsatt(UUID.randomUUID(), UUID.randomUUID()),
+				LocalDateTime.now(),
+			),
+		)
+		leggTilForslagMedStatus(
+			Forslag.Status.Avvist(
+				Forslag.NavAnsatt(UUID.randomUUID(), UUID.randomUUID()),
+				LocalDateTime.now(),
+				"Avvist!",
+			),
+		)
+	}
+
+	fun leggTilForslagMedStatus(status: Forslag.Status) {
+		forslagRepository.upsert(
+			forlengDeltakelseForslag(
+				deltakerId = deltaker.id,
+				opprettetAvArrangorAnsattId = koordinator.id,
+				status = status,
+			),
+		)
+	}
+
 	fun upsertForslag() = forslagRepository.upsert(forslag)
 
 	private fun opprettNavAnsattForForslag() {
@@ -91,13 +123,15 @@ class ForslagCtx(
 }
 
 fun forlengDeltakelseForslag(
+	deltakerId: UUID = UUID.randomUUID(),
+	opprettetAvArrangorAnsattId: UUID = UUID.randomUUID(),
 	sluttdato: LocalDate = LocalDate.now(),
 	begrunnelse: String = "Fordi...",
 	status: Forslag.Status = Forslag.Status.VenterPaSvar,
 ) = Forslag(
 	id = UUID.randomUUID(),
-	deltakerId = UUID.randomUUID(),
-	opprettetAvArrangorAnsattId = UUID.randomUUID(),
+	deltakerId = deltakerId,
+	opprettetAvArrangorAnsattId = opprettetAvArrangorAnsattId,
 	opprettet = LocalDateTime.now(),
 	begrunnelse = begrunnelse,
 	endring = Forslag.ForlengDeltakelse(sluttdato),

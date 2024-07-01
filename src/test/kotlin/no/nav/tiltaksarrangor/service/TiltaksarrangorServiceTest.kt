@@ -19,6 +19,9 @@ import no.nav.tiltaksarrangor.ingest.model.Oppholdsadresse
 import no.nav.tiltaksarrangor.ingest.model.Postboksadresse
 import no.nav.tiltaksarrangor.ingest.model.Vegadresse
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
+import no.nav.tiltaksarrangor.melding.MeldingProducer
+import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
+import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.model.Adressetype
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
@@ -61,6 +64,9 @@ class TiltaksarrangorServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
+	private val forslagRepository = ForslagRepository(template)
+	private val meldingProducer = mockk<MeldingProducer>(relaxUnitFun = true)
+	private val forslagService = ForslagService(forslagRepository, meldingProducer)
 	private val tilgangskontrollService = TilgangskontrollService(ansattService)
 	private val tiltaksarrangorService =
 		TiltaksarrangorService(
@@ -71,6 +77,7 @@ class TiltaksarrangorServiceTest {
 			endringsmeldingRepository,
 			auditLoggerService,
 			tilgangskontrollService,
+			forslagService,
 		)
 
 	@AfterEach

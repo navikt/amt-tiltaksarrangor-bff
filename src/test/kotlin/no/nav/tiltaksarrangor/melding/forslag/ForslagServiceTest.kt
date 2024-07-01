@@ -40,4 +40,16 @@ class ForslagServiceTest {
 			assertProducedForslag(opprettetForslag.id, opprettetForslag.endring::class)
 		}
 	}
+
+	@Test
+	fun `getAktiveForslag - filtrerer bort forslag uten riktig status`() {
+		with(ForslagCtx(forlengDeltakelseForslag())) {
+			upsertForslag()
+			medInaktiveForslag()
+
+			val aktiveForslag = forslagService.getAktiveForslag(deltaker.id)
+			aktiveForslag.size shouldBe 1
+			aktiveForslag.first().status shouldBe Forslag.Status.VenterPaSvar
+		}
+	}
 }

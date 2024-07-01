@@ -63,6 +63,12 @@ class ForslagRepository(
 		return template.queryForObject(sql, params, rowMapper)
 			?: throw NoSuchElementException("Noe gikk galt med upsert av forslag ${forslag.id}")
 	}
+
+	fun getForDeltaker(deltakerId: UUID): List<Forslag> {
+		val sql = "select * from forslag where deltaker_id = :deltaker_id"
+		val params = sqlParameters("deltaker_id" to deltakerId)
+		return template.query(sql, params, rowMapper)
+	}
 }
 
 fun toPGObject(value: Any?) = PGobject().also {

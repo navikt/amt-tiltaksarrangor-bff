@@ -44,4 +44,6 @@ class ForslagService(
 
 		return forslag
 	}
+
+	fun getAktiveForslag(deltakerId: UUID) = repository.getForDeltaker(deltakerId).filter { it.status is Forslag.Status.VenterPaSvar }
 }
