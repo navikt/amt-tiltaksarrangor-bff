@@ -73,6 +73,8 @@ spec:
       value: dev-gcp:amt:amt-arrangor
     - name: AMT_ARRANGOR_AAD_CLIENT_ID
       value: api://dev-gcp.amt.amt-arrangor/.default
+    - name: AMT_PERSON_AAD_CLIENT_ID
+      value: api://dev-gcp.amt.amt-person-service/.default
 
   observability:
     autoInstrumentation:

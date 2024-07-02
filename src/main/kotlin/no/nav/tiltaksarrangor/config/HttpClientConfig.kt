@@ -20,15 +20,7 @@ class HttpClientConfig {
 		oAuth2AccessTokenService: OAuth2AccessTokenService,
 	): OkHttpClient {
 		val registrationName = "amt-tiltak-tokenx"
-		val clientProperties =
-			clientConfigurationProperties.registration[registrationName]
-				?: throw RuntimeException("Fant ikke config for $registrationName")
-		return OkHttpClient.Builder()
-			.connectTimeout(5, TimeUnit.SECONDS)
-			.readTimeout(5, TimeUnit.SECONDS)
-			.followRedirects(false)
-			.addInterceptor(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
-			.build()
+		return buildClient(registrationName, clientConfigurationProperties, oAuth2AccessTokenService)
 	}
 
 	@Bean
@@ -37,15 +29,7 @@ class HttpClientConfig {
 		oAuth2AccessTokenService: OAuth2AccessTokenService,
 	): OkHttpClient {
 		val registrationName = "amt-arrangor-tokenx"
-		val clientProperties =
-			clientConfigurationProperties.registration[registrationName]
-				?: throw RuntimeException("Fant ikke config for $registrationName")
-		return OkHttpClient.Builder()
-			.connectTimeout(5, TimeUnit.SECONDS)
-			.readTimeout(5, TimeUnit.SECONDS)
-			.followRedirects(false)
-			.addInterceptor(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
-			.build()
+		return buildClient(registrationName, clientConfigurationProperties, oAuth2AccessTokenService)
 	}
 
 	@Bean
@@ -55,15 +39,16 @@ class HttpClientConfig {
 		oAuth2AccessTokenService: OAuth2AccessTokenService,
 	): OkHttpClient {
 		val registrationName = "amt-arrangor-aad"
-		val clientProperties =
-			clientConfigurationProperties.registration[registrationName]
-				?: throw RuntimeException("Fant ikke config for $registrationName")
-		return OkHttpClient.Builder()
-			.connectTimeout(5, TimeUnit.SECONDS)
-			.readTimeout(5, TimeUnit.SECONDS)
-			.followRedirects(false)
-			.addInterceptor(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
-			.build()
+		return buildClient(registrationName, clientConfigurationProperties, oAuth2AccessTokenService)
+	}
+
+	@Bean
+	fun amtPersonAADHttpClient(
+		clientConfigurationProperties: ClientConfigurationProperties,
+		oAuth2AccessTokenService: OAuth2AccessTokenService,
+	): OkHttpClient {
+		val registrationName = "amt-person-aad"
+		return buildClient(registrationName, clientConfigurationProperties, oAuth2AccessTokenService)
 	}
 
 	@Bean
@@ -72,6 +57,22 @@ class HttpClientConfig {
 			.connectTimeout(5, TimeUnit.SECONDS)
 			.readTimeout(5, TimeUnit.SECONDS)
 			.followRedirects(false)
+			.build()
+	}
+
+	private fun buildClient(
+		registrationName: String,
+		clientConfigurationProperties: ClientConfigurationProperties,
+		oAuth2AccessTokenService: OAuth2AccessTokenService,
+	): OkHttpClient {
+		val clientProperties =
+			clientConfigurationProperties.registration[registrationName]
+				?: error("Fant ikke config for $registrationName")
+		return OkHttpClient.Builder()
+			.connectTimeout(5, TimeUnit.SECONDS)
+			.readTimeout(5, TimeUnit.SECONDS)
+			.followRedirects(false)
+			.addInterceptor(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
 			.build()
 	}
 

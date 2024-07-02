@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.model
 
+import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -25,6 +26,7 @@ data class Deltaker(
 	val fjernesDato: LocalDateTime?,
 	val navInformasjon: NavInformasjon,
 	val veiledere: List<Veileder>,
+	val aktiveForslag: List<AktivtForslagResponse>,
 	val aktiveEndringsmeldinger: List<Endringsmelding>,
 	val historiskeEndringsmeldinger: List<Endringsmelding>,
 	val adresse: Adresse?,

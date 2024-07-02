@@ -2,6 +2,9 @@ package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
+import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
+import no.nav.tiltaksarrangor.melding.forslag.ForslagService
+import no.nav.tiltaksarrangor.melding.forslag.tilAktivtForslagResponse
 import no.nav.tiltaksarrangor.model.Adresse
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.DeltakerStatus
@@ -31,6 +34,7 @@ class TiltaksarrangorService(
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val auditLoggerService: AuditLoggerService,
 	private val tilgangskontrollService: TilgangskontrollService,
+	private val forslagService: ForslagService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -62,6 +66,8 @@ class TiltaksarrangorService(
 			ansattDbo = ansatt,
 		)
 
+		val aktiveForslag = forslagService.getAktiveForslag(deltakerId).map { it.tilAktivtForslagResponse() }
+
 		val endringsmeldinger = if (deltakerMedDeltakerliste.deltaker.adressebeskyttet && !ansattErVeileder) {
 			emptyList()
 		} else {
@@ -69,7 +75,7 @@ class TiltaksarrangorService(
 		}
 		val veiledere = ansattService.getVeiledereForDeltaker(deltakerId)
 
-		return tilDeltaker(deltakerMedDeltakerliste, veiledere, endringsmeldinger, ansattErVeileder)
+		return tilDeltaker(deltakerMedDeltakerliste, veiledere, endringsmeldinger, aktiveForslag, ansattErVeileder)
 	}
 
 	fun registrerVurdering(
@@ -127,6 +133,7 @@ class TiltaksarrangorService(
 		deltakerMedDeltakerliste: DeltakerMedDeltakerlisteDbo,
 		veiledere: List<Veileder>,
 		endringsmeldinger: List<EndringsmeldingDbo>,
+		aktiveForslag: List<AktivtForslagResponse>,
 		ansattErVeileder: Boolean,
 	): Deltaker {
 		val adressebeskyttet = deltakerMedDeltakerliste.deltaker.adressebeskyttet
@@ -172,6 +179,7 @@ class TiltaksarrangorService(
 						},
 				),
 			veiledere = veiledere,
+			aktiveForslag = aktiveForslag,
 			aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() }.sortedBy { it.sendt }.map { it.toEndringsmelding() },
 			historiskeEndringsmeldinger = endringsmeldinger.filter { !it.erAktiv() }.sortedByDescending { it.sendt }.map { it.toEndringsmelding() },
 			adresse = if (adressebeskyttet) null else deltakerMedDeltakerliste.getAdresse(),
@@ -180,31 +188,34 @@ class TiltaksarrangorService(
 			adressebeskyttet = adressebeskyttet,
 		)
 
-		return if (!adressebeskyttet || ansattErVeileder) {
-			deltaker
+		return if (adressebeskyttet && !ansattErVeileder) {
+			deltaker.utenPersonligInformasjon()
 		} else {
-			deltaker.copy(
-				fornavn = "",
-				mellomnavn = null,
-				etternavn = "",
-				fodselsnummer = "",
-				telefonnummer = null,
-				epost = null,
-				deltakelseProsent = null,
-				dagerPerUke = null,
-				bestillingTekst = null,
-				navInformasjon = NavInformasjon(
-					navkontor = null,
-					navVeileder = null,
-				),
-				aktiveEndringsmeldinger = emptyList(),
-				historiskeEndringsmeldinger = emptyList(),
-				gjeldendeVurderingFraArrangor = null,
-				historiskeVurderingerFraArrangor = null,
-			)
+			deltaker
 		}
 	}
 }
+
+fun Deltaker.utenPersonligInformasjon() = this.copy(
+	fornavn = "",
+	mellomnavn = null,
+	etternavn = "",
+	fodselsnummer = "",
+	telefonnummer = null,
+	epost = null,
+	deltakelseProsent = null,
+	dagerPerUke = null,
+	bestillingTekst = null,
+	navInformasjon = NavInformasjon(
+		navkontor = null,
+		navVeileder = null,
+	),
+	aktiveForslag = emptyList(),
+	aktiveEndringsmeldinger = emptyList(),
+	historiskeEndringsmeldinger = emptyList(),
+	gjeldendeVurderingFraArrangor = null,
+	historiskeVurderingerFraArrangor = null,
+)
 
 fun DeltakerMedDeltakerlisteDbo.getAdresse(): Adresse? {
 	if (deltaker.adresse == null) {

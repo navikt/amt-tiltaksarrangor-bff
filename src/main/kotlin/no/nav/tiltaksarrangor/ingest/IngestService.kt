@@ -9,6 +9,7 @@ import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
 import no.nav.tiltaksarrangor.ingest.model.DeltakerStatus
 import no.nav.tiltaksarrangor.ingest.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
+import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.SKJULES_ALLTID_STATUSER
 import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
@@ -19,6 +20,7 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -38,6 +40,7 @@ class IngestService(
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val amtArrangorClient: AmtArrangorClient,
 	private val unleashService: UnleashService,
+	private val navAnsattRepository: NavAnsattRepository,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -96,6 +99,11 @@ class IngestService(
 				log.info("Ignorert deltaker med id $deltakerId")
 			}
 		}
+	}
+
+	fun lagreNavAnsatt(id: UUID, navAnsatt: NavAnsatt) {
+		navAnsattRepository.upsert(navAnsatt)
+		log.info("Lagret nav-ansatt med id $id")
 	}
 
 	fun lagreEndringsmelding(endringsmeldingId: UUID, endringsmeldingDto: EndringsmeldingDto?) {

@@ -28,8 +28,10 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
 import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
+import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import no.nav.tiltaksarrangor.testutils.getVurderinger
 import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.BeforeEach
@@ -46,6 +48,7 @@ class IngestServiceTest {
 	private val endringsmeldingRepository = mockk<EndringsmeldingRepository>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val unleashService = mockk<UnleashService>()
+	private val navAnsattRepository = mockk<NavAnsattRepository>(relaxUnitFun = true)
 	private val ingestService =
 		IngestService(
 			arrangorRepository,
@@ -55,6 +58,7 @@ class IngestServiceTest {
 			endringsmeldingRepository,
 			amtArrangorClient,
 			unleashService,
+			navAnsattRepository,
 		)
 
 	private val arrangor =
@@ -793,5 +797,14 @@ class IngestServiceTest {
 		ingestService.lagreEndringsmelding(endringsmeldingId, endringsmeldingDto)
 
 		verify(exactly = 1) { endringsmeldingRepository.insertOrUpdateEndringsmelding(any()) }
+	}
+
+	@Test
+	internal fun `lagreNavAnsatt - ny ansatt - lagres`() {
+		val navAnsatt = getNavAnsatt()
+
+		ingestService.lagreNavAnsatt(navAnsatt.id, navAnsatt)
+
+		verify(exactly = 1) { navAnsattRepository.upsert(navAnsatt) }
 	}
 }
