@@ -45,6 +45,8 @@ class ForslagService(
 		return forslag
 	}
 
+	fun get(id: UUID) = repository.get(id)
+
 	fun getAktiveForslag(deltakerId: UUID) = repository.getForDeltaker(deltakerId).filter { it.status is Forslag.Status.VenterPaSvar }
 
 	fun delete(id: UUID) {
@@ -52,5 +54,25 @@ class ForslagService(
 		if (slettedeRader > 0) {
 			log.info("Slettet forslag $id")
 		}
+	}
+
+	fun tilbakekall(id: UUID, ansatt: AnsattDbo) {
+		val opprinneligForslag = repository.get(id).getOrThrow()
+
+		require(opprinneligForslag.status is Forslag.Status.VenterPaSvar) {
+			"Kan ikke tilbakekalle forslag $id med status ${opprinneligForslag.status.javaClass.simpleName}"
+		}
+
+		val tilbakekaltForslag = opprinneligForslag.copy(
+			status = Forslag.Status.Tilbakekalt(
+				tilbakekaltAvArrangorAnsattId = ansatt.id,
+				tilbakekalt = LocalDateTime.now(),
+			),
+		)
+
+		repository.delete(id)
+		meldingProducer.produce(tilbakekaltForslag)
+
+		log.info("Tilbakekalte forslag $id")
 	}
 }

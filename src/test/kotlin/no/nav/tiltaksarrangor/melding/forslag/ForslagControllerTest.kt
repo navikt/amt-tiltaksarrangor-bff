@@ -12,7 +12,9 @@ import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -20,10 +22,16 @@ import java.util.UUID
 class ForslagControllerTest : IntegrationTest() {
 	private val mediaTypeJson = "application/json".toMediaType()
 
+	@Autowired
+	private lateinit var forslagService: ForslagService
+
 	@Test
 	fun `skal teste token autentisering`() {
 		val requestBuilders = listOf(
 			Request.Builder().post(emptyRequest()).url("${serverUrl()}/tiltaksarrangor/deltaker/${UUID.randomUUID()}/forslag/forleng"),
+			Request.Builder()
+				.post(emptyRequest())
+				.url("${serverUrl()}/tiltaksarrangor/deltaker/${UUID.randomUUID()}/forslag/${UUID.randomUUID()}/tilbakekall"),
 		)
 		testTokenAutentisering(requestBuilders)
 	}
@@ -62,32 +70,83 @@ class ForslagControllerTest : IntegrationTest() {
 
 	@Test
 	fun `forleng - har ikke tilgang til deltakerliste - skal returnere 403`() {
-		with(DeltakerContext()) {
-			setKoordinatorDeltakerliste(UUID.randomUUID())
-
-			val response = sendForlengDeltakelseRequest(deltaker.id, koordinator.personIdent)
-
-			response.code shouldBe 403
+		testIkkeTilgangTilDeltakerliste { deltakerId, ansattPersonIdent ->
+			sendForlengDeltakelseRequest(deltakerId, ansattPersonIdent)
 		}
 	}
 
 	@Test
 	fun `forleng - deltaker adressebeskyttet, ansatt er ikke veileder - skal returnere 403`() {
-		with(DeltakerContext()) {
-			setDeltakerAdressebeskyttet()
-
-			val response = sendForlengDeltakelseRequest(deltaker.id, koordinator.personIdent)
-
-			response.code shouldBe 403
+		testDeltakerAdressebeskyttet { deltakerId, ansattPersonIdent ->
+			sendForlengDeltakelseRequest(deltakerId, ansattPersonIdent)
 		}
 	}
 
 	@Test
 	fun `forleng - deltaker skjult - skal returnere 400`() {
+		testDeltakerSkjult { deltakerId, ansattPersonIdent ->
+			sendForlengDeltakelseRequest(deltakerId, ansattPersonIdent)
+		}
+	}
+
+	@Test
+	fun `tilbakekall - aktivt forslag - skal returnere 200`() {
+		with(ForslagCtx(forlengDeltakelseForslag())) {
+			upsertForslag()
+			val response = sendTilbakekallRequest(forslag.id, deltaker.id, koordinator.personIdent)
+
+			response.code shouldBe 200
+
+			forslagService.get(forslag.id).isFailure shouldBe true
+		}
+	}
+
+	@Test
+	fun `tilbakekall - har ikke tilgang til deltakerliste - skal returnere 403`() {
+		testIkkeTilgangTilDeltakerliste { deltakerId, ansattPersonIdent ->
+			sendTilbakekallRequest(UUID.randomUUID(), deltakerId, ansattPersonIdent)
+		}
+	}
+
+	@Test
+	fun `tilbakekall - deltaker adressebeskyttet, ansatt er ikke veileder - skal returnere 403`() {
+		testDeltakerAdressebeskyttet { deltakerId, ansattPersonIdent ->
+			sendTilbakekallRequest(UUID.randomUUID(), deltakerId, ansattPersonIdent)
+		}
+	}
+
+	@Test
+	fun `tilbakekall - deltaker skjult - skal returnere 400`() {
+		testDeltakerSkjult { deltakerId, ansattPersonIdent ->
+			sendTilbakekallRequest(UUID.randomUUID(), deltakerId, ansattPersonIdent)
+		}
+	}
+
+	private fun testIkkeTilgangTilDeltakerliste(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
+		with(DeltakerContext()) {
+			setKoordinatorDeltakerliste(UUID.randomUUID())
+
+			val response = requestFunction(deltaker.id, koordinator.personIdent)
+
+			response.code shouldBe 403
+		}
+	}
+
+	private fun testDeltakerAdressebeskyttet(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
+		with(DeltakerContext()) {
+			setDeltakerAdressebeskyttet()
+
+			val response = requestFunction(deltaker.id, koordinator.personIdent)
+
+			response.code shouldBe 403
+		}
+	}
+
+	private fun testDeltakerSkjult(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
 		with(DeltakerContext()) {
 			setDeltakerSkjult()
 
-			val response = sendForlengDeltakelseRequest(deltaker.id, koordinator.personIdent)
+			val response = requestFunction(deltaker.id, koordinator.personIdent)
 
 			response.code shouldBe 400
 		}
@@ -103,6 +162,17 @@ class ForslagControllerTest : IntegrationTest() {
 		method = "POST",
 		path = "/tiltaksarrangor/deltaker/$deltakerId/forslag/forleng",
 		body = JsonUtils.objectMapper.writeValueAsString(request).toRequestBody(mediaTypeJson),
+		headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
+	)
+
+	private fun sendTilbakekallRequest(
+		forslagId: UUID,
+		deltakerId: UUID,
+		ansattIdent: String,
+	) = sendRequest(
+		method = "POST",
+		path = "/tiltaksarrangor/deltaker/$deltakerId/forslag/$forslagId/tilbakekall",
+		body = emptyRequest(),
 		headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
 	)
 }
