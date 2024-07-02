@@ -7,6 +7,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
@@ -20,6 +21,8 @@ import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
+import no.nav.tiltaksarrangor.melding.forslag.ForslagService
+import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
@@ -49,6 +52,7 @@ class IngestServiceTest {
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val unleashService = mockk<UnleashService>()
 	private val navAnsattRepository = mockk<NavAnsattRepository>(relaxUnitFun = true)
+	private val forslagService = mockk<ForslagService>(relaxUnitFun = true)
 	private val ingestService =
 		IngestService(
 			arrangorRepository,
@@ -59,6 +63,7 @@ class IngestServiceTest {
 			amtArrangorClient,
 			unleashService,
 			navAnsattRepository,
+			forslagService,
 		)
 
 	private val arrangor =
@@ -806,5 +811,63 @@ class IngestServiceTest {
 		ingestService.lagreNavAnsatt(navAnsatt.id, navAnsatt)
 
 		verify(exactly = 1) { navAnsattRepository.upsert(navAnsatt) }
+	}
+
+	@Test
+	internal fun `handleForslag - forslaget er aktivt - gjør ingenting`() {
+		val forslag = forlengDeltakelseForslag()
+
+		ingestService.handleMelding(forslag.id, forslag)
+
+		verify(exactly = 0) { forslagService.delete(forslag.id) }
+	}
+
+	@Test
+	internal fun `handleForslag - forslaget er tilbakekalt - gjør ingenting`() {
+		val forslag = forlengDeltakelseForslag(
+			status = Forslag.Status.Tilbakekalt(
+				UUID.randomUUID(),
+				LocalDateTime.now(),
+			),
+		)
+
+		ingestService.handleMelding(forslag.id, forslag)
+
+		verify(exactly = 0) { forslagService.delete(forslag.id) }
+	}
+
+	@Test
+	internal fun `handleForslag - forslaget er godkjent - sletter`() {
+		val forslag = forlengDeltakelseForslag(
+			status = Forslag.Status.Godkjent(
+				Forslag.NavAnsatt(
+					UUID.randomUUID(),
+					UUID.randomUUID(),
+				),
+				LocalDateTime.now(),
+			),
+		)
+
+		ingestService.handleMelding(forslag.id, forslag)
+
+		verify(exactly = 1) { forslagService.delete(forslag.id) }
+	}
+
+	@Test
+	internal fun `handleForslag - forslaget er avvist - sletter`() {
+		val forslag = forlengDeltakelseForslag(
+			status = Forslag.Status.Avvist(
+				Forslag.NavAnsatt(
+					UUID.randomUUID(),
+					UUID.randomUUID(),
+				),
+				LocalDateTime.now(),
+				"Fordi...",
+			),
+		)
+
+		ingestService.handleMelding(forslag.id, forslag)
+
+		verify(exactly = 1) { forslagService.delete(forslag.id) }
 	}
 }

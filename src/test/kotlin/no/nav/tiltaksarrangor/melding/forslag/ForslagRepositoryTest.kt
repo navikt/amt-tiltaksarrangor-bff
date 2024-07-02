@@ -46,4 +46,20 @@ class ForslagRepositoryTest {
 			oppdatertStatus.godkjentAv shouldBe nyStatus.godkjentAv
 		}
 	}
+
+	@Test
+	fun `delete - sletter forslag`() {
+		with(ForslagCtx(forlengDeltakelseForslag())) {
+			setForslagGodkjent()
+			upsertForslag()
+
+			repository.delete(forslag.id) shouldBe 1
+			repository.get(forslag.id).isFailure shouldBe true
+		}
+	}
+
+	@Test
+	fun `delete - forslag finnes ikke - returnerer antall slettede rader`() {
+		repository.delete(UUID.randomUUID()) shouldBe 0
+	}
 }

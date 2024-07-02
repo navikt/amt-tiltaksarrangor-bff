@@ -1,5 +1,7 @@
 package no.nav.tiltaksarrangor.ingest
 
+import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.AVSLUTTENDE_STATUSER
@@ -15,6 +17,7 @@ import no.nav.tiltaksarrangor.ingest.model.toAnsattDbo
 import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
+import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -41,6 +44,7 @@ class IngestService(
 	private val amtArrangorClient: AmtArrangorClient,
 	private val unleashService: UnleashService,
 	private val navAnsattRepository: NavAnsattRepository,
+	private val forslagService: ForslagService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -160,6 +164,30 @@ class IngestService(
 				?: throw RuntimeException("Kunne ikke hente arrangør med orgnummer $organisasjonsnummer")
 		arrangorRepository.insertOrUpdateArrangor(arrangor.toArrangorDbo())
 		return arrangor.id
+	}
+
+	fun handleMelding(id: UUID, melding: Melding?) {
+		if (melding == null) {
+			log.warn("Mottok tombstone for melding med id: $id")
+			forslagService.delete(id)
+			return
+		}
+		when (melding) {
+			is Forslag -> handleForslag(melding)
+		}
+	}
+
+	private fun handleForslag(forslag: Forslag) {
+		when (forslag.status) {
+			is Forslag.Status.Avvist,
+			is Forslag.Status.Godkjent,
+			-> forslagService.delete(forslag.id)
+			is Forslag.Status.Tilbakekalt,
+			Forslag.Status.VenterPaSvar,
+			-> {
+				log.debug("Håndterer ikke forslag {} med status {}", forslag.id, forslag.status.javaClass.simpleName)
+			}
+		}
 	}
 }
 

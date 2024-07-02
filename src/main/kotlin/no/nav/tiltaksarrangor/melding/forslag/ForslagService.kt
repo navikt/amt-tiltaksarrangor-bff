@@ -46,4 +46,11 @@ class ForslagService(
 	}
 
 	fun getAktiveForslag(deltakerId: UUID) = repository.getForDeltaker(deltakerId).filter { it.status is Forslag.Status.VenterPaSvar }
+
+	fun delete(id: UUID) {
+		val slettedeRader = repository.delete(id)
+		if (slettedeRader > 0) {
+			log.info("Slettet forslag $id")
+		}
+	}
 }
