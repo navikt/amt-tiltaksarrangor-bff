@@ -50,7 +50,7 @@ data class AktivtForslagResponse(
 
 fun Forslag.tilAktivtForslagResponse(): AktivtForslagResponse {
 	require(this.status is Forslag.Status.VenterPaSvar) {
-		"Forslag ${this.id} kan ikke mappes til VenterPaSvarForslagResponse"
+		"Forslag ${this.id} kan ikke mappes til AktivtForslagResponse pga feil status"
 	}
 	return AktivtForslagResponse(
 		this.id,

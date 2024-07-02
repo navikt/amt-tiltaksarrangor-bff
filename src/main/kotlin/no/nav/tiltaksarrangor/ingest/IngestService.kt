@@ -103,7 +103,7 @@ class IngestService(
 
 	fun lagreNavAnsatt(id: UUID, navAnsatt: NavAnsatt) {
 		navAnsattRepository.upsert(navAnsatt)
-		log.info("Lagret ansatt med id $id")
+		log.info("Lagret nav-ansatt med id $id")
 	}
 
 	fun lagreEndringsmelding(endringsmeldingId: UUID, endringsmeldingDto: EndringsmeldingDto?) {
