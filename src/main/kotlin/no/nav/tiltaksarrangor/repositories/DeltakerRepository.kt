@@ -218,6 +218,10 @@ class DeltakerRepository(
 			"DELETE FROM endringsmelding WHERE deltaker_id = :deltaker_id",
 			sqlParameters("deltaker_id" to deltakerId),
 		)
+		template.update(
+			"DELETE FROM forslag WHERE deltaker_id = :deltaker_id",
+			sqlParameters("deltaker_id" to deltakerId),
+		)
 		return template.update(
 			"DELETE FROM deltaker WHERE id = :id",
 			sqlParameters("id" to deltakerId),

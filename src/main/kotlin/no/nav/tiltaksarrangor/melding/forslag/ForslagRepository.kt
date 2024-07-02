@@ -64,10 +64,27 @@ class ForslagRepository(
 			?: throw NoSuchElementException("Noe gikk galt med upsert av forslag ${forslag.id}")
 	}
 
+	fun get(id: UUID): Result<Forslag> {
+		val sql = "select * from forslag where id = :id"
+		val params = sqlParameters("id" to id)
+
+		return template
+			.query(sql, params, rowMapper)
+			.firstOrNull()
+			?.let { Result.success(it) }
+			?: Result.failure(NoSuchElementException("Fant ikke forslag med id $id"))
+	}
+
 	fun getForDeltaker(deltakerId: UUID): List<Forslag> {
 		val sql = "select * from forslag where deltaker_id = :deltaker_id"
 		val params = sqlParameters("deltaker_id" to deltakerId)
 		return template.query(sql, params, rowMapper)
+	}
+
+	fun delete(id: UUID): Int {
+		val sql = "delete from forslag where id = :id"
+		val params = sqlParameters("id" to id)
+		return template.update(sql, params)
 	}
 }
 

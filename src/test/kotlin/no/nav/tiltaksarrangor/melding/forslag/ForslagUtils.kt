@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.melding.forslag
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.AsyncUtils
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
@@ -154,4 +155,21 @@ fun <T : Forslag.Endring> assertProducedForslag(forslagId: UUID, endringstype: K
 	}
 
 	consumer.stop()
+}
+
+fun getProducedForslag(id: UUID): Forslag {
+	val cache = mutableMapOf<UUID, Forslag>()
+
+	val consumer = stringStringConsumer(MELDING_TOPIC) { k, v ->
+		cache[UUID.fromString(k)] = objectMapper.readValue(v)
+	}
+
+	consumer.run()
+
+	AsyncUtils.eventually {
+		cache[id] shouldNotBe null
+	}
+	consumer.stop()
+
+	return cache[id]!!
 }

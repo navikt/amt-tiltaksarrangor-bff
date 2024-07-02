@@ -10,6 +10,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -50,6 +51,33 @@ class ForslagServiceTest {
 			val aktiveForslag = forslagService.getAktiveForslag(deltaker.id)
 			aktiveForslag.size shouldBe 1
 			aktiveForslag.first().status shouldBe Forslag.Status.VenterPaSvar
+		}
+	}
+
+	@Test
+	fun `tilbakekall - forslag er aktivt - sletter og produserer forslag med riktig status`() {
+		with(ForslagCtx(forlengDeltakelseForslag())) {
+			upsertForslag()
+
+			forslagService.tilbakekall(forslag.id, koordinator)
+
+			val tilbakekaltForslag = getProducedForslag(forslag.id)
+			val status = tilbakekaltForslag.status as Forslag.Status.Tilbakekalt
+
+			status.tilbakekalt shouldBeCloseTo LocalDateTime.now()
+			status.tilbakekaltAvArrangorAnsattId shouldBe koordinator.id
+		}
+	}
+
+	@Test
+	fun `tilbakekall - forslag er ikke aktivt - feiler`() {
+		with(ForslagCtx(forlengDeltakelseForslag())) {
+			setForslagGodkjent()
+			upsertForslag()
+
+			assertThrows<IllegalArgumentException> {
+				forslagService.tilbakekall(forslag.id, koordinator)
+			}
 		}
 	}
 }

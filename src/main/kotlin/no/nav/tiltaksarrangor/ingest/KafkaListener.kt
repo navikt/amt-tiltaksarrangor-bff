@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.ingest
 
+import no.nav.tiltaksarrangor.melding.MELDING_TOPIC
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
@@ -19,7 +20,15 @@ class KafkaListener(
 	val ingestService: IngestService,
 ) {
 	@KafkaListener(
-		topics = [ARRANGOR_TOPIC, ARRANGOR_ANSATT_TOPIC, DELTAKERLISTE_TOPIC, DELTAKER_TOPIC, ENDRINGSMELDING_TOPIC, NAV_ANSATT_TOPIC],
+		topics = [
+			ARRANGOR_TOPIC,
+			ARRANGOR_ANSATT_TOPIC,
+			DELTAKERLISTE_TOPIC,
+			DELTAKER_TOPIC,
+			ENDRINGSMELDING_TOPIC,
+			NAV_ANSATT_TOPIC,
+			MELDING_TOPIC,
+		],
 		properties = ["auto.offset.reset = earliest"],
 		containerFactory = "kafkaListenerContainerFactory",
 	)
@@ -31,6 +40,7 @@ class KafkaListener(
 			DELTAKER_TOPIC -> ingestService.lagreDeltaker(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			ENDRINGSMELDING_TOPIC -> ingestService.lagreEndringsmelding(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			NAV_ANSATT_TOPIC -> ingestService.lagreNavAnsatt(UUID.fromString(cr.key()), fromJsonString(cr.value()))
+			MELDING_TOPIC -> ingestService.handleMelding(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			else -> throw IllegalStateException("Mottok melding på ukjent topic: ${cr.topic()}")
 		}
 		acknowledgment.acknowledge()
