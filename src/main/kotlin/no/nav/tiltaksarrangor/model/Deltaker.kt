@@ -39,6 +39,7 @@ data class Deltaker(
 		val startDato: LocalDate?,
 		val sluttDato: LocalDate?,
 		val erKurs: Boolean,
+		val tiltakstype: String,
 	)
 }
 

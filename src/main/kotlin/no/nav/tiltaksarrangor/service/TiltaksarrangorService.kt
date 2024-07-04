@@ -145,6 +145,7 @@ class TiltaksarrangorService(
 					startDato = deltakerMedDeltakerliste.deltakerliste.startDato,
 					sluttDato = deltakerMedDeltakerliste.deltakerliste.sluttDato,
 					erKurs = deltakerMedDeltakerliste.deltakerliste.erKurs,
+					tiltakstype = deltakerMedDeltakerliste.deltakerliste.tiltakType,
 				),
 			fornavn = deltakerMedDeltakerliste.deltaker.fornavn,
 			mellomnavn = deltakerMedDeltakerliste.deltaker.mellomnavn,
