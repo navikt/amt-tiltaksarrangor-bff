@@ -128,19 +128,6 @@ class RyddejobbTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker er skjult - sletter deltaker`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerId = UUID.randomUUID()
-		deltakerRepository.insertOrUpdateDeltaker(
-			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(38), erSkjult = true),
-		)
-
-		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
-
-		deltakerRepository.getDeltaker(deltakerId) shouldBe null
-	}
-
-	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - ingenting skal slettes - sletter ingenting`() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerId = UUID.randomUUID()

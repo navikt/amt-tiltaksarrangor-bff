@@ -360,7 +360,7 @@ class DeltakerRepository(
 			"""
 			SELECT id
 			FROM deltaker
-			WHERE skjult_dato IS NOT NULL OR (status IN ('HAR_SLUTTET','IKKE_AKTUELL','AVBRUTT','FULLFORT') AND status_gyldig_fra < :slettesDato)
+			WHERE status IN ('HAR_SLUTTET','IKKE_AKTUELL','AVBRUTT','FULLFORT') AND status_gyldig_fra < :slettesDato
 			""".trimIndent(),
 			sqlParameters("slettesDato" to slettesDato),
 		) { rs, _ ->
