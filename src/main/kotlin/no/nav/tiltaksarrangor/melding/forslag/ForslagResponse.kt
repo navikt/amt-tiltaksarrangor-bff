@@ -43,7 +43,7 @@ data class ForslagResponse(
 data class AktivtForslagResponse(
 	val id: UUID,
 	val opprettet: LocalDateTime,
-	val begrunnelse: String,
+	val begrunnelse: String?,
 	val endring: Forslag.Endring,
 	val status: ForslagResponse.Status.VenterPaSvar = ForslagResponse.Status.VenterPaSvar,
 )

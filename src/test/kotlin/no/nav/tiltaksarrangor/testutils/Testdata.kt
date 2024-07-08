@@ -26,9 +26,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-fun getDeltakerliste(arrangorId: UUID): DeltakerlisteDbo {
+fun getDeltakerliste(arrangorId: UUID) = getDeltakerliste(id = UUID.randomUUID(), arrangorId = arrangorId)
+
+fun getDeltakerliste(id: UUID = UUID.randomUUID(), arrangorId: UUID): DeltakerlisteDbo {
 	return DeltakerlisteDbo(
-		id = UUID.randomUUID(),
+		id = id,
 		navn = "Gjennomføring 1",
 		status = DeltakerlisteStatus.GJENNOMFORES,
 		arrangorId = arrangorId,
@@ -67,11 +69,11 @@ fun getDeltaker(
 		sluttdato = null,
 		innsoktDato = LocalDate.now(),
 		bestillingstekst = "tekst",
-		navKontor = null,
-		navVeilederId = null,
-		navVeilederEpost = null,
-		navVeilederNavn = null,
-		navVeilederTelefon = null,
+		navKontor = "1234",
+		navVeilederId = UUID.randomUUID(),
+		navVeilederEpost = "epost@nav.no",
+		navVeilederNavn = "Foo Bar",
+		navVeilederTelefon = "1234",
 		skjultAvAnsattId = null,
 		skjultDato = null,
 		adressebeskyttet = adressebeskyttet,
