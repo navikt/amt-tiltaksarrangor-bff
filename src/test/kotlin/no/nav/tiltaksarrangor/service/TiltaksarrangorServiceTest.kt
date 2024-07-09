@@ -122,7 +122,8 @@ class TiltaksarrangorServiceTest {
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
-		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(skjultDato = LocalDateTime.now(), skjultAvAnsattId = UUID.randomUUID())
+		val deltaker =
+			getDeltaker(deltakerId, deltakerliste.id).copy(skjultDato = LocalDateTime.now(), skjultAvAnsattId = UUID.randomUUID())
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
@@ -673,7 +674,11 @@ class TiltaksarrangorServiceTest {
 			),
 		)
 
-		tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null))
+		tiltaksarrangorService.registrerVurdering(
+			personIdent,
+			deltakerId,
+			RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null),
+		)
 
 		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
 		deltakerFraDb?.vurderingerFraArrangor?.size shouldBe 2
@@ -708,7 +713,11 @@ class TiltaksarrangorServiceTest {
 		)
 
 		assertThrows<IllegalStateException> {
-			tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null))
+			tiltaksarrangorService.registrerVurdering(
+				personIdent,
+				deltakerId,
+				RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null),
+			)
 		}
 
 		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
@@ -808,7 +817,11 @@ class TiltaksarrangorServiceTest {
 			),
 		)
 
-		tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null))
+		tiltaksarrangorService.registrerVurdering(
+			personIdent,
+			deltakerId,
+			RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null),
+		)
 
 		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
 		deltakerFraDb?.vurderingerFraArrangor?.size shouldBe 2
@@ -857,7 +870,11 @@ class TiltaksarrangorServiceTest {
 		)
 
 		assertThrows<UnauthorizedException> {
-			tiltaksarrangorService.registrerVurdering(personIdent, deltakerId, RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null))
+			tiltaksarrangorService.registrerVurdering(
+				personIdent,
+				deltakerId,
+				RegistrerVurderingRequest(Vurderingstype.OPPFYLLER_KRAVENE, null),
+			)
 		}
 	}
 

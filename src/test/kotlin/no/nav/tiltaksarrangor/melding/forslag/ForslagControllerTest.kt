@@ -2,9 +2,13 @@ package no.nav.tiltaksarrangor.melding.forslag
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
+import no.nav.amt.lib.models.arrangor.melding.EndringAarsak
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.IntegrationTest
+import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.utils.JsonUtils
@@ -22,16 +26,29 @@ import java.util.UUID
 class ForslagControllerTest : IntegrationTest() {
 	private val mediaTypeJson = "application/json".toMediaType()
 
+	private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(42), "Forlengelse fordi...")
+	private val avsluttDeltakelseRequest =
+		AvsluttDeltakelseRequest(LocalDate.now().plusWeeks(1), EndringAarsak.FattJobb, "Avslutning fordi...")
+	private val ikkeAktuellRequest = IkkeAktuellRequest(EndringAarsak.FattJobb, "Ikke aktuell fordi...")
+
+	val requests = listOf(
+		forlengDeltakelseRequest,
+		avsluttDeltakelseRequest,
+		ikkeAktuellRequest,
+	)
+
 	@Autowired
 	private lateinit var forslagService: ForslagService
 
 	@Test
 	fun `skal teste token autentisering`() {
+		val url = "${serverUrl()}/tiltaksarrangor/deltaker/${UUID.randomUUID()}/forslag"
+
 		val requestBuilders = listOf(
-			Request.Builder().post(emptyRequest()).url("${serverUrl()}/tiltaksarrangor/deltaker/${UUID.randomUUID()}/forslag/forleng"),
-			Request.Builder()
-				.post(emptyRequest())
-				.url("${serverUrl()}/tiltaksarrangor/deltaker/${UUID.randomUUID()}/forslag/${UUID.randomUUID()}/tilbakekall"),
+			Request.Builder().post(emptyRequest()).url("$url/forleng"),
+			Request.Builder().post(emptyRequest()).url("$url/avslutt"),
+			Request.Builder().post(emptyRequest()).url("$url/ikke-aktuell"),
+			Request.Builder().post(emptyRequest()).url("$url/${UUID.randomUUID()}/tilbakekall"),
 		)
 		testTokenAutentisering(requestBuilders)
 	}
@@ -40,52 +57,79 @@ class ForslagControllerTest : IntegrationTest() {
 		requestBuilders.forEach {
 			val utenTokenResponse = client.newCall(it.build()).execute()
 			utenTokenResponse.code shouldBe 401
-			val feilTokenResponse = client.newCall(
-				it.header(
-					name = "Authorization",
-					value = "Bearer ${mockOAuth2Server.issueToken("ikke-azuread").serialize()}",
-				)
-					.build(),
-			).execute()
+			val feilTokenResponse = client
+				.newCall(
+					it
+						.header(
+							name = "Authorization",
+							value = "Bearer ${mockOAuth2Server.issueToken("ikke-azuread").serialize()}",
+						).build(),
+				).execute()
 			feilTokenResponse.code shouldBe 401
 		}
 	}
 
 	@Test
+	fun `forslag - har ikke tilgang til deltakerliste - skal returnere 403`() {
+		requests.forEach {
+			testIkkeTilgangTilDeltakerliste { deltakerId, ansattPersonIdent ->
+				it.send(deltakerId, ansattPersonIdent)
+			}
+		}
+
+		testIkkeTilgangTilDeltakerliste { deltakerId, ansattPersonIdent ->
+			sendTilbakekallRequest(UUID.randomUUID(), deltakerId, ansattPersonIdent)
+		}
+	}
+
+	@Test
+	fun `forslag - deltaker adressebeskyttet, ansatt er ikke veileder - skal returnere 403`() {
+		requests.forEach {
+			testDeltakerAdressebeskyttet { deltakerId, ansattPersonIdent ->
+				it.send(deltakerId, ansattPersonIdent)
+			}
+		}
+
+		testDeltakerAdressebeskyttet { deltakerId, ansattPersonIdent ->
+			sendTilbakekallRequest(UUID.randomUUID(), deltakerId, ansattPersonIdent)
+		}
+	}
+
+	@Test
+	fun `forslag - deltaker skjult - skal returnere 400`() {
+		requests.forEach {
+			testDeltakerSkjult { deltakerId, ansattPersonIdent ->
+				it.send(deltakerId, ansattPersonIdent)
+			}
+		}
+
+		testDeltakerSkjult { deltakerId, ansattPersonIdent ->
+			sendTilbakekallRequest(UUID.randomUUID(), deltakerId, ansattPersonIdent)
+		}
+	}
+
+	@Test
 	fun `forleng - nytt forslag - skal returnere 200 og riktig response`() {
-		with(DeltakerContext()) {
-			val response = sendForlengDeltakelseRequest(deltaker.id, koordinator.personIdent)
-
-			response.code shouldBe 200
-
-			val aktivtForslag = objectMapper.readValue<AktivtForslagResponse>(response.body!!.string())
-			aktivtForslag.status shouldBe ForslagResponse.Status.VenterPaSvar
-			aktivtForslag.begrunnelse shouldBe forlengDeltakelseRequest.begrunnelse
-			aktivtForslag.opprettet shouldBeCloseTo LocalDateTime.now()
-
-			val endring = aktivtForslag.endring as Forslag.ForlengDeltakelse
+		testOpprettetForslag(forlengDeltakelseRequest) { endring ->
+			endring as Forslag.ForlengDeltakelse
 			endring.sluttdato shouldBe forlengDeltakelseRequest.sluttdato
 		}
 	}
 
 	@Test
-	fun `forleng - har ikke tilgang til deltakerliste - skal returnere 403`() {
-		testIkkeTilgangTilDeltakerliste { deltakerId, ansattPersonIdent ->
-			sendForlengDeltakelseRequest(deltakerId, ansattPersonIdent)
+	fun `avslutt - nytt forslag - skal returnere 200 og riktig response`() {
+		testOpprettetForslag(avsluttDeltakelseRequest) { endring ->
+			endring as Forslag.AvsluttDeltakelse
+			endring.sluttdato shouldBe avsluttDeltakelseRequest.sluttdato
+			endring.aarsak shouldBe avsluttDeltakelseRequest.aarsak
 		}
 	}
 
 	@Test
-	fun `forleng - deltaker adressebeskyttet, ansatt er ikke veileder - skal returnere 403`() {
-		testDeltakerAdressebeskyttet { deltakerId, ansattPersonIdent ->
-			sendForlengDeltakelseRequest(deltakerId, ansattPersonIdent)
-		}
-	}
-
-	@Test
-	fun `forleng - deltaker skjult - skal returnere 400`() {
-		testDeltakerSkjult { deltakerId, ansattPersonIdent ->
-			sendForlengDeltakelseRequest(deltakerId, ansattPersonIdent)
+	fun `ikke-aktuell - nytt forslag - skal returnere 200 og riktig response`() {
+		testOpprettetForslag(ikkeAktuellRequest) { endring ->
+			endring as Forslag.IkkeAktuell
+			endring.aarsak shouldBe avsluttDeltakelseRequest.aarsak
 		}
 	}
 
@@ -101,24 +145,17 @@ class ForslagControllerTest : IntegrationTest() {
 		}
 	}
 
-	@Test
-	fun `tilbakekall - har ikke tilgang til deltakerliste - skal returnere 403`() {
-		testIkkeTilgangTilDeltakerliste { deltakerId, ansattPersonIdent ->
-			sendTilbakekallRequest(UUID.randomUUID(), deltakerId, ansattPersonIdent)
-		}
-	}
+	private fun testOpprettetForslag(request: ForslagRequest, block: (endring: Forslag.Endring) -> Unit) {
+		with(DeltakerContext()) {
+			val response = request.send(deltaker.id, koordinator.personIdent)
+			response.code shouldBe 200
 
-	@Test
-	fun `tilbakekall - deltaker adressebeskyttet, ansatt er ikke veileder - skal returnere 403`() {
-		testDeltakerAdressebeskyttet { deltakerId, ansattPersonIdent ->
-			sendTilbakekallRequest(UUID.randomUUID(), deltakerId, ansattPersonIdent)
-		}
-	}
+			val aktivtForslag = objectMapper.readValue<AktivtForslagResponse>(response.body!!.string())
+			aktivtForslag.status shouldBe ForslagResponse.Status.VenterPaSvar
+			aktivtForslag.begrunnelse shouldBe request.begrunnelse
+			aktivtForslag.opprettet shouldBeCloseTo LocalDateTime.now()
 
-	@Test
-	fun `tilbakekall - deltaker skjult - skal returnere 400`() {
-		testDeltakerSkjult { deltakerId, ansattPersonIdent ->
-			sendTilbakekallRequest(UUID.randomUUID(), deltakerId, ansattPersonIdent)
+			block(aktivtForslag.endring)
 		}
 	}
 
@@ -152,18 +189,22 @@ class ForslagControllerTest : IntegrationTest() {
 		}
 	}
 
-	private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(42), "Fordi")
+	private fun url(deltakerId: UUID) = "/tiltaksarrangor/deltaker/$deltakerId/forslag"
 
-	private fun sendForlengDeltakelseRequest(
-		deltakerId: UUID,
-		ansattIdent: String,
-		request: ForlengDeltakelseRequest = forlengDeltakelseRequest,
-	) = sendRequest(
-		method = "POST",
-		path = "/tiltaksarrangor/deltaker/$deltakerId/forslag/forleng",
-		body = JsonUtils.objectMapper.writeValueAsString(request).toRequestBody(mediaTypeJson),
-		headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
-	)
+	private fun ForslagRequest.send(deltakerId: UUID, ansattIdent: String): Response {
+		val path = "${url(deltakerId)}/" + when (this) {
+			is AvsluttDeltakelseRequest -> "avslutt"
+			is ForlengDeltakelseRequest -> "forleng"
+			is IkkeAktuellRequest -> "ikke-aktuell"
+		}
+
+		return sendRequest(
+			method = "POST",
+			path = path,
+			body = JsonUtils.objectMapper.writeValueAsString(this).toRequestBody(mediaTypeJson),
+			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
+		)
+	}
 
 	private fun sendTilbakekallRequest(
 		forslagId: UUID,
@@ -171,7 +212,7 @@ class ForslagControllerTest : IntegrationTest() {
 		ansattIdent: String,
 	) = sendRequest(
 		method = "POST",
-		path = "/tiltaksarrangor/deltaker/$deltakerId/forslag/$forslagId/tilbakekall",
+		path = "${url(deltakerId)}/$forslagId/tilbakekall",
 		body = emptyRequest(),
 		headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
 	)

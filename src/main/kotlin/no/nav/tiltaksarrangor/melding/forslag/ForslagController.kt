@@ -1,7 +1,10 @@
 package no.nav.tiltaksarrangor.melding.forslag
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
+import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
@@ -33,16 +36,21 @@ class ForslagController(
 	fun forleng(
 		@PathVariable deltakerId: UUID,
 		@RequestBody request: ForlengDeltakelseRequest,
-	): AktivtForslagResponse {
-		return medAnsattOgDeltaker(deltakerId) { ansatt, deltaker ->
-			val forslag = forslagService.opprettForslag(
-				request,
-				ansatt,
-				deltaker,
-			)
-			forslag.tilAktivtForslagResponse()
-		}
-	}
+	): AktivtForslagResponse = opprettForslag(deltakerId, request)
+
+	@PostMapping("/avslutt")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun avslutt(
+		@PathVariable deltakerId: UUID,
+		@RequestBody request: AvsluttDeltakelseRequest,
+	): AktivtForslagResponse = opprettForslag(deltakerId, request)
+
+	@PostMapping("/ikke-aktuell")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun ikkeAktuell(
+		@PathVariable deltakerId: UUID,
+		@RequestBody request: IkkeAktuellRequest,
+	): AktivtForslagResponse = opprettForslag(deltakerId, request)
 
 	@PostMapping("/{forslagId}/tilbakekall")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
@@ -55,10 +63,20 @@ class ForslagController(
 		}
 	}
 
+	private fun opprettForslag(deltakerId: UUID, request: ForslagRequest) = medAnsattOgDeltaker(deltakerId) { ansatt, deltaker ->
+		val forslag = forslagService.opprettForslag(
+			request,
+			ansatt,
+			deltaker,
+		)
+		forslag.tilAktivtForslagResponse()
+	}
+
 	private fun <T> medAnsattOgDeltaker(deltakerId: UUID, block: (ansatt: AnsattDbo, deltaker: DeltakerMedDeltakerlisteDbo) -> T): T {
 		val personident = tokenService.getPersonligIdentTilInnloggetAnsatt()
 		val ansatt = ansattService.getAnsattMedRoller(personident)
-		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+		val deltakerMedDeltakerliste = deltakerRepository
+			.getDeltakerMedDeltakerliste(deltakerId)
 			?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 

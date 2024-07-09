@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.testutils
 
+import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -14,14 +15,14 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 open class DeltakerContext(
+	var deltaker: DeltakerDbo = getDeltaker(UUID.randomUUID()),
 	val arrangor: ArrangorDbo = getArrangor(),
-	val deltakerliste: DeltakerlisteDbo = getDeltakerliste(arrangorId = arrangor.id),
+	val deltakerliste: DeltakerlisteDbo = getDeltakerliste(deltaker.deltakerlisteId, arrangorId = arrangor.id),
 	val koordinator: AnsattDbo = getKoordinator(
 		id = UUID.randomUUID(),
 		arrangorId = arrangor.id,
 		deltakerlisteId = deltakerliste.id,
 	),
-	val deltaker: DeltakerDbo = getDeltaker(UUID.randomUUID(), deltakerlisteId = deltakerliste.id),
 ) {
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)
@@ -46,6 +47,11 @@ open class DeltakerContext(
 	}
 
 	fun setDeltakerSkjult() {
-		deltakerRepository.insertOrUpdateDeltaker(deltaker.copy(skjultDato = LocalDateTime.now()))
+		deltakerRepository.insertOrUpdateDeltaker(deltaker.copy(skjultDato = LocalDateTime.now(), skjultAvAnsattId = koordinator.id))
+	}
+
+	fun setIkkeAktuell() {
+		deltaker = deltaker.copy(status = StatusType.IKKE_AKTUELL)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 	}
 }

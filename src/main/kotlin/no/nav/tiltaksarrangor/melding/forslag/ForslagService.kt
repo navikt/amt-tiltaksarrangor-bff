@@ -2,8 +2,10 @@ package no.nav.tiltaksarrangor.melding.forslag
 
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.melding.MeldingProducer
+import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import org.slf4j.LoggerFactory
@@ -25,6 +27,8 @@ class ForslagService(
 	): Forslag {
 		val endring = when (request) {
 			is ForlengDeltakelseRequest -> Forslag.ForlengDeltakelse(request.sluttdato)
+			is AvsluttDeltakelseRequest -> Forslag.AvsluttDeltakelse(request.sluttdato, request.aarsak)
+			is IkkeAktuellRequest -> Forslag.IkkeAktuell(request.aarsak)
 		}
 
 		val forslag = repository.upsert(

@@ -29,7 +29,7 @@ val mockkVersion = "1.13.11"
 val commonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 val unleashVersion = "9.2.2"
 val ktlintVersion = "1.2.1"
-val amtLibVersion = "1.2024.06.25_07.43-f8de15457006"
+val amtLibVersion = "1.2024.07.09_12.04-357a62ba5a63"
 
 extra["postgresql.version"] = "42.7.2"
 
