@@ -133,25 +133,22 @@ class IngestService(
 		return true
 	}
 
-	private fun DeltakerDto.harNyligSluttet(): Boolean {
-		return !LocalDateTime.now().isAfter(status.gyldigFra.plusDays(DAGER_AVSLUTTET_DELTAKER_VISES)) &&
+	private fun DeltakerDto.harNyligSluttet(): Boolean =
+		!LocalDateTime.now().isAfter(status.gyldigFra.plusDays(DAGER_AVSLUTTET_DELTAKER_VISES)) &&
 			(sluttdato == null || sluttdato.isAfter(LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES)))
-	}
 
-	private fun toDeltakerlisteDbo(deltakerlisteDto: DeltakerlisteDto): DeltakerlisteDbo {
-		return DeltakerlisteDbo(
-			id = deltakerlisteDto.id,
-			navn = deltakerlisteDto.navn,
-			status = deltakerlisteDto.toDeltakerlisteStatus(),
-			arrangorId = getArrangorId(deltakerlisteDto.virksomhetsnummer),
-			tiltakNavn = deltakerlisteDto.tiltakstype.navn,
-			tiltakType = deltakerlisteDto.tiltakstype.arenaKode,
-			startDato = deltakerlisteDto.startDato,
-			sluttDato = deltakerlisteDto.sluttDato,
-			erKurs = deltakerlisteDto.erKurs(),
-			tilgjengeligForArrangorFraOgMedDato = deltakerlisteDto.tilgjengeligForArrangorFraOgMedDato,
-		)
-	}
+	private fun toDeltakerlisteDbo(deltakerlisteDto: DeltakerlisteDto): DeltakerlisteDbo = DeltakerlisteDbo(
+		id = deltakerlisteDto.id,
+		navn = deltakerlisteDto.navn,
+		status = deltakerlisteDto.toDeltakerlisteStatus(),
+		arrangorId = getArrangorId(deltakerlisteDto.virksomhetsnummer),
+		tiltakNavn = deltakerlisteDto.tiltakstype.navn,
+		tiltakType = deltakerlisteDto.tiltakstype.arenaKode,
+		startDato = deltakerlisteDto.startDato,
+		sluttDato = deltakerlisteDto.sluttDato,
+		erKurs = deltakerlisteDto.erKurs(),
+		tilgjengeligForArrangorFraOgMedDato = deltakerlisteDto.tilgjengeligForArrangorFraOgMedDato,
+	)
 
 	private fun getArrangorId(organisasjonsnummer: String): UUID {
 		val arrangorId = arrangorRepository.getArrangor(organisasjonsnummer)?.id
@@ -182,6 +179,7 @@ class IngestService(
 			is Forslag.Status.Avvist,
 			is Forslag.Status.Godkjent,
 			-> forslagService.delete(forslag.id)
+			is Forslag.Status.Erstattet,
 			is Forslag.Status.Tilbakekalt,
 			Forslag.Status.VenterPaSvar,
 			-> {
@@ -208,12 +206,15 @@ fun DeltakerlisteDto.skalLagres(): Boolean {
 	if (!stottedeTiltak.contains(tiltakstype.arenaKode)) {
 		return false
 	}
-	if (status == DeltakerlisteDto.Status.GJENNOMFORES || status == DeltakerlisteDto.Status.APENT_FOR_INNSOK ||
+	if (status == DeltakerlisteDto.Status.GJENNOMFORES ||
+		status == DeltakerlisteDto.Status.APENT_FOR_INNSOK ||
 		status == DeltakerlisteDto.Status.PLANLAGT
 	) {
 		return true
-	} else if (status == DeltakerlisteDto.Status.AVSLUTTET && sluttDato != null &&
-		LocalDate.now()
+	} else if (status == DeltakerlisteDto.Status.AVSLUTTET &&
+		sluttDato != null &&
+		LocalDate
+			.now()
 			.isBefore(sluttDato.plusDays(15))
 	) {
 		return true

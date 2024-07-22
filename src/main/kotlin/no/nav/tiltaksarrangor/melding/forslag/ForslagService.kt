@@ -42,11 +42,29 @@ class ForslagService(
 				status = Forslag.Status.VenterPaSvar,
 			),
 		)
+
+		erstattVentendeForslagAvSammeType(forslag)
+
 		meldingProducer.produce(forslag)
 
 		log.info("Opprettet nytt forslag ${forslag.id}")
 
 		return forslag
+	}
+
+	private fun erstattVentendeForslagAvSammeType(forslag: Forslag) {
+		val ventende = repository.getVentende(forslag).getOrElse { return }
+
+		val erstattet = ventende.copy(
+			status = Forslag.Status.Erstattet(
+				erstattetMedForslagId = forslag.id,
+				erstattet = forslag.opprettet,
+			),
+		)
+		repository.delete(erstattet.id)
+		meldingProducer.produce(erstattet)
+
+		log.info("Forslag ${erstattet.id} ble erstattet av ${forslag.id}")
 	}
 
 	fun get(id: UUID) = repository.get(id)
