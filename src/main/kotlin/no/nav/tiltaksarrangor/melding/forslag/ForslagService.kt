@@ -31,20 +31,19 @@ class ForslagService(
 			is IkkeAktuellRequest -> Forslag.IkkeAktuell(request.aarsak)
 		}
 
-		val forslag = repository.upsert(
-			Forslag(
-				id = UUID.randomUUID(),
-				deltakerId = deltakerMedDeltakerliste.deltaker.id,
-				opprettetAvArrangorAnsattId = ansatt.id,
-				opprettet = LocalDateTime.now(),
-				begrunnelse = request.begrunnelse,
-				endring = endring,
-				status = Forslag.Status.VenterPaSvar,
-			),
+		val forslag = Forslag(
+			id = UUID.randomUUID(),
+			deltakerId = deltakerMedDeltakerliste.deltaker.id,
+			opprettetAvArrangorAnsattId = ansatt.id,
+			opprettet = LocalDateTime.now(),
+			begrunnelse = request.begrunnelse,
+			endring = endring,
+			status = Forslag.Status.VenterPaSvar,
 		)
 
 		erstattVentendeForslagAvSammeType(forslag)
 
+		repository.upsert(forslag)
 		meldingProducer.produce(forslag)
 
 		log.info("Opprettet nytt forslag ${forslag.id}")
