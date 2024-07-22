@@ -31,6 +31,10 @@ data class ForslagResponse(
 			val tilbakekalt: LocalDateTime,
 		) : Status
 
+		data class Erstattet(
+			val erstattet: LocalDateTime,
+		)
+
 		data object VenterPaSvar : Status
 	}
 

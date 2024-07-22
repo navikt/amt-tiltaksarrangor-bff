@@ -109,6 +109,7 @@ class ForslagCtx(
 			is Forslag.Status.Godkjent -> status.godkjentAv
 			is Forslag.Status.Tilbakekalt -> null
 			Forslag.Status.VenterPaSvar -> null
+			is Forslag.Status.Erstattet -> null
 		}
 
 		if (forslagNavAnsatt != null) {

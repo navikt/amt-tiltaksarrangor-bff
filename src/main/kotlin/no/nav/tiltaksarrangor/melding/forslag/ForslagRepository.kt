@@ -86,6 +86,34 @@ class ForslagRepository(
 		val params = sqlParameters("id" to id)
 		return template.update(sql, params)
 	}
+
+	fun getVentende(forslag: Forslag): Result<Forslag> {
+		val sql =
+			"""
+			select *
+			from forslag
+			where deltaker_id = :deltaker_id
+				and status->>'type' = :status
+				and endring->>'type' = :type
+			""".trimIndent()
+
+		val params = sqlParameters(
+			"deltaker_id" to forslag.deltakerId,
+			"type" to forslag.endring.javaClass.simpleName,
+			"status" to Forslag.Status.VenterPaSvar.javaClass.simpleName,
+		)
+		return template
+			.query(sql, params, rowMapper)
+			.firstOrNull()
+			?.let { Result.success(it) }
+			?: Result.failure(
+				NoSuchElementException(
+					"Fant ikke forslag for deltaker ${forslag.deltakerId} " +
+						"av type ${forslag.endring.javaClass.simpleName} " +
+						"og status ${Forslag.Status.VenterPaSvar.javaClass.simpleName}",
+				),
+			)
+	}
 }
 
 fun toPGObject(value: Any?) = PGobject().also {

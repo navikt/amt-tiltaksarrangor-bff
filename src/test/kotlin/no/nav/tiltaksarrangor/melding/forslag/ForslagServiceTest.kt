@@ -43,6 +43,31 @@ class ForslagServiceTest {
 	}
 
 	@Test
+	fun `opprettForslag - forlengelse, ventende forlengese finnes - erstatter gammelt forslag og returnerer nytt forslag`() {
+		with(ForslagCtx(forlengDeltakelseForslag())) {
+			upsertForslag()
+
+			val sluttdato = LocalDate.now().plusWeeks(42)
+			val begrunnelse = "Fordi..."
+			val request = ForlengDeltakelseRequest(sluttdato, begrunnelse)
+			val opprettetForslag =
+				forslagService.opprettForslag(request, koordinator, DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste))
+
+			opprettetForslag.status shouldBe Forslag.Status.VenterPaSvar
+			opprettetForslag.opprettet shouldBeCloseTo LocalDateTime.now()
+
+			repository.get(forslag.id).isFailure shouldBe true
+			val erstattet = getProducedForslag(forslag.id)
+
+			val status = erstattet.status as Forslag.Status.Erstattet
+			status.erstattetMedForslagId shouldBe opprettetForslag.id
+			status.erstattet shouldBeCloseTo opprettetForslag.opprettet
+
+			assertProducedForslag(opprettetForslag.id, opprettetForslag.endring::class)
+		}
+	}
+
+	@Test
 	fun `getAktiveForslag - filtrerer bort forslag uten riktig status`() {
 		with(ForslagCtx(forlengDeltakelseForslag())) {
 			upsertForslag()

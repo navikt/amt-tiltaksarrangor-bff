@@ -26,7 +26,9 @@ class MeldingProducer(
 			is Forslag.Status.Avvist,
 			is Forslag.Status.Godkjent,
 			-> error("Forsøkte å produsere forslag ${forslag.id} med status ${forslag.status::class.simpleName}")
+
 			is Forslag.Status.Tilbakekalt,
+			is Forslag.Status.Erstattet,
 			is Forslag.Status.VenterPaSvar,
 			-> {
 				producer.produce(forslag.id.toString(), JsonUtils.objectMapper.writeValueAsString(forslag))
@@ -40,7 +42,5 @@ class MeldingProducer(
 @Profile("default")
 class KafkaProducerConfig {
 	@Bean
-	fun config(): KafkaConfig {
-		return KafkaConfigImpl()
-	}
+	fun config(): KafkaConfig = KafkaConfigImpl()
 }
