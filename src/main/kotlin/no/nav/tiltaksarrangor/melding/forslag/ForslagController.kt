@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.melding.forslag
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
@@ -50,6 +51,13 @@ class ForslagController(
 	fun ikkeAktuell(
 		@PathVariable deltakerId: UUID,
 		@RequestBody request: IkkeAktuellRequest,
+	): AktivtForslagResponse = opprettForslag(deltakerId, request)
+
+	@PostMapping("/deltakelsesmengde")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun deltakelsesmengde(
+		@PathVariable deltakerId: UUID,
+		@RequestBody request: DeltakelsesmengdeRequest,
 	): AktivtForslagResponse = opprettForslag(deltakerId, request)
 
 	@PostMapping("/{forslagId}/tilbakekall")

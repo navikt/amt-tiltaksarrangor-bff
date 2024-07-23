@@ -6,6 +6,7 @@ import no.nav.amt.lib.models.arrangor.melding.EndringAarsak
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
@@ -30,11 +31,13 @@ class ForslagControllerTest : IntegrationTest() {
 	private val avsluttDeltakelseRequest =
 		AvsluttDeltakelseRequest(LocalDate.now().plusWeeks(1), EndringAarsak.FattJobb, "Avslutning fordi...")
 	private val ikkeAktuellRequest = IkkeAktuellRequest(EndringAarsak.FattJobb, "Ikke aktuell fordi...")
+	private val deltakelsesmengdeRequest = DeltakelsesmengdeRequest(42, 3, "Deltakelsesmengde fordi...")
 
 	val requests = listOf(
 		forlengDeltakelseRequest,
 		avsluttDeltakelseRequest,
 		ikkeAktuellRequest,
+		deltakelsesmengdeRequest,
 	)
 
 	@Autowired
@@ -48,6 +51,7 @@ class ForslagControllerTest : IntegrationTest() {
 			Request.Builder().post(emptyRequest()).url("$url/forleng"),
 			Request.Builder().post(emptyRequest()).url("$url/avslutt"),
 			Request.Builder().post(emptyRequest()).url("$url/ikke-aktuell"),
+			Request.Builder().post(emptyRequest()).url("$url/deltakelsesmengde"),
 			Request.Builder().post(emptyRequest()).url("$url/${UUID.randomUUID()}/tilbakekall"),
 		)
 		testTokenAutentisering(requestBuilders)
@@ -134,6 +138,15 @@ class ForslagControllerTest : IntegrationTest() {
 	}
 
 	@Test
+	fun `deltakelsesmengde - nytt forslag - skal returnere 200 og riktig response`() {
+		testOpprettetForslag(deltakelsesmengdeRequest) { endring ->
+			endring as Forslag.Deltakelsesmengde
+			endring.deltakelsesprosent shouldBe deltakelsesmengdeRequest.deltakelsesprosent
+			endring.dagerPerUke shouldBe deltakelsesmengdeRequest.dagerPerUke
+		}
+	}
+
+	@Test
 	fun `tilbakekall - aktivt forslag - skal returnere 200`() {
 		with(ForslagCtx(forlengDeltakelseForslag())) {
 			upsertForslag()
@@ -196,6 +209,7 @@ class ForslagControllerTest : IntegrationTest() {
 			is AvsluttDeltakelseRequest -> "avslutt"
 			is ForlengDeltakelseRequest -> "forleng"
 			is IkkeAktuellRequest -> "ikke-aktuell"
+			is DeltakelsesmengdeRequest -> "deltakelsesmengde"
 		}
 
 		return sendRequest(
