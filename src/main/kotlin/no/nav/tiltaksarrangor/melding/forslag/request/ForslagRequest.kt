@@ -22,3 +22,9 @@ data class IkkeAktuellRequest(
 	val aarsak: EndringAarsak,
 	override val begrunnelse: String?,
 ) : ForslagRequest
+
+data class DeltakelsesmengdeRequest(
+	val deltakelsesprosent: Int,
+	val dagerPerUke: Int?,
+	override val begrunnelse: String,
+) : ForslagRequest

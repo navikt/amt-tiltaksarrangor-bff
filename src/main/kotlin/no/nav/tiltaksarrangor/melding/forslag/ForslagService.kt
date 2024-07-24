@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.melding.forslag
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
@@ -29,6 +30,7 @@ class ForslagService(
 			is ForlengDeltakelseRequest -> Forslag.ForlengDeltakelse(request.sluttdato)
 			is AvsluttDeltakelseRequest -> Forslag.AvsluttDeltakelse(request.sluttdato, request.aarsak)
 			is IkkeAktuellRequest -> Forslag.IkkeAktuell(request.aarsak)
+			is DeltakelsesmengdeRequest -> Forslag.Deltakelsesmengde(request.deltakelsesprosent, request.dagerPerUke)
 		}
 
 		val forslag = Forslag(
