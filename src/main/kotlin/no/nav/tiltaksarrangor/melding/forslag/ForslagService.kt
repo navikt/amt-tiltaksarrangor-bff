@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.SluttdatoRequest
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import org.slf4j.LoggerFactory
@@ -31,6 +32,7 @@ class ForslagService(
 			is AvsluttDeltakelseRequest -> Forslag.AvsluttDeltakelse(request.sluttdato, request.aarsak)
 			is IkkeAktuellRequest -> Forslag.IkkeAktuell(request.aarsak)
 			is DeltakelsesmengdeRequest -> Forslag.Deltakelsesmengde(request.deltakelsesprosent, request.dagerPerUke)
+			is SluttdatoRequest -> Forslag.Sluttdato(request.sluttdato)
 		}
 
 		val forslag = Forslag(

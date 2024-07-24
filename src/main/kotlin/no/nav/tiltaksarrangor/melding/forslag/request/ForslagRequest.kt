@@ -28,3 +28,8 @@ data class DeltakelsesmengdeRequest(
 	val dagerPerUke: Int?,
 	override val begrunnelse: String,
 ) : ForslagRequest
+
+data class SluttdatoRequest(
+	val sluttdato: LocalDate,
+	override val begrunnelse: String,
+) : ForslagRequest

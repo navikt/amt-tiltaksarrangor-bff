@@ -10,6 +10,7 @@ import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.SluttdatoRequest
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.utils.JsonUtils
@@ -32,12 +33,14 @@ class ForslagControllerTest : IntegrationTest() {
 		AvsluttDeltakelseRequest(LocalDate.now().plusWeeks(1), EndringAarsak.FattJobb, "Avslutning fordi...")
 	private val ikkeAktuellRequest = IkkeAktuellRequest(EndringAarsak.FattJobb, "Ikke aktuell fordi...")
 	private val deltakelsesmengdeRequest = DeltakelsesmengdeRequest(42, 3, "Deltakelsesmengde fordi...")
+	private val sluttdatoRequest = SluttdatoRequest(LocalDate.now().plusWeeks(42), "Endres fordi...")
 
 	val requests = listOf(
 		forlengDeltakelseRequest,
 		avsluttDeltakelseRequest,
 		ikkeAktuellRequest,
 		deltakelsesmengdeRequest,
+		sluttdatoRequest,
 	)
 
 	@Autowired
@@ -147,6 +150,14 @@ class ForslagControllerTest : IntegrationTest() {
 	}
 
 	@Test
+	fun `sluttdato - nytt forslag - skal returnere 200 og riktig response`() {
+		testOpprettetForslag(sluttdatoRequest) { endring ->
+			endring as Forslag.Sluttdato
+			endring.sluttdato shouldBe sluttdatoRequest.sluttdato
+		}
+	}
+
+	@Test
 	fun `tilbakekall - aktivt forslag - skal returnere 200`() {
 		with(ForslagCtx(forlengDeltakelseForslag())) {
 			upsertForslag()
@@ -210,6 +221,7 @@ class ForslagControllerTest : IntegrationTest() {
 			is ForlengDeltakelseRequest -> "forleng"
 			is IkkeAktuellRequest -> "ikke-aktuell"
 			is DeltakelsesmengdeRequest -> "deltakelsesmengde"
+			is SluttdatoRequest -> "sluttdato"
 		}
 
 		return sendRequest(
