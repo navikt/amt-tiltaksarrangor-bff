@@ -6,6 +6,7 @@ import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.SluttdatoRequest
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
@@ -58,6 +59,13 @@ class ForslagController(
 	fun deltakelsesmengde(
 		@PathVariable deltakerId: UUID,
 		@RequestBody request: DeltakelsesmengdeRequest,
+	): AktivtForslagResponse = opprettForslag(deltakerId, request)
+
+	@PostMapping("/sluttdato")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun sluttdato(
+		@PathVariable deltakerId: UUID,
+		@RequestBody request: SluttdatoRequest,
 	): AktivtForslagResponse = opprettForslag(deltakerId, request)
 
 	@PostMapping("/{forslagId}/tilbakekall")
