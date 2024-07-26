@@ -33,3 +33,14 @@ data class SluttdatoRequest(
 	val sluttdato: LocalDate,
 	override val begrunnelse: String,
 ) : ForslagRequest
+
+data class StartdatoRequest(
+	val startdato: LocalDate,
+	val sluttdato: LocalDate?,
+	override val begrunnelse: String,
+) : ForslagRequest
+
+data class SluttarsakRequest(
+	val aarsak: EndringAarsak,
+	override val begrunnelse: String?,
+) : ForslagRequest
