@@ -10,7 +10,9 @@ import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.SluttarsakRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.SluttdatoRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.StartdatoRequest
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.utils.JsonUtils
@@ -34,6 +36,8 @@ class ForslagControllerTest : IntegrationTest() {
 	private val ikkeAktuellRequest = IkkeAktuellRequest(EndringAarsak.FattJobb, "Ikke aktuell fordi...")
 	private val deltakelsesmengdeRequest = DeltakelsesmengdeRequest(42, 3, "Deltakelsesmengde fordi...")
 	private val sluttdatoRequest = SluttdatoRequest(LocalDate.now().plusWeeks(42), "Endres fordi...")
+	private val startdatoRequest = StartdatoRequest(LocalDate.now(), LocalDate.now().plusWeeks(4), begrunnelse = "Startdato fordi...")
+	private val sluttarsakRequest = SluttarsakRequest(EndringAarsak.Utdanning, begrunnelse = "Sluttårsak fordi...")
 
 	val requests = listOf(
 		forlengDeltakelseRequest,
@@ -41,6 +45,8 @@ class ForslagControllerTest : IntegrationTest() {
 		ikkeAktuellRequest,
 		deltakelsesmengdeRequest,
 		sluttdatoRequest,
+		startdatoRequest,
+		sluttarsakRequest,
 	)
 
 	@Autowired
@@ -55,6 +61,8 @@ class ForslagControllerTest : IntegrationTest() {
 			Request.Builder().post(emptyRequest()).url("$url/avslutt"),
 			Request.Builder().post(emptyRequest()).url("$url/ikke-aktuell"),
 			Request.Builder().post(emptyRequest()).url("$url/deltakelsesmengde"),
+			Request.Builder().post(emptyRequest()).url("$url/startdato"),
+			Request.Builder().post(emptyRequest()).url("$url/sluttarsak"),
 			Request.Builder().post(emptyRequest()).url("$url/${UUID.randomUUID()}/tilbakekall"),
 		)
 		testTokenAutentisering(requestBuilders)
@@ -158,6 +166,23 @@ class ForslagControllerTest : IntegrationTest() {
 	}
 
 	@Test
+	fun `startdato - nytt forslag - skal returnere 200 og riktig response`() {
+		testOpprettetForslag(startdatoRequest) { endring ->
+			endring as Forslag.Startdato
+			endring.startdato shouldBe startdatoRequest.startdato
+			endring.sluttdato shouldBe startdatoRequest.sluttdato
+		}
+	}
+
+	@Test
+	fun `sluttarsak - nytt forslag - skal returnere 200 og riktig response`() {
+		testOpprettetForslag(sluttarsakRequest) { endring ->
+			endring as Forslag.Sluttarsak
+			endring.aarsak shouldBe sluttarsakRequest.aarsak
+		}
+	}
+
+	@Test
 	fun `tilbakekall - aktivt forslag - skal returnere 200`() {
 		with(ForslagCtx(forlengDeltakelseForslag())) {
 			upsertForslag()
@@ -222,6 +247,8 @@ class ForslagControllerTest : IntegrationTest() {
 			is IkkeAktuellRequest -> "ikke-aktuell"
 			is DeltakelsesmengdeRequest -> "deltakelsesmengde"
 			is SluttdatoRequest -> "sluttdato"
+			is SluttarsakRequest -> "sluttarsak"
+			is StartdatoRequest -> "startdato"
 		}
 
 		return sendRequest(
