@@ -19,7 +19,7 @@ repositories {
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
-val logstashEncoderVersion = "7.4"
+val logstashEncoderVersion = "8.0"
 val kafkaClientsVersion = "3.8.0"
 val tokenSupportVersion = "5.0.1"
 val okHttpVersion = "4.12.0"
