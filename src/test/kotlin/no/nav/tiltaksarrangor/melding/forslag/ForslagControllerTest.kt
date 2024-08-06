@@ -15,7 +15,6 @@ import no.nav.tiltaksarrangor.melding.forslag.request.SluttdatoRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.StartdatoRequest
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
-import no.nav.tiltaksarrangor.utils.JsonUtils
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
@@ -254,7 +253,7 @@ class ForslagControllerTest : IntegrationTest() {
 		return sendRequest(
 			method = "POST",
 			path = path,
-			body = JsonUtils.objectMapper.writeValueAsString(this).toRequestBody(mediaTypeJson),
+			body = objectMapper.writeValueAsString(this).toRequestBody(mediaTypeJson),
 			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
 		)
 	}

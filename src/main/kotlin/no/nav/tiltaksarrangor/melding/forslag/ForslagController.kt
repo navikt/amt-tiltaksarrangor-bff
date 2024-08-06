@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.melding.forslag
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
+import no.nav.tiltaksarrangor.melding.MeldingTilgangskontrollService
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
@@ -9,14 +10,6 @@ import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.SluttarsakRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.SluttdatoRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.StartdatoRequest
-import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
-import no.nav.tiltaksarrangor.repositories.DeltakerRepository
-import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
-import no.nav.tiltaksarrangor.service.AnsattService
-import no.nav.tiltaksarrangor.service.TilgangskontrollService
-import no.nav.tiltaksarrangor.service.TokenService
-import no.nav.tiltaksarrangor.unleash.UnleashService
 import no.nav.tiltaksarrangor.utils.Issuer
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,12 +21,8 @@ import java.util.UUID
 @RestController
 @RequestMapping("/tiltaksarrangor/deltaker/{deltakerId}/forslag")
 class ForslagController(
-	private val tokenService: TokenService,
-	private val tilgangskontrollService: TilgangskontrollService,
-	private val ansattService: AnsattService,
-	private val deltakerRepository: DeltakerRepository,
+	private val tilgangskontrollService: MeldingTilgangskontrollService,
 	private val forslagService: ForslagService,
-	private val unleashService: UnleashService,
 ) {
 	@PostMapping("/forleng")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
@@ -90,34 +79,18 @@ class ForslagController(
 		@PathVariable deltakerId: UUID,
 		@PathVariable forslagId: UUID,
 	) {
-		medAnsattOgDeltaker(deltakerId) { ansatt, _ ->
+		tilgangskontrollService.medTilgangTilAnsattOgDeltaker(deltakerId) { ansatt, _ ->
 			forslagService.tilbakekall(forslagId, ansatt)
 		}
 	}
 
-	private fun opprettForslag(deltakerId: UUID, request: ForslagRequest) = medAnsattOgDeltaker(deltakerId) { ansatt, deltaker ->
-		val forslag = forslagService.opprettForslag(
-			request,
-			ansatt,
-			deltaker,
-		)
-		forslag.tilAktivtForslagResponse()
-	}
-
-	private fun <T> medAnsattOgDeltaker(deltakerId: UUID, block: (ansatt: AnsattDbo, deltaker: DeltakerMedDeltakerlisteDbo) -> T): T {
-		val personident = tokenService.getPersonligIdentTilInnloggetAnsatt()
-		val ansatt = ansattService.getAnsattMedRoller(personident)
-		val deltakerMedDeltakerliste = deltakerRepository
-			.getDeltakerMedDeltakerliste(deltakerId)
-			?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
-			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
-
-		if (!unleashService.erForslagSkruddPa(deltakerMedDeltakerliste.deltakerliste.tiltakType)) {
-			throw UnauthorizedException("Endepunkt er utilgjenglig")
+	private fun opprettForslag(deltakerId: UUID, request: ForslagRequest) =
+		tilgangskontrollService.medTilgangTilAnsattOgDeltaker(deltakerId) { ansatt, deltaker ->
+			val forslag = forslagService.opprettForslag(
+				request,
+				ansatt,
+				deltaker,
+			)
+			forslag.tilAktivtForslagResponse()
 		}
-
-		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)
-
-		return block(ansatt, deltakerMedDeltakerliste)
-	}
 }
