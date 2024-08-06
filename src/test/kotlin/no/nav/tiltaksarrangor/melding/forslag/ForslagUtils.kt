@@ -35,7 +35,7 @@ class ForslagCtx(
 	arrangor: ArrangorDbo = getArrangor(),
 	deltakerliste: DeltakerlisteDbo = getDeltakerliste(arrangorId = arrangor.id),
 	koordinator: AnsattDbo = getKoordinator(
-		id = forslag.opprettetAvArrangorAnsattId ?: UUID.randomUUID(),
+		id = forslag.opprettetAvArrangorAnsattId,
 		arrangorId = arrangor.id,
 		deltakerlisteId = deltakerliste.id,
 	),
