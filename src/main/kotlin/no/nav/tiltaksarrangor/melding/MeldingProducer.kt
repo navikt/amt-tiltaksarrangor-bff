@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.melding
 import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.KafkaConfig
 import no.nav.amt.lib.kafka.config.KafkaConfigImpl
+import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import org.slf4j.LoggerFactory
@@ -35,6 +36,11 @@ class MeldingProducer(
 				log.info("Produserte forslag ${forslag.id} med status ${forslag.status::class.simpleName}")
 			}
 		}
+	}
+
+	fun produce(endring: EndringFraArrangor) {
+		producer.produce(endring.id.toString(), JsonUtils.objectMapper.writeValueAsString(endring))
+		log.info("Produserte endring fra arrngør ${endring.id}")
 	}
 }
 

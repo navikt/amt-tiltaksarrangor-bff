@@ -79,13 +79,13 @@ class ForslagController(
 		@PathVariable deltakerId: UUID,
 		@PathVariable forslagId: UUID,
 	) {
-		tilgangskontrollService.medTilgangTilAnsattOgDeltaker(deltakerId) { ansatt, _ ->
+		tilgangskontrollService.medTilgangTilAnsattOgDeltaker(deltakerId) { ansatt, _, _ ->
 			forslagService.tilbakekall(forslagId, ansatt)
 		}
 	}
 
 	private fun opprettForslag(deltakerId: UUID, request: ForslagRequest) =
-		tilgangskontrollService.medTilgangTilAnsattOgDeltaker(deltakerId) { ansatt, deltaker ->
+		tilgangskontrollService.medTilgangTilAnsattOgDeltaker(deltakerId) { ansatt, deltaker, _ ->
 			val forslag = forslagService.opprettForslag(
 				request,
 				ansatt,

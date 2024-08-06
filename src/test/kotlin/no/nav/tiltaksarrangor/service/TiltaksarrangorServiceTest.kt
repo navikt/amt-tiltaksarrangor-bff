@@ -36,7 +36,6 @@ import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
@@ -68,16 +67,16 @@ class TiltaksarrangorServiceTest {
 	private val meldingProducer = mockk<MeldingProducer>(relaxUnitFun = true)
 	private val forslagService = ForslagService(forslagRepository, meldingProducer)
 	private val tilgangskontrollService = TilgangskontrollService(ansattService)
+	private val deltakerMapper = DeltakerMapper(ansattService, forslagService, endringsmeldingRepository)
 	private val tiltaksarrangorService =
 		TiltaksarrangorService(
 			amtTiltakClient,
 			ansattService,
 			metricsService,
 			deltakerRepository,
-			endringsmeldingRepository,
 			auditLoggerService,
 			tilgangskontrollService,
-			forslagService,
+			deltakerMapper,
 		)
 
 	@AfterEach
@@ -884,9 +883,8 @@ class TiltaksarrangorServiceTest {
 		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "JOBBK")
 		val deltakerId = UUID.randomUUID()
 		val deltaker = getDeltaker(deltakerId, deltakerliste.id)
-		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
 
-		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()
+		val adresse = deltaker.getAdresse(deltakerliste)
 
 		adresse shouldBe null
 	}
@@ -943,9 +941,8 @@ class TiltaksarrangorServiceTest {
 							),
 					),
 			)
-		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
 
-		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()
+		val adresse = deltaker.getAdresse(deltakerliste)
 
 		adresse?.adressetype shouldBe Adressetype.KONTAKTADRESSE
 		adresse?.postnummer shouldBe "3312"
@@ -996,9 +993,8 @@ class TiltaksarrangorServiceTest {
 						kontaktadresse = null,
 					),
 			)
-		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
 
-		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()
+		val adresse = deltaker.getAdresse(deltakerliste)
 
 		adresse?.adressetype shouldBe Adressetype.OPPHOLDSADRESSE
 		adresse?.postnummer shouldBe "1234"
@@ -1031,9 +1027,8 @@ class TiltaksarrangorServiceTest {
 						kontaktadresse = null,
 					),
 			)
-		val deltakerMedDeltakerlisteDbo = DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste)
 
-		val adresse = deltakerMedDeltakerlisteDbo.getAdresse()
+		val adresse = deltaker.getAdresse(deltakerliste)
 
 		adresse?.adressetype shouldBe Adressetype.BOSTEDSADRESSE
 		adresse?.postnummer shouldBe "0484"
