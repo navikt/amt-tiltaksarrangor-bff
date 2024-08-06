@@ -27,8 +27,6 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class ForslagControllerTest : IntegrationTest() {
-	private val mediaTypeJson = "application/json".toMediaType()
-
 	private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(42), "Forlengelse fordi...")
 	private val avsluttDeltakelseRequest =
 		AvsluttDeltakelseRequest(LocalDate.now().plusWeeks(1), EndringAarsak.FattJobb, "Avslutning fordi...")
@@ -65,22 +63,6 @@ class ForslagControllerTest : IntegrationTest() {
 			Request.Builder().post(emptyRequest()).url("$url/${UUID.randomUUID()}/tilbakekall"),
 		)
 		testTokenAutentisering(requestBuilders)
-	}
-
-	private fun testTokenAutentisering(requestBuilders: List<Request.Builder>) {
-		requestBuilders.forEach {
-			val utenTokenResponse = client.newCall(it.build()).execute()
-			utenTokenResponse.code shouldBe 401
-			val feilTokenResponse = client
-				.newCall(
-					it
-						.header(
-							name = "Authorization",
-							value = "Bearer ${mockOAuth2Server.issueToken("ikke-azuread").serialize()}",
-						).build(),
-				).execute()
-			feilTokenResponse.code shouldBe 401
-		}
 	}
 
 	@Test
@@ -207,39 +189,11 @@ class ForslagControllerTest : IntegrationTest() {
 		}
 	}
 
-	private fun testIkkeTilgangTilDeltakerliste(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
-		with(DeltakerContext()) {
-			setKoordinatorDeltakerliste(UUID.randomUUID())
-
-			val response = requestFunction(deltaker.id, koordinator.personIdent)
-
-			response.code shouldBe 403
-		}
-	}
-
-	private fun testDeltakerAdressebeskyttet(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
-		with(DeltakerContext()) {
-			setDeltakerAdressebeskyttet()
-
-			val response = requestFunction(deltaker.id, koordinator.personIdent)
-
-			response.code shouldBe 403
-		}
-	}
-
-	private fun testDeltakerSkjult(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
-		with(DeltakerContext()) {
-			setDeltakerSkjult()
-
-			val response = requestFunction(deltaker.id, koordinator.personIdent)
-
-			response.code shouldBe 400
-		}
-	}
-
 	private fun url(deltakerId: UUID) = "/tiltaksarrangor/deltaker/$deltakerId/forslag"
 
 	private fun ForslagRequest.send(deltakerId: UUID, ansattIdent: String): Response {
+		val mediaTypeJson = "application/json".toMediaType()
+
 		val path = "${url(deltakerId)}/" + when (this) {
 			is AvsluttDeltakelseRequest -> "avslutt"
 			is ForlengDeltakelseRequest -> "forleng"

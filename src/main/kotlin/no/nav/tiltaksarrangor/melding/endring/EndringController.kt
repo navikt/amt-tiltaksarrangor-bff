@@ -18,7 +18,7 @@ class EndringController(
 	private val tilgangskontrollService: MeldingTilgangskontrollService,
 	private val endringService: EndringService,
 ) {
-	@PostMapping("/legg-til-oppstartsdato")
+	@PostMapping("/startdato")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun oppstartsdato(
 		@PathVariable deltakerId: UUID,

@@ -42,7 +42,7 @@ class EndringService(
 		deltakerRepository.insertOrUpdateDeltaker(endretDeltaker)
 		producer.produce(endringFraArrangor)
 
-		return deltakerMapper.map(deltaker, deltakerliste, ansatt)
+		return deltakerMapper.map(endretDeltaker, deltakerliste, ansatt)
 	}
 
 	private fun DeltakerDbo.endre(endring: EndringFraArrangor.Endring): DeltakerDbo = when (endring) {
