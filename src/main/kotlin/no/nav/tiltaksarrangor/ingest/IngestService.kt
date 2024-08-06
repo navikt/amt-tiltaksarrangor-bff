@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.ingest
 
+import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
@@ -171,6 +172,7 @@ class IngestService(
 		}
 		when (melding) {
 			is Forslag -> handleForslag(melding)
+			is EndringFraArrangor -> {}
 		}
 	}
 
@@ -179,6 +181,7 @@ class IngestService(
 			is Forslag.Status.Avvist,
 			is Forslag.Status.Godkjent,
 			-> forslagService.delete(forslag.id)
+
 			is Forslag.Status.Erstattet,
 			is Forslag.Status.Tilbakekalt,
 			Forslag.Status.VenterPaSvar,
