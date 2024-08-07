@@ -5,6 +5,8 @@ import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
+import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.amt.lib.testing.AsyncUtils
 import no.nav.amt.lib.testing.SingletonKafkaProvider
 import no.nav.tiltaksarrangor.kafka.stringStringConsumer
@@ -90,7 +92,7 @@ class EndringServiceTest {
 }
 
 fun <T : EndringFraArrangor.Endring> assertProducedEndring(deltakerId: UUID, endringstype: KClass<T>) {
-	val cache = mutableMapOf<UUID, EndringFraArrangor>()
+	val cache = mutableMapOf<UUID, Melding>()
 
 	val consumer = stringStringConsumer(MELDING_TOPIC) { k, v ->
 		cache[UUID.fromString(k)] = objectMapper.readValue(v)
@@ -100,10 +102,15 @@ fun <T : EndringFraArrangor.Endring> assertProducedEndring(deltakerId: UUID, end
 
 	AsyncUtils.eventually {
 		val endring = cache.firstNotNullOf {
-			if (it.value.deltakerId == deltakerId) {
-				it.value
-			} else {
-				null
+			when (val endring = it.value) {
+				is EndringFraArrangor -> {
+					if (endring.deltakerId == deltakerId) {
+						endring
+					} else {
+						null
+					}
+				}
+				is Forslag -> null
 			}
 		}
 

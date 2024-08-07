@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.amt.lib.testing.AsyncUtils
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
@@ -141,7 +142,7 @@ fun forlengDeltakelseForslag(
 )
 
 fun <T : Forslag.Endring> assertProducedForslag(forslagId: UUID, endringstype: KClass<T>) {
-	val cache = mutableMapOf<UUID, Forslag>()
+	val cache = mutableMapOf<UUID, Melding>()
 
 	val consumer = stringStringConsumer(MELDING_TOPIC) { k, v ->
 		cache[UUID.fromString(k)] = objectMapper.readValue(v)
@@ -150,7 +151,7 @@ fun <T : Forslag.Endring> assertProducedForslag(forslagId: UUID, endringstype: K
 	consumer.run()
 
 	AsyncUtils.eventually {
-		val cachedForslag = cache[forslagId]!!
+		val cachedForslag = cache[forslagId]!! as Forslag
 		cachedForslag.id shouldBe forslagId
 		cachedForslag.endring::class shouldBe endringstype
 	}
@@ -159,7 +160,7 @@ fun <T : Forslag.Endring> assertProducedForslag(forslagId: UUID, endringstype: K
 }
 
 fun getProducedForslag(id: UUID): Forslag {
-	val cache = mutableMapOf<UUID, Forslag>()
+	val cache = mutableMapOf<UUID, Melding>()
 
 	val consumer = stringStringConsumer(MELDING_TOPIC) { k, v ->
 		cache[UUID.fromString(k)] = objectMapper.readValue(v)
@@ -172,5 +173,5 @@ fun getProducedForslag(id: UUID): Forslag {
 	}
 	consumer.stop()
 
-	return cache[id]!!
+	return cache[id]!! as Forslag
 }

@@ -28,7 +28,7 @@ class EndringControllerTest : IntegrationTest() {
 		val url = "${serverUrl()}/tiltaksarrangor/deltaker/${UUID.randomUUID()}/endring"
 
 		val requestBuilders = listOf(
-			Request.Builder().post(emptyRequest()).url("$url/startdato"),
+			Request.Builder().post(emptyRequest()).url("$url/legg-til-oppstartsdato"),
 		)
 		testTokenAutentisering(requestBuilders)
 	}
@@ -70,6 +70,7 @@ class EndringControllerTest : IntegrationTest() {
 
 	private fun testOpprettetEndring(request: LeggTilOppstartsdatoRequest, block: (deltaker: Deltaker) -> Unit) {
 		with(DeltakerContext()) {
+			setVenterPaOppstart()
 			val response = request.send(deltaker.id, koordinator.personIdent)
 			response.code shouldBe 200
 
@@ -85,7 +86,7 @@ class EndringControllerTest : IntegrationTest() {
 		val mediaTypeJson = "application/json".toMediaType()
 
 		val path = "${url(deltakerId)}/" + when (this) {
-			is LeggTilOppstartsdatoRequest -> "startdato"
+			is LeggTilOppstartsdatoRequest -> "legg-til-oppstartsdato"
 		}
 
 		return sendRequest(
