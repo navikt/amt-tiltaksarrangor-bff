@@ -40,7 +40,7 @@ class MeldingProducer(
 
 	fun produce(endring: EndringFraArrangor) {
 		producer.produce(endring.id.toString(), JsonUtils.objectMapper.writeValueAsString(endring))
-		log.info("Produserte endring fra arrngør ${endring.id}")
+		log.info("Produserte endring fra arrangør ${endring.id}")
 	}
 }
 
