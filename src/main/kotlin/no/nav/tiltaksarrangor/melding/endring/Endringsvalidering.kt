@@ -1,11 +1,25 @@
 package no.nav.tiltaksarrangor.melding.endring
 
+import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import java.time.Duration
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-fun validerOppstartsdato(
+fun validerLeggTilOppstartsdato(
+	startdato: LocalDate,
+	sluttdato: LocalDate?,
+	deltaker: DeltakerDbo,
+	deltakerliste: DeltakerlisteDbo,
+) {
+	require(deltaker.startdato == null) {
+		"Kan ikke legge til ny oppstartsdato når startdato finnes fra før"
+	}
+
+	validerOppstartsdato(startdato, sluttdato, deltakerliste)
+}
+
+private fun validerOppstartsdato(
 	startdato: LocalDate,
 	sluttdato: LocalDate?,
 	deltakerliste: DeltakerlisteDbo,
@@ -16,7 +30,7 @@ fun validerOppstartsdato(
 	sluttdato?.let { validerSluttdato(it, startdato, deltakerliste) }
 }
 
-fun validerSluttdato(
+private fun validerSluttdato(
 	sluttdato: LocalDate,
 	startdato: LocalDate?,
 	deltakerliste: DeltakerlisteDbo,
