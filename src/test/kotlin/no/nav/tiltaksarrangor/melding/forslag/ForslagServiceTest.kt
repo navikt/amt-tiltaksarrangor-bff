@@ -6,7 +6,6 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.SingletonKafkaProvider
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
-import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import org.junit.jupiter.api.Test
@@ -29,7 +28,7 @@ class ForslagServiceTest {
 			val begrunnelse = "Fordi..."
 			val request = ForlengDeltakelseRequest(sluttdato, begrunnelse)
 			val opprettetForslag =
-				forslagService.opprettForslag(request, koordinator, DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste))
+				forslagService.opprettForslag(request, koordinator, deltaker)
 
 			opprettetForslag.deltakerId shouldBe deltaker.id
 			opprettetForslag.opprettetAvArrangorAnsattId shouldBe koordinator.id
@@ -51,7 +50,7 @@ class ForslagServiceTest {
 			val begrunnelse = "Fordi..."
 			val request = ForlengDeltakelseRequest(sluttdato, begrunnelse)
 			val opprettetForslag =
-				forslagService.opprettForslag(request, koordinator, DeltakerMedDeltakerlisteDbo(deltaker, deltakerliste))
+				forslagService.opprettForslag(request, koordinator, deltaker)
 
 			opprettetForslag.status shouldBe Forslag.Status.VenterPaSvar
 			opprettetForslag.opprettet shouldBeCloseTo LocalDateTime.now()

@@ -11,7 +11,7 @@ import no.nav.tiltaksarrangor.melding.forslag.request.SluttarsakRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.SluttdatoRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.StartdatoRequest
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -27,7 +27,7 @@ class ForslagService(
 	fun opprettForslag(
 		request: ForslagRequest,
 		ansatt: AnsattDbo,
-		deltakerMedDeltakerliste: DeltakerMedDeltakerlisteDbo,
+		deltaker: DeltakerDbo,
 	): Forslag {
 		val endring = when (request) {
 			is ForlengDeltakelseRequest -> Forslag.ForlengDeltakelse(request.sluttdato)
@@ -41,7 +41,7 @@ class ForslagService(
 
 		val forslag = Forslag(
 			id = UUID.randomUUID(),
-			deltakerId = deltakerMedDeltakerliste.deltaker.id,
+			deltakerId = deltaker.id,
 			opprettetAvArrangorAnsattId = ansatt.id,
 			opprettet = LocalDateTime.now(),
 			begrunnelse = request.begrunnelse,

@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor
 
 import io.getunleash.FakeUnleash
 import io.getunleash.Unleash
+import io.kotest.matchers.shouldBe
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
@@ -9,6 +10,7 @@ import no.nav.tiltaksarrangor.mock.MockAmtArrangorHttpServer
 import no.nav.tiltaksarrangor.mock.MockAmtPersonHttpServer
 import no.nav.tiltaksarrangor.mock.MockAmtTiltakHttpServer
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
+import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.utils.Issuer
 import okhttp3.MediaType.Companion.toMediaType
@@ -48,7 +50,8 @@ class IntegrationTest {
 	fun serverUrl() = "http://localhost:$port"
 
 	val client =
-		OkHttpClient.Builder()
+		OkHttpClient
+			.Builder()
 			.callTimeout(Duration.ofMinutes(5))
 			.build()
 
@@ -94,7 +97,8 @@ class IntegrationTest {
 		headers: Map<String, String> = emptyMap(),
 	): Response {
 		val reqBuilder =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("${serverUrl()}$path")
 				.method(method, body)
 
@@ -117,8 +121,8 @@ class IntegrationTest {
 				"client_id" to clientId,
 				"pid" to fnr,
 			),
-	): String {
-		return mockOAuth2Server.issueToken(
+	): String = mockOAuth2Server
+		.issueToken(
 			issuerId,
 			clientId,
 			DefaultOAuth2TokenCallback(
@@ -129,11 +133,56 @@ class IntegrationTest {
 				expiry = 3600,
 			),
 		).serialize()
-	}
 
 	fun emptyRequest(): RequestBody {
 		val mediaTypeHtml = "application/json".toMediaType()
 		return "".toRequestBody(mediaTypeHtml)
+	}
+
+	fun testTokenAutentisering(requestBuilders: List<Request.Builder>) {
+		requestBuilders.forEach {
+			val utenTokenResponse = client.newCall(it.build()).execute()
+			utenTokenResponse.code shouldBe 401
+			val feilTokenResponse = client
+				.newCall(
+					it
+						.header(
+							name = "Authorization",
+							value = "Bearer ${mockOAuth2Server.issueToken("ikke-azuread").serialize()}",
+						).build(),
+				).execute()
+			feilTokenResponse.code shouldBe 401
+		}
+	}
+
+	fun testIkkeTilgangTilDeltakerliste(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
+		with(DeltakerContext()) {
+			setKoordinatorDeltakerliste(UUID.randomUUID())
+
+			val response = requestFunction(deltaker.id, koordinator.personIdent)
+
+			response.code shouldBe 403
+		}
+	}
+
+	fun testDeltakerAdressebeskyttet(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
+		with(DeltakerContext()) {
+			setDeltakerAdressebeskyttet()
+
+			val response = requestFunction(deltaker.id, koordinator.personIdent)
+
+			response.code shouldBe 403
+		}
+	}
+
+	fun testDeltakerSkjult(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
+		with(DeltakerContext()) {
+			setDeltakerSkjult()
+
+			val response = requestFunction(deltaker.id, koordinator.personIdent)
+
+			response.code shouldBe 400
+		}
 	}
 }
 

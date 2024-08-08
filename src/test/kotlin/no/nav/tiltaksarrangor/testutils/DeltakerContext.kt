@@ -54,4 +54,13 @@ open class DeltakerContext(
 		deltaker = deltaker.copy(status = StatusType.IKKE_AKTUELL)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 	}
+
+	fun setVenterPaOppstart() {
+		deltaker = deltaker.copy(
+			startdato = null,
+			sluttdato = null,
+			status = StatusType.VENTER_PA_OPPSTART,
+		)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+	}
 }
