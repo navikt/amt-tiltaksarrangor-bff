@@ -54,7 +54,7 @@ class EndringsmeldingRepository(
 						id = UUID.fromString(rs.getString("endringsmeldingid")),
 						deltakerId = UUID.fromString(rs.getString("deltakerid")),
 						type = type,
-						innhold = parseInnholdJson(rs.getString("innhold"), type),
+						innhold = parseInnholdJson(rs.getString("e.innhold"), type),
 						status = Endringsmelding.Status.valueOf(rs.getString("em_status")),
 						sendt = rs.getTimestamp("sendt").toLocalDateTime(),
 					),
@@ -88,6 +88,7 @@ class EndringsmeldingRepository(
 						skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 						skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
 						adressebeskyttet = rs.getBoolean("adressebeskyttet"),
+						innhold = rs.getString("deltaker.innhold")?.let { fromJsonString(it) },
 					),
 				deltakerlisteDbo =
 					DeltakerlisteDbo(
@@ -136,19 +137,15 @@ class EndringsmeldingRepository(
 		)
 	}
 
-	fun deleteEndringsmelding(endringsmeldingId: UUID): Int {
-		return template.update(
-			"DELETE FROM endringsmelding WHERE id = :id",
-			sqlParameters("id" to endringsmeldingId),
-		)
-	}
+	fun deleteEndringsmelding(endringsmeldingId: UUID): Int = template.update(
+		"DELETE FROM endringsmelding WHERE id = :id",
+		sqlParameters("id" to endringsmeldingId),
+	)
 
-	fun tilbakekallEndringsmelding(endringsmeldingId: UUID): Int {
-		return template.update(
-			"UPDATE endringsmelding SET status = 'TILBAKEKALT', modified_at = CURRENT_TIMESTAMP WHERE id = :id",
-			sqlParameters("id" to endringsmeldingId),
-		)
-	}
+	fun tilbakekallEndringsmelding(endringsmeldingId: UUID): Int = template.update(
+		"UPDATE endringsmelding SET status = 'TILBAKEKALT', modified_at = CURRENT_TIMESTAMP WHERE id = :id",
+		sqlParameters("id" to endringsmeldingId),
+	)
 
 	fun lagreNyOgMerkAktiveEndringsmeldingMedSammeTypeSomUtfort(endringsmeldingDbo: EndringsmeldingDbo) {
 		template.update(
@@ -164,20 +161,19 @@ class EndringsmeldingRepository(
 		insertOrUpdateEndringsmelding(endringsmeldingDbo)
 	}
 
-	fun getEndringsmelding(endringsmeldingId: UUID): EndringsmeldingDbo? {
-		return template.query(
+	fun getEndringsmelding(endringsmeldingId: UUID): EndringsmeldingDbo? = template
+		.query(
 			"SELECT * FROM endringsmelding WHERE id = :id",
 			sqlParameters("id" to endringsmeldingId),
 			endringsmeldingRowMapper,
 		).firstOrNull()
-	}
 
-	fun getEndringsmeldingMedDeltakerOgDeltakerliste(endringsmeldingId: UUID): EndringsmeldingMedDeltakerOgDeltakerliste? {
-		return template.query(
+	fun getEndringsmeldingMedDeltakerOgDeltakerliste(endringsmeldingId: UUID): EndringsmeldingMedDeltakerOgDeltakerliste? = template
+		.query(
 			"""
 			SELECT endringsmelding.id as endringsmeldingid,
 					type,
-					innhold,
+					endringsmelding.innhold as "e.innhold",
 					endringsmelding.status as em_status,
 					sendt,
 					deltaker.id as deltakerid,
@@ -200,6 +196,7 @@ class EndringsmeldingRepository(
 					deltaker.slutt_dato as deltaker_slutt_dato,
 					innsokt_dato,
 					bestillingstekst,
+					deltaker.innhold as "deltaker.innhold",
 					navkontor,
 					navveileder_id,
 					navveileder_navn,
@@ -225,7 +222,6 @@ class EndringsmeldingRepository(
 			sqlParameters("id" to endringsmeldingId),
 			endringsmeldingMedDeltakerOgDeltakerlisteRowMapper,
 		).firstOrNull()
-	}
 
 	fun getEndringsmeldingerForDeltakere(deltakerIder: List<UUID>): List<EndringsmeldingDbo> {
 		if (deltakerIder.isEmpty()) {
@@ -238,13 +234,11 @@ class EndringsmeldingRepository(
 		)
 	}
 
-	fun getEndringsmeldingerForDeltaker(deltakerId: UUID): List<EndringsmeldingDbo> {
-		return template.query(
-			"SELECT * FROM endringsmelding WHERE deltaker_id = :deltaker_id",
-			sqlParameters("deltaker_id" to deltakerId),
-			endringsmeldingRowMapper,
-		)
-	}
+	fun getEndringsmeldingerForDeltaker(deltakerId: UUID): List<EndringsmeldingDbo> = template.query(
+		"SELECT * FROM endringsmelding WHERE deltaker_id = :deltaker_id",
+		sqlParameters("deltaker_id" to deltakerId),
+		endringsmeldingRowMapper,
+	)
 
 	private fun parseInnholdJson(innholdJson: String?, type: EndringsmeldingType): Innhold {
 		if (innholdJson == null) {

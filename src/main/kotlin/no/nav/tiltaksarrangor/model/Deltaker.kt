@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.model
 
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
+import no.nav.tiltaksarrangor.repositories.model.Deltakelsesinnhold
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -23,6 +24,7 @@ data class Deltaker(
 	val soktInnDato: LocalDateTime,
 	val tiltakskode: String,
 	val bestillingTekst: String?,
+	val innhold: Deltakelsesinnhold?,
 	val fjernesDato: LocalDateTime?,
 	val navInformasjon: NavInformasjon,
 	val veiledere: List<Veileder>,

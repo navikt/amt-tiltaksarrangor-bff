@@ -5,6 +5,7 @@ import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
@@ -23,6 +24,11 @@ open class DeltakerContext(
 		arrangorId = arrangor.id,
 		deltakerlisteId = deltakerliste.id,
 	),
+	val veileder: AnsattDbo = getVeileder(
+		id = UUID.randomUUID(),
+		arrangorId = arrangor.id,
+		deltakerId = deltaker.id,
+	),
 ) {
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)
@@ -30,11 +36,13 @@ open class DeltakerContext(
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val ansattRepository = AnsattRepository(template)
 	private val arrangorRepository = ArrangorRepository(template)
+	private val endringsmeldingRepository = EndringsmeldingRepository(template)
 
 	init {
 		arrangorRepository.insertOrUpdateArrangor(arrangor)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(koordinator)
+		ansattRepository.insertOrUpdateAnsatt(veileder)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 	}
 
@@ -50,9 +58,21 @@ open class DeltakerContext(
 		deltakerRepository.insertOrUpdateDeltaker(deltaker.copy(skjultDato = LocalDateTime.now(), skjultAvAnsattId = koordinator.id))
 	}
 
-	fun setIkkeAktuell() {
-		deltaker = deltaker.copy(status = StatusType.IKKE_AKTUELL)
+	fun medStatus(status: StatusType, gyldigFraDagerSiden: Long = 1L) {
+		deltaker = deltaker.copy(
+			status = status,
+			statusGyldigFraDato = LocalDateTime.now().minusDays(gyldigFraDagerSiden),
+			statusOpprettetDato = LocalDateTime.now().minusDays(gyldigFraDagerSiden),
+		)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+	}
+
+	fun medEndringsmelding() {
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(
+			getEndringsmelding(
+				deltaker.id,
+			),
+		)
 	}
 
 	fun setVenterPaOppstart() {

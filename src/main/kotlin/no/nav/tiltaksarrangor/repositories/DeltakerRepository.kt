@@ -15,6 +15,7 @@ import no.nav.tiltaksarrangor.utils.getNullableLocalDate
 import no.nav.tiltaksarrangor.utils.getNullableLocalDateTime
 import no.nav.tiltaksarrangor.utils.getNullableUUID
 import no.nav.tiltaksarrangor.utils.sqlParameters
+import no.nav.tiltaksarrangor.utils.toPGObject
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
@@ -56,6 +57,7 @@ class DeltakerRepository(
 				skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 				skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
 				adressebeskyttet = rs.getBoolean("adressebeskyttet"),
+				innhold = rs.getString("innhold")?.let { fromJsonString(it) },
 			)
 		}
 
@@ -92,6 +94,7 @@ class DeltakerRepository(
 						skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 						skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
 						adressebeskyttet = rs.getBoolean("adressebeskyttet"),
+						innhold = rs.getString("innhold")?.let { fromJsonString(it) },
 					),
 				deltakerliste =
 					DeltakerlisteDbo(
@@ -116,7 +119,8 @@ class DeltakerRepository(
 								 er_skjermet, status, status_gyldig_fra, status_opprettet_dato, dager_per_uke, prosent_stilling,
 								 start_dato, slutt_dato,
 								 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
-								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet)
+								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
+								 innhold)
 			VALUES (:id,
 					:deltakerliste_id,
 					:personident,
@@ -144,7 +148,8 @@ class DeltakerRepository(
 					:skjult_dato,
 					:adresse,
 					:vurderinger,
-					:adressebeskyttet)
+					:adressebeskyttet,
+					:innhold)
 			ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
 										   personident           = :personident,
 										   fornavn               = :fornavn,
@@ -171,7 +176,8 @@ class DeltakerRepository(
 										   skjult_dato           = :skjult_dato,
 										   adresse				 = :adresse,
 										   vurderinger			 = :vurderinger,
-										   adressebeskyttet		 = :adressebeskyttet
+										   adressebeskyttet		 = :adressebeskyttet,
+										   innhold 				 = :innhold
 			""".trimIndent()
 
 		template.update(
@@ -205,6 +211,7 @@ class DeltakerRepository(
 				"adresse" to deltakerDbo.adresse?.toPGObject(),
 				"vurderinger" to deltakerDbo.vurderingerFraArrangor?.toPGObject(),
 				"adressebeskyttet" to deltakerDbo.adressebeskyttet,
+				"innhold" to toPGObject(deltakerDbo.innhold),
 			),
 		)
 	}
@@ -228,25 +235,70 @@ class DeltakerRepository(
 		)
 	}
 
-	fun getDeltaker(deltakerId: UUID): DeltakerDbo? {
-		return template.query(
+	fun getDeltaker(deltakerId: UUID): DeltakerDbo? = template
+		.query(
 			"SELECT * FROM deltaker WHERE id = :id",
 			sqlParameters("id" to deltakerId),
 			deltakerRowMapper,
 		).firstOrNull()
-	}
 
-	fun getDeltakereForDeltakerliste(deltakerlisteId: UUID): List<DeltakerDbo> {
-		return template.query(
+	fun getDeltakereForDeltakerliste(deltakerlisteId: UUID): List<DeltakerDbo> = template
+		.query(
 			"SELECT * FROM deltaker WHERE deltakerliste_id = :deltakerliste_id",
 			sqlParameters("deltakerliste_id" to deltakerlisteId),
 			deltakerRowMapper,
-		)
-			.filter { it.skalVises() }
-	}
+		).filter { it.skalVises() }
 
-	fun getDeltakereMedDeltakerliste(deltakerIder: List<UUID>): List<DeltakerMedDeltakerlisteDbo> {
-		return template.query(
+	fun getDeltakereMedDeltakerliste(deltakerIder: List<UUID>): List<DeltakerMedDeltakerlisteDbo> = template.query(
+		"""
+		SELECT deltaker.id as deltakerid,
+				deltakerliste_id,
+				personident,
+				fornavn,
+				mellomnavn,
+				etternavn,
+				telefonnummer,
+				epost,
+				er_skjermet,
+				adresse,
+				vurderinger,
+				deltaker.status as deltakerstatus,
+				status_gyldig_fra,
+				status_opprettet_dato,
+				dager_per_uke,
+				prosent_stilling,
+				deltaker.start_dato as deltaker_start_dato,
+				deltaker.slutt_dato as deltaker_slutt_dato,
+				innsokt_dato,
+				bestillingstekst,
+				innhold,
+				navkontor,
+				navveileder_id,
+				navveileder_navn,
+				navveileder_epost,
+				navveileder_telefon,
+				skjult_av_ansatt_id,
+				skjult_dato,
+				adressebeskyttet,
+				navn,
+				deltakerliste.status as deltakerliste_status,
+				arrangor_id,
+				tiltak_navn,
+				tiltak_type,
+				deltakerliste.start_dato as deltakerliste_start_dato,
+				deltakerliste.slutt_dato as deltakerliste_slutt_dato,
+				er_kurs,
+				tilgjengelig_fom
+		FROM deltaker
+				 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
+		WHERE deltaker.id IN (:ids);
+		""".trimIndent(),
+		sqlParameters("ids" to deltakerIder),
+		deltakerMedDeltakerlisteRowMapper,
+	)
+
+	fun getDeltakerMedDeltakerliste(deltakerId: UUID): DeltakerMedDeltakerlisteDbo? = template
+		.query(
 			"""
 			SELECT deltaker.id as deltakerid,
 					deltakerliste_id,
@@ -268,55 +320,7 @@ class DeltakerRepository(
 					deltaker.slutt_dato as deltaker_slutt_dato,
 					innsokt_dato,
 					bestillingstekst,
-					navkontor,
-					navveileder_id,
-					navveileder_navn,
-					navveileder_epost,
-					navveileder_telefon,
-					skjult_av_ansatt_id,
-					skjult_dato,
-					adressebeskyttet,
-					navn,
-					deltakerliste.status as deltakerliste_status,
-					arrangor_id,
-					tiltak_navn,
-					tiltak_type,
-					deltakerliste.start_dato as deltakerliste_start_dato,
-					deltakerliste.slutt_dato as deltakerliste_slutt_dato,
-					er_kurs,
-					tilgjengelig_fom
-			FROM deltaker
-					 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
-			WHERE deltaker.id IN (:ids);
-			""".trimIndent(),
-			sqlParameters("ids" to deltakerIder),
-			deltakerMedDeltakerlisteRowMapper,
-		)
-	}
-
-	fun getDeltakerMedDeltakerliste(deltakerId: UUID): DeltakerMedDeltakerlisteDbo? {
-		return template.query(
-			"""
-			SELECT deltaker.id as deltakerid,
-					deltakerliste_id,
-					personident,
-					fornavn,
-					mellomnavn,
-					etternavn,
-					telefonnummer,
-					epost,
-					er_skjermet,
-					adresse,
-					vurderinger,
-					deltaker.status as deltakerstatus,
-					status_gyldig_fra,
-					status_opprettet_dato,
-					dager_per_uke,
-					prosent_stilling,
-					deltaker.start_dato as deltaker_start_dato,
-					deltaker.slutt_dato as deltaker_slutt_dato,
-					innsokt_dato,
-					bestillingstekst,
+					innhold,
 					navkontor,
 					navveileder_id,
 					navveileder_navn,
@@ -341,7 +345,6 @@ class DeltakerRepository(
 			sqlParameters("id" to deltakerId),
 			deltakerMedDeltakerlisteRowMapper,
 		).firstOrNull()
-	}
 
 	fun deleteDeltakereForDeltakerliste(deltakerlisteId: UUID): Int {
 		val deltakereSomSkalSlettes =
@@ -355,17 +358,15 @@ class DeltakerRepository(
 		return deltakereSomSkalSlettes.size
 	}
 
-	fun getDeltakereSomSkalSlettes(slettesDato: LocalDate): List<UUID> {
-		return template.query(
-			"""
-			SELECT id
-			FROM deltaker
-			WHERE status IN ('HAR_SLUTTET','IKKE_AKTUELL','AVBRUTT','FULLFORT') AND status_gyldig_fra < :slettesDato
-			""".trimIndent(),
-			sqlParameters("slettesDato" to slettesDato),
-		) { rs, _ ->
-			UUID.fromString(rs.getString("id"))
-		}
+	fun getDeltakereSomSkalSlettes(slettesDato: LocalDate): List<UUID> = template.query(
+		"""
+		SELECT id
+		FROM deltaker
+		WHERE status IN ('HAR_SLUTTET','IKKE_AKTUELL','AVBRUTT','FULLFORT') AND status_gyldig_fra < :slettesDato
+		""".trimIndent(),
+		sqlParameters("slettesDato" to slettesDato),
+	) { rs, _ ->
+		UUID.fromString(rs.getString("id"))
 	}
 
 	fun skjulDeltaker(deltakerId: UUID, ansattId: UUID) {

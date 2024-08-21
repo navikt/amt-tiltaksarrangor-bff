@@ -91,6 +91,7 @@ private fun tilDeltaker(
 		soktInnDato = deltakerDbo.innsoktDato.atStartOfDay(),
 		tiltakskode = deltakerliste.tiltakType,
 		bestillingTekst = deltakerDbo.bestillingstekst,
+		innhold = deltakerDbo.innhold,
 		fjernesDato = deltakerDbo.skalFjernesDato(),
 		navInformasjon =
 			NavInformasjon(

@@ -411,6 +411,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 				skjultDato = null,
 				vurderingerFraArrangor = null,
 				adressebeskyttet = false,
+				innhold = null,
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 

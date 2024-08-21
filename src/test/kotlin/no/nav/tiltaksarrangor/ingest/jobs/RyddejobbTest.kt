@@ -6,33 +6,21 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.ingest.jobs.leaderelection.LeaderElection
-import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
-import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
-import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
-import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
-import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
-import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
-import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
-import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
+import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
-import no.nav.tiltaksarrangor.testutils.getAdresse
+import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.UUID
 
 class RyddejobbTest : IntegrationTest() {
@@ -57,178 +45,71 @@ class RyddejobbTest : IntegrationTest() {
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltakerliste avsluttet for 42 dager siden - sletter deltakerliste og deltaker`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerId = UUID.randomUUID()
-		val ansattId = UUID.randomUUID()
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(
-			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(42)),
-		)
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.DELTAR, LocalDateTime.now().minusDays(42)))
-		ansattRepository.insertOrUpdateAnsatt(getAnsatt(ansattId, deltakerlisteId, deltakerId))
+		with(DeltakerContext()) {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(
+				deltakerliste.copy(
+					status = DeltakerlisteStatus.AVSLUTTET,
+					sluttDato = LocalDate.now().minusDays(42),
+				),
+			)
+			ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
-		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
-
-		deltakerlisteRepository.getDeltakerliste(deltakerlisteId) shouldBe null
-		deltakerRepository.getDeltaker(deltakerId) shouldBe null
-		ansattRepository.getKoordinatorDeltakerlisteDboListe(ansattId).size shouldBe 0
-		ansattRepository.getVeilederDeltakerDboListe(ansattId).size shouldBe 0
+			deltakerlisteRepository.getDeltakerliste(deltakerliste.id) shouldBe null
+			deltakerRepository.getDeltaker(deltaker.id) shouldBe null
+			ansattRepository.getKoordinatorDeltakerlisteDboListe(koordinator.id).size shouldBe 0
+			ansattRepository.getVeilederDeltakerDboListe(veileder.id).size shouldBe 0
+		}
 	}
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltakerliste avsluttet for 38 dager siden - sletter ikke deltakerliste`() {
-		val deltakerlisteId = UUID.randomUUID()
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(
-			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.AVSLUTTET, LocalDate.now().minusDays(38)),
+		val deltakerliste = getDeltakerliste(UUID.randomUUID()).copy(
+			status = DeltakerlisteStatus.AVSLUTTET,
+			sluttDato = LocalDate.now().minusDays(38),
 		)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 
 		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
-		deltakerlisteRepository.getDeltakerliste(deltakerlisteId) shouldNotBe null
+		deltakerlisteRepository.getDeltakerliste(deltakerliste.id) shouldNotBe null
 	}
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 42 dager siden - sletter deltaker`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerId = UUID.randomUUID()
-		val ansattId = UUID.randomUUID()
-		val endringsmeldingId = UUID.randomUUID()
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(
-			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)),
-		)
-		deltakerRepository.insertOrUpdateDeltaker(
-			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(42)),
-		)
-		ansattRepository.insertOrUpdateAnsatt(getAnsatt(ansattId, deltakerlisteId, deltakerId))
-		endringsmeldingRepository.insertOrUpdateEndringsmelding(getEndringsmelding(endringsmeldingId, deltakerId))
+		with(DeltakerContext()) {
+			medStatus(StatusType.HAR_SLUTTET, 42)
+			medEndringsmelding()
 
-		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
+			ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
-		deltakerlisteRepository.getDeltakerliste(deltakerlisteId) shouldNotBe null
-		deltakerRepository.getDeltaker(deltakerId) shouldBe null
-		ansattRepository.getKoordinatorDeltakerlisteDboListe(ansattId).size shouldBe 1
-		ansattRepository.getVeilederDeltakerDboListe(ansattId).size shouldBe 0
-		endringsmeldingRepository.getEndringsmelding(endringsmeldingId) shouldBe null
+			deltakerlisteRepository.getDeltakerliste(deltakerliste.id) shouldNotBe null
+			deltakerRepository.getDeltaker(deltaker.id) shouldBe null
+			ansattRepository.getKoordinatorDeltakerlisteDboListe(koordinator.id).size shouldBe 1
+			ansattRepository.getVeilederDeltakerDboListe(veileder.id).size shouldBe 0
+			endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltaker.id) shouldBe emptyList()
+		}
 	}
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 38 dager siden - sletter ikke deltaker`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerId = UUID.randomUUID()
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(
-			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)),
-		)
-		deltakerRepository.insertOrUpdateDeltaker(
-			getDeltaker(deltakerId, deltakerlisteId, StatusType.HAR_SLUTTET, LocalDateTime.now().minusDays(38)),
-		)
+		with(DeltakerContext()) {
+			medStatus(StatusType.HAR_SLUTTET, 38)
+			medEndringsmelding()
 
-		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
+			ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
-		deltakerlisteRepository.getDeltakerliste(deltakerlisteId) shouldNotBe null
-		deltakerRepository.getDeltaker(deltakerId) shouldNotBe null
+			deltakerlisteRepository.getDeltakerliste(deltakerliste.id) shouldNotBe null
+			deltakerRepository.getDeltaker(deltaker.id) shouldNotBe null
+		}
 	}
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - ingenting skal slettes - sletter ingenting`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerId = UUID.randomUUID()
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(
-			getDeltakerliste(deltakerlisteId, DeltakerlisteStatus.GJENNOMFORES, LocalDate.now().plusWeeks(3)),
-		)
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerlisteId, StatusType.DELTAR, LocalDateTime.now()))
+		with(DeltakerContext()) {
+			ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
-		ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
-
-		deltakerlisteRepository.getDeltakerliste(deltakerlisteId) shouldNotBe null
-		deltakerRepository.getDeltaker(deltakerId) shouldNotBe null
+			deltakerlisteRepository.getDeltakerliste(deltakerliste.id) shouldNotBe null
+			deltakerRepository.getDeltaker(deltaker.id) shouldNotBe null
+		}
 	}
-}
-
-private fun getDeltakerliste(
-	deltakerlisteId: UUID,
-	status: DeltakerlisteStatus,
-	sluttdato: LocalDate,
-): DeltakerlisteDbo {
-	return DeltakerlisteDbo(
-		id = deltakerlisteId,
-		navn = "Gjennomføring av tiltak",
-		status = status,
-		startDato = LocalDate.now().minusYears(2),
-		sluttDato = sluttdato,
-		erKurs = false,
-		arrangorId = UUID.randomUUID(),
-		tiltakNavn = "Tiltak",
-		tiltakType = "AMO",
-		tilgjengeligForArrangorFraOgMedDato = null,
-	)
-}
-
-private fun getDeltaker(
-	deltakerId: UUID,
-	deltakerlisteId: UUID,
-	status: StatusType,
-	statusGyldigFraDato: LocalDateTime,
-	erSkjult: Boolean = false,
-): DeltakerDbo {
-	return DeltakerDbo(
-		id = deltakerId,
-		deltakerlisteId = deltakerlisteId,
-		personident = "10987654321",
-		fornavn = "Fornavn",
-		mellomnavn = null,
-		etternavn = "Etternavn",
-		telefonnummer = "98989898",
-		epost = "epost@nav.no",
-		erSkjermet = false,
-		adresse = getAdresse(),
-		status = status,
-		statusOpprettetDato = LocalDateTime.now().minusWeeks(6),
-		statusGyldigFraDato = statusGyldigFraDato,
-		dagerPerUke = null,
-		prosentStilling = null,
-		startdato = LocalDate.now().minusWeeks(5),
-		sluttdato = null,
-		innsoktDato = LocalDate.now().minusMonths(2),
-		bestillingstekst = "Bestilling",
-		navKontor = "NAV Oslo",
-		navVeilederId = UUID.randomUUID(),
-		navVeilederNavn = "Per Veileder",
-		navVeilederEpost = null,
-		navVeilederTelefon = null,
-		skjultAvAnsattId = if (erSkjult) UUID.randomUUID() else null,
-		skjultDato = if (erSkjult) LocalDateTime.now() else null,
-		vurderingerFraArrangor = null,
-		adressebeskyttet = false,
-	)
-}
-
-private fun getAnsatt(
-	ansattId: UUID,
-	deltakerlisteId: UUID,
-	deltakerId: UUID,
-): AnsattDbo {
-	return AnsattDbo(
-		id = ansattId,
-		personIdent = "12345678910",
-		fornavn = "Fornavn",
-		mellomnavn = null,
-		etternavn = "Etternavn",
-		roller =
-			listOf(
-				AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.KOORDINATOR),
-				AnsattRolleDbo(UUID.randomUUID(), AnsattRolle.VEILEDER),
-			),
-		deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
-		veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
-	)
-}
-
-private fun getEndringsmelding(endringsmeldingId: UUID, deltakerId: UUID): EndringsmeldingDbo {
-	return EndringsmeldingDbo(
-		id = endringsmeldingId,
-		deltakerId = deltakerId,
-		type = EndringsmeldingType.ENDRE_SLUTTDATO,
-		innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now().plusWeeks(3)),
-		status = Endringsmelding.Status.AKTIV,
-		sendt = LocalDateTime.now(),
-	)
 }
