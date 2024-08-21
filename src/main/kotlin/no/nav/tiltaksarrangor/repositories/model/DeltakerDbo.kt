@@ -36,17 +36,14 @@ data class DeltakerDbo(
 	val skjultDato: LocalDateTime?,
 	val vurderingerFraArrangor: List<VurderingDto>?,
 	val adressebeskyttet: Boolean,
+	val innhold: Deltakelsesinnhold?,
 ) {
-	fun erSkjult(): Boolean {
-		return skjultDato != null
-	}
+	fun erSkjult(): Boolean = skjultDato != null
 
-	fun skalFjernesDato(): LocalDateTime? {
-		return if (status in STATUSER_SOM_KAN_SKJULES) {
-			statusGyldigFraDato.plusDays(DAGER_AVSLUTTET_DELTAKER_VISES)
-		} else {
-			null
-		}
+	fun skalFjernesDato(): LocalDateTime? = if (status in STATUSER_SOM_KAN_SKJULES) {
+		statusGyldigFraDato.plusDays(DAGER_AVSLUTTET_DELTAKER_VISES)
+	} else {
+		null
 	}
 
 	fun skalVises(): Boolean {
@@ -67,3 +64,15 @@ val STATUSER_SOM_KAN_SKJULES =
 	)
 
 const val DAGER_AVSLUTTET_DELTAKER_VISES = 40L
+
+data class Deltakelsesinnhold(
+	val ledetekst: String,
+	val innhold: List<Innhold>,
+)
+
+data class Innhold(
+	val tekst: String,
+	val innholdskode: String,
+	val valgt: Boolean,
+	val beskrivelse: String?,
+)

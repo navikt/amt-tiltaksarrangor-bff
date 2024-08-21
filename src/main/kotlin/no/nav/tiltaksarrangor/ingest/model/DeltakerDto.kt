@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.ingest.model
 
+import no.nav.tiltaksarrangor.repositories.model.Deltakelsesinnhold
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
 import java.time.LocalDate
@@ -20,6 +21,7 @@ data class DeltakerDto(
 	val navVeileder: DeltakerNavVeilederDto?,
 	val deltarPaKurs: Boolean,
 	val vurderingerFraArrangor: List<VurderingDto>?,
+	val innhold: Deltakelsesinnhold?,
 )
 
 fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
@@ -66,6 +68,7 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 			},
 		vurderingerFraArrangor = vurderingerFraArrangor,
 		adressebeskyttet = personalia.adressebeskyttelse != null,
+		innhold = innhold,
 	)
 }
 

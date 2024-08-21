@@ -93,6 +93,7 @@ class VeilederControllerTest : IntegrationTest() {
 				skjultDato = null,
 				vurderingerFraArrangor = null,
 				adressebeskyttet = false,
+				innhold = null,
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		ansattRepository.insertOrUpdateAnsatt(

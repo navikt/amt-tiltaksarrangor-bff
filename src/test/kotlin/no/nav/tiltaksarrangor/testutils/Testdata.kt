@@ -14,6 +14,7 @@ import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
+import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
@@ -22,74 +23,71 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
 fun getDeltakerliste(arrangorId: UUID) = getDeltakerliste(id = UUID.randomUUID(), arrangorId = arrangorId)
 
-fun getDeltakerliste(id: UUID = UUID.randomUUID(), arrangorId: UUID): DeltakerlisteDbo {
-	return DeltakerlisteDbo(
-		id = id,
-		navn = "Gjennomføring 1",
-		status = DeltakerlisteStatus.GJENNOMFORES,
-		arrangorId = arrangorId,
-		tiltakNavn = "Tiltaksnavnet",
-		tiltakType = "ARBFORB",
-		startDato = LocalDate.now().minusDays(1),
-		sluttDato = null,
-		erKurs = false,
-		tilgjengeligForArrangorFraOgMedDato = null,
-	)
-}
+fun getDeltakerliste(id: UUID = UUID.randomUUID(), arrangorId: UUID): DeltakerlisteDbo = DeltakerlisteDbo(
+	id = id,
+	navn = "Gjennomføring 1",
+	status = DeltakerlisteStatus.GJENNOMFORES,
+	arrangorId = arrangorId,
+	tiltakNavn = "Tiltaksnavnet",
+	tiltakType = "ARBFORB",
+	startDato = LocalDate.now().minusDays(1),
+	sluttDato = null,
+	erKurs = false,
+	tilgjengeligForArrangorFraOgMedDato = null,
+)
 
 fun getDeltaker(
 	deltakerId: UUID,
 	deltakerlisteId: UUID = UUID.randomUUID(),
 	adressebeskyttet: Boolean = false,
-): DeltakerDbo {
-	return DeltakerDbo(
-		id = deltakerId,
-		deltakerlisteId = deltakerlisteId,
-		personident = UUID.randomUUID().toString(),
-		fornavn = "Fornavn",
-		mellomnavn = null,
-		etternavn = "Etternavn",
-		telefonnummer = null,
-		epost = null,
-		erSkjermet = false,
-		adresse = getAdresse(),
-		vurderingerFraArrangor = getVurderinger(deltakerId),
-		status = StatusType.DELTAR,
-		statusOpprettetDato = LocalDateTime.now(),
-		statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
-		dagerPerUke = null,
-		prosentStilling = null,
-		startdato = LocalDate.of(2023, 2, 15),
-		sluttdato = null,
-		innsoktDato = LocalDate.now(),
-		bestillingstekst = "tekst",
-		navKontor = "1234",
-		navVeilederId = UUID.randomUUID(),
-		navVeilederEpost = "epost@nav.no",
-		navVeilederNavn = "Foo Bar",
-		navVeilederTelefon = "1234",
-		skjultAvAnsattId = null,
-		skjultDato = null,
-		adressebeskyttet = adressebeskyttet,
-	)
-}
+	status: StatusType = StatusType.DELTAR,
+): DeltakerDbo = DeltakerDbo(
+	id = deltakerId,
+	deltakerlisteId = deltakerlisteId,
+	personident = UUID.randomUUID().toString(),
+	fornavn = "Fornavn",
+	mellomnavn = null,
+	etternavn = "Etternavn",
+	telefonnummer = null,
+	epost = null,
+	erSkjermet = false,
+	adresse = getAdresse(),
+	vurderingerFraArrangor = getVurderinger(deltakerId),
+	status = status,
+	statusOpprettetDato = LocalDateTime.now(),
+	statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+	dagerPerUke = null,
+	prosentStilling = null,
+	startdato = LocalDate.of(2023, 2, 15),
+	sluttdato = null,
+	innsoktDato = LocalDate.now(),
+	bestillingstekst = "tekst",
+	navKontor = "1234",
+	navVeilederId = UUID.randomUUID(),
+	navVeilederEpost = "epost@nav.no",
+	navVeilederNavn = "Foo Bar",
+	navVeilederTelefon = "1234",
+	skjultAvAnsattId = null,
+	skjultDato = null,
+	adressebeskyttet = adressebeskyttet,
+	innhold = null,
+)
 
-fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo {
-	return EndringsmeldingDbo(
-		id = UUID.randomUUID(),
-		deltakerId = deltakerId,
-		type = EndringsmeldingType.FORLENG_DELTAKELSE,
-		innhold = Innhold.ForlengDeltakelseInnhold(LocalDate.now().plusMonths(2)),
-		status = Endringsmelding.Status.AKTIV,
-		sendt = LocalDateTime.now(),
-	)
-}
+fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo = EndringsmeldingDbo(
+	id = UUID.randomUUID(),
+	deltakerId = deltakerId,
+	type = EndringsmeldingType.FORLENG_DELTAKELSE,
+	innhold = Innhold.ForlengDeltakelseInnhold(LocalDate.now().plusMonths(2)),
+	status = Endringsmelding.Status.AKTIV,
+	sendt = LocalDateTime.now(),
+)
 
 fun getAdresse(): AdresseDto = AdresseDto(
 	bostedsadresse =
@@ -120,19 +118,17 @@ fun getAdresse(): AdresseDto = AdresseDto(
 		),
 )
 
-fun getVurderinger(deltakerId: UUID, gyldigFra: LocalDateTime = LocalDateTime.now()): List<VurderingDto> {
-	return listOf(
-		VurderingDto(
-			id = UUID.randomUUID(),
-			deltakerId = deltakerId,
-			vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
-			begrunnelse = "Mangler førerkort",
-			opprettetAvArrangorAnsattId = UUID.randomUUID(),
-			gyldigFra = gyldigFra,
-			gyldigTil = null,
-		),
-	)
-}
+fun getVurderinger(deltakerId: UUID, gyldigFra: LocalDateTime = LocalDateTime.now()): List<VurderingDto> = listOf(
+	VurderingDto(
+		id = UUID.randomUUID(),
+		deltakerId = deltakerId,
+		vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+		begrunnelse = "Mangler førerkort",
+		opprettetAvArrangorAnsattId = UUID.randomUUID(),
+		gyldigFra = gyldigFra,
+		gyldigTil = null,
+	),
+)
 
 fun getArrangor(
 	id: UUID = UUID.randomUUID(),
@@ -162,6 +158,25 @@ fun getKoordinator(
 	roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
 	deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
 	veilederDeltakere = emptyList(),
+)
+
+fun getVeileder(
+	id: UUID = UUID.randomUUID(),
+	deltakerId: UUID = UUID.randomUUID(),
+	arrangorId: UUID = UUID.randomUUID(),
+	personident: String = (10000..9000000).random().toString(),
+	fornavn: String = "Fornavn",
+	mellomnavn: String? = null,
+	etternavn: String = "Etternavn",
+) = AnsattDbo(
+	id = id,
+	personIdent = personident,
+	fornavn = fornavn,
+	mellomnavn = mellomnavn,
+	etternavn = etternavn,
+	roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+	deltakerlister = emptyList(),
+	veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
 )
 
 fun getNavAnsatt(id: UUID = UUID.randomUUID()) = NavAnsatt(

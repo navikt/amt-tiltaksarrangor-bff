@@ -32,6 +32,7 @@ import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
+import no.nav.tiltaksarrangor.repositories.model.Deltakelsesinnhold
 import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
@@ -256,509 +257,169 @@ class IngestServiceTest {
 
 	@Test
 	internal fun `lagreDeltaker - status DELTAR - lagres i db `() {
-		every { deltakerRepository.getDeltaker(any()) } returns null
-		val deltakerId = UUID.randomUUID()
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = null,
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.DELTAR,
-						gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = null,
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = false,
-				vurderingerFraArrangor = null,
-			)
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.DELTAR)
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
-
-		verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - status SOKT_INN - lagres ikke i db `() {
-		every { deltakerRepository.getDeltaker(any()) } returns null
-		val deltakerId = UUID.randomUUID()
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = null,
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.SOKT_INN,
-						gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = null,
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = false,
-				vurderingerFraArrangor = null,
-			)
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.SOKT_INN)
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
-
-		verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-		verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerId) }
+			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - status HAR_SLUTTET for mer enn 40 dager siden - lagres ikke i db `() {
-		every { deltakerRepository.getDeltaker(any()) } returns null
-		val deltakerId = UUID.randomUUID()
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = null,
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.HAR_SLUTTET,
-						gyldigFra = LocalDate.now().minusDays(43).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = null,
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = false,
-				vurderingerFraArrangor = null,
-			)
-
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
-
-		verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-		verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerId) }
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.HAR_SLUTTET, 41)
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - status HAR_SLUTTET for mindre enn 40 dager siden - lagres i db `() {
-		every { deltakerRepository.getDeltaker(any()) } returns null
-		val deltakerId = UUID.randomUUID()
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = null,
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.HAR_SLUTTET,
-						gyldigFra = LocalDate.now().minusDays(30).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = null,
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = false,
-				vurderingerFraArrangor = getVurderinger(deltakerId),
-			)
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.HAR_SLUTTET, 39)
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
-
-		verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes ikke i db fra for - lagres ikke i db `() {
-		every { deltakerRepository.getDeltaker(any()) } returns null
-		val deltakerId = UUID.randomUUID()
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = null,
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.IKKE_AKTUELL,
-						gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = null,
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = true,
-				vurderingerFraArrangor = null,
-			)
+		with(DeltakerDtoCtx()) {
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			medStatus(DeltakerStatus.IKKE_AKTUELL)
+			medDeltarPaKurs()
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
-
-		verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-		verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerId) }
+			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes i db fra for - lagres i db `() {
-		val deltakerId = UUID.randomUUID()
-		every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerId)
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = null,
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.IKKE_AKTUELL,
-						gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = null,
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = true,
-				vurderingerFraArrangor = null,
-			)
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.IKKE_AKTUELL)
+			medDeltarPaKurs()
+			every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerDto.id)
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
-
-		verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-		verify(exactly = 0) { deltakerRepository.deleteDeltaker(deltakerId) }
+			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 0) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - status IKKE_AKTUELL for mer enn 40 dager siden, deltar pa kurs, finnes i db fra for - lagres ikke i db `() {
-		val deltakerId = UUID.randomUUID()
-		every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerId)
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = null,
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.IKKE_AKTUELL,
-						gyldigFra = LocalDate.now().minusDays(43).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = null,
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = true,
-				vurderingerFraArrangor = null,
-			)
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.IKKE_AKTUELL, 42)
+			medDeltarPaKurs()
+			every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerDto.id)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-		verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-		verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerId) }
+			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - status HAR_SLUTTET mindre enn 40 dager siden, sluttdato mer enn 40 dager siden - lagres ikke i db `() {
-		every { deltakerRepository.getDeltaker(any()) } returns null
-		val deltakerId = UUID.randomUUID()
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = null,
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.HAR_SLUTTET,
-						gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = LocalDate.now().minusDays(50),
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = false,
-				vurderingerFraArrangor = null,
-			)
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.HAR_SLUTTET, gyldigFraDagerSiden = 39)
+			medSluttdato(dagerSiden = 41)
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
-
-		verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-		verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerId) }
+			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - har adressebeskyttelse - lagres ikke i db `() {
-		every { deltakerRepository.getDeltaker(any()) } returns null
-		val deltakerId = UUID.randomUUID()
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = "STRENGT_FORTROLIG",
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.DELTAR,
-						gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = null,
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = false,
-				vurderingerFraArrangor = null,
-			)
+		with(DeltakerDtoCtx()) {
+			medAdressebeskyttelse()
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
-
-		verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-		verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerId) }
+			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - har adressebeskyttelse, unleashtoggle aktivert - lagres i db `() {
-		every { deltakerRepository.getDeltaker(any()) } returns null
-		coEvery { unleashService.skalLagreAdressebeskyttedeDeltakere() } returns true
-		val deltakerId = UUID.randomUUID()
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = null,
-						adressebeskyttelse = "STRENGT_FORTROLIG",
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.DELTAR,
-						gyldigFra = LocalDate.now().minusWeeks(5).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = null,
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = false,
-				vurderingerFraArrangor = null,
-			)
+		with(DeltakerDtoCtx()) {
+			medAdressebeskyttelse()
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			coEvery { unleashService.skalLagreAdressebeskyttedeDeltakere() } returns true
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
-
-		verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - skjult, ny status DELTAR - fjerner skjuling i db `() {
-		val deltakerId = UUID.randomUUID()
-		val opprinneligDeltaker =
-			getDeltaker(deltakerId).copy(
-				status = StatusType.HAR_SLUTTET,
-				skjultDato = LocalDateTime.now(),
-				skjultAvAnsattId = UUID.randomUUID(),
-			)
-		every { deltakerRepository.getDeltaker(any()) } returns opprinneligDeltaker
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = null,
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.DELTAR,
-						gyldigFra = LocalDate.now().minusWeeks(3).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(6),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = null,
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = true,
-				vurderingerFraArrangor = null,
-			)
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.DELTAR)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
+			val opprinneligDeltaker =
+				getDeltaker(deltakerDto.id).copy(
+					status = StatusType.HAR_SLUTTET,
+					skjultDato = LocalDateTime.now(),
+					skjultAvAnsattId = UUID.randomUUID(),
+				)
+			every { deltakerRepository.getDeltaker(any()) } returns opprinneligDeltaker
 
-		verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(match { it.skjultDato == null && it.skjultAvAnsattId == null }) }
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
+
+			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(match { it.skjultDato == null && it.skjultAvAnsattId == null }) }
+		}
 	}
 
 	@Test
 	internal fun `lagreDeltaker - skjult, samme status - beholder skjuling i db `() {
-		val deltakerId = UUID.randomUUID()
-		val skjultDato = LocalDateTime.now().minusDays(2)
-		val skjultAvAnsattId = UUID.randomUUID()
-		val opprinneligDeltaker =
-			getDeltaker(deltakerId).copy(
-				status = StatusType.HAR_SLUTTET,
-				skjultDato = skjultDato,
-				skjultAvAnsattId = skjultAvAnsattId,
-			)
-		every { deltakerRepository.getDeltaker(any()) } returns opprinneligDeltaker
-		val deltakerDto =
-			DeltakerDto(
-				id = deltakerId,
-				deltakerlisteId = UUID.randomUUID(),
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
-						skjermet = false,
-						adresse = getAdresse(),
-						adressebeskyttelse = null,
-					),
-				status =
-					DeltakerStatusDto(
-						type = DeltakerStatus.HAR_SLUTTET,
-						gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
-						opprettetDato = LocalDateTime.now().minusWeeks(1),
-					),
-				dagerPerUke = null,
-				prosentStilling = null,
-				oppstartsdato = LocalDate.now().minusWeeks(5),
-				sluttdato = LocalDate.now(),
-				innsoktDato = LocalDate.now().minusMonths(2),
-				bestillingTekst = "Bestilling",
-				navKontor = "NAV Oslo",
-				navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
-				deltarPaKurs = true,
-				vurderingerFraArrangor = null,
-			)
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.HAR_SLUTTET)
 
-		ingestService.lagreDeltaker(deltakerId, deltakerDto)
+			val skjultDato = LocalDateTime.now().minusDays(2)
+			val skjultAvAnsattId = UUID.randomUUID()
+			val opprinneligDeltaker =
+				getDeltaker(deltakerDto.id).copy(
+					status = StatusType.HAR_SLUTTET,
+					skjultDato = skjultDato,
+					skjultAvAnsattId = skjultAvAnsattId,
+				)
+			every { deltakerRepository.getDeltaker(any()) } returns opprinneligDeltaker
 
-		verify(exactly = 1) {
-			deltakerRepository.insertOrUpdateDeltaker(
-				match {
-					it.skjultDato?.toLocalDate() == skjultDato.toLocalDate() && it.skjultAvAnsattId == skjultAvAnsattId
-				},
-			)
+			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
+
+			verify(exactly = 1) {
+				deltakerRepository.insertOrUpdateDeltaker(
+					match {
+						it.skjultDato?.toLocalDate() == skjultDato.toLocalDate() && it.skjultAvAnsattId == skjultAvAnsattId
+					},
+				)
+			}
 		}
 	}
 
@@ -869,5 +530,78 @@ class IngestServiceTest {
 		ingestService.handleMelding(forslag.id, forslag)
 
 		verify(exactly = 1) { forslagService.delete(forslag.id) }
+	}
+}
+
+class DeltakerDtoCtx {
+	var deltakerDto = DeltakerDto(
+		id = UUID.randomUUID(),
+		deltakerlisteId = UUID.randomUUID(),
+		personalia =
+			DeltakerPersonaliaDto(
+				personident = "10987654321",
+				navn = NavnDto("Fornavn", null, "Etternavn"),
+				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+				skjermet = false,
+				adresse = getAdresse(),
+				adressebeskyttelse = null,
+			),
+		status =
+			DeltakerStatusDto(
+				type = DeltakerStatus.DELTAR,
+				gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
+				opprettetDato = LocalDateTime.now().minusWeeks(1),
+			),
+		dagerPerUke = null,
+		prosentStilling = null,
+		oppstartsdato = LocalDate.now().minusWeeks(5),
+		sluttdato = LocalDate.now(),
+		innsoktDato = LocalDate.now().minusMonths(2),
+		bestillingTekst = "Bestilling",
+		navKontor = "NAV Oslo",
+		navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
+		deltarPaKurs = false,
+		vurderingerFraArrangor = null,
+		innhold = Deltakelsesinnhold(
+			ledetekst = "Innholdsledetekst...",
+			innhold = listOf(
+				no.nav.tiltaksarrangor.repositories.model.Innhold(
+					tekst = "tekst",
+					innholdskode = "kode",
+					valgt = true,
+					beskrivelse = "beskrivelse",
+				),
+			),
+		),
+	)
+
+	fun medSluttdato(dagerSiden: Long) {
+		deltakerDto = deltakerDto.copy(
+			sluttdato = LocalDate.now().minusDays(dagerSiden),
+		)
+	}
+
+	fun medAdressebeskyttelse() {
+		deltakerDto = deltakerDto.copy(
+			personalia = deltakerDto.personalia.copy(adressebeskyttelse = "STRENGT_FORTROLIG"),
+		)
+	}
+
+	fun medDeltarPaKurs() {
+		deltakerDto = deltakerDto.copy(deltarPaKurs = true)
+	}
+
+	fun medStatus(type: DeltakerStatus, gyldigFraDagerSiden: Long = 1L) {
+		deltakerDto = deltakerDto.copy(
+			status = DeltakerStatusDto(
+				type = type,
+				gyldigFra = LocalDate.now().minusDays(gyldigFraDagerSiden).atStartOfDay(),
+				opprettetDato = LocalDateTime.now().minusDays(gyldigFraDagerSiden),
+			),
+		)
+	}
+
+	fun medVurderinger() {
+		deltakerDto = deltakerDto.copy(vurderingerFraArrangor = getVurderinger(deltakerDto.id))
 	}
 }
