@@ -19,6 +19,7 @@ import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
+import no.nav.tiltaksarrangor.repositories.model.Deltakelsesinnhold
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
@@ -77,7 +78,17 @@ fun getDeltaker(
 	skjultAvAnsattId = null,
 	skjultDato = null,
 	adressebeskyttet = adressebeskyttet,
-	innhold = null,
+	innhold = Deltakelsesinnhold(
+		ledetekst = "Innholdsledetekst...",
+		innhold = listOf(
+			no.nav.tiltaksarrangor.repositories.model.Innhold(
+				tekst = "tekst",
+				innholdskode = "kode",
+				valgt = true,
+				beskrivelse = "beskrivelse",
+			),
+		),
+	),
 )
 
 fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo = EndringsmeldingDbo(
