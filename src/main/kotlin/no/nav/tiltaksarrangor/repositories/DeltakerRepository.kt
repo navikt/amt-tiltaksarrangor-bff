@@ -125,7 +125,7 @@ class DeltakerRepository(
 		val sql =
 			"""
 			INSERT INTO deltaker(id, deltakerliste_id, personident, fornavn, mellomnavn, etternavn, telefonnummer, epost,
-								 er_skjermet, status, status_gyldig_fra, status_opprettet_dato, dager_per_uke, prosent_stilling,
+								 er_skjermet, status, status_gyldig_fra, status_opprettet_dato, aarsak, dager_per_uke, prosent_stilling,
 								 start_dato, slutt_dato,
 								 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
 								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
