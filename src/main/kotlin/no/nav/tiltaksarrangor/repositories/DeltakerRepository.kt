@@ -142,7 +142,7 @@ class DeltakerRepository(
 					:status,
 					:status_gyldig_fra,
 					:status_opprettet_dato,
-					:aarsak
+					:aarsak,
 					:dager_per_uke,
 					:prosent_stilling,
 					:start_dato,
@@ -159,8 +159,8 @@ class DeltakerRepository(
 					:adresse,
 					:vurderinger,
 					:adressebeskyttet,
-					:innhold
-					:kilde
+					:innhold,
+					:kilde,
 					:historikk)
 			ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
 										   personident           = :personident,
