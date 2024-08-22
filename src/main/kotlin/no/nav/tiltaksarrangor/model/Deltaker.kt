@@ -58,3 +58,8 @@ enum class Adressetype {
 	OPPHOLDSADRESSE,
 	BOSTEDSADRESSE,
 }
+
+enum class Kilde {
+	KOMET,
+	ARENA,
+}

@@ -3,7 +3,10 @@ package no.nav.tiltaksarrangor.repositories
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.ingest.model.toPGObject
+import no.nav.tiltaksarrangor.model.DeltakerHistorikk
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
@@ -43,6 +46,7 @@ class DeltakerRepository(
 				status = StatusType.valueOf(rs.getString("status")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
+				statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsak>(it) },
 				dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 				prosentStilling = rs.getNullableDouble("prosent_stilling"),
 				startdato = rs.getNullableLocalDate("start_dato"),
@@ -58,6 +62,8 @@ class DeltakerRepository(
 				skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
 				adressebeskyttet = rs.getBoolean("adressebeskyttet"),
 				innhold = rs.getString("innhold")?.let { fromJsonString(it) },
+				kilde = Kilde.valueOf(rs.getString("kilde")),
+				historikk = rs.getString("historikk").let { fromJsonString<List<DeltakerHistorikk>>(it) },
 			)
 		}
 
@@ -80,6 +86,7 @@ class DeltakerRepository(
 						status = StatusType.valueOf(rs.getString("deltakerstatus")),
 						statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 						statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
+						statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsak>(it) },
 						dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 						prosentStilling = rs.getNullableDouble("prosent_stilling"),
 						startdato = rs.getNullableLocalDate("deltaker_start_dato"),
@@ -95,6 +102,8 @@ class DeltakerRepository(
 						skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
 						adressebeskyttet = rs.getBoolean("adressebeskyttet"),
 						innhold = rs.getString("innhold")?.let { fromJsonString(it) },
+						kilde = Kilde.valueOf(rs.getString("kilde")),
+						historikk = rs.getString("historikk").let { fromJsonString<List<DeltakerHistorikk>>(it) },
 					),
 				deltakerliste =
 					DeltakerlisteDbo(
@@ -120,7 +129,7 @@ class DeltakerRepository(
 								 start_dato, slutt_dato,
 								 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
 								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
-								 innhold)
+								 innhold, kilde, historikk)
 			VALUES (:id,
 					:deltakerliste_id,
 					:personident,
@@ -133,6 +142,7 @@ class DeltakerRepository(
 					:status,
 					:status_gyldig_fra,
 					:status_opprettet_dato,
+					:aarsak
 					:dager_per_uke,
 					:prosent_stilling,
 					:start_dato,
@@ -149,7 +159,9 @@ class DeltakerRepository(
 					:adresse,
 					:vurderinger,
 					:adressebeskyttet,
-					:innhold)
+					:innhold
+					:kilde
+					:historikk)
 			ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
 										   personident           = :personident,
 										   fornavn               = :fornavn,
@@ -161,6 +173,7 @@ class DeltakerRepository(
 										   status                = :status,
 										   status_gyldig_fra     = :status_gyldig_fra,
 										   status_opprettet_dato = :status_opprettet_dato,
+										   aarsak				 = :aarsak,
 										   dager_per_uke         = :dager_per_uke,
 										   prosent_stilling      = :prosent_stilling,
 										   start_dato            = :start_dato,
@@ -177,7 +190,9 @@ class DeltakerRepository(
 										   adresse				 = :adresse,
 										   vurderinger			 = :vurderinger,
 										   adressebeskyttet		 = :adressebeskyttet,
-										   innhold 				 = :innhold
+										   innhold 				 = :innhold,
+										   kilde		 		 = :kilde,
+										   historikk             = :historikk
 			""".trimIndent()
 
 		template.update(
@@ -195,6 +210,7 @@ class DeltakerRepository(
 				"status" to deltakerDbo.status.name,
 				"status_gyldig_fra" to deltakerDbo.statusGyldigFraDato,
 				"status_opprettet_dato" to deltakerDbo.statusOpprettetDato,
+				"aarsak" to deltakerDbo.statusAarsak,
 				"dager_per_uke" to deltakerDbo.dagerPerUke,
 				"prosent_stilling" to deltakerDbo.prosentStilling,
 				"start_dato" to deltakerDbo.startdato,
@@ -212,6 +228,8 @@ class DeltakerRepository(
 				"vurderinger" to deltakerDbo.vurderingerFraArrangor?.toPGObject(),
 				"adressebeskyttet" to deltakerDbo.adressebeskyttet,
 				"innhold" to toPGObject(deltakerDbo.innhold),
+				"kilde" to deltakerDbo.kilde,
+				"historikk" to deltakerDbo.historikk,
 			),
 		)
 	}
@@ -265,6 +283,7 @@ class DeltakerRepository(
 				deltaker.status as deltakerstatus,
 				status_gyldig_fra,
 				status_opprettet_dato,
+				aarsak,
 				dager_per_uke,
 				prosent_stilling,
 				deltaker.start_dato as deltaker_start_dato,
@@ -272,6 +291,8 @@ class DeltakerRepository(
 				innsokt_dato,
 				bestillingstekst,
 				innhold,
+				kilde,
+				historikk,
 				navkontor,
 				navveileder_id,
 				navveileder_navn,
@@ -314,6 +335,7 @@ class DeltakerRepository(
 					deltaker.status as deltakerstatus,
 					status_gyldig_fra,
 					status_opprettet_dato,
+					aarsak
 					dager_per_uke,
 					prosent_stilling,
 					deltaker.start_dato as deltaker_start_dato,
@@ -321,6 +343,8 @@ class DeltakerRepository(
 					innsokt_dato,
 					bestillingstekst,
 					innhold,
+					kilde,
+					historikk,
 					navkontor,
 					navveileder_id,
 					navveileder_navn,

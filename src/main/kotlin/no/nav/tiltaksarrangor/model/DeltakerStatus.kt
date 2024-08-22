@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 data class DeltakerStatus(
 	val type: StatusType,
 	val endretDato: LocalDateTime,
+	val aarsak: DeltakerStatusAarsak?,
 )
 
 enum class StatusType {

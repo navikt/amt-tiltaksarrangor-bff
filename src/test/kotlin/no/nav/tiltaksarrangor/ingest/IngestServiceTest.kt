@@ -23,8 +23,10 @@ import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -551,6 +553,8 @@ class DeltakerDtoCtx {
 				type = DeltakerStatus.DELTAR,
 				gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
 				opprettetDato = LocalDateTime.now().minusWeeks(1),
+				aarsak = null,
+				aarsaksbeskrivelse = null,
 			),
 		dagerPerUke = null,
 		prosentStilling = null,
@@ -573,6 +577,8 @@ class DeltakerDtoCtx {
 				),
 			),
 		),
+		kilde = Kilde.ARENA,
+		historikk = null, // vedtak?
 	)
 
 	fun medSluttdato(dagerSiden: Long) {
@@ -591,12 +597,19 @@ class DeltakerDtoCtx {
 		deltakerDto = deltakerDto.copy(deltarPaKurs = true)
 	}
 
-	fun medStatus(type: DeltakerStatus, gyldigFraDagerSiden: Long = 1L) {
+	fun medStatus(
+		type: DeltakerStatus,
+		gyldigFraDagerSiden: Long = 1L,
+		aarsak: DeltakerStatusAarsak.Type? = null,
+		aarsakbeskrivelse: String? = null,
+	) {
 		deltakerDto = deltakerDto.copy(
 			status = DeltakerStatusDto(
 				type = type,
 				gyldigFra = LocalDate.now().minusDays(gyldigFraDagerSiden).atStartOfDay(),
 				opprettetDato = LocalDateTime.now().minusDays(gyldigFraDagerSiden),
+				aarsak = aarsak,
+				aarsaksbeskrivelse = aarsakbeskrivelse,
 			),
 		)
 	}

@@ -2,6 +2,9 @@ package no.nav.tiltaksarrangor.repositories.model
 
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
+import no.nav.tiltaksarrangor.model.DeltakerHistorikk
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -21,6 +24,7 @@ data class DeltakerDbo(
 	val status: StatusType,
 	val statusOpprettetDato: LocalDateTime,
 	val statusGyldigFraDato: LocalDateTime,
+	val statusAarsak: DeltakerStatusAarsak?,
 	val dagerPerUke: Float?,
 	val prosentStilling: Double?,
 	val startdato: LocalDate?,
@@ -37,6 +41,8 @@ data class DeltakerDbo(
 	val vurderingerFraArrangor: List<VurderingDto>?,
 	val adressebeskyttet: Boolean,
 	val innhold: Deltakelsesinnhold?,
+	val kilde: Kilde?,
+	val historikk: List<DeltakerHistorikk>,
 ) {
 	fun erSkjult(): Boolean = skjultDato != null
 

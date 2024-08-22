@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -78,6 +79,7 @@ class VeilederControllerTest : IntegrationTest() {
 				status = StatusType.DELTAR,
 				statusOpprettetDato = LocalDateTime.now(),
 				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+				statusAarsak = null,
 				dagerPerUke = null,
 				prosentStilling = null,
 				startdato = LocalDate.of(2023, 2, 15),
@@ -94,6 +96,8 @@ class VeilederControllerTest : IntegrationTest() {
 				vurderingerFraArrangor = null,
 				adressebeskyttet = false,
 				innhold = null,
+				kilde = Kilde.ARENA,
+				historikk = emptyList(),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		ansattRepository.insertOrUpdateAnsatt(

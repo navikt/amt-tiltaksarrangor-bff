@@ -13,6 +13,7 @@ import no.nav.tiltaksarrangor.ingest.model.Vegadresse
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.Vurderingstype
@@ -64,6 +65,7 @@ fun getDeltaker(
 	status = status,
 	statusOpprettetDato = LocalDateTime.now(),
 	statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+	statusAarsak = null,
 	dagerPerUke = null,
 	prosentStilling = null,
 	startdato = LocalDate.of(2023, 2, 15),
@@ -89,6 +91,8 @@ fun getDeltaker(
 			),
 		),
 	),
+	kilde = Kilde.ARENA,
+	historikk = emptyList(),
 )
 
 fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo = EndringsmeldingDbo(

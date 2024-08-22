@@ -82,6 +82,7 @@ private fun tilDeltaker(
 			DeltakerStatus(
 				type = deltakerDbo.status,
 				endretDato = deltakerDbo.statusOpprettetDato,
+				aarsak = deltakerDbo.statusAarsak,
 			),
 		startDato = deltakerDbo.startdato,
 		sluttDato = deltakerDbo.sluttdato,

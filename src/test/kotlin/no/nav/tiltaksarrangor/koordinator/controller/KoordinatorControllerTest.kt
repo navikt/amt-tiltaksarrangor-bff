@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -396,6 +397,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 				status = StatusType.DELTAR,
 				statusOpprettetDato = LocalDateTime.now(),
 				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+				statusAarsak = null,
 				dagerPerUke = null,
 				prosentStilling = null,
 				startdato = LocalDate.of(2023, 2, 1),
@@ -412,6 +414,8 @@ class KoordinatorControllerTest : IntegrationTest() {
 				vurderingerFraArrangor = null,
 				adressebeskyttet = false,
 				innhold = null,
+				kilde = Kilde.ARENA,
+				historikk = emptyList(),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 
