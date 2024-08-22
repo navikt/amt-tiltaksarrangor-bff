@@ -93,8 +93,8 @@ class EndringsmeldingRepository(
 						skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
 						adressebeskyttet = rs.getBoolean("adressebeskyttet"),
 						innhold = rs.getString("deltaker.innhold")?.let { fromJsonString(it) },
-						kilde = Kilde.valueOf(rs.getString("kilde")),
-						historikk = rs.getString("historikk").let { fromJsonString<List<DeltakerHistorikk>>(it) },
+						kilde = rs.getString("kilde")?.let { Kilde.valueOf(it) },
+						historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 					),
 				deltakerlisteDbo =
 					DeltakerlisteDbo(
@@ -196,7 +196,7 @@ class EndringsmeldingRepository(
 					deltaker.status as deltakerstatus,
 					status_gyldig_fra,
 					status_opprettet_dato,
-					status_aarsak,
+					aarsak,
 					dager_per_uke,
 					prosent_stilling,
 					deltaker.start_dato as deltaker_start_dato,

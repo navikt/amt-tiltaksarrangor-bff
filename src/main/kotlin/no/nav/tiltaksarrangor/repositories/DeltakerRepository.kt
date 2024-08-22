@@ -210,7 +210,7 @@ class DeltakerRepository(
 				"status" to deltakerDbo.status.name,
 				"status_gyldig_fra" to deltakerDbo.statusGyldigFraDato,
 				"status_opprettet_dato" to deltakerDbo.statusOpprettetDato,
-				"aarsak" to deltakerDbo.statusAarsak,
+				"aarsak" to toPGObject(deltakerDbo.statusAarsak),
 				"dager_per_uke" to deltakerDbo.dagerPerUke,
 				"prosent_stilling" to deltakerDbo.prosentStilling,
 				"start_dato" to deltakerDbo.startdato,
@@ -228,7 +228,7 @@ class DeltakerRepository(
 				"vurderinger" to deltakerDbo.vurderingerFraArrangor?.toPGObject(),
 				"adressebeskyttet" to deltakerDbo.adressebeskyttet,
 				"innhold" to toPGObject(deltakerDbo.innhold),
-				"kilde" to deltakerDbo.kilde,
+				"kilde" to deltakerDbo.kilde?.name,
 				"historikk" to toPGObject(deltakerDbo.historikk),
 			),
 		)
