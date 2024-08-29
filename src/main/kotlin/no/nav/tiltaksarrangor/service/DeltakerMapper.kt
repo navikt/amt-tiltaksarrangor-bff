@@ -118,8 +118,8 @@ private fun tilDeltaker(
 		gjeldendeVurderingFraArrangor = deltakerDbo.getGjeldendeVurdering(),
 		historiskeVurderingerFraArrangor = deltakerDbo.getHistoriskeVurderinger(),
 		adressebeskyttet = adressebeskyttet,
-		kilde = deltakerDbo.kilde?: Kilde.ARENA,
-		historikk = deltakerDbo.historikk
+		kilde = deltakerDbo.kilde ?: Kilde.ARENA,
+		historikk = deltakerDbo.historikk,
 	)
 
 	return if (adressebeskyttet && !ansattErVeileder) {
@@ -148,7 +148,7 @@ fun Deltaker.utenPersonligInformasjon() = this.copy(
 	historiskeEndringsmeldinger = emptyList(),
 	gjeldendeVurderingFraArrangor = null,
 	historiskeVurderingerFraArrangor = null,
-	historikk = emptyList()
+	historikk = emptyList(),
 )
 
 fun DeltakerDbo.getAdresse(deltakerliste: DeltakerlisteDbo) = if (deltakerliste.skalViseAdresseForDeltaker()) {

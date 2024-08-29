@@ -36,7 +36,7 @@ data class Deltaker(
 	val historiskeVurderingerFraArrangor: List<Vurdering>?,
 	val adressebeskyttet: Boolean,
 	val kilde: Kilde,
-	val historikk: List<DeltakerHistorikk>
+	val historikk: List<DeltakerHistorikk>,
 ) {
 	data class Deltakerliste(
 		val id: UUID,
