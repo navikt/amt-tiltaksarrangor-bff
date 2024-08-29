@@ -72,7 +72,7 @@ val STATUSER_SOM_KAN_SKJULES =
 const val DAGER_AVSLUTTET_DELTAKER_VISES = 40L
 
 data class Deltakelsesinnhold(
-	val ledetekst: String,
+	val ledetekst: String?,
 	val innhold: List<Innhold>,
 )
 
