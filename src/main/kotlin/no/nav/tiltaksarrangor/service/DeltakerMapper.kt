@@ -5,6 +5,7 @@ import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.tilAktivtForslagResponse
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.DeltakerStatus
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
 import no.nav.tiltaksarrangor.model.Veileder
@@ -117,6 +118,8 @@ private fun tilDeltaker(
 		gjeldendeVurderingFraArrangor = deltakerDbo.getGjeldendeVurdering(),
 		historiskeVurderingerFraArrangor = deltakerDbo.getHistoriskeVurderinger(),
 		adressebeskyttet = adressebeskyttet,
+		kilde = deltakerDbo.kilde?: Kilde.ARENA,
+		historikk = deltakerDbo.historikk
 	)
 
 	return if (adressebeskyttet && !ansattErVeileder) {
@@ -145,6 +148,7 @@ fun Deltaker.utenPersonligInformasjon() = this.copy(
 	historiskeEndringsmeldinger = emptyList(),
 	gjeldendeVurderingFraArrangor = null,
 	historiskeVurderingerFraArrangor = null,
+	historikk = emptyList()
 )
 
 fun DeltakerDbo.getAdresse(deltakerliste: DeltakerlisteDbo) = if (deltakerliste.skalViseAdresseForDeltaker()) {
