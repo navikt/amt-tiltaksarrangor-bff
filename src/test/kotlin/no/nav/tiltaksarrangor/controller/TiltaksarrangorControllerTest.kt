@@ -219,7 +219,7 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 				objectMapper.writeValueAsString(
 					gyldigFra,
 				)
-			},"gyldigTil":null},"historiskeVurderingerFraArrangor":[],"adressebeskyttet":false}
+			},"gyldigTil":null},"historiskeVurderingerFraArrangor":[],"adressebeskyttet":false,"kilde":"ARENA","historikk":[]}
 			""".trimIndent().format()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
