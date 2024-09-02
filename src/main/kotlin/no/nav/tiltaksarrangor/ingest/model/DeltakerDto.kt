@@ -48,7 +48,9 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 		startdato = oppstartsdato,
 		sluttdato = sluttdato,
 		innsoktDato = innsoktDato,
-		bestillingstekst = bestillingTekst,
+		// I en overgangsfase ønsker vi å beholde bestillingstekster fra arena som er lagret i bffen inntil nav-veileder endrer bakgrunnsinfo i ny løsning.
+		// Hvis man altid lagrer bestillingTekst fra dto, vil den være null for alle deltakere vi har lest inn i fra Arena.
+		bestillingstekst = bestillingTekst ?: lagretDeltaker?.bestillingstekst,
 		navKontor = navKontor,
 		navVeilederId = navVeileder?.id,
 		navVeilederNavn = navVeileder?.navn,
