@@ -2,13 +2,17 @@ package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
+import no.nav.tiltaksarrangor.controller.response.DeltakerHistorikkResponse
+import no.nav.tiltaksarrangor.controller.response.toResponse
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
+import no.nav.tiltaksarrangor.utils.toTitleCase
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -19,8 +23,11 @@ class TiltaksarrangorService(
 	private val ansattService: AnsattService,
 	private val metricsService: MetricsService,
 	private val deltakerRepository: DeltakerRepository,
+	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val auditLoggerService: AuditLoggerService,
 	private val tilgangskontrollService: TilgangskontrollService,
+	private val navAnsattService: NavAnsattService,
+	private val navEnhetService: NavEnhetService,
 	private val deltakerMapper: DeltakerMapper,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
@@ -48,6 +55,22 @@ class TiltaksarrangorService(
 		tilgangskontrollService.verifiserTilgangTilDeltaker(ansatt, deltakerMedDeltakerliste)
 
 		return deltakerMapper.map(deltakerMedDeltakerliste.deltaker, deltakerMedDeltakerliste.deltakerliste, ansatt)
+	}
+
+	fun getDeltakerHistorikk(personIdent: String, deltakerId: UUID): List<DeltakerHistorikkResponse> {
+		val deltaker = getDeltaker(personIdent, deltakerId)
+		val historikk = deltaker.historikk
+		val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
+		val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
+
+		val deltakerlisteMedArrangor =
+			deltakerlisteRepository.getDeltakerlisteMedArrangor(
+				deltaker.deltakerliste.id,
+			)?.takeIf { it.deltakerlisteDbo.erTilgjengeligForArrangor() }
+				?: throw NoSuchElementException("Fant ikke deltakerliste med id ${deltaker.deltakerliste.id}")
+
+		val arrangorNavn = deltakerlisteMedArrangor.arrangorDbo.navn ?: deltakerlisteMedArrangor.deltakerlisteDbo.navn
+		return historikk.toResponse(ansatte, toTitleCase(arrangorNavn), enheter)
 	}
 
 	fun registrerVurdering(

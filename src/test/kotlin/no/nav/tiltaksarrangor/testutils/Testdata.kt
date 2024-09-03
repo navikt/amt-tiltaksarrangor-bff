@@ -196,7 +196,7 @@ fun getVeileder(
 
 fun getNavAnsatt(id: UUID = UUID.randomUUID()) = NavAnsatt(
 	id = id,
-	navident = (100000..999999).random().toString(),
+	navIdent = (100000..999999).random().toString(),
 	navn = "Veileder Veiledersen",
 	epost = "epost@nav.no",
 	telefon = "99999999",
@@ -204,6 +204,6 @@ fun getNavAnsatt(id: UUID = UUID.randomUUID()) = NavAnsatt(
 
 fun getNavEnhet(id: UUID = UUID.randomUUID()) = NavEnhet(
 	id = id,
-	enhetId = (100000..999999).random().toString(),
+	enhetsnummer = (100000..999999).random().toString(),
 	navn = "NAV Grünerløkka",
 )

@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.client.amtperson
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.OkHttpClient
@@ -31,6 +32,27 @@ class AmtPersonClient(
 						"Status=${response.code} error=${response.body?.string()}",
 				)
 				error("Kunne ikke hente NAV-enhet fra amt-person-service")
+			}
+			val body = response.body ?: error("Body manglet i response")
+
+			return objectMapper.readValue(body.string())
+		}
+	}
+
+	fun hentNavAnsatt(id: UUID): NavAnsatt {
+		val request =
+			Request.Builder()
+				.url("$url/api/nav-ansatt/$id")
+				.get()
+				.build()
+
+		amtPersonAADHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				log.error(
+					"Kunne ikke hente nav-ansatt med id $id fra amt-person-service. " +
+						"Status=${response.code} error=${response.body?.string()}",
+				)
+				error("Kunne ikke hente NAV-ansatt fra amt-person-service")
 			}
 			val body = response.body ?: error("Body manglet i response")
 

@@ -2,9 +2,11 @@ package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
+import no.nav.tiltaksarrangor.model.DeltakerHistorikk
 import no.nav.tiltaksarrangor.repositories.NavEnhetRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -14,7 +16,15 @@ class NavEnhetService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun get(id: UUID): NavEnhet = repository.get(id) ?: fetchEnhet(id)
+	suspend fun hentOpprettEllerOppdaterNavEnhet(id: UUID): NavEnhet {
+		repository
+			.get(id)
+			?.takeIf { it.sistEndret.isAfter(LocalDateTime.now().minusMonths(1)) }
+			?.let { return it.toNavEnhet() }
+
+		log.info("Fant ikke oppdatert nav-enhet med nummer $id, henter fra amt-person-service")
+		return fetchEnhet(id)
+	}
 
 	private fun fetchEnhet(id: UUID): NavEnhet {
 		val enhet = amtPersonClient.hentEnhet(id)
@@ -24,4 +34,11 @@ class NavEnhetService(
 
 		return enhet
 	}
+
+	fun hentEnheterForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavEnhet> {
+		val ider = historikk.flatMap { it.navEnheter() }.distinct()
+		return hentEnheter(ider)
+	}
+
+	private fun hentEnheter(enhetIder: List<UUID>) = repository.getMany(enhetIder).map { it.toNavEnhet() }.associateBy { it.id }
 }
