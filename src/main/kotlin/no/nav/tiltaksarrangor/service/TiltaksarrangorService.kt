@@ -8,6 +8,7 @@ import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
+import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
@@ -16,7 +17,6 @@ import no.nav.tiltaksarrangor.utils.toTitleCase
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
-import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 
 @Component
 class TiltaksarrangorService(
@@ -30,7 +30,7 @@ class TiltaksarrangorService(
 	private val navAnsattService: NavAnsattService,
 	private val navEnhetService: NavEnhetService,
 	private val deltakerMapper: DeltakerMapper,
-	private val arrangorRepository: ArrangorRepository
+	private val arrangorRepository: ArrangorRepository,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
