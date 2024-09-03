@@ -31,6 +31,7 @@ import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
+import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
@@ -67,16 +68,23 @@ class TiltaksarrangorServiceTest {
 	private val meldingProducer = mockk<MeldingProducer>(relaxUnitFun = true)
 	private val forslagService = ForslagService(forslagRepository, meldingProducer)
 	private val tilgangskontrollService = TilgangskontrollService(ansattService)
+	private val navAnsattService = mockk<NavAnsattService>(relaxUnitFun = true)
+	private val navEnhetService = mockk<NavEnhetService>(relaxUnitFun = true)
 	private val deltakerMapper = DeltakerMapper(ansattService, forslagService, endringsmeldingRepository)
+	private val arrangorRepository = ArrangorRepository(template)
 	private val tiltaksarrangorService =
 		TiltaksarrangorService(
 			amtTiltakClient,
 			ansattService,
 			metricsService,
 			deltakerRepository,
+			deltakerlisteRepository,
 			auditLoggerService,
 			tilgangskontrollService,
+			navAnsattService,
+			navEnhetService,
 			deltakerMapper,
+			arrangorRepository,
 		)
 
 	@AfterEach

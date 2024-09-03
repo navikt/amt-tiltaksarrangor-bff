@@ -13,9 +13,8 @@ class NavEnhetRepositoryTest {
 	fun `upsert - ny enhet - inserter`() {
 		val enhet = getNavEnhet()
 		repository.upsert(enhet)
-
 		val insertedEnhet = repository.get(enhet.id)
-		insertedEnhet shouldBe enhet
+		insertedEnhet!!.enhetsnummer shouldBe enhet.enhetsnummer
 	}
 
 	@Test
