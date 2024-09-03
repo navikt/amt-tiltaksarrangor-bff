@@ -16,6 +16,7 @@ import no.nav.tiltaksarrangor.utils.toTitleCase
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
+import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 
 @Component
 class TiltaksarrangorService(
@@ -29,6 +30,7 @@ class TiltaksarrangorService(
 	private val navAnsattService: NavAnsattService,
 	private val navEnhetService: NavEnhetService,
 	private val deltakerMapper: DeltakerMapper,
+	private val arrangorRepository: ArrangorRepository
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -60,6 +62,9 @@ class TiltaksarrangorService(
 	fun getDeltakerHistorikk(personIdent: String, deltakerId: UUID): List<DeltakerHistorikkResponse> {
 		val deltaker = getDeltaker(personIdent, deltakerId)
 		val historikk = deltaker.historikk
+		if (historikk.isEmpty()) {
+			return emptyList()
+		}
 		val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
 		val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
 
@@ -69,7 +74,9 @@ class TiltaksarrangorService(
 			)?.takeIf { it.deltakerlisteDbo.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltakerliste med id ${deltaker.deltakerliste.id}")
 
-		val arrangorNavn = deltakerlisteMedArrangor.arrangorDbo.navn ?: deltakerlisteMedArrangor.deltakerlisteDbo.navn
+		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
+
+		val arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn
 		return historikk.toResponse(ansatte, toTitleCase(arrangorNavn), enheter)
 	}
 
