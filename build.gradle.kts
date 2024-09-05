@@ -30,6 +30,8 @@ val commonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 val unleashVersion = "9.2.4"
 val ktlintVersion = "1.2.1"
 val amtLibVersion = "1.2024.08.06_10.56-1597f9c843c2"
+val reactorCoreVersion = "3.6.9"
+val kotlinxCoroutinesReactorVersion = "1.8.1"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -66,6 +68,8 @@ dependencies {
 
     implementation("no.nav.amt.lib:models:$amtLibVersion")
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
+    implementation("io.projectreactor:reactor-core:$reactorCoreVersion")
+    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:$kotlinxCoroutinesReactorVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude("com.vaadin.external.google", "android-json")
