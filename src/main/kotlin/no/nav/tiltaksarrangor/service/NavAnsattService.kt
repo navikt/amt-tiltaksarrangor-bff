@@ -15,7 +15,7 @@ class NavAnsattService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	suspend fun hentEllerOpprettNavAnsatt(id: UUID): NavAnsatt {
+	fun hentEllerOpprettNavAnsatt(id: UUID): NavAnsatt {
 		repository
 			.get(id)
 			?.let { return it }

@@ -89,7 +89,7 @@ class IngestService(
 		}
 	}
 
-	suspend fun lagreDeltaker(deltakerId: UUID, deltakerDto: DeltakerDto?) {
+	fun lagreDeltaker(deltakerId: UUID, deltakerDto: DeltakerDto?) {
 		if (deltakerDto == null) {
 			deltakerRepository.deleteDeltaker(deltakerId)
 			log.info("Slettet tombstonet deltaker med id $deltakerId")
@@ -110,7 +110,7 @@ class IngestService(
 		}
 	}
 
-	private suspend fun leggTilNavAnsattOgEnhetHistorikk(deltakerDto: DeltakerDto) {
+	private fun leggTilNavAnsattOgEnhetHistorikk(deltakerDto: DeltakerDto) {
 		if (deltakerDto.historikk.isNullOrEmpty()) {
 			return
 		}
@@ -118,11 +118,11 @@ class IngestService(
 		lagreAnsatteForHistorikk(deltakerDto.historikk)
 	}
 
-	suspend fun lagreEnheterForHistorikk(historikk: List<DeltakerHistorikk>) {
+	fun lagreEnheterForHistorikk(historikk: List<DeltakerHistorikk>) {
 		historikk.flatMap { it.navEnheter() }.distinct().forEach { id -> navEnhetService.hentOpprettEllerOppdaterNavEnhet(id) }
 	}
 
-	suspend fun lagreAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) {
+	fun lagreAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) {
 		historikk.flatMap { it.navAnsatte() }.distinct().forEach { id -> navAnsattService.hentEllerOpprettNavAnsatt(id) }
 	}
 

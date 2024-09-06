@@ -16,7 +16,7 @@ class NavEnhetService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	suspend fun hentOpprettEllerOppdaterNavEnhet(id: UUID): NavEnhet {
+	fun hentOpprettEllerOppdaterNavEnhet(id: UUID): NavEnhet {
 		repository
 			.get(id)
 			?.takeIf { it.sistEndret.isAfter(LocalDateTime.now().minusMonths(1)) }
