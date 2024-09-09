@@ -35,7 +35,7 @@ class AmtPersonClient(
 			}
 			val body = response.body ?: error("Body manglet i response")
 
-			return objectMapper.readValue(body.string())
+			return objectMapper.readValue<NavEnhetDto>(body.string()).toNavEnhet()
 		}
 	}
 
@@ -59,4 +59,16 @@ class AmtPersonClient(
 			return objectMapper.readValue(body.string())
 		}
 	}
+}
+
+data class NavEnhetDto(
+	val id: UUID,
+	val enhetId: String,
+	val navn: String,
+) {
+	fun toNavEnhet(): NavEnhet = NavEnhet(
+		id = id,
+		enhetsnummer = enhetId,
+		navn = navn,
+	)
 }
