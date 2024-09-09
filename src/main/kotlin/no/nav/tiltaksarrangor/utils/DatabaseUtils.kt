@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.utils
 
+import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import org.postgresql.util.PGobject
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import java.sql.ResultSet
@@ -37,5 +38,5 @@ fun ResultSet.getNullableDouble(columnLabel: String): Double? {
 
 fun toPGObject(value: Any?) = PGobject().also {
 	it.type = "json"
-	it.value = value?.let { v -> JsonUtils.objectMapper.writeValueAsString(v) }
+	it.value = value?.let { v -> objectMapper.writePolymorphicListAsString(v) }
 }
