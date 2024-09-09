@@ -15,5 +15,6 @@ data class DeltakerStatusAarsak(
 		IKKE_MOTT,
 		FEILREGISTRERT,
 		ANNET,
+		SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT,
 	}
 }
