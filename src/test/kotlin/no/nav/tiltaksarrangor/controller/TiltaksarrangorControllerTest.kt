@@ -2,13 +2,14 @@ package no.nav.tiltaksarrangor.controller
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
-import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
+import no.nav.tiltaksarrangor.model.DeltakerHistorikk
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
@@ -45,7 +46,6 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
 	private val arrangorRepository = ArrangorRepository(template)
-	private val forslagRepository = ForslagRepository(template)
 
 	@AfterEach
 	internal fun tearDown() {
@@ -220,6 +220,174 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 					gyldigFra,
 				)
 			},"gyldigTil":null},"historiskeVurderingerFraArrangor":[],"adressebeskyttet":false,"kilde":"ARENA","historikk":[]}
+			""".trimIndent().format()
+		response.code shouldBe 200
+		response.body?.string() shouldBe expectedJson
+	}
+
+	@Test
+	fun `getDeltakerhistorikk - ikke autentisert - returnerer 401`() {
+		val response =
+			sendRequest(
+				method = "GET",
+				path = "/tiltaksarrangor/deltaker/${UUID.randomUUID()}/historikk",
+			)
+
+		response.code shouldBe 401
+	}
+
+	@Test
+	fun `getDeltakerhistorikk - har tilgang, deltaker finnes, ingen historikk - returnerer tom liste`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Orgnavn",
+				organisasjonsnummer = "orgnummer",
+				overordnetArrangorId = null,
+			),
+		)
+		val deltakerliste =
+			getDeltakerliste(arrangorId).copy(
+				id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
+				startDato = LocalDate.of(2023, 2, 1),
+			)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val gyldigFra = LocalDateTime.now()
+		val deltaker =
+			getDeltaker(deltakerId, deltakerliste.id).copy(
+				personident = "10987654321",
+				telefonnummer = "90909090",
+				epost = "mail@test.no",
+				status = StatusType.DELTAR,
+				statusOpprettetDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+				startdato = LocalDate.of(2023, 2, 1),
+				dagerPerUke = 2.5f,
+				innsoktDato = LocalDate.of(2023, 1, 15),
+				bestillingstekst = "Tror deltakeren vil ha nytte av dette",
+				navKontor = "Nav Oslo",
+				navVeilederId = UUID.randomUUID(),
+				navVeilederNavn = "Veileder Veiledersen",
+				navVeilederTelefon = "56565656",
+				navVeilederEpost = "epost@nav.no",
+				vurderingerFraArrangor = getVurderinger(deltakerId, gyldigFra),
+				historikk = emptyList(),
+			)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.fromString("2d5fc2f7-a9e6-4830-a987-4ff135a70c10"),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER),
+					),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
+			),
+		)
+
+		val response =
+			sendRequest(
+				method = "GET",
+				path = "/tiltaksarrangor/deltaker/$deltakerId/historikk",
+				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+			)
+		val expectedJson =
+			"""
+			[]
+			""".trimIndent().format()
+		response.code shouldBe 200
+		response.body?.string() shouldBe expectedJson
+	}
+
+	@Test
+	fun `getDeltakerhistorikk - har tilgang, deltaker finnes, har historikk - returnerer historikk`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Orgnavn",
+				organisasjonsnummer = "orgnummer",
+				overordnetArrangorId = null,
+			),
+		)
+		val deltakerliste =
+			getDeltakerliste(arrangorId).copy(
+				id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
+				startDato = LocalDate.of(2023, 2, 1),
+			)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val ansattId = UUID.fromString("2d5fc2f7-a9e6-4830-a987-4ff135a70c10")
+		val deltakerId = UUID.randomUUID()
+		val gyldigFra = LocalDateTime.now()
+		val endringId = UUID.fromString("fe640f60-88ef-46d8-9bc4-148aecdef6da")
+		val deltaker =
+			getDeltaker(deltakerId, deltakerliste.id).copy(
+				personident = "10987654321",
+				telefonnummer = "90909090",
+				epost = "mail@test.no",
+				status = StatusType.DELTAR,
+				statusOpprettetDato = LocalDate.of(2023, 1, 1).atStartOfDay(),
+				startdato = LocalDate.of(2023, 2, 1),
+				dagerPerUke = 2.5f,
+				innsoktDato = LocalDate.of(2023, 1, 15),
+				bestillingstekst = "Tror deltakeren vil ha nytte av dette",
+				navKontor = "Nav Oslo",
+				navVeilederId = UUID.randomUUID(),
+				navVeilederNavn = "Veileder Veiledersen",
+				navVeilederTelefon = "56565656",
+				navVeilederEpost = "epost@nav.no",
+				vurderingerFraArrangor = getVurderinger(deltakerId, gyldigFra),
+				historikk = listOf(
+					DeltakerHistorikk.EndringFraArrangor(
+						EndringFraArrangor(
+							id = endringId,
+							deltakerId = deltakerId,
+							opprettetAvArrangorAnsattId = ansattId,
+							opprettet = LocalDate.of(2023, 1, 1).atStartOfDay(),
+							endring = EndringFraArrangor.LeggTilOppstartsdato(
+								startdato = LocalDate.of(2023, 2, 1),
+								sluttdato = null,
+							),
+						),
+					),
+				),
+			)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER),
+					),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
+			),
+		)
+
+		val response =
+			sendRequest(
+				method = "GET",
+				path = "/tiltaksarrangor/deltaker/$deltakerId/historikk",
+				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+			)
+		val expectedJson =
+			"""
+			[{"type":"EndringFraArrangor","id":"fe640f60-88ef-46d8-9bc4-148aecdef6da","opprettet":"2023-01-01T00:00:00","arrangorNavn":"Orgnavn","endring":{"type":"LeggTilOppstartsdato","startdato":"2023-02-01","sluttdato":null}}]
 			""".trimIndent().format()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson

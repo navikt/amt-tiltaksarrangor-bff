@@ -2,11 +2,12 @@ package no.nav.tiltaksarrangor.controller
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
-import no.nav.tiltaksarrangor.controller.response.DeltakerHistorikkResponse
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.service.TiltaksarrangorService
 import no.nav.tiltaksarrangor.service.TokenService
 import no.nav.tiltaksarrangor.utils.Issuer
+import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
+import no.nav.tiltaksarrangor.utils.writePolymorphicListAsString
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -40,11 +41,11 @@ class TiltaksarrangorController(
 
 	@GetMapping("/deltaker/{deltakerId}/historikk")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
-	fun getAlleDeltakerlister(
+	fun getDeltakerhistorikk(
 		@PathVariable deltakerId: UUID,
-	): List<DeltakerHistorikkResponse> {
+	): String {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
-		return tiltaksarrangorService.getDeltakerHistorikk(personIdent, deltakerId)
+		return objectMapper.writePolymorphicListAsString(tiltaksarrangorService.getDeltakerHistorikk(personIdent, deltakerId))
 	}
 
 	@PostMapping("/deltaker/{deltakerId}/vurdering")
