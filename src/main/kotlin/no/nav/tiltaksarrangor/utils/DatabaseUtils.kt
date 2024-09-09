@@ -36,7 +36,7 @@ fun ResultSet.getNullableDouble(columnLabel: String): Double? {
 	return value
 }
 
-fun toPGObject(value: Any?) = PGobject().also {
+inline fun <reified T> toPGObject(value: T?) = PGobject().also {
 	it.type = "json"
 	it.value = value?.let { v -> objectMapper.writePolymorphicListAsString(v) }
 }
