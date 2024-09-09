@@ -35,6 +35,8 @@ data class Deltaker(
 	val gjeldendeVurderingFraArrangor: Vurdering?,
 	val historiskeVurderingerFraArrangor: List<Vurdering>?,
 	val adressebeskyttet: Boolean,
+	val kilde: Kilde,
+	val historikk: List<DeltakerHistorikk>,
 ) {
 	data class Deltakerliste(
 		val id: UUID,
@@ -57,4 +59,9 @@ enum class Adressetype {
 	KONTAKTADRESSE,
 	OPPHOLDSADRESSE,
 	BOSTEDSADRESSE,
+}
+
+enum class Kilde {
+	KOMET,
+	ARENA,
 }

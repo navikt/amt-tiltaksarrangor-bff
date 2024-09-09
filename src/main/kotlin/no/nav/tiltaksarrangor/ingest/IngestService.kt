@@ -19,15 +19,17 @@ import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
+import no.nav.tiltaksarrangor.model.DeltakerHistorikk
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.service.NavAnsattService
+import no.nav.tiltaksarrangor.service.NavEnhetService
 import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -44,8 +46,9 @@ class IngestService(
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val amtArrangorClient: AmtArrangorClient,
 	private val unleashService: UnleashService,
-	private val navAnsattRepository: NavAnsattRepository,
 	private val forslagService: ForslagService,
+	private val navEnhetService: NavEnhetService,
+	private val navAnsattService: NavAnsattService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -94,6 +97,7 @@ class IngestService(
 		}
 		val lagretDeltaker = deltakerRepository.getDeltaker(deltakerId)
 		if (deltakerDto.skalLagres(lagretDeltaker)) {
+			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
 			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
 			log.info("Lagret deltaker med id $deltakerId")
 		} else {
@@ -106,9 +110,24 @@ class IngestService(
 		}
 	}
 
+	private fun leggTilNavAnsattOgEnhetHistorikk(deltakerDto: DeltakerDto) {
+		if (deltakerDto.historikk.isNullOrEmpty()) {
+			return
+		}
+		lagreEnheterForHistorikk(deltakerDto.historikk)
+		lagreAnsatteForHistorikk(deltakerDto.historikk)
+	}
+
+	fun lagreEnheterForHistorikk(historikk: List<DeltakerHistorikk>) {
+		historikk.flatMap { it.navEnheter() }.distinct().forEach { id -> navEnhetService.hentOpprettEllerOppdaterNavEnhet(id) }
+	}
+
+	fun lagreAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) {
+		historikk.flatMap { it.navAnsatte() }.distinct().forEach { id -> navAnsattService.hentEllerOpprettNavAnsatt(id) }
+	}
+
 	fun lagreNavAnsatt(id: UUID, navAnsatt: NavAnsatt) {
-		navAnsattRepository.upsert(navAnsatt)
-		log.info("Lagret nav-ansatt med id $id")
+		navAnsattService.upsert(navAnsatt)
 	}
 
 	fun lagreEndringsmelding(endringsmeldingId: UUID, endringsmeldingDto: EndringsmeldingDto?) {

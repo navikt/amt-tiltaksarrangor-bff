@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -396,6 +397,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 				status = StatusType.DELTAR,
 				statusOpprettetDato = LocalDateTime.now(),
 				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+				statusAarsak = null,
 				dagerPerUke = null,
 				prosentStilling = null,
 				startdato = LocalDate.of(2023, 2, 1),
@@ -412,6 +414,8 @@ class KoordinatorControllerTest : IntegrationTest() {
 				vurderingerFraArrangor = null,
 				adressebeskyttet = false,
 				innhold = null,
+				kilde = Kilde.ARENA,
+				historikk = emptyList(),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 
@@ -424,7 +428,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 
 		val expectedJson =
 			"""
-			{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","navn":"Gjennomføring 1","tiltaksnavn":"Navn på tiltak","arrangorNavn":"Arrangør AS","startDato":"2023-02-01","sluttDato":null,"status":"GJENNOMFORES","koordinatorer":[{"fornavn":"Fornavn1","mellomnavn":null,"etternavn":"Etternavn1"},{"fornavn":"Fornavn2","mellomnavn":null,"etternavn":"Etternavn2"}],"deltakere":[{"id":"252428ac-37a6-4341-bb17-5bad412c9409","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","soktInnDato":"2023-01-15T00:00:00","startDato":"2023-02-01","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00"},"veiledere":[],"navKontor":"NAV Testheim","aktiveEndringsmeldinger":[],"gjeldendeVurderingFraArrangor":null,"adressebeskyttet":false,"erVeilederForDeltaker":false}],"erKurs":false,"tiltakType":"ARBFORB"}
+			{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","navn":"Gjennomføring 1","tiltaksnavn":"Navn på tiltak","arrangorNavn":"Arrangør AS","startDato":"2023-02-01","sluttDato":null,"status":"GJENNOMFORES","koordinatorer":[{"fornavn":"Fornavn1","mellomnavn":null,"etternavn":"Etternavn1"},{"fornavn":"Fornavn2","mellomnavn":null,"etternavn":"Etternavn2"}],"deltakere":[{"id":"252428ac-37a6-4341-bb17-5bad412c9409","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","soktInnDato":"2023-01-15T00:00:00","startDato":"2023-02-01","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00","aarsak":null},"veiledere":[],"navKontor":"NAV Testheim","aktiveEndringsmeldinger":[],"gjeldendeVurderingFraArrangor":null,"adressebeskyttet":false,"erVeilederForDeltaker":false}],"erKurs":false,"tiltakType":"ARBFORB"}
 			""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson

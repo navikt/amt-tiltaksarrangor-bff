@@ -4,8 +4,11 @@ import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
+import no.nav.tiltaksarrangor.model.DeltakerHistorikk
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -74,6 +77,7 @@ class EndringsmeldingRepository(
 						status = StatusType.valueOf(rs.getString("deltakerstatus")),
 						statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 						statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
+						statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsak>(it) },
 						dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 						prosentStilling = rs.getNullableDouble("prosent_stilling"),
 						startdato = rs.getNullableLocalDate("deltaker_start_dato"),
@@ -89,6 +93,8 @@ class EndringsmeldingRepository(
 						skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
 						adressebeskyttet = rs.getBoolean("adressebeskyttet"),
 						innhold = rs.getString("deltaker.innhold")?.let { fromJsonString(it) },
+						kilde = rs.getString("kilde")?.let { Kilde.valueOf(it) },
+						historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 					),
 				deltakerlisteDbo =
 					DeltakerlisteDbo(
@@ -190,6 +196,7 @@ class EndringsmeldingRepository(
 					deltaker.status as deltakerstatus,
 					status_gyldig_fra,
 					status_opprettet_dato,
+					aarsak,
 					dager_per_uke,
 					prosent_stilling,
 					deltaker.start_dato as deltaker_start_dato,
@@ -197,6 +204,8 @@ class EndringsmeldingRepository(
 					innsokt_dato,
 					bestillingstekst,
 					deltaker.innhold as "deltaker.innhold",
+					kilde,
+					historikk,
 					navkontor,
 					navveileder_id,
 					navveileder_navn,

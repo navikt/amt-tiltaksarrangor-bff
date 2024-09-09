@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -78,6 +79,7 @@ class VeilederControllerTest : IntegrationTest() {
 				status = StatusType.DELTAR,
 				statusOpprettetDato = LocalDateTime.now(),
 				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
+				statusAarsak = null,
 				dagerPerUke = null,
 				prosentStilling = null,
 				startdato = LocalDate.of(2023, 2, 15),
@@ -94,6 +96,8 @@ class VeilederControllerTest : IntegrationTest() {
 				vurderingerFraArrangor = null,
 				adressebeskyttet = false,
 				innhold = null,
+				kilde = Kilde.ARENA,
+				historikk = emptyList(),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -121,7 +125,7 @@ class VeilederControllerTest : IntegrationTest() {
 
 		val expectedJson =
 			"""
-			[{"id":"977350f2-d6a5-49bb-a3a0-773f25f863d9","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","startDato":"2023-02-15","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00"},"deltakerliste":{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Arbeidsmarkedsopplæring","navn":"Gjennomføring 1"},"veiledertype":"VEILEDER","aktiveEndringsmeldinger":[],"adressebeskyttet":false}]
+			[{"id":"977350f2-d6a5-49bb-a3a0-773f25f863d9","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","startDato":"2023-02-15","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00","aarsak":null},"deltakerliste":{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Arbeidsmarkedsopplæring","navn":"Gjennomføring 1"},"veiledertype":"VEILEDER","aktiveEndringsmeldinger":[],"adressebeskyttet":false}]
 			""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson

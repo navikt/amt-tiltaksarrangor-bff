@@ -1,5 +1,8 @@
 package no.nav.tiltaksarrangor.ingest.model
 
+import no.nav.tiltaksarrangor.model.DeltakerHistorikk
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.repositories.model.Deltakelsesinnhold
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
@@ -22,6 +25,8 @@ data class DeltakerDto(
 	val deltarPaKurs: Boolean,
 	val vurderingerFraArrangor: List<VurderingDto>?,
 	val innhold: Deltakelsesinnhold?,
+	val kilde: Kilde?,
+	val historikk: List<DeltakerHistorikk>?,
 )
 
 fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
@@ -43,6 +48,7 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 		status = oppdatertStatus,
 		statusOpprettetDato = status.opprettetDato,
 		statusGyldigFraDato = status.gyldigFra,
+		statusAarsak = status.aarsak?.let { DeltakerStatusAarsak(it, status.aarsaksbeskrivelse) },
 		dagerPerUke = dagerPerUke,
 		prosentStilling = prosentStilling,
 		startdato = oppstartsdato,
@@ -71,6 +77,8 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 		vurderingerFraArrangor = vurderingerFraArrangor,
 		adressebeskyttet = personalia.adressebeskyttelse != null,
 		innhold = innhold,
+		kilde = kilde,
+		historikk = historikk ?: emptyList(),
 	)
 }
 

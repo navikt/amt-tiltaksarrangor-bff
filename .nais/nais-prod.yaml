@@ -62,6 +62,7 @@ spec:
       rules:
         - application: amt-tiltak
         - application: amt-arrangor
+        - application: amt-person-service
       external:
         - host: amt-unleash-api.nav.cloud.nais.io
   leaderElection: true

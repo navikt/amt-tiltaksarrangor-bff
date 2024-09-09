@@ -4,6 +4,6 @@ import java.util.UUID
 
 data class NavEnhet(
 	val id: UUID,
-	val enhetId: String,
+	val enhetsnummer: String,
 	val navn: String,
 )

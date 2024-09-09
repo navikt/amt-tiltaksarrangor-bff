@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.repositories
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -14,7 +15,7 @@ class NavAnsattRepository(
 	private val rowMapper = RowMapper { rs, _ ->
 		NavAnsatt(
 			id = UUID.fromString(rs.getString("id")),
-			navident = rs.getString("nav_ident"),
+			navIdent = rs.getString("nav_ident"),
 			navn = rs.getString("navn"),
 			epost = rs.getString("epost"),
 			telefon = rs.getString("telefon"),
@@ -42,7 +43,7 @@ class NavAnsattRepository(
 			""".trimIndent()
 		val params = sqlParameters(
 			"id" to navAnsatt.id,
-			"nav_ident" to navAnsatt.navident,
+			"nav_ident" to navAnsatt.navIdent,
 			"navn" to navAnsatt.navn,
 			"telefon" to navAnsatt.telefon,
 			"epost" to navAnsatt.epost,
@@ -60,5 +61,22 @@ class NavAnsattRepository(
 		val params = sqlParameters("id" to id)
 
 		return template.query(sql, params, rowMapper).firstOrNull()
+	}
+
+	fun getMany(navAnsattIder: List<UUID>): List<NavAnsatt> {
+		if (navAnsattIder.isEmpty()) return emptyList()
+
+		val sql =
+			"""
+			SELECT id, nav_ident, navn, telefon, epost
+			FROM nav_ansatt
+			WHERE id IN (:navAnsattIder)
+			""".trimIndent()
+
+		val parameters = MapSqlParameterSource().addValues(
+			mapOf("navAnsattIder" to navAnsattIder),
+		)
+
+		return template.query(sql, parameters, rowMapper)
 	}
 }

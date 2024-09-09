@@ -256,6 +256,7 @@ class KoordinatorService(
 					DeltakerStatus(
 						type = it.status,
 						endretDato = it.statusGyldigFraDato,
+						aarsak = it.statusAarsak,
 					),
 				veiledere = veiledereForDeltaker,
 				navKontor = if (adressebeskyttet) null else it.navKontor,

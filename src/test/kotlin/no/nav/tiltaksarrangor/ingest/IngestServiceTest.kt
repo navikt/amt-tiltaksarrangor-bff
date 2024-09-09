@@ -7,6 +7,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
@@ -23,16 +24,19 @@ import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.Deltakelsesinnhold
+import no.nav.tiltaksarrangor.service.NavAnsattService
+import no.nav.tiltaksarrangor.service.NavEnhetService
 import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
@@ -52,7 +56,8 @@ class IngestServiceTest {
 	private val endringsmeldingRepository = mockk<EndringsmeldingRepository>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val unleashService = mockk<UnleashService>()
-	private val navAnsattRepository = mockk<NavAnsattRepository>(relaxUnitFun = true)
+	private val navAnsattService = mockk<NavAnsattService>(relaxUnitFun = true)
+	private val navEnhetService = mockk<NavEnhetService>(relaxUnitFun = true)
 	private val forslagService = mockk<ForslagService>(relaxUnitFun = true)
 	private val ingestService =
 		IngestService(
@@ -63,8 +68,9 @@ class IngestServiceTest {
 			endringsmeldingRepository,
 			amtArrangorClient,
 			unleashService,
-			navAnsattRepository,
 			forslagService,
+			navEnhetService,
+			navAnsattService,
 		)
 
 	private val arrangor =
@@ -256,7 +262,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status DELTAR - lagres i db `() {
+	internal fun `lagreDeltaker - status DELTAR - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.DELTAR)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -267,7 +273,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status SOKT_INN - lagres ikke i db `() {
+	internal fun `lagreDeltaker - status SOKT_INN - lagres ikke i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.SOKT_INN)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -279,7 +285,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status HAR_SLUTTET for mer enn 40 dager siden - lagres ikke i db `() {
+	internal fun `lagreDeltaker - status HAR_SLUTTET for mer enn 40 dager siden - lagres ikke i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.HAR_SLUTTET, 41)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -290,7 +296,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status HAR_SLUTTET for mindre enn 40 dager siden - lagres i db `() {
+	internal fun `lagreDeltaker - status HAR_SLUTTET for mindre enn 40 dager siden - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.HAR_SLUTTET, 39)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -301,20 +307,21 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes ikke i db fra for - lagres ikke i db `() {
-		with(DeltakerDtoCtx()) {
-			every { deltakerRepository.getDeltaker(any()) } returns null
-			medStatus(DeltakerStatus.IKKE_AKTUELL)
-			medDeltarPaKurs()
-			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
+	internal fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes ikke i db fra for - lagres ikke i db `(): Unit =
+		runBlocking {
+			with(DeltakerDtoCtx()) {
+				every { deltakerRepository.getDeltaker(any()) } returns null
+				medStatus(DeltakerStatus.IKKE_AKTUELL)
+				medDeltarPaKurs()
+				ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+				verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+				verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+			}
 		}
-	}
 
 	@Test
-	internal fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes i db fra for - lagres i db `() {
+	internal fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes i db fra for - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.IKKE_AKTUELL)
 			medDeltarPaKurs()
@@ -327,34 +334,36 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status IKKE_AKTUELL for mer enn 40 dager siden, deltar pa kurs, finnes i db fra for - lagres ikke i db `() {
-		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.IKKE_AKTUELL, 42)
-			medDeltarPaKurs()
-			every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerDto.id)
+	internal fun `lagreDeltaker - status IKKE_AKTUELL for mer enn 40 dager siden, deltar pa kurs, finnes i db - lagres ikke i db `(): Unit =
+		runBlocking {
+			with(DeltakerDtoCtx()) {
+				medStatus(DeltakerStatus.IKKE_AKTUELL, 42)
+				medDeltarPaKurs()
+				every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerDto.id)
 
-			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
+				ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+				verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+				verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+			}
 		}
-	}
 
 	@Test
-	internal fun `lagreDeltaker - status HAR_SLUTTET mindre enn 40 dager siden, sluttdato mer enn 40 dager siden - lagres ikke i db `() {
-		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.HAR_SLUTTET, gyldigFraDagerSiden = 39)
-			medSluttdato(dagerSiden = 41)
-			every { deltakerRepository.getDeltaker(any()) } returns null
-			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
+	internal fun `lagreDeltaker - status HAR_SLUTTET mindre enn 40 dager siden, sluttdato mer enn 40 dager - lagres ikke i db `(): Unit =
+		runBlocking {
+			with(DeltakerDtoCtx()) {
+				medStatus(DeltakerStatus.HAR_SLUTTET, gyldigFraDagerSiden = 39)
+				medSluttdato(dagerSiden = 41)
+				every { deltakerRepository.getDeltaker(any()) } returns null
+				ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+				verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+				verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+			}
 		}
-	}
 
 	@Test
-	internal fun `lagreDeltaker - har adressebeskyttelse - lagres ikke i db `() {
+	internal fun `lagreDeltaker - har adressebeskyttelse - lagres ikke i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medAdressebeskyttelse()
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -366,7 +375,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - har adressebeskyttelse, unleashtoggle aktivert - lagres i db `() {
+	internal fun `lagreDeltaker - har adressebeskyttelse, unleashtoggle aktivert - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medAdressebeskyttelse()
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -378,7 +387,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - skjult, ny status DELTAR - fjerner skjuling i db `() {
+	internal fun `lagreDeltaker - skjult, ny status DELTAR - fjerner skjuling i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.DELTAR)
 
@@ -397,7 +406,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - skjult, samme status - beholder skjuling i db `() {
+	internal fun `lagreDeltaker - skjult, samme status - beholder skjuling i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.HAR_SLUTTET)
 
@@ -471,7 +480,7 @@ class IngestServiceTest {
 
 		ingestService.lagreNavAnsatt(navAnsatt.id, navAnsatt)
 
-		verify(exactly = 1) { navAnsattRepository.upsert(navAnsatt) }
+		verify(exactly = 1) { navAnsattService.upsert(navAnsatt) }
 	}
 
 	@Test
@@ -551,6 +560,8 @@ class DeltakerDtoCtx {
 				type = DeltakerStatus.DELTAR,
 				gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
 				opprettetDato = LocalDateTime.now().minusWeeks(1),
+				aarsak = null,
+				aarsaksbeskrivelse = null,
 			),
 		dagerPerUke = null,
 		prosentStilling = null,
@@ -573,6 +584,8 @@ class DeltakerDtoCtx {
 				),
 			),
 		),
+		kilde = Kilde.ARENA,
+		historikk = null, // vedtak?
 	)
 
 	fun medSluttdato(dagerSiden: Long) {
@@ -591,12 +604,19 @@ class DeltakerDtoCtx {
 		deltakerDto = deltakerDto.copy(deltarPaKurs = true)
 	}
 
-	fun medStatus(type: DeltakerStatus, gyldigFraDagerSiden: Long = 1L) {
+	fun medStatus(
+		type: DeltakerStatus,
+		gyldigFraDagerSiden: Long = 1L,
+		aarsak: DeltakerStatusAarsak.Type? = null,
+		aarsakbeskrivelse: String? = null,
+	) {
 		deltakerDto = deltakerDto.copy(
 			status = DeltakerStatusDto(
 				type = type,
 				gyldigFra = LocalDate.now().minusDays(gyldigFraDagerSiden).atStartOfDay(),
 				opprettetDato = LocalDateTime.now().minusDays(gyldigFraDagerSiden),
+				aarsak = aarsak,
+				aarsaksbeskrivelse = aarsakbeskrivelse,
 			),
 		)
 	}

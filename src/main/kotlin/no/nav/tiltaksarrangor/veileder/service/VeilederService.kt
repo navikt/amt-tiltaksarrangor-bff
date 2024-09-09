@@ -68,6 +68,7 @@ class VeilederService(
 					DeltakerStatus(
 						type = it.deltaker.status,
 						endretDato = it.deltaker.statusGyldigFraDato,
+						aarsak = it.deltaker.statusAarsak,
 					),
 				startDato = it.deltaker.startdato,
 				sluttDato = it.deltaker.sluttdato,
