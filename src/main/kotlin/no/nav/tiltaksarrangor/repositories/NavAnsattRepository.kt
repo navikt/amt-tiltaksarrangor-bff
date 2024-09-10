@@ -15,7 +15,7 @@ class NavAnsattRepository(
 	private val rowMapper = RowMapper { rs, _ ->
 		NavAnsatt(
 			id = UUID.fromString(rs.getString("id")),
-			navIdent = rs.getString("nav_ident"),
+			navident = rs.getString("nav_ident"),
 			navn = rs.getString("navn"),
 			epost = rs.getString("epost"),
 			telefon = rs.getString("telefon"),
@@ -43,7 +43,7 @@ class NavAnsattRepository(
 			""".trimIndent()
 		val params = sqlParameters(
 			"id" to navAnsatt.id,
-			"nav_ident" to navAnsatt.navIdent,
+			"nav_ident" to navAnsatt.navident,
 			"navn" to navAnsatt.navn,
 			"telefon" to navAnsatt.telefon,
 			"epost" to navAnsatt.epost,

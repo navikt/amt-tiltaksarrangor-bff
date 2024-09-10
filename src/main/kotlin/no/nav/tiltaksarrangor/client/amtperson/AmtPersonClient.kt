@@ -1,7 +1,6 @@
 package no.nav.tiltaksarrangor.client.amtperson
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.OkHttpClient
@@ -39,7 +38,7 @@ class AmtPersonClient(
 		}
 	}
 
-	fun hentNavAnsatt(id: UUID): NavAnsatt {
+	fun hentNavAnsatt(id: UUID): NavAnsattResponse {
 		val request =
 			Request.Builder()
 				.url("$url/api/nav-ansatt/$id")
@@ -60,6 +59,14 @@ class AmtPersonClient(
 		}
 	}
 }
+
+data class NavAnsattResponse(
+	val id: UUID,
+	val navIdent: String,
+	val navn: String,
+	val epost: String?,
+	val telefon: String?,
+)
 
 data class NavEnhetDto(
 	val id: UUID,
