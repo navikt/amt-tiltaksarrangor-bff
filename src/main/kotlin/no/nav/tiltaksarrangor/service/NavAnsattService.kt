@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.service
 
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
+import no.nav.tiltaksarrangor.client.amtperson.NavAnsattResponse
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.model.DeltakerHistorikk
 import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
@@ -25,7 +26,7 @@ class NavAnsattService(
 	}
 
 	private fun fetchNavAnsatt(id: UUID): NavAnsatt {
-		val navAnsatt = amtPersonClient.hentNavAnsatt(id)
+		val navAnsatt = amtPersonClient.hentNavAnsatt(id).toModel()
 
 		repository.upsert(navAnsatt)
 		log.info("Lagret nav-ansatt $id")
@@ -45,3 +46,11 @@ class NavAnsattService(
 
 	private fun hentAnsatte(veilederIder: List<UUID>) = repository.getMany(veilederIder).associateBy { it.id }
 }
+
+fun NavAnsattResponse.toModel() = NavAnsatt(
+	id = id,
+	navident = navIdent,
+	navn = navn,
+	epost = epost,
+	telefon = telefon,
+)
