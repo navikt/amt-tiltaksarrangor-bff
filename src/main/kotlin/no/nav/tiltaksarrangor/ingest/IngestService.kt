@@ -30,7 +30,6 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.service.NavAnsattService
 import no.nav.tiltaksarrangor.service.NavEnhetService
-import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -45,7 +44,6 @@ class IngestService(
 	private val deltakerRepository: DeltakerRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val amtArrangorClient: AmtArrangorClient,
-	private val unleashService: UnleashService,
 	private val forslagService: ForslagService,
 	private val navEnhetService: NavEnhetService,
 	private val navAnsattService: NavAnsattService,
@@ -141,9 +139,7 @@ class IngestService(
 	}
 
 	private fun DeltakerDto.skalLagres(lagretDeltaker: DeltakerDbo?): Boolean {
-		if (personalia.adressebeskyttelse != null && !unleashService.skalLagreAdressebeskyttedeDeltakere()) {
-			return false
-		} else if (status.type in SKJULES_ALLTID_STATUSER) {
+		if (status.type in SKJULES_ALLTID_STATUSER) {
 			return false
 		} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs && lagretDeltaker == null) {
 			return false

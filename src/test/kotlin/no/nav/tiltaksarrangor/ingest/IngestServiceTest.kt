@@ -41,7 +41,6 @@ import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import no.nav.tiltaksarrangor.testutils.getVurderinger
-import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -55,7 +54,6 @@ class IngestServiceTest {
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val endringsmeldingRepository = mockk<EndringsmeldingRepository>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
-	private val unleashService = mockk<UnleashService>()
 	private val navAnsattService = mockk<NavAnsattService>(relaxUnitFun = true)
 	private val navEnhetService = mockk<NavEnhetService>(relaxUnitFun = true)
 	private val forslagService = mockk<ForslagService>(relaxUnitFun = true)
@@ -67,7 +65,6 @@ class IngestServiceTest {
 			deltakerRepository,
 			endringsmeldingRepository,
 			amtArrangorClient,
-			unleashService,
 			forslagService,
 			navEnhetService,
 			navAnsattService,
@@ -90,7 +87,6 @@ class IngestServiceTest {
 			deltakerRepository,
 			endringsmeldingRepository,
 			amtArrangorClient,
-			unleashService,
 		)
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
 		every { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(any()) } returns 1
@@ -101,7 +97,6 @@ class IngestServiceTest {
 		every { arrangorRepository.getArrangor("88888888") } returns null
 		every { arrangorRepository.insertOrUpdateArrangor(any()) } just Runs
 		coEvery { amtArrangorClient.getArrangor("88888888") } returns arrangor
-		coEvery { unleashService.skalLagreAdressebeskyttedeDeltakere() } returns false
 	}
 
 	@Test
@@ -363,23 +358,10 @@ class IngestServiceTest {
 		}
 
 	@Test
-	internal fun `lagreDeltaker - har adressebeskyttelse - lagres ikke i db `(): Unit = runBlocking {
+	internal fun `lagreDeltaker - har adressebeskyttelse - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medAdressebeskyttelse()
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
-
-			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
-		}
-	}
-
-	@Test
-	internal fun `lagreDeltaker - har adressebeskyttelse, unleashtoggle aktivert - lagres i db `(): Unit = runBlocking {
-		with(DeltakerDtoCtx()) {
-			medAdressebeskyttelse()
-			every { deltakerRepository.getDeltaker(any()) } returns null
-			coEvery { unleashService.skalLagreAdressebeskyttedeDeltakere() } returns true
 			ingestService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
