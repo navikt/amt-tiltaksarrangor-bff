@@ -15,10 +15,6 @@ class UnleashService(
 		return features.associateWith { unleash.isEnabled(it) }
 	}
 
-	fun skalLagreAdressebeskyttedeDeltakere(): Boolean {
-		return unleash.isEnabled("amt.enable-adressebeskyttede-deltakere")
-	}
-
 	fun erForslagSkruddPa(tiltakstype: String): Boolean {
 		return unleash.isEnabled("amt.enable-komet-deltakere") && tiltakstype in forslagstiltak
 	}
