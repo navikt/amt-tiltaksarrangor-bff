@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.testutils
 
+import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.Bostedsadresse
@@ -20,7 +21,6 @@ import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
-import no.nav.tiltaksarrangor.repositories.model.Deltakelsesinnhold
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
@@ -83,7 +83,7 @@ fun getDeltaker(
 	innhold = Deltakelsesinnhold(
 		ledetekst = "Innholdsledetekst...",
 		innhold = listOf(
-			no.nav.tiltaksarrangor.repositories.model.Innhold(
+			no.nav.amt.lib.models.deltaker.Innhold(
 				tekst = "tekst",
 				innholdskode = "kode",
 				valgt = true,

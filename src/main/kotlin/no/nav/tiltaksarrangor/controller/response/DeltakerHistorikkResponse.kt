@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
+import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
-import no.nav.tiltaksarrangor.model.DeltakerEndring
-import no.nav.tiltaksarrangor.model.DeltakerHistorikk
-import no.nav.tiltaksarrangor.model.Vedtak
-import no.nav.tiltaksarrangor.repositories.model.Deltakelsesinnhold
 import java.time.LocalDateTime
 import java.util.UUID
 

@@ -9,6 +9,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
@@ -34,7 +35,6 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.repositories.model.Deltakelsesinnhold
 import no.nav.tiltaksarrangor.service.NavAnsattService
 import no.nav.tiltaksarrangor.service.NavEnhetService
 import no.nav.tiltaksarrangor.testutils.getAdresse
@@ -558,7 +558,7 @@ class DeltakerDtoCtx {
 		innhold = Deltakelsesinnhold(
 			ledetekst = "Innholdsledetekst...",
 			innhold = listOf(
-				no.nav.tiltaksarrangor.repositories.model.Innhold(
+				no.nav.amt.lib.models.deltaker.Innhold(
 					tekst = "tekst",
 					innholdskode = "kode",
 					valgt = true,
