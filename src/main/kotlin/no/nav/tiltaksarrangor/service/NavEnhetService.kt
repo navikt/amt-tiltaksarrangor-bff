@@ -1,8 +1,8 @@
 package no.nav.tiltaksarrangor.service
 
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
-import no.nav.tiltaksarrangor.model.DeltakerHistorikk
 import no.nav.tiltaksarrangor.repositories.NavEnhetRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

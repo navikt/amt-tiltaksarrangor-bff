@@ -1,8 +1,9 @@
 package no.nav.tiltaksarrangor.repositories.model
 
+import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.VurderingDto
-import no.nav.tiltaksarrangor.model.DeltakerHistorikk
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
@@ -70,15 +71,3 @@ val STATUSER_SOM_KAN_SKJULES =
 	)
 
 const val DAGER_AVSLUTTET_DELTAKER_VISES = 40L
-
-data class Deltakelsesinnhold(
-	val ledetekst: String?,
-	val innhold: List<Innhold>,
-)
-
-data class Innhold(
-	val tekst: String,
-	val innholdskode: String,
-	val valgt: Boolean,
-	val beskrivelse: String?,
-)
