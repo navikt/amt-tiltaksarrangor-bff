@@ -7,9 +7,12 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -19,6 +22,7 @@ import java.util.UUID
 	JsonSubTypes.Type(value = VedtakResponse::class, name = "Vedtak"),
 	JsonSubTypes.Type(value = ForslagHistorikkResponse::class, name = "Forslag"),
 	JsonSubTypes.Type(value = EndringFraArrangorResponse::class, name = "EndringFraArrangor"),
+	JsonSubTypes.Type(value = ImportertFraArenaResponse::class, name = "ImportertFraArena"),
 )
 sealed interface DeltakerHistorikkResponse
 
@@ -58,6 +62,16 @@ data class ForslagHistorikkResponse(
 	val status: ForslagHistorikkResponseStatus,
 ) : DeltakerHistorikkResponse
 
+data class ImportertFraArenaResponse(
+	val importertDato: LocalDateTime,
+	val innsoktDato: LocalDate,
+	val startdato: LocalDate?,
+	val sluttdato: LocalDate?,
+	val dagerPerUke: Float?,
+	val deltakelsesprosent: Float?,
+	val status: DeltakerStatus,
+) : DeltakerHistorikkResponse
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 sealed interface ForslagHistorikkResponseStatus {
 	data object VenterPaSvar : ForslagHistorikkResponseStatus
@@ -92,6 +106,7 @@ fun List<DeltakerHistorikk>.toResponse(
 		is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse(ansatte, enheter)
 		is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
 		is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
+		is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.toResponse()
 	}
 }
 
@@ -124,6 +139,16 @@ fun EndringFraArrangor.toResponse(arrangornavn: String) = EndringFraArrangorResp
 	opprettet = opprettet,
 	arrangorNavn = arrangornavn,
 	endring = endring,
+)
+
+fun ImportertFraArena.toResponse() = ImportertFraArenaResponse(
+	importertDato = importertDato,
+	innsoktDato = deltakerVedImport.innsoktDato,
+	startdato = deltakerVedImport.startdato,
+	sluttdato = deltakerVedImport.sluttdato,
+	dagerPerUke = deltakerVedImport.dagerPerUke,
+	deltakelsesprosent = deltakerVedImport.deltakelsesprosent,
+	status = deltakerVedImport.status,
 )
 
 fun Forslag.toResponse(arrangornavn: String) = this.toResponse(arrangornavn, emptyMap(), emptyMap())
