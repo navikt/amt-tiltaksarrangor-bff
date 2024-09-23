@@ -63,7 +63,6 @@ data class ForslagHistorikkResponse(
 ) : DeltakerHistorikkResponse
 
 data class ImportertFraArenaResponse(
-	val importertDato: LocalDateTime,
 	val innsoktDato: LocalDate,
 	val startdato: LocalDate?,
 	val sluttdato: LocalDate?,
@@ -142,7 +141,6 @@ fun EndringFraArrangor.toResponse(arrangornavn: String) = EndringFraArrangorResp
 )
 
 fun ImportertFraArena.toResponse() = ImportertFraArenaResponse(
-	importertDato = importertDato,
 	innsoktDato = deltakerVedImport.innsoktDato,
 	startdato = deltakerVedImport.startdato,
 	sluttdato = deltakerVedImport.sluttdato,
