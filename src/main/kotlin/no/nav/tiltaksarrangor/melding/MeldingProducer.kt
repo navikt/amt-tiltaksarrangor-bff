@@ -20,7 +20,7 @@ class MeldingProducer(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	private val producer = Producer(kafkaConfig, MELDING_TOPIC)
+	private val producer = Producer<String, String>(kafkaConfig)
 
 	fun produce(forslag: Forslag) {
 		when (forslag.status) {
@@ -32,14 +32,14 @@ class MeldingProducer(
 			is Forslag.Status.Erstattet,
 			is Forslag.Status.VenterPaSvar,
 			-> {
-				producer.produce(forslag.id.toString(), JsonUtils.objectMapper.writeValueAsString(forslag))
+				producer.produce(MELDING_TOPIC, forslag.id.toString(), JsonUtils.objectMapper.writeValueAsString(forslag))
 				log.info("Produserte forslag ${forslag.id} med status ${forslag.status::class.simpleName}")
 			}
 		}
 	}
 
 	fun produce(endring: EndringFraArrangor) {
-		producer.produce(endring.id.toString(), JsonUtils.objectMapper.writeValueAsString(endring))
+		producer.produce(MELDING_TOPIC, endring.id.toString(), JsonUtils.objectMapper.writeValueAsString(endring))
 		log.info("Produserte endring fra arrangør ${endring.id}")
 	}
 }
