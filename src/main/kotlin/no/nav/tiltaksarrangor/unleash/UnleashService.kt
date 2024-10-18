@@ -7,15 +7,19 @@ import org.springframework.stereotype.Component
 class UnleashService(
 	private val unleash: Unleash,
 ) {
-	private val forslagstiltak = listOf(
+	private val tiltakstyperKometAlltidErMasterFor = listOf(
 		"ARBFORB",
 	)
 
-	fun getFeaturetoggles(features: List<String>): Map<String, Boolean> {
-		return features.associateWith { unleash.isEnabled(it) }
+	// her kan vi legge inn de neste tiltakstypene vi skal ta over
+	private val tiltakstyperKometKanskjeErMasterFor = emptyList<String>()
+
+	fun erKometMasterForTiltakstype(tiltakstype: String): Boolean {
+		return tiltakstype in tiltakstyperKometAlltidErMasterFor ||
+			(unleash.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
 	}
 
-	fun erForslagSkruddPa(tiltakstype: String): Boolean {
-		return unleash.isEnabled("amt.enable-komet-deltakere") && tiltakstype in forslagstiltak
+	fun getFeaturetoggles(features: List<String>): Map<String, Boolean> {
+		return features.associateWith { unleash.isEnabled(it) }
 	}
 }
