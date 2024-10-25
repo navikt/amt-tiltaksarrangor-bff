@@ -8,6 +8,7 @@ import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -40,7 +41,8 @@ class VeilederServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
-	private val veilederService = VeilederService(ansattService, deltakerRepository, endringsmeldingRepository)
+	private val forslagRepository = ForslagRepository(template)
+	private val veilederService = VeilederService(ansattService, deltakerRepository, forslagRepository, endringsmeldingRepository)
 
 	@AfterEach
 	internal fun tearDown() {

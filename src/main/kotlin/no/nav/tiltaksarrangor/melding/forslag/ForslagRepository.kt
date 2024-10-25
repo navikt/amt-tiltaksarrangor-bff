@@ -81,6 +81,17 @@ class ForslagRepository(
 		return template.query(sql, params, rowMapper)
 	}
 
+	fun getAktiveForslagForDeltakere(deltakerIder: List<UUID>): List<Forslag> {
+		if (deltakerIder.isEmpty()) {
+			return emptyList()
+		}
+
+		val sql = "select * from forslag where deltaker_id in(:ids)"
+		val params = sqlParameters("ids" to deltakerIder)
+		return template.query(sql, params, rowMapper)
+			.filter { it.status is Forslag.Status.VenterPaSvar }
+	}
+
 	fun delete(id: UUID): Int {
 		val sql = "delete from forslag where id = :id"
 		val params = sqlParameters("id" to id)

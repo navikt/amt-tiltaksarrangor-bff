@@ -46,6 +46,7 @@ data class ForslagResponse(
 
 data class AktivtForslagResponse(
 	val id: UUID,
+	val deltakerId: UUID,
 	val opprettet: LocalDateTime,
 	val begrunnelse: String?,
 	val endring: Forslag.Endring,
@@ -58,6 +59,7 @@ fun Forslag.tilAktivtForslagResponse(): AktivtForslagResponse {
 	}
 	return AktivtForslagResponse(
 		this.id,
+		this.deltakerId,
 		this.opprettet,
 		this.begrunnelse,
 		this.endring,

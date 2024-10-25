@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.veileder.model
 
+import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
@@ -18,6 +19,7 @@ data class Deltaker(
 	val deltakerliste: Deltakerliste,
 	val veiledertype: Veiledertype,
 	val aktiveEndringsmeldinger: List<Endringsmelding>,
+	val aktiveForslag: List<AktivtForslagResponse>,
 	val adressebeskyttet: Boolean,
 ) {
 	data class Deltakerliste(
