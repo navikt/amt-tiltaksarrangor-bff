@@ -1,6 +1,9 @@
 package no.nav.tiltaksarrangor.veileder.service
 
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
+import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
+import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
+import no.nav.tiltaksarrangor.melding.forslag.tilAktivtForslagResponse
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
@@ -19,6 +22,7 @@ import java.util.UUID
 class VeilederService(
 	private val ansattService: AnsattService,
 	private val deltakerRepository: DeltakerRepository,
+	private val forslagRepository: ForslagRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 ) {
 	fun getMineDeltakere(personIdent: String): List<Deltaker> {
@@ -41,14 +45,17 @@ class VeilederService(
 			return emptyList()
 		}
 		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltakere(deltakere.map { it.deltaker.id })
+		val aktiveForslag = forslagRepository.getAktiveForslagForDeltakere(deltakere.map { it.deltaker.id })
+			.map { it.tilAktivtForslagResponse() }
 
-		return tilVeiledersDeltakere(deltakere, ansatt.veilederDeltakere, endringsmeldinger)
+		return tilVeiledersDeltakere(deltakere, ansatt.veilederDeltakere, endringsmeldinger, aktiveForslag)
 	}
 
 	private fun tilVeiledersDeltakere(
 		deltakere: List<DeltakerMedDeltakerlisteDbo>,
 		ansattsVeilederDeltakere: List<VeilederDeltakerDbo>,
 		endringsmeldinger: List<EndringsmeldingDbo>,
+		aktiveForslag: List<AktivtForslagResponse>,
 	): List<Deltaker> {
 		return deltakere.map {
 			val adressebeskyttet = it.deltaker.adressebeskyttet
@@ -74,6 +81,7 @@ class VeilederService(
 				sluttDato = it.deltaker.sluttdato,
 				veiledertype = getVeiledertype(it.deltaker.id, ansattsVeilederDeltakere),
 				aktiveEndringsmeldinger = getEndringsmeldinger(it.deltaker.id, endringsmeldinger),
+				aktiveForslag = getAktiveForslag(it.deltaker.id, aktiveForslag),
 				adressebeskyttet = adressebeskyttet,
 			)
 		}
@@ -87,5 +95,9 @@ class VeilederService(
 	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
 		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
 		return endringsmeldingerForDeltaker.map { it.toEndringsmelding() }
+	}
+
+	private fun getAktiveForslag(deltakerId: UUID, aktiveForslag: List<AktivtForslagResponse>): List<AktivtForslagResponse> {
+		return aktiveForslag.filter { it.deltakerId == deltakerId }
 	}
 }
