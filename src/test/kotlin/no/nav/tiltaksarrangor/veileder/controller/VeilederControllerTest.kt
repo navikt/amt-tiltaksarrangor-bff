@@ -125,7 +125,7 @@ class VeilederControllerTest : IntegrationTest() {
 
 		val expectedJson =
 			"""
-			[{"id":"977350f2-d6a5-49bb-a3a0-773f25f863d9","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","startDato":"2023-02-15","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00","aarsak":null},"deltakerliste":{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Arbeidsmarkedsopplæring","navn":"Gjennomføring 1"},"veiledertype":"VEILEDER","aktiveEndringsmeldinger":[],"aktiveForslag":[],"adressebeskyttet":false}]
+			[{"id":"977350f2-d6a5-49bb-a3a0-773f25f863d9","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","startDato":"2023-02-15","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00","aarsak":null},"deltakerliste":{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Arbeidsmarkedsopplæring","navn":"Gjennomføring 1"},"veiledertype":"VEILEDER","endringer":[],"adressebeskyttet":false}]
 			""".trimIndent()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson

@@ -126,20 +126,20 @@ class VeilederServiceTest {
 		minDeltaker1?.etternavn shouldNotBe ""
 		minDeltaker1?.deltakerliste?.id shouldBe deltakerliste.id
 		minDeltaker1?.veiledertype shouldBe Veiledertype.VEILEDER
-		minDeltaker1?.aktiveEndringsmeldinger?.size shouldBe 2
+		minDeltaker1?.endringer?.size shouldBe 2
 		minDeltaker1?.adressebeskyttet shouldBe false
 
 		val minDeltaker2 = mineDeltakere.find { it.id == deltaker2.id }
 		minDeltaker2?.fodselsnummer shouldBe deltaker2.personident
 		minDeltaker2?.deltakerliste?.id shouldBe deltakerliste.id
 		minDeltaker2?.veiledertype shouldBe Veiledertype.MEDVEILEDER
-		minDeltaker2?.aktiveEndringsmeldinger?.size shouldBe 0
+		minDeltaker2?.endringer?.size shouldBe 0
 
 		val minDeltaker3 = mineDeltakere.find { it.id == deltaker3.id }
 		minDeltaker3?.fodselsnummer shouldBe deltaker3.personident
 		minDeltaker3?.deltakerliste?.id shouldBe deltakerliste2.id
 		minDeltaker3?.veiledertype shouldBe Veiledertype.VEILEDER
-		minDeltaker3?.aktiveEndringsmeldinger?.size shouldBe 0
+		minDeltaker3?.endringer?.size shouldBe 0
 	}
 
 	@Test

@@ -1,13 +1,15 @@
 package no.nav.tiltaksarrangor.veileder.service
 
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
-import no.nav.tiltaksarrangor.melding.forslag.tilAktivtForslagResponse
+import no.nav.tiltaksarrangor.model.AktivEndring
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
+import no.nav.tiltaksarrangor.model.getTypeFromEndringsmelding
+import no.nav.tiltaksarrangor.model.getTypeFromForslag
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
@@ -46,7 +48,6 @@ class VeilederService(
 		}
 		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltakere(deltakere.map { it.deltaker.id })
 		val aktiveForslag = forslagRepository.getAktiveForslagForDeltakere(deltakere.map { it.deltaker.id })
-			.map { it.tilAktivtForslagResponse() }
 
 		return tilVeiledersDeltakere(deltakere, ansatt.veilederDeltakere, endringsmeldinger, aktiveForslag)
 	}
@@ -55,7 +56,7 @@ class VeilederService(
 		deltakere: List<DeltakerMedDeltakerlisteDbo>,
 		ansattsVeilederDeltakere: List<VeilederDeltakerDbo>,
 		endringsmeldinger: List<EndringsmeldingDbo>,
-		aktiveForslag: List<AktivtForslagResponse>,
+		aktiveForslag: List<Forslag>,
 	): List<Deltaker> {
 		return deltakere.map {
 			val adressebeskyttet = it.deltaker.adressebeskyttet
@@ -80,8 +81,7 @@ class VeilederService(
 				startDato = it.deltaker.startdato,
 				sluttDato = it.deltaker.sluttdato,
 				veiledertype = getVeiledertype(it.deltaker.id, ansattsVeilederDeltakere),
-				aktiveEndringsmeldinger = getEndringsmeldinger(it.deltaker.id, endringsmeldinger),
-				aktiveForslag = getAktiveForslag(it.deltaker.id, aktiveForslag),
+				endringer = getEndringer(it.deltaker.id, endringsmeldinger, aktiveForslag),
 				adressebeskyttet = adressebeskyttet,
 			)
 		}
@@ -92,12 +92,39 @@ class VeilederService(
 			?: throw IllegalStateException("Deltaker med id $deltakerId mangler fra listen, skal ikke kunne skje!")
 	}
 
+	private fun getEndringer(
+		deltakerId: UUID,
+		endringsmeldinger: List<EndringsmeldingDbo>,
+		aktiveForslag: List<Forslag>,
+	): List<AktivEndring> {
+		val endringsmeldingerForDeltaker = getEndringsmeldinger(deltakerId, endringsmeldinger)
+		if (endringsmeldingerForDeltaker.isNotEmpty()) {
+			return endringsmeldingerForDeltaker.map {
+				AktivEndring(
+					deltakerId,
+					endingsType = getTypeFromEndringsmelding(it.type),
+					type = AktivEndring.Type.Endringsmelding,
+					sendt = it.sendt,
+				)
+			}
+		}
+		val aktiveForslag = getAktiveForslag(deltakerId, aktiveForslag)
+		return aktiveForslag.map {
+			AktivEndring(
+				deltakerId,
+				endingsType = getTypeFromForslag(it.endring),
+				type = AktivEndring.Type.Endringsmelding,
+				sendt = it.opprettet.toLocalDate(),
+			)
+		}
+	}
+
 	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
 		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
 		return endringsmeldingerForDeltaker.map { it.toEndringsmelding() }
 	}
 
-	private fun getAktiveForslag(deltakerId: UUID, aktiveForslag: List<AktivtForslagResponse>): List<AktivtForslagResponse> {
+	private fun getAktiveForslag(deltakerId: UUID, aktiveForslag: List<Forslag>): List<Forslag> {
 		return aktiveForslag.filter { it.deltakerId == deltakerId }
 	}
 }
