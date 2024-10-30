@@ -23,7 +23,6 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.UUID
 
 @Component
@@ -64,7 +63,7 @@ class DeltakerRepository(
 				adressebeskyttet = rs.getBoolean("adressebeskyttet"),
 				innhold = rs.getString("innhold")?.let { fromJsonString(it) },
 				kilde = Kilde.valueOf(rs.getString("kilde")),
-				historikk = rs.getString("historikk").let { fromJsonString<List<DeltakerHistorikk>>(it) },
+				historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 				sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 			)
 		}
@@ -105,7 +104,7 @@ class DeltakerRepository(
 						adressebeskyttet = rs.getBoolean("adressebeskyttet"),
 						innhold = rs.getString("innhold")?.let { fromJsonString(it) },
 						kilde = Kilde.valueOf(rs.getString("kilde")),
-						historikk = rs.getString("historikk").let { fromJsonString<List<DeltakerHistorikk>>(it) },
+						historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 					),
 				deltakerliste =
@@ -164,7 +163,7 @@ class DeltakerRepository(
 					:adressebeskyttet,
 					:innhold,
 					:kilde,
-					:historikk
+					:historikk,
 					:modified_at)
 			ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
 										   personident           = :personident,
@@ -235,7 +234,7 @@ class DeltakerRepository(
 				"innhold" to toPGObject(deltakerDbo.innhold),
 				"kilde" to deltakerDbo.kilde?.name,
 				"historikk" to toPGObject(deltakerDbo.historikk),
-				"modified_at" to (deltakerDbo.sistEndret),
+				"modified_at" to deltakerDbo.sistEndret,
 			),
 		)
 	}

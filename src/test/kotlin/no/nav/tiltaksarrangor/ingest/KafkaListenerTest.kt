@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.ingest
 
-import no.nav.security.mock.oauth2.http.get
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.ingest.model.AnsattDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattPersonaliaDto

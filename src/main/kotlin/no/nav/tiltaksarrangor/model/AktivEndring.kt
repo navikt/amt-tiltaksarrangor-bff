@@ -27,8 +27,8 @@ data class AktivEndring(
 	}
 }
 
-fun getTypeFromEndringsmelding(t: Endringsmelding.Type): AktivEndring.EndringsType {
-	return when (t) {
+fun getTypeFromEndringsmelding(endringsmeldingtype: Endringsmelding.Type): AktivEndring.EndringsType {
+	return when (endringsmeldingtype) {
 		Endringsmelding.Type.ENDRE_OPPSTARTSDATO -> AktivEndring.EndringsType.Startdato
 		Endringsmelding.Type.LEGG_TIL_OPPSTARTSDATO -> AktivEndring.EndringsType.LeggTilOppstartsDato
 		Endringsmelding.Type.FORLENG_DELTAKELSE -> AktivEndring.EndringsType.ForlengDeltakelse
@@ -40,8 +40,8 @@ fun getTypeFromEndringsmelding(t: Endringsmelding.Type): AktivEndring.EndringsTy
 	}
 }
 
-fun getTypeFromForslag(ednring: Forslag.Endring): AktivEndring.EndringsType {
-	return when (ednring) {
+fun getTypeFromForslag(endring: Forslag.Endring): AktivEndring.EndringsType {
+	return when (endring) {
 		is Forslag.ForlengDeltakelse -> AktivEndring.EndringsType.ForlengDeltakelse
 		is Forslag.IkkeAktuell -> AktivEndring.EndringsType.IkkeAktuell
 		is Forslag.Sluttarsak -> AktivEndring.EndringsType.Sluttarsak

@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.testutils
 
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
@@ -103,6 +104,18 @@ fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo = EndringsmeldingDb
 	innhold = Innhold.ForlengDeltakelseInnhold(LocalDate.now().plusMonths(2)),
 	status = Endringsmelding.Status.AKTIV,
 	sendt = LocalDateTime.now(),
+)
+
+fun getForslag(deltakerId: UUID): Forslag = Forslag(
+	id = UUID.randomUUID(),
+	deltakerId = deltakerId,
+	opprettetAvArrangorAnsattId = UUID.randomUUID(),
+	opprettet = LocalDateTime.now(),
+	begrunnelse = null,
+	endring = Forslag.ForlengDeltakelse(
+		sluttdato = LocalDate.now().plusWeeks(3),
+	),
+	status = Forslag.Status.VenterPaSvar,
 )
 
 fun getAdresse(): AdresseDto = AdresseDto(
