@@ -7,6 +7,7 @@ import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class DeltakerDto(
@@ -27,6 +28,7 @@ data class DeltakerDto(
 	val innhold: Deltakelsesinnhold?,
 	val kilde: Kilde?,
 	val historikk: List<DeltakerHistorikk>?,
+	val sistEndret: LocalDateTime?,
 )
 
 fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
@@ -79,6 +81,7 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 		innhold = innhold,
 		kilde = kilde,
 		historikk = historikk ?: emptyList(),
+		sistEndret = sistEndret ?: LocalDateTime.now(),
 	)
 }
 

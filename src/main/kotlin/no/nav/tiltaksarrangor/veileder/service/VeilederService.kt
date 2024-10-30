@@ -81,7 +81,9 @@ class VeilederService(
 				startDato = it.deltaker.startdato,
 				sluttDato = it.deltaker.sluttdato,
 				veiledertype = getVeiledertype(it.deltaker.id, ansattsVeilederDeltakere),
-				endringer = getEndringer(it.deltaker.id, endringsmeldinger, aktiveForslag),
+				aktiveEndringsmeldinger = getEndringsmeldinger(it.deltaker.id, endringsmeldinger),
+				aktivEndring = getAktivEndring(it.deltaker.id, endringsmeldinger, aktiveForslag),
+				sistEndret = it.deltaker.sistEndret,
 				adressebeskyttet = adressebeskyttet,
 			)
 		}
@@ -92,11 +94,11 @@ class VeilederService(
 			?: throw IllegalStateException("Deltaker med id $deltakerId mangler fra listen, skal ikke kunne skje!")
 	}
 
-	private fun getEndringer(
+	private fun getAktivEndring(
 		deltakerId: UUID,
 		endringsmeldinger: List<EndringsmeldingDbo>,
 		aktiveForslag: List<Forslag>,
-	): List<AktivEndring> {
+	): AktivEndring? {
 		val endringsmeldingerForDeltaker = getEndringsmeldinger(deltakerId, endringsmeldinger)
 		if (endringsmeldingerForDeltaker.isNotEmpty()) {
 			return endringsmeldingerForDeltaker.map {
@@ -106,7 +108,7 @@ class VeilederService(
 					type = AktivEndring.Type.Endringsmelding,
 					sendt = it.sendt,
 				)
-			}
+			}.maxBy { it.sendt }
 		}
 		val aktiveForslag = getAktiveForslag(deltakerId, aktiveForslag)
 		return aktiveForslag.map {
@@ -116,7 +118,7 @@ class VeilederService(
 				type = AktivEndring.Type.Endringsmelding,
 				sendt = it.opprettet.toLocalDate(),
 			)
-		}
+		}.maxByOrNull { it.sendt }
 	}
 
 	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {

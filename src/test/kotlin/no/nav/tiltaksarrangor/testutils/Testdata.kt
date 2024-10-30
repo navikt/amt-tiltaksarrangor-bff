@@ -93,6 +93,7 @@ fun getDeltaker(
 	),
 	kilde = Kilde.ARENA,
 	historikk = emptyList(),
+	sistEndret = LocalDateTime.now(),
 )
 
 fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo = EndringsmeldingDbo(

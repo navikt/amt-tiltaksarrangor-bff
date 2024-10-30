@@ -95,6 +95,7 @@ class EndringsmeldingRepository(
 						innhold = rs.getString("deltaker.innhold")?.let { fromJsonString(it) },
 						kilde = rs.getString("kilde")?.let { Kilde.valueOf(it) },
 						historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
+						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime()
 					),
 				deltakerlisteDbo =
 					DeltakerlisteDbo(
@@ -223,6 +224,7 @@ class EndringsmeldingRepository(
 					deltakerliste.slutt_dato as delakerliste_slutt_dato,
 					er_kurs,
 					tilgjengelig_fom
+					deltaker.modified_at as modified_at
 			FROM endringsmelding
 			         INNER JOIN deltaker ON deltaker.id = endringsmelding.deltaker_id
 			         INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id

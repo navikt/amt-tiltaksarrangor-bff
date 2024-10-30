@@ -98,6 +98,7 @@ class VeilederControllerTest : IntegrationTest() {
 				innhold = null,
 				kilde = Kilde.ARENA,
 				historikk = emptyList(),
+				sistEndret = LocalDateTime.now()
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		ansattRepository.insertOrUpdateAnsatt(

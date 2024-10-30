@@ -2,8 +2,10 @@ package no.nav.tiltaksarrangor.veileder.model
 
 import no.nav.tiltaksarrangor.model.AktivEndring
 import no.nav.tiltaksarrangor.model.DeltakerStatus
+import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class Deltaker(
@@ -17,7 +19,9 @@ data class Deltaker(
 	val status: DeltakerStatus,
 	val deltakerliste: Deltakerliste,
 	val veiledertype: Veiledertype,
-	val endringer: List<AktivEndring>,
+	val aktiveEndringsmeldinger: List<Endringsmelding>,
+	val aktivEndring: AktivEndring?,
+	val sistEndret: LocalDateTime,
 	val adressebeskyttet: Boolean,
 ) {
 	data class Deltakerliste(

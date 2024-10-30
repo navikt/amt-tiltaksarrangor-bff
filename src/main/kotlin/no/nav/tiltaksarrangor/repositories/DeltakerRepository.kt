@@ -23,6 +23,7 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Component
@@ -64,6 +65,7 @@ class DeltakerRepository(
 				innhold = rs.getString("innhold")?.let { fromJsonString(it) },
 				kilde = Kilde.valueOf(rs.getString("kilde")),
 				historikk = rs.getString("historikk").let { fromJsonString<List<DeltakerHistorikk>>(it) },
+				sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 			)
 		}
 
@@ -104,6 +106,7 @@ class DeltakerRepository(
 						innhold = rs.getString("innhold")?.let { fromJsonString(it) },
 						kilde = Kilde.valueOf(rs.getString("kilde")),
 						historikk = rs.getString("historikk").let { fromJsonString<List<DeltakerHistorikk>>(it) },
+						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 					),
 				deltakerliste =
 					DeltakerlisteDbo(
@@ -129,7 +132,7 @@ class DeltakerRepository(
 								 start_dato, slutt_dato,
 								 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
 								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
-								 innhold, kilde, historikk)
+								 innhold, kilde, historikk, modified_at)
 			VALUES (:id,
 					:deltakerliste_id,
 					:personident,
@@ -161,7 +164,8 @@ class DeltakerRepository(
 					:adressebeskyttet,
 					:innhold,
 					:kilde,
-					:historikk)
+					:historikk
+					:modified_at)
 			ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
 										   personident           = :personident,
 										   fornavn               = :fornavn,
@@ -192,7 +196,8 @@ class DeltakerRepository(
 										   adressebeskyttet		 = :adressebeskyttet,
 										   innhold 				 = :innhold,
 										   kilde		 		 = :kilde,
-										   historikk             = :historikk
+										   historikk             = :historikk,
+										   modified_at           = :modified_at
 			""".trimIndent()
 
 		template.update(
@@ -230,6 +235,7 @@ class DeltakerRepository(
 				"innhold" to toPGObject(deltakerDbo.innhold),
 				"kilde" to deltakerDbo.kilde?.name,
 				"historikk" to toPGObject(deltakerDbo.historikk),
+				"modified_at" to (deltakerDbo.sistEndret),
 			),
 		)
 	}
@@ -309,7 +315,8 @@ class DeltakerRepository(
 				deltakerliste.start_dato as deltakerliste_start_dato,
 				deltakerliste.slutt_dato as deltakerliste_slutt_dato,
 				er_kurs,
-				tilgjengelig_fom
+				tilgjengelig_fom,
+				deltaker.modified_at as modified_at
 		FROM deltaker
 				 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 		WHERE deltaker.id IN (:ids);
@@ -361,7 +368,8 @@ class DeltakerRepository(
 					deltakerliste.start_dato as deltakerliste_start_dato,
 					deltakerliste.slutt_dato as deltakerliste_slutt_dato,
 					er_kurs,
-					tilgjengelig_fom
+					tilgjengelig_fom,
+				    deltaker.modified_at as modified_at
 			FROM deltaker
 					 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 			WHERE deltaker.id = :id;
