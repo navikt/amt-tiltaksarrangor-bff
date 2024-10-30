@@ -44,6 +44,7 @@ data class DeltakerDbo(
 	val innhold: Deltakelsesinnhold?,
 	val kilde: Kilde?,
 	val historikk: List<DeltakerHistorikk>,
+	val sistEndret: LocalDateTime,
 ) {
 	fun erSkjult(): Boolean = skjultDato != null
 

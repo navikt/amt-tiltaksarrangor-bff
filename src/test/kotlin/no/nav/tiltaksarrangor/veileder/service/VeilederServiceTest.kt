@@ -4,10 +4,14 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.clearMocks
 import io.mockk.mockk
+import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
+import no.nav.tiltaksarrangor.model.AktivEndring
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -23,6 +27,7 @@ import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
+import no.nav.tiltaksarrangor.testutils.getForslag
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -40,7 +45,8 @@ class VeilederServiceTest {
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
-	private val veilederService = VeilederService(ansattService, deltakerRepository, endringsmeldingRepository)
+	private val forslagRepository = ForslagRepository(template)
+	private val veilederService = VeilederService(ansattService, deltakerRepository, forslagRepository, endringsmeldingRepository)
 
 	@AfterEach
 	internal fun tearDown() {
@@ -72,6 +78,7 @@ class VeilederServiceTest {
 	@Test
 	fun `getMineDeltakere - ansatt er veileder for tre deltakere hos to arrangorer - returnerer riktige deltakere med endringsmeldinger`() {
 		val personIdent = "12345678910"
+		val ansattId = UUID.randomUUID()
 		val arrangorId = UUID.randomUUID()
 		val arrangorId2 = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
@@ -79,8 +86,14 @@ class VeilederServiceTest {
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste2)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
-		val deltaker2 = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "23456")
-		val deltaker3 = getDeltaker(UUID.randomUUID(), deltakerliste2.id).copy(personident = "34567")
+		val deltaker2 = getDeltaker(
+			UUID.randomUUID(),
+			deltakerliste.id,
+		).copy(personident = "23456", sistEndret = LocalDateTime.now().minusDays(2))
+		val deltaker3 = getDeltaker(
+			UUID.randomUUID(),
+			deltakerliste2.id,
+		).copy(personident = "34567", sistEndret = LocalDateTime.now().minusDays(1))
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker3)
@@ -98,7 +111,7 @@ class VeilederServiceTest {
 		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding2)
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
-				id = UUID.randomUUID(),
+				id = ansattId,
 				personIdent = personIdent,
 				fornavn = "Ansatt",
 				mellomnavn = null,
@@ -113,6 +126,8 @@ class VeilederServiceTest {
 					),
 			),
 		)
+		val forslag = getForslag(deltaker3.id).copy(opprettetAvArrangorAnsattId = ansattId)
+		forslagRepository.upsert(forslag)
 
 		val mineDeltakere = veilederService.getMineDeltakere(personIdent)
 
@@ -126,18 +141,26 @@ class VeilederServiceTest {
 		minDeltaker1?.veiledertype shouldBe Veiledertype.VEILEDER
 		minDeltaker1?.aktiveEndringsmeldinger?.size shouldBe 2
 		minDeltaker1?.adressebeskyttet shouldBe false
+		minDeltaker1?.sistEndret shouldBeCloseTo deltaker.sistEndret
+		minDeltaker1?.aktivEndring?.type shouldBe AktivEndring.Type.Endringsmelding
+		minDeltaker1?.aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
 
 		val minDeltaker2 = mineDeltakere.find { it.id == deltaker2.id }
 		minDeltaker2?.fodselsnummer shouldBe deltaker2.personident
 		minDeltaker2?.deltakerliste?.id shouldBe deltakerliste.id
 		minDeltaker2?.veiledertype shouldBe Veiledertype.MEDVEILEDER
 		minDeltaker2?.aktiveEndringsmeldinger?.size shouldBe 0
+		minDeltaker2?.sistEndret shouldBeCloseTo deltaker2.sistEndret
+		minDeltaker2?.aktivEndring shouldBe null
 
 		val minDeltaker3 = mineDeltakere.find { it.id == deltaker3.id }
 		minDeltaker3?.fodselsnummer shouldBe deltaker3.personident
 		minDeltaker3?.deltakerliste?.id shouldBe deltakerliste2.id
 		minDeltaker3?.veiledertype shouldBe Veiledertype.VEILEDER
 		minDeltaker3?.aktiveEndringsmeldinger?.size shouldBe 0
+		minDeltaker3?.sistEndret shouldBeCloseTo deltaker3.sistEndret
+		minDeltaker3?.aktivEndring?.type shouldBe AktivEndring.Type.Forslag
+		minDeltaker3?.aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
 	}
 
 	@Test
@@ -318,5 +341,86 @@ class VeilederServiceTest {
 		mineDeltakere.size shouldBe 1
 		mineDeltakere.find { it.id == deltaker.id } shouldNotBe null
 		mineDeltakere.find { it.id == deltaker2.id } shouldBe null
+	}
+
+	@Test
+	fun `getAktivEndring - ingen endringsmeldinger eller forslag - returnerer null`() {
+		val deltakerId = UUID.randomUUID()
+		val annenDeltakerId = UUID.randomUUID()
+		val tredjeDeltakerId = UUID.randomUUID()
+		val endringsmelding = getEndringsmelding(annenDeltakerId)
+		val forslag = getForslag(tredjeDeltakerId)
+
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, listOf(endringsmelding), listOf(forslag))
+
+		aktivEndring shouldBe null
+	}
+
+	@Test
+	fun `getAktivEndring - et forslag - returnerer forslag`() {
+		val deltakerId = UUID.randomUUID()
+		val forslag = getForslag(deltakerId)
+
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, emptyList(), listOf(forslag))
+
+		aktivEndring shouldNotBe null
+		aktivEndring?.deltakerId shouldBe deltakerId
+		aktivEndring?.sendt shouldBe forslag.opprettet.toLocalDate()
+		aktivEndring?.type shouldBe AktivEndring.Type.Forslag
+		aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
+	}
+
+	@Test
+	fun `getAktivEndring - to forslag - returnerer nyeste forslag`() {
+		val deltakerId = UUID.randomUUID()
+		val forslag = getForslag(deltakerId)
+		val eldreForslag = getForslag(deltakerId).copy(
+			opprettet = LocalDateTime.now().minusWeeks(1),
+			endring = Forslag.Deltakelsesmengde(
+				deltakelsesprosent = 50,
+				dagerPerUke = 2,
+			),
+		)
+
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, emptyList(), listOf(eldreForslag, forslag))
+
+		aktivEndring shouldNotBe null
+		aktivEndring?.deltakerId shouldBe deltakerId
+		aktivEndring?.sendt shouldBe forslag.opprettet.toLocalDate()
+		aktivEndring?.type shouldBe AktivEndring.Type.Forslag
+		aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
+	}
+
+	@Test
+	fun `getAktivEndring - endringsmelding - returnerer endringsmelding`() {
+		val deltakerId = UUID.randomUUID()
+		val endringsmelding = getEndringsmelding(deltakerId)
+
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, listOf(endringsmelding), emptyList())
+
+		aktivEndring shouldNotBe null
+		aktivEndring?.deltakerId shouldBe deltakerId
+		aktivEndring?.sendt shouldBe endringsmelding.sendt.toLocalDate()
+		aktivEndring?.type shouldBe AktivEndring.Type.Endringsmelding
+		aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
+	}
+
+	@Test
+	fun `getAktivEndring - to endringsmeldinger - returnerer nyeste endringsmelding`() {
+		val deltakerId = UUID.randomUUID()
+		val endringsmelding = getEndringsmelding(deltakerId)
+		val eldreEndringsmelding = getEndringsmelding(deltakerId).copy(
+			type = EndringsmeldingType.ENDRE_OPPSTARTSDATO,
+			innhold = Innhold.EndreOppstartsdatoInnhold(LocalDate.now()),
+			sendt = LocalDateTime.now().minusWeeks(1),
+		)
+
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, listOf(eldreEndringsmelding, endringsmelding), emptyList())
+
+		aktivEndring shouldNotBe null
+		aktivEndring?.deltakerId shouldBe deltakerId
+		aktivEndring?.sendt shouldBe endringsmelding.sendt.toLocalDate()
+		aktivEndring?.type shouldBe AktivEndring.Type.Endringsmelding
+		aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
 	}
 }
