@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.veileder.service
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.clearMocks
+import io.mockk.every
 import io.mockk.mockk
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.shouldBeCloseTo
@@ -28,7 +29,9 @@ import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
 import no.nav.tiltaksarrangor.testutils.getForslag
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -46,12 +49,19 @@ class VeilederServiceTest {
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
 	private val forslagRepository = ForslagRepository(template)
-	private val veilederService = VeilederService(ansattService, deltakerRepository, forslagRepository, endringsmeldingRepository)
+	private val unleashService = mockk<UnleashService>()
+	private val veilederService =
+		VeilederService(ansattService, deltakerRepository, forslagRepository, endringsmeldingRepository, unleashService)
+
+	@BeforeEach
+	internal fun setup() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
+	}
 
 	@AfterEach
 	internal fun tearDown() {
 		DbTestDataUtils.cleanDatabase(dataSource)
-		clearMocks(amtArrangorClient)
+		clearMocks(amtArrangorClient, unleashService)
 	}
 
 	@Test
@@ -351,7 +361,7 @@ class VeilederServiceTest {
 		val endringsmelding = getEndringsmelding(annenDeltakerId)
 		val forslag = getForslag(tredjeDeltakerId)
 
-		val aktivEndring = veilederService.getAktivEndring(deltakerId, listOf(endringsmelding), listOf(forslag))
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, listOf(endringsmelding), listOf(forslag), "ARBFORB")
 
 		aktivEndring shouldBe null
 	}
@@ -361,7 +371,7 @@ class VeilederServiceTest {
 		val deltakerId = UUID.randomUUID()
 		val forslag = getForslag(deltakerId)
 
-		val aktivEndring = veilederService.getAktivEndring(deltakerId, emptyList(), listOf(forslag))
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, emptyList(), listOf(forslag), "ARBFORB")
 
 		aktivEndring shouldNotBe null
 		aktivEndring?.deltakerId shouldBe deltakerId
@@ -383,7 +393,7 @@ class VeilederServiceTest {
 			),
 		)
 
-		val aktivEndring = veilederService.getAktivEndring(deltakerId, emptyList(), listOf(eldreForslag, forslag))
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, emptyList(), listOf(eldreForslag, forslag), "ARBFORB")
 
 		aktivEndring shouldNotBe null
 		aktivEndring?.deltakerId shouldBe deltakerId
@@ -397,7 +407,7 @@ class VeilederServiceTest {
 		val deltakerId = UUID.randomUUID()
 		val endringsmelding = getEndringsmelding(deltakerId)
 
-		val aktivEndring = veilederService.getAktivEndring(deltakerId, listOf(endringsmelding), emptyList())
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, listOf(endringsmelding), emptyList(), "JOBBK")
 
 		aktivEndring shouldNotBe null
 		aktivEndring?.deltakerId shouldBe deltakerId
@@ -416,12 +426,23 @@ class VeilederServiceTest {
 			sendt = LocalDateTime.now().minusWeeks(1),
 		)
 
-		val aktivEndring = veilederService.getAktivEndring(deltakerId, listOf(eldreEndringsmelding, endringsmelding), emptyList())
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, listOf(eldreEndringsmelding, endringsmelding), emptyList(), "JOBBK")
 
 		aktivEndring shouldNotBe null
 		aktivEndring?.deltakerId shouldBe deltakerId
 		aktivEndring?.sendt shouldBe endringsmelding.sendt.toLocalDate()
 		aktivEndring?.type shouldBe AktivEndring.Type.Endringsmelding
 		aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
+	}
+
+	@Test
+	fun `getAktivEndring - endringsmelding, komet er master - returnerer null`() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		val deltakerId = UUID.randomUUID()
+		val endringsmelding = getEndringsmelding(deltakerId)
+
+		val aktivEndring = veilederService.getAktivEndring(deltakerId, listOf(endringsmelding), emptyList(), "ARBFORB")
+
+		aktivEndring shouldBe null
 	}
 }
