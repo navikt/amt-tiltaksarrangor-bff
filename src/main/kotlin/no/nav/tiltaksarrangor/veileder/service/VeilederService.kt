@@ -16,6 +16,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import no.nav.tiltaksarrangor.veileder.model.Deltaker
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -26,6 +27,7 @@ class VeilederService(
 	private val deltakerRepository: DeltakerRepository,
 	private val forslagRepository: ForslagRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val unleashService: UnleashService,
 ) {
 	fun getMineDeltakere(personIdent: String): List<Deltaker> {
 		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
@@ -82,7 +84,7 @@ class VeilederService(
 				sluttDato = it.deltaker.sluttdato,
 				veiledertype = getVeiledertype(it.deltaker.id, ansattsVeilederDeltakere),
 				aktiveEndringsmeldinger = getEndringsmeldinger(it.deltaker.id, endringsmeldinger),
-				aktivEndring = getAktivEndring(it.deltaker.id, endringsmeldinger, aktiveForslag),
+				aktivEndring = getAktivEndring(it.deltaker.id, endringsmeldinger, aktiveForslag, it.deltakerliste.tiltakType),
 				sistEndret = it.deltaker.sistEndret,
 				adressebeskyttet = adressebeskyttet,
 			)
@@ -98,6 +100,7 @@ class VeilederService(
 		deltakerId: UUID,
 		endringsmeldinger: List<EndringsmeldingDbo>,
 		aktiveForslag: List<Forslag>,
+		tiltakstype: String,
 	): AktivEndring? {
 		val aktiveForslagForDeltaker = getAktiveForslag(deltakerId, aktiveForslag)
 		if (aktiveForslagForDeltaker.isNotEmpty()) {
@@ -110,16 +113,18 @@ class VeilederService(
 				)
 			}.maxByOrNull { it.sendt }
 		}
-		val endringsmeldingerForDeltaker = getEndringsmeldinger(deltakerId, endringsmeldinger)
-		if (endringsmeldingerForDeltaker.isNotEmpty()) {
-			return endringsmeldingerForDeltaker.map {
-				AktivEndring(
-					deltakerId,
-					endingsType = getTypeFromEndringsmelding(it.type),
-					type = AktivEndring.Type.Endringsmelding,
-					sendt = it.sendt,
-				)
-			}.maxBy { it.sendt }
+		if (!unleashService.erKometMasterForTiltakstype(tiltakstype)) {
+			val endringsmeldingerForDeltaker = getEndringsmeldinger(deltakerId, endringsmeldinger)
+			if (endringsmeldingerForDeltaker.isNotEmpty()) {
+				return endringsmeldingerForDeltaker.map {
+					AktivEndring(
+						deltakerId,
+						endingsType = getTypeFromEndringsmelding(it.type),
+						type = AktivEndring.Type.Endringsmelding,
+						sendt = it.sendt,
+					)
+				}.maxBy { it.sendt }
+			}
 		}
 		return null
 	}
