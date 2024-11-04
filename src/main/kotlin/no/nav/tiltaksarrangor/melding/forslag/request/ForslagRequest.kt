@@ -27,6 +27,7 @@ data class IkkeAktuellRequest(
 data class DeltakelsesmengdeRequest(
 	val deltakelsesprosent: Int,
 	val dagerPerUke: Int?,
+	val gyldigFra: LocalDate?,
 	override val begrunnelse: String,
 ) : ForslagRequest
 
