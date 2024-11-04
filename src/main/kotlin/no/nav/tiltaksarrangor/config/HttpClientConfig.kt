@@ -82,7 +82,7 @@ class HttpClientConfig {
 			val request = chain.request()
 			val requestWithToken =
 				request.newBuilder()
-					.addHeader("Authorization", "Bearer ${accessTokenResponse.accessToken}")
+					.addHeader("Authorization", "Bearer ${accessTokenResponse.access_token}")
 					.build()
 			chain.proceed(requestWithToken)
 		}
