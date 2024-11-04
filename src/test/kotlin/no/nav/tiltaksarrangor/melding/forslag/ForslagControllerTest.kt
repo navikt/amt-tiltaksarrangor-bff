@@ -31,7 +31,7 @@ class ForslagControllerTest : IntegrationTest() {
 	private val avsluttDeltakelseRequest =
 		AvsluttDeltakelseRequest(LocalDate.now().plusWeeks(1), EndringAarsak.FattJobb, "Avslutning fordi...", null)
 	private val ikkeAktuellRequest = IkkeAktuellRequest(EndringAarsak.FattJobb, "Ikke aktuell fordi...")
-	private val deltakelsesmengdeRequest = DeltakelsesmengdeRequest(42, 3, "Deltakelsesmengde fordi...")
+	private val deltakelsesmengdeRequest = DeltakelsesmengdeRequest(42, 3, LocalDate.now(), "Deltakelsesmengde fordi...")
 	private val sluttdatoRequest = SluttdatoRequest(LocalDate.now().plusWeeks(42), "Endres fordi...")
 	private val startdatoRequest = StartdatoRequest(LocalDate.now(), LocalDate.now().plusWeeks(4), begrunnelse = "Startdato fordi...")
 	private val sluttarsakRequest = SluttarsakRequest(EndringAarsak.Utdanning, begrunnelse = "Sluttårsak fordi...")

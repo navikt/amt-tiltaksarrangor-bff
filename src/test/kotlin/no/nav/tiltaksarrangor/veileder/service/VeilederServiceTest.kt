@@ -379,6 +379,7 @@ class VeilederServiceTest {
 			endring = Forslag.Deltakelsesmengde(
 				deltakelsesprosent = 50,
 				dagerPerUke = 2,
+				gyldigFra = LocalDate.now(),
 			),
 		)
 
