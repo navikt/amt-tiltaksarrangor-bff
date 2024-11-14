@@ -61,16 +61,18 @@ private fun validerVarighet(
 
 private fun maxVarighet(deltakerliste: DeltakerlisteDbo): Duration? = when (deltakerliste.tiltakType) {
 	"GRUPPEAMO",
-	"ARBFORB",
+	"GRUFAGYRKE"
 	-> years(3)
+
+	"DIGIOPPARB" -> weeks(8)
+	"ARBFORB",-> years(2)
 
 	"AVKLARAG",
 	"ARBRRHDAG",
-	-> weeks(16)
+	-> weeks(12)
 
-	"DIGIOPPARB" -> weeks(12)
-	"GRUFAGYRKE" -> years(4)
-	"INDOPPFAG" -> years(3).plus(months(6))
+	"INDOPPFAG" -> years(1)
+
 	"VASV",
 	"JOBBK",
 	-> null
