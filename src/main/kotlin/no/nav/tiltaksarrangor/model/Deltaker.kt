@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.model
 
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -38,6 +39,7 @@ data class Deltaker(
 	val adressebeskyttet: Boolean,
 	val kilde: Kilde,
 	val historikk: List<DeltakerHistorikk>,
+	val deltakelsesmengder: DeltakelsesmengderDto?,
 ) {
 	data class Deltakerliste(
 		val id: UUID,
@@ -66,3 +68,20 @@ enum class Kilde {
 	KOMET,
 	ARENA,
 }
+
+data class DeltakelsesmengderDto(
+	val nesteDeltakelsesmengde: DeltakelsesmengdeDto?,
+	val sisteDeltakelsesmengde: DeltakelsesmengdeDto?,
+)
+
+data class DeltakelsesmengdeDto(
+	val deltakelsesprosent: Float,
+	val dagerPerUke: Float?,
+	val gyldigFra: LocalDate,
+)
+
+fun Deltakelsesmengde.toDto() = DeltakelsesmengdeDto(
+	deltakelsesprosent,
+	dagerPerUke,
+	gyldigFra,
+)
