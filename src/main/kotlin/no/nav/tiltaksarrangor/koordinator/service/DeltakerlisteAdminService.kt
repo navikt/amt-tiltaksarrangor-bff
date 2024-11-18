@@ -36,7 +36,7 @@ class DeltakerlisteAdminService(
 			AdminDeltakerliste(
 				id = it.deltakerlisteDbo.id,
 				navn = it.deltakerlisteDbo.navn,
-				tiltaksnavn = it.deltakerlisteDbo.cleanTiltaksnavn(),
+				tiltaksnavn = it.deltakerlisteDbo.tiltakNavn,
 				arrangorNavn =
 					it.arrangorDbo.overordnetArrangorId?.let { overordnetArrangorId ->
 						finnOverordnetArrangorNavn(overordnetArrangorId, overordnedeArrangorer)

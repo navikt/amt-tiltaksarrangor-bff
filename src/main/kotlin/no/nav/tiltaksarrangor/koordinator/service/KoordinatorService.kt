@@ -194,7 +194,7 @@ class KoordinatorService(
 		return Deltakerliste(
 			id = deltakerlisteMedArrangor.deltakerlisteDbo.id,
 			navn = deltakerlisteMedArrangor.deltakerlisteDbo.navn,
-			tiltaksnavn = deltakerlisteMedArrangor.deltakerlisteDbo.cleanTiltaksnavn(),
+			tiltaksnavn = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakNavn,
 			arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn,
 			startDato = deltakerlisteMedArrangor.deltakerlisteDbo.startDato,
 			sluttDato = deltakerlisteMedArrangor.deltakerlisteDbo.sluttDato,
@@ -287,7 +287,7 @@ fun List<DeltakerlisteDbo>.toDeltakerliste(): List<KoordinatorFor.Deltakerliste>
 		KoordinatorFor.Deltakerliste(
 			id = it.id,
 			navn = it.navn,
-			type = it.cleanTiltaksnavn(),
+			type = it.tiltakNavn,
 			startdato = it.startDato,
 			sluttdato = it.sluttDato,
 			erKurs = it.erKurs,

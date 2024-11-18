@@ -67,7 +67,7 @@ class VeilederService(
 				deltakerliste =
 					Deltaker.Deltakerliste(
 						id = it.deltakerliste.id,
-						type = it.deltakerliste.cleanTiltaksnavn(),
+						type = it.deltakerliste.tiltakNavn,
 						navn = it.deltakerliste.navn,
 					),
 				fornavn = if (adressebeskyttet) "" else it.deltaker.fornavn,
