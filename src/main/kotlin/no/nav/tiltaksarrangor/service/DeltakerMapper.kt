@@ -1,8 +1,11 @@
 package no.nav.tiltaksarrangor.service
 
+import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
+import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.tilAktivtForslagResponse
+import no.nav.tiltaksarrangor.model.DeltakelsesmengderDto
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Kilde
@@ -10,12 +13,15 @@ import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
 import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Vurdering
+import no.nav.tiltaksarrangor.model.toDto
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import org.springframework.stereotype.Service
+
+val tiltakMedDeltakelsesmengder = setOf("ARBFORB", "VASV")
 
 @Service
 class DeltakerMapper(
@@ -43,6 +49,12 @@ class DeltakerMapper(
 		}
 		val veiledere = ansattService.getVeiledereForDeltaker(deltaker.id)
 
+		val deltakelsesmengder = if (deltakerliste.tiltakType in tiltakMedDeltakelsesmengder) {
+			deltaker.historikk.toDeltakelsesmengder()
+		} else {
+			null
+		}
+
 		return tilDeltaker(
 			deltaker,
 			deltakerliste,
@@ -50,6 +62,7 @@ class DeltakerMapper(
 			endringsmeldinger,
 			aktiveForslag,
 			ansattErVeileder,
+			deltakelsesmengder,
 		)
 	}
 }
@@ -61,6 +74,7 @@ private fun tilDeltaker(
 	endringsmeldinger: List<EndringsmeldingDbo>,
 	aktiveForslag: List<AktivtForslagResponse>,
 	ansattErVeileder: Boolean,
+	deltakelsesmengder: Deltakelsesmengder?,
 ): Deltaker {
 	val adressebeskyttet = deltakerDbo.adressebeskyttet
 	val deltaker = Deltaker(
@@ -120,6 +134,12 @@ private fun tilDeltaker(
 		adressebeskyttet = adressebeskyttet,
 		kilde = deltakerDbo.kilde ?: Kilde.ARENA,
 		historikk = deltakerDbo.historikk,
+		deltakelsesmengder = deltakelsesmengder?.let {
+			DeltakelsesmengderDto(
+				nesteDeltakelsesmengde = it.nesteGjeldende?.toDto(),
+				sisteDeltakelsesmengde = it.lastOrNull()?.toDto(),
+			)
+		},
 	)
 
 	return if (adressebeskyttet && !ansattErVeileder) {
