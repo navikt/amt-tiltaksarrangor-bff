@@ -9,14 +9,13 @@ class UnleashService(
 ) {
 	private val tiltakstyperKometAlltidErMasterFor = listOf(
 		"ARBFORB",
-	)
-
-	// her kan vi legge inn de neste tiltakstypene vi skal ta over
-	private val tiltakstyperKometKanskjeErMasterFor = listOf(
 		"INDOPPFAG",
 		"AVKLARAG",
 		"ARBRRHDAG",
 	)
+
+	// her kan vi legge inn de neste tiltakstypene vi skal ta over
+	private val tiltakstyperKometKanskjeErMasterFor = emptyList<String>()
 
 	fun erKometMasterForTiltakstype(tiltakstype: String): Boolean {
 		return tiltakstype in tiltakstyperKometAlltidErMasterFor ||
