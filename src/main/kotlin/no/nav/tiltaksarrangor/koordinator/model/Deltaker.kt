@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.koordinator.model
 
+import no.nav.tiltaksarrangor.model.AktivEndring
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veileder
@@ -24,4 +25,5 @@ data class Deltaker(
 	val gjeldendeVurderingFraArrangor: Vurdering?,
 	val adressebeskyttet: Boolean,
 	val erVeilederForDeltaker: Boolean,
+	val aktivEndring: AktivEndring?,
 )

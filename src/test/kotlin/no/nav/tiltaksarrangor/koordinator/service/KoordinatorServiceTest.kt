@@ -6,6 +6,7 @@ import io.mockk.Runs
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
@@ -13,6 +14,8 @@ import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
+import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
+import no.nav.tiltaksarrangor.model.AktivEndring
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
@@ -37,7 +40,10 @@ import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
+import no.nav.tiltaksarrangor.testutils.getForslag
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -56,6 +62,8 @@ class KoordinatorServiceTest {
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val arrangorRepository = ArrangorRepository(template)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
+	private val forslagRepository = ForslagRepository(template)
+	private val unleashService = mockk<UnleashService>()
 	private val koordinatorService =
 		KoordinatorService(
 			ansattService,
@@ -64,7 +72,14 @@ class KoordinatorServiceTest {
 			deltakerRepository,
 			endringsmeldingRepository,
 			metricsService,
+			forslagRepository,
+			unleashService,
 		)
+
+	@BeforeEach
+	internal fun setup() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
+	}
 
 	@AfterEach
 	internal fun tearDown() {
@@ -487,6 +502,101 @@ class KoordinatorServiceTest {
 		koordinatorsDeltaker?.aktiveEndringsmeldinger?.find { it.type == Endringsmelding.Type.FORLENG_DELTAKELSE } shouldNotBe null
 		koordinatorsDeltaker?.adressebeskyttet shouldBe false
 		koordinatorsDeltaker?.erVeilederForDeltaker shouldBe false
+		koordinatorsDeltaker?.aktivEndring?.type shouldBe AktivEndring.Type.Endringsmelding
+		koordinatorsDeltaker?.aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
+	}
+
+	@Test
+	fun `getDeltakerliste - har tilgang, lagt til deltakerliste - returnerer deltakerliste med deltakere inkl veiledere og aktiv endring`() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		val personIdent = "12345678910"
+		val overordnetArrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = overordnetArrangorId,
+				navn = "Overordnet arrangør AS",
+				organisasjonsnummer = "99999999",
+				overordnetArrangorId = null,
+			),
+		)
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "88888888",
+				overordnetArrangorId = overordnetArrangorId,
+			),
+		)
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val ansatt = AnsattDbo(
+			id = UUID.randomUUID(),
+			personIdent = personIdent,
+			fornavn = "Fornavn1",
+			mellomnavn = null,
+			etternavn = "Etternavn1",
+			roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+			deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+			veilederDeltakere = emptyList(),
+		)
+		ansattRepository.insertOrUpdateAnsatt(ansatt)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn2",
+				mellomnavn = null,
+				etternavn = "Etternavn2",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+
+		val deltaker2 =
+			getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(
+				skjultDato = LocalDateTime.now(),
+				skjultAvAnsattId = UUID.randomUUID(),
+			)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Fornavn3",
+				mellomnavn = null,
+				etternavn = "Etternavn3",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+						VeilederDeltakerDbo(deltaker2.id, Veiledertype.VEILEDER),
+					),
+			),
+		)
+		val forslag = getForslag(deltaker.id).copy(opprettetAvArrangorAnsattId = ansatt.id)
+		forslagRepository.upsert(forslag)
+
+		val koordinatorsDeltakerliste = koordinatorService.getDeltakerliste(deltakerliste.id, personIdent)
+
+		koordinatorsDeltakerliste.id shouldBe deltakerliste.id
+		koordinatorsDeltakerliste.koordinatorer.size shouldBe 2
+		koordinatorsDeltakerliste.deltakere.size shouldBe 1
+		val koordinatorsDeltaker = koordinatorsDeltakerliste.deltakere.find { it.id == deltaker.id }
+		koordinatorsDeltaker?.status?.type shouldBe StatusType.DELTAR
+		koordinatorsDeltaker?.veiledere?.size shouldBe 1
+		koordinatorsDeltaker?.veiledere?.find {
+			it.fornavn == "Fornavn3" && it.etternavn == "Etternavn3" && it.veiledertype == Veiledertype.VEILEDER
+		} shouldNotBe null
+		koordinatorsDeltaker?.aktiveEndringsmeldinger?.size shouldBe 0
+		koordinatorsDeltaker?.adressebeskyttet shouldBe false
+		koordinatorsDeltaker?.erVeilederForDeltaker shouldBe false
+		koordinatorsDeltaker?.aktivEndring?.type shouldBe AktivEndring.Type.Forslag
+		koordinatorsDeltaker?.aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
 	}
 
 	@Test
