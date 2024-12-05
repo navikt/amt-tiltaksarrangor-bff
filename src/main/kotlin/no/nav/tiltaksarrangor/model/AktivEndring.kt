@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.model
 
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import java.time.LocalDate
 import java.util.UUID
 
@@ -50,4 +51,46 @@ fun getTypeFromForslag(endring: Forslag.Endring): AktivEndring.EndringsType {
 		is Forslag.Sluttdato -> AktivEndring.EndringsType.Sluttdato
 		is Forslag.Startdato -> AktivEndring.EndringsType.Startdato
 	}
+}
+
+fun getAktivEndring(
+	deltakerId: UUID,
+	endringsmeldinger: List<EndringsmeldingDbo>,
+	aktiveForslag: List<Forslag>,
+	erKometMasterForTiltakstype: Boolean,
+): AktivEndring? {
+	val aktiveForslagForDeltaker = getAktiveForslag(deltakerId, aktiveForslag)
+	if (aktiveForslagForDeltaker.isNotEmpty()) {
+		return aktiveForslagForDeltaker.map {
+			AktivEndring(
+				deltakerId,
+				endingsType = getTypeFromForslag(it.endring),
+				type = AktivEndring.Type.Forslag,
+				sendt = it.opprettet.toLocalDate(),
+			)
+		}.maxByOrNull { it.sendt }
+	}
+	if (!erKometMasterForTiltakstype) {
+		val endringsmeldingerForDeltaker = getEndringsmeldinger(deltakerId, endringsmeldinger)
+		if (endringsmeldingerForDeltaker.isNotEmpty()) {
+			return endringsmeldingerForDeltaker.map {
+				AktivEndring(
+					deltakerId,
+					endingsType = getTypeFromEndringsmelding(it.type),
+					type = AktivEndring.Type.Endringsmelding,
+					sendt = it.sendt,
+				)
+			}.maxBy { it.sendt }
+		}
+	}
+	return null
+}
+
+private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
+	val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
+	return endringsmeldingerForDeltaker.map { it.toEndringsmelding() }
+}
+
+private fun getAktiveForslag(deltakerId: UUID, aktiveForslag: List<Forslag>): List<Forslag> {
+	return aktiveForslag.filter { it.deltakerId == deltakerId }
 }
