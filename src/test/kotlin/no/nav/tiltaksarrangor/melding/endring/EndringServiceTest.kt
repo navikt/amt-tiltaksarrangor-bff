@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.melding.endring
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
+import io.mockk.every
 import io.mockk.mockk
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
@@ -22,7 +23,9 @@ import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.DeltakerMapper
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
@@ -34,11 +37,13 @@ class EndringServiceTest {
 	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val deltakerRepository = DeltakerRepository(template)
 	private val producer = MeldingProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
+	private val unleashService = mockk<UnleashService>()
 
 	private val deltakerMapper = DeltakerMapper(
 		ansattService = AnsattService(mockk(), AnsattRepository(template)),
 		forslagService = ForslagService(ForslagRepository(template), producer),
 		endringsmeldingRepository = EndringsmeldingRepository(template),
+		unleashService = unleashService,
 	)
 
 	private val endringService = EndringService(
@@ -46,6 +51,11 @@ class EndringServiceTest {
 		deltakerRepository = deltakerRepository,
 		deltakerMapper = deltakerMapper,
 	)
+
+	@BeforeEach
+	internal fun setup() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
+	}
 
 	@Test
 	fun `endreDeltaker - ny endring - returnerer oppdaterer deltaker og produserer melding`() {
