@@ -20,6 +20,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
 import no.nav.tiltaksarrangor.service.TilgangskontrollService
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -32,6 +33,7 @@ class EndringsmeldingService(
 	private val deltakerRepository: DeltakerRepository,
 	private val metricsService: MetricsService,
 	private val tilgangskontrollService: TilgangskontrollService,
+	private val unleashService: UnleashService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -43,7 +45,11 @@ class EndringsmeldingService(
 
 		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)
 
-		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		val endringsmeldinger = if (unleashService.erKometMasterForTiltakstype(deltakerMedDeltakerliste.deltakerliste.tiltakType)) {
+			emptyList()
+		} else {
+			endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
+		}
 		return EndringsmeldingResponse(
 			aktiveEndringsmeldinger = endringsmeldinger.sortedBy { it.sendt }.filter { it.erAktiv() }
 				.map { it.toEndringsmelding() },

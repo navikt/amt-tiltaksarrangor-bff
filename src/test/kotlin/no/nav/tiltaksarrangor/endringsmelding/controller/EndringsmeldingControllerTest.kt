@@ -57,7 +57,7 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 	fun `getAlleEndringsmeldinger - autentisert - returnerer 200`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = getDeltakerliste(arrangorId)
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "JOBBK")
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")
 		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))

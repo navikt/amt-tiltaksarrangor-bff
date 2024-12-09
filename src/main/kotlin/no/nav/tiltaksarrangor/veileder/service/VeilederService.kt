@@ -82,7 +82,11 @@ class VeilederService(
 				startDato = it.deltaker.startdato,
 				sluttDato = it.deltaker.sluttdato,
 				veiledertype = getVeiledertype(it.deltaker.id, ansattsVeilederDeltakere),
-				aktiveEndringsmeldinger = getEndringsmeldinger(it.deltaker.id, endringsmeldinger),
+				aktiveEndringsmeldinger = if (erKometMasterForTiltakstype) {
+					emptyList()
+				} else {
+					getEndringsmeldinger(it.deltaker.id, endringsmeldinger)
+				},
 				aktivEndring = getAktivEndring(it.deltaker.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
 				sistEndret = it.deltaker.sistEndret,
 				adressebeskyttet = adressebeskyttet,

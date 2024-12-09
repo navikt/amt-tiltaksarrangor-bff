@@ -5,6 +5,7 @@ import io.mockk.Runs
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
@@ -36,7 +37,9 @@ import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -56,6 +59,7 @@ class EndringsmeldingServiceTest {
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
 	private val tilgangskontrollService = TilgangskontrollService(ansattService)
+	private val unleashService = mockk<UnleashService>()
 	private val endringsmeldingService =
 		EndringsmeldingService(
 			amtTiltakClient,
@@ -64,12 +68,18 @@ class EndringsmeldingServiceTest {
 			deltakerRepository,
 			metricsService,
 			tilgangskontrollService,
+			unleashService,
 		)
 
 	@AfterEach
 	internal fun tearDown() {
 		DbTestDataUtils.cleanDatabase(dataSource)
 		clearMocks(amtTiltakClient)
+	}
+
+	@BeforeEach
+	internal fun setup() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
 	}
 
 	@Test

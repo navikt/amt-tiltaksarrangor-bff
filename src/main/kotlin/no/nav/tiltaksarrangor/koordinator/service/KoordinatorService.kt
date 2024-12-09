@@ -277,7 +277,14 @@ class KoordinatorService(
 					),
 				veiledere = veiledereForDeltaker,
 				navKontor = if (adressebeskyttet) null else it.navKontor,
-				aktiveEndringsmeldinger = if (adressebeskyttet) emptyList() else getEndringsmeldinger(it.id, endringsmeldinger),
+				aktiveEndringsmeldinger = if (adressebeskyttet || erKometMasterForTiltakstype) {
+					emptyList()
+				} else {
+					getEndringsmeldinger(
+						it.id,
+						endringsmeldinger,
+					)
+				},
 				gjeldendeVurderingFraArrangor = if (adressebeskyttet) null else it.getGjeldendeVurdering(),
 				adressebeskyttet = adressebeskyttet,
 				erVeilederForDeltaker = erVeilederForDeltaker(ansattId, veiledereForDeltaker),
