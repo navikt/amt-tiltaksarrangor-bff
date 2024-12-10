@@ -507,6 +507,59 @@ class KoordinatorServiceTest {
 	}
 
 	@Test
+	fun `getDeltakerliste - har tilgang, lagt til deltakerliste, komet er master - returnerer deltakerliste med deltakere uten endringsmld`() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		val personIdent = "12345678910"
+		val overordnetArrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = overordnetArrangorId,
+				navn = "Overordnet arrangør AS",
+				organisasjonsnummer = "99999999",
+				overordnetArrangorId = null,
+			),
+		)
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "88888888",
+				overordnetArrangorId = overordnetArrangorId,
+			),
+		)
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn1",
+				mellomnavn = null,
+				etternavn = "Etternavn1",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val endringsmelding = getEndringsmelding(deltaker.id)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
+
+		val koordinatorsDeltakerliste = koordinatorService.getDeltakerliste(deltakerliste.id, personIdent)
+
+		koordinatorsDeltakerliste.id shouldBe deltakerliste.id
+		koordinatorsDeltakerliste.deltakere.size shouldBe 1
+		val koordinatorsDeltaker = koordinatorsDeltakerliste.deltakere.find { it.id == deltaker.id }
+		koordinatorsDeltaker?.status?.type shouldBe StatusType.DELTAR
+		koordinatorsDeltaker?.aktiveEndringsmeldinger?.size shouldBe 0
+		koordinatorsDeltaker?.adressebeskyttet shouldBe false
+		koordinatorsDeltaker?.erVeilederForDeltaker shouldBe false
+		koordinatorsDeltaker?.aktivEndring shouldBe null
+	}
+
+	@Test
 	fun `getDeltakerliste - har tilgang, lagt til deltakerliste - returnerer deltakerliste med deltakere inkl veiledere og aktiv endring`() {
 		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
 		val personIdent = "12345678910"

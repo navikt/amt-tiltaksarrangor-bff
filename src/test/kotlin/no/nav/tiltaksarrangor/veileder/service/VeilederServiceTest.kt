@@ -174,6 +174,60 @@ class VeilederServiceTest {
 	}
 
 	@Test
+	fun `getMineDeltakere - ansatt er veileder for deltaker, komet er master - returnerer deltaker uten endringsmeldinger`() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		val personIdent = "12345678910"
+		val ansattId = UUID.randomUUID()
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val endringsmelding = getEndringsmelding(deltaker.id)
+		val endringsmelding2 =
+			endringsmelding.copy(
+				id = UUID.randomUUID(),
+				type = EndringsmeldingType.ENDRE_OPPSTARTSDATO,
+				innhold =
+					Innhold.EndreOppstartsdatoInnhold(
+						LocalDate.now().minusMonths(2),
+					),
+			)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding)
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmelding2)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Ansatt",
+				mellomnavn = null,
+				etternavn = "Ansattsen",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+					),
+			),
+		)
+
+		val mineDeltakere = veilederService.getMineDeltakere(personIdent)
+
+		mineDeltakere.size shouldBe 1
+
+		val minDeltaker1 = mineDeltakere.find { it.id == deltaker.id }
+		minDeltaker1?.fodselsnummer shouldBe deltaker.personident
+		minDeltaker1?.fornavn shouldNotBe ""
+		minDeltaker1?.etternavn shouldNotBe ""
+		minDeltaker1?.deltakerliste?.id shouldBe deltakerliste.id
+		minDeltaker1?.veiledertype shouldBe Veiledertype.VEILEDER
+		minDeltaker1?.aktiveEndringsmeldinger?.size shouldBe 0
+		minDeltaker1?.adressebeskyttet shouldBe false
+		minDeltaker1?.sistEndret shouldBeCloseTo deltaker.sistEndret
+		minDeltaker1?.aktivEndring shouldBe null
+	}
+
+	@Test
 	fun `getMineDeltakere - ansatt har veilederrolle hos en arrangor og er veileder for deltakere - returnerer riktige deltakere`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
