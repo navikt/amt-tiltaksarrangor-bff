@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.clearMocks
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
@@ -44,7 +45,9 @@ import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -70,7 +73,8 @@ class TiltaksarrangorServiceTest {
 	private val tilgangskontrollService = TilgangskontrollService(ansattService)
 	private val navAnsattService = mockk<NavAnsattService>(relaxUnitFun = true)
 	private val navEnhetService = mockk<NavEnhetService>(relaxUnitFun = true)
-	private val deltakerMapper = DeltakerMapper(ansattService, forslagService, endringsmeldingRepository)
+	private val unleashService = mockk<UnleashService>()
+	private val deltakerMapper = DeltakerMapper(ansattService, forslagService, endringsmeldingRepository, unleashService)
 	private val arrangorRepository = ArrangorRepository(template)
 	private val tiltaksarrangorService =
 		TiltaksarrangorService(
@@ -91,6 +95,11 @@ class TiltaksarrangorServiceTest {
 	internal fun tearDown() {
 		DbTestDataUtils.cleanDatabase(dataSource)
 		clearMocks(auditLoggerService, amtTiltakClient)
+	}
+
+	@BeforeEach
+	internal fun setup() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
 	}
 
 	@Test
@@ -339,6 +348,74 @@ class TiltaksarrangorServiceTest {
 		deltaker.historiskeEndringsmeldinger.size shouldBe 0
 		val innhold = endringsmelding.innhold as Endringsmelding.Innhold.EndreSluttdatoInnhold
 		innhold.sluttdato shouldBe LocalDate.now()
+		deltaker.veiledere.size shouldBe 1
+		val veileder = deltaker.veiledere.first()
+		veileder.ansattId shouldBe veilederId
+		veileder.veiledertype shouldBe Veiledertype.VEILEDER
+		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
+		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 0
+	}
+
+	@Test
+	fun `getDeltaker - deltaker har endringsmeldinger og ansatt har tilgang, komet er master - returnerer deltaker`() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+		endringsmeldingRepository.insertOrUpdateEndringsmelding(
+			EndringsmeldingDbo(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				type = EndringsmeldingType.ENDRE_SLUTTDATO,
+				innhold = Innhold.EndreSluttdatoInnhold(sluttdato = LocalDate.now()),
+				status = Endringsmelding.Status.AKTIV,
+				sendt = LocalDateTime.now(),
+			),
+		)
+		val veilederId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = veilederId,
+				personIdent = UUID.randomUUID().toString(),
+				fornavn = "Vei",
+				mellomnavn = null,
+				etternavn = "Leder",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER),
+					),
+				deltakerlister = emptyList(),
+				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
+			),
+		)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		val deltaker = tiltaksarrangorService.getDeltaker(personIdent, deltakerId)
+
+		deltaker.id shouldBe deltakerId
+		deltaker.deltakerliste.id shouldBe deltakerliste.id
+		deltaker.dagerPerUke shouldBe null
+		deltaker.soktInnPa shouldBe deltakerliste.navn
+		deltaker.tiltakskode shouldBe deltakerliste.tiltakType
+		deltaker.aktiveEndringsmeldinger.size shouldBe 0
+		deltaker.historiskeEndringsmeldinger.size shouldBe 0
 		deltaker.veiledere.size shouldBe 1
 		val veileder = deltaker.veiledere.first()
 		veileder.ansattId shouldBe veilederId

@@ -3,13 +3,11 @@ package no.nav.tiltaksarrangor.veileder.service
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
-import no.nav.tiltaksarrangor.model.AktivEndring
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
-import no.nav.tiltaksarrangor.model.getTypeFromEndringsmelding
-import no.nav.tiltaksarrangor.model.getTypeFromForslag
+import no.nav.tiltaksarrangor.model.getAktivEndring
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
@@ -61,6 +59,7 @@ class VeilederService(
 		aktiveForslag: List<Forslag>,
 	): List<Deltaker> {
 		return deltakere.map {
+			val erKometMasterForTiltakstype = unleashService.erKometMasterForTiltakstype(it.deltakerliste.tiltakType)
 			val adressebeskyttet = it.deltaker.adressebeskyttet
 			Deltaker(
 				id = it.deltaker.id,
@@ -83,8 +82,12 @@ class VeilederService(
 				startDato = it.deltaker.startdato,
 				sluttDato = it.deltaker.sluttdato,
 				veiledertype = getVeiledertype(it.deltaker.id, ansattsVeilederDeltakere),
-				aktiveEndringsmeldinger = getEndringsmeldinger(it.deltaker.id, endringsmeldinger),
-				aktivEndring = getAktivEndring(it.deltaker.id, endringsmeldinger, aktiveForslag, it.deltakerliste.tiltakType),
+				aktiveEndringsmeldinger = if (erKometMasterForTiltakstype) {
+					emptyList()
+				} else {
+					getEndringsmeldinger(it.deltaker.id, endringsmeldinger)
+				},
+				aktivEndring = getAktivEndring(it.deltaker.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
 				sistEndret = it.deltaker.sistEndret,
 				adressebeskyttet = adressebeskyttet,
 			)
@@ -96,45 +99,8 @@ class VeilederService(
 			?: throw IllegalStateException("Deltaker med id $deltakerId mangler fra listen, skal ikke kunne skje!")
 	}
 
-	fun getAktivEndring(
-		deltakerId: UUID,
-		endringsmeldinger: List<EndringsmeldingDbo>,
-		aktiveForslag: List<Forslag>,
-		tiltakstype: String,
-	): AktivEndring? {
-		val aktiveForslagForDeltaker = getAktiveForslag(deltakerId, aktiveForslag)
-		if (aktiveForslagForDeltaker.isNotEmpty()) {
-			return aktiveForslagForDeltaker.map {
-				AktivEndring(
-					deltakerId,
-					endingsType = getTypeFromForslag(it.endring),
-					type = AktivEndring.Type.Forslag,
-					sendt = it.opprettet.toLocalDate(),
-				)
-			}.maxByOrNull { it.sendt }
-		}
-		if (!unleashService.erKometMasterForTiltakstype(tiltakstype)) {
-			val endringsmeldingerForDeltaker = getEndringsmeldinger(deltakerId, endringsmeldinger)
-			if (endringsmeldingerForDeltaker.isNotEmpty()) {
-				return endringsmeldingerForDeltaker.map {
-					AktivEndring(
-						deltakerId,
-						endingsType = getTypeFromEndringsmelding(it.type),
-						type = AktivEndring.Type.Endringsmelding,
-						sendt = it.sendt,
-					)
-				}.maxBy { it.sendt }
-			}
-		}
-		return null
-	}
-
 	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
 		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
 		return endringsmeldingerForDeltaker.map { it.toEndringsmelding() }
-	}
-
-	private fun getAktiveForslag(deltakerId: UUID, aktiveForslag: List<Forslag>): List<Forslag> {
-		return aktiveForslag.filter { it.deltakerId == deltakerId }
 	}
 }

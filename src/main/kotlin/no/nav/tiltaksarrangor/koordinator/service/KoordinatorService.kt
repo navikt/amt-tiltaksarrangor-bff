@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.koordinator.service
 
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
@@ -9,12 +10,14 @@ import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
 import no.nav.tiltaksarrangor.koordinator.model.TilgjengeligVeileder
 import no.nav.tiltaksarrangor.koordinator.model.VeilederFor
+import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
+import no.nav.tiltaksarrangor.model.getAktivEndring
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
@@ -30,6 +33,7 @@ import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
 import no.nav.tiltaksarrangor.service.getGjeldendeVurdering
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -42,6 +46,8 @@ class KoordinatorService(
 	private val deltakerRepository: DeltakerRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val metricsService: MetricsService,
+	private val forslagRepository: ForslagRepository,
+	private val unleashService: UnleashService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -190,6 +196,8 @@ class KoordinatorService(
 
 		val veiledereForDeltakerliste = ansattService.getVeiledereForDeltakere(deltakere.map { it.id })
 		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltakere(deltakere.map { it.id })
+		val aktiveForslag = forslagRepository.getAktiveForslagForDeltakere(deltakere.map { it.id })
+		val erKometMasterForTiltakstype = unleashService.erKometMasterForTiltakstype(deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType)
 
 		return Deltakerliste(
 			id = deltakerlisteMedArrangor.deltakerlisteDbo.id,
@@ -207,7 +215,14 @@ class KoordinatorService(
 						etternavn = it.etternavn,
 					)
 				},
-			deltakere = tilKoordinatorsDeltakere(deltakere, veiledereForDeltakerliste, endringsmeldinger, ansattId),
+			deltakere = tilKoordinatorsDeltakere(
+				deltakere,
+				veiledereForDeltakerliste,
+				endringsmeldinger,
+				ansattId,
+				aktiveForslag,
+				erKometMasterForTiltakstype,
+			),
 			erKurs = deltakerlisteMedArrangor.deltakerlisteDbo.erKurs,
 			tiltakType = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType,
 		)
@@ -239,6 +254,8 @@ class KoordinatorService(
 		veiledere: List<Veileder>,
 		endringsmeldinger: List<EndringsmeldingDbo>,
 		ansattId: UUID,
+		aktiveForslag: List<Forslag>,
+		erKometMasterForTiltakstype: Boolean,
 	): List<Deltaker> {
 		return deltakere.map {
 			val adressebeskyttet = it.adressebeskyttet
@@ -260,10 +277,18 @@ class KoordinatorService(
 					),
 				veiledere = veiledereForDeltaker,
 				navKontor = if (adressebeskyttet) null else it.navKontor,
-				aktiveEndringsmeldinger = if (adressebeskyttet) emptyList() else getEndringsmeldinger(it.id, endringsmeldinger),
+				aktiveEndringsmeldinger = if (adressebeskyttet || erKometMasterForTiltakstype) {
+					emptyList()
+				} else {
+					getEndringsmeldinger(
+						it.id,
+						endringsmeldinger,
+					)
+				},
 				gjeldendeVurderingFraArrangor = if (adressebeskyttet) null else it.getGjeldendeVurdering(),
 				adressebeskyttet = adressebeskyttet,
 				erVeilederForDeltaker = erVeilederForDeltaker(ansattId, veiledereForDeltaker),
+				aktivEndring = getAktivEndring(it.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
 			)
 		}
 	}

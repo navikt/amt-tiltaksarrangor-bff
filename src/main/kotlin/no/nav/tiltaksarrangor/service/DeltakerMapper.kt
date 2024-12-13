@@ -19,6 +19,7 @@ import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.springframework.stereotype.Service
 
 val tiltakMedDeltakelsesmengder = setOf("ARBFORB", "VASV")
@@ -28,6 +29,7 @@ class DeltakerMapper(
 	private val ansattService: AnsattService,
 	private val forslagService: ForslagService,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val unleashService: UnleashService,
 ) {
 	fun map(
 		deltaker: DeltakerDbo,
@@ -42,7 +44,10 @@ class DeltakerMapper(
 
 		val aktiveForslag = forslagService.getAktiveForslag(deltaker.id).map { it.tilAktivtForslagResponse() }
 
-		val endringsmeldinger = if (deltaker.adressebeskyttet && !ansattErVeileder) {
+		val endringsmeldinger = if (unleashService.erKometMasterForTiltakstype(
+				deltakerliste.tiltakType,
+			) || (deltaker.adressebeskyttet && !ansattErVeileder)
+		) {
 			emptyList()
 		} else {
 			endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltaker.id)
