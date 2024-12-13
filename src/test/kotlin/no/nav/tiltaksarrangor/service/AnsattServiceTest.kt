@@ -134,61 +134,55 @@ class AnsattServiceTest {
 		ansattFinnes(personIdent) shouldBe false
 	}
 
-	private fun ansattFinnes(personIdent: String): Boolean {
-		return template.queryForObject(
-			"SELECT EXISTS(SELECT id FROM ansatt WHERE personident = :personIdent)",
-			sqlParameters("personIdent" to personIdent),
-			Boolean::class.java,
-		) ?: false
-	}
+	private fun ansattFinnes(personIdent: String): Boolean = template.queryForObject(
+		"SELECT EXISTS(SELECT id FROM ansatt WHERE personident = :personIdent)",
+		sqlParameters("personIdent" to personIdent),
+		Boolean::class.java,
+	) ?: false
 
-	private fun getSistInnlogget(ansattId: UUID): LocalDateTime? {
-		return template.queryForObject(
-			"SELECT sist_innlogget FROM ansatt WHERE id = :ansattId",
-			sqlParameters("ansattId" to ansattId),
-			LocalDateTime::class.java,
-		)
-	}
+	private fun getSistInnlogget(ansattId: UUID): LocalDateTime? = template.queryForObject(
+		"SELECT sist_innlogget FROM ansatt WHERE id = :ansattId",
+		sqlParameters("ansattId" to ansattId),
+		LocalDateTime::class.java,
+	)
 
 	private fun getAnsatt(
 		ansattId: UUID,
 		personIdent: String,
 		deltakerIdForVeileder: UUID,
 		deltakerIdForVeileder2: UUID,
-	): AnsattDto {
-		return AnsattDto(
-			id = ansattId,
-			personalia =
-				AnsattPersonaliaDto(
-					personident = personIdent,
-					navn =
-						NavnDto(
-							fornavn = "Fornavn",
-							mellomnavn = null,
-							etternavn = "Etternavn",
-						),
+	): AnsattDto = AnsattDto(
+		id = ansattId,
+		personalia =
+			AnsattPersonaliaDto(
+				personident = personIdent,
+				navn =
+					NavnDto(
+						fornavn = "Fornavn",
+						mellomnavn = null,
+						etternavn = "Etternavn",
+					),
+			),
+		arrangorer =
+			listOf(
+				TilknyttetArrangorDto(
+					arrangorId = UUID.randomUUID(),
+					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
+					veileder = listOf(VeilederDto(deltakerIdForVeileder, Veiledertype.VEILEDER)),
+					koordinator = listOf(UUID.randomUUID()),
 				),
-			arrangorer =
-				listOf(
-					TilknyttetArrangorDto(
-						arrangorId = UUID.randomUUID(),
-						roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
-						veileder = listOf(VeilederDto(deltakerIdForVeileder, Veiledertype.VEILEDER)),
-						koordinator = listOf(UUID.randomUUID()),
-					),
-					TilknyttetArrangorDto(
-						arrangorId = UUID.randomUUID(),
-						roller = listOf(AnsattRolle.KOORDINATOR),
-						veileder = emptyList(),
-						koordinator = listOf(UUID.randomUUID()),
-					),
-					TilknyttetArrangorDto(
-						arrangorId = UUID.randomUUID(),
-						roller = listOf(AnsattRolle.VEILEDER),
-						veileder = listOf(VeilederDto(deltakerIdForVeileder2, Veiledertype.MEDVEILEDER)),
-						koordinator = emptyList(),
-					),
+				TilknyttetArrangorDto(
+					arrangorId = UUID.randomUUID(),
+					roller = listOf(AnsattRolle.KOORDINATOR),
+					veileder = emptyList(),
+					koordinator = listOf(UUID.randomUUID()),
 				),
-		)
-	}
+				TilknyttetArrangorDto(
+					arrangorId = UUID.randomUUID(),
+					roller = listOf(AnsattRolle.VEILEDER),
+					veileder = listOf(VeilederDto(deltakerIdForVeileder2, Veiledertype.MEDVEILEDER)),
+					koordinator = emptyList(),
+				),
+			),
+	)
 }

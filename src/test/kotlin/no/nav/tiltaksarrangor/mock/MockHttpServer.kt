@@ -62,17 +62,11 @@ abstract class MockHttpServer(
 		lastRequestCount = server.requestCount
 	}
 
-	fun serverUrl(): String {
-		return server.url("").toString().removeSuffix("/")
-	}
+	fun serverUrl(): String = server.url("").toString().removeSuffix("/")
 
-	fun requestCount(): Int {
-		return server.requestCount - lastRequestCount
-	}
+	fun requestCount(): Int = server.requestCount - lastRequestCount
 
-	private fun printHeaders(headers: Headers): String {
-		return headers.joinToString("\n") { "		${it.first} : ${it.second}" }
-	}
+	private fun printHeaders(headers: Headers): String = headers.joinToString("\n") { "		${it.first} : ${it.second}" }
 
 	private data class ResponseHolder(
 		val id: UUID,
@@ -83,8 +77,15 @@ abstract class MockHttpServer(
 			val invokedResponse = response.invoke(request)
 
 			val responseBody =
-				invokedResponse.getBody()?.copy()?.asResponseBody()?.string()?.replace("\n", "")?.replace("  ", "")
-					?.replace("	", "")?.trim()
+				invokedResponse
+					.getBody()
+					?.copy()
+					?.asResponseBody()
+					?.string()
+					?.replace("\n", "")
+					?.replace("  ", "")
+					?.replace("	", "")
+					?.trim()
 
 			return "$id: count=$count status=${invokedResponse.status} body=$responseBody"
 		}

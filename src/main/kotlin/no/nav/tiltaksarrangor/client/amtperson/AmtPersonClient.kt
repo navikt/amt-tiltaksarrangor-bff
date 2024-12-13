@@ -19,7 +19,8 @@ class AmtPersonClient(
 
 	fun hentEnhet(id: UUID): NavEnhet {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$url/api/nav-enhet/$id")
 				.get()
 				.build()
@@ -40,7 +41,8 @@ class AmtPersonClient(
 
 	fun hentNavAnsatt(id: UUID): NavAnsattResponse {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$url/api/nav-ansatt/$id")
 				.get()
 				.build()

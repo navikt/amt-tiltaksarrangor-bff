@@ -8,11 +8,9 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class FlywayConfiguration {
 	@Bean
-	fun flywayCustomizer(): FlywayConfigurationCustomizer? {
-		return FlywayConfigurationCustomizer { configuration: FluentConfiguration ->
-			configuration.configuration(
-				mapOf("flyway.postgresql.transactional.lock" to "false"),
-			)
-		}
+	fun flywayCustomizer(): FlywayConfigurationCustomizer? = FlywayConfigurationCustomizer { configuration: FluentConfiguration ->
+		configuration.configuration(
+			mapOf("flyway.postgresql.transactional.lock" to "false"),
+		)
 	}
 }

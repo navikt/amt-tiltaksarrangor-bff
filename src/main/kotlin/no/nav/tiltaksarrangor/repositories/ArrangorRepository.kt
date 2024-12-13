@@ -47,28 +47,24 @@ class ArrangorRepository(
 		)
 	}
 
-	fun deleteArrangor(arrangorId: UUID): Int {
-		return template.update(
-			"DELETE FROM arrangor WHERE id = :id",
-			sqlParameters("id" to arrangorId),
-		)
-	}
+	fun deleteArrangor(arrangorId: UUID): Int = template.update(
+		"DELETE FROM arrangor WHERE id = :id",
+		sqlParameters("id" to arrangorId),
+	)
 
-	fun getArrangor(arrangorId: UUID): ArrangorDbo? {
-		return template.query(
+	fun getArrangor(arrangorId: UUID): ArrangorDbo? = template
+		.query(
 			"SELECT * FROM arrangor WHERE id = :id",
 			sqlParameters("id" to arrangorId),
 			arrangorRowMapper,
 		).firstOrNull()
-	}
 
-	fun getArrangor(organisasjonsnummer: String): ArrangorDbo? {
-		return template.query(
+	fun getArrangor(organisasjonsnummer: String): ArrangorDbo? = template
+		.query(
 			"SELECT * FROM arrangor WHERE organisasjonsnummer = :organisasjonsnummer",
 			sqlParameters("organisasjonsnummer" to organisasjonsnummer),
 			arrangorRowMapper,
 		).firstOrNull()
-	}
 
 	fun getArrangorer(arrangorIder: List<UUID>): List<ArrangorDbo> {
 		if (arrangorIder.isEmpty()) {

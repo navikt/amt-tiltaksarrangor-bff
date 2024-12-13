@@ -10,11 +10,9 @@ data class ArrangorDto(
 	val overordnetArrangorId: UUID?,
 )
 
-fun ArrangorDto.toArrangorDbo(): ArrangorDbo {
-	return ArrangorDbo(
-		id = id,
-		navn = navn,
-		organisasjonsnummer = organisasjonsnummer,
-		overordnetArrangorId = overordnetArrangorId,
-	)
-}
+fun ArrangorDto.toArrangorDbo(): ArrangorDbo = ArrangorDbo(
+	id = id,
+	navn = navn,
+	organisasjonsnummer = organisasjonsnummer,
+	overordnetArrangorId = overordnetArrangorId,
+)

@@ -41,20 +41,18 @@ sealed class Innhold {
 	) : Innhold()
 }
 
-fun Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold {
-	return when (this) {
-		is Innhold.LeggTilOppstartsdatoInnhold -> Endringsmelding.Innhold.LeggTilOppstartsdatoInnhold(this.oppstartsdato)
-		is Innhold.EndreOppstartsdatoInnhold -> Endringsmelding.Innhold.EndreOppstartsdatoInnhold(this.oppstartsdato)
-		is Innhold.ForlengDeltakelseInnhold -> Endringsmelding.Innhold.ForlengDeltakelseInnhold(this.sluttdato)
-		is Innhold.EndreDeltakelseProsentInnhold ->
-			Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(
-				this.nyDeltakelseProsent,
-				this.dagerPerUke,
-				this.gyldigFraDato,
-			)
-		is Innhold.AvsluttDeltakelseInnhold -> Endringsmelding.Innhold.AvsluttDeltakelseInnhold(this.sluttdato, this.aarsak)
-		is Innhold.DeltakerIkkeAktuellInnhold -> Endringsmelding.Innhold.DeltakerIkkeAktuellInnhold(this.aarsak)
-		is Innhold.EndreSluttdatoInnhold -> Endringsmelding.Innhold.EndreSluttdatoInnhold(this.sluttdato)
-		is Innhold.EndreSluttaarsakInnhold -> Endringsmelding.Innhold.EndreSluttaarsakInnhold(this.aarsak)
-	}
+fun Innhold.toEndringsmeldingInnhold(): Endringsmelding.Innhold = when (this) {
+	is Innhold.LeggTilOppstartsdatoInnhold -> Endringsmelding.Innhold.LeggTilOppstartsdatoInnhold(this.oppstartsdato)
+	is Innhold.EndreOppstartsdatoInnhold -> Endringsmelding.Innhold.EndreOppstartsdatoInnhold(this.oppstartsdato)
+	is Innhold.ForlengDeltakelseInnhold -> Endringsmelding.Innhold.ForlengDeltakelseInnhold(this.sluttdato)
+	is Innhold.EndreDeltakelseProsentInnhold ->
+		Endringsmelding.Innhold.EndreDeltakelseProsentInnhold(
+			this.nyDeltakelseProsent,
+			this.dagerPerUke,
+			this.gyldigFraDato,
+		)
+	is Innhold.AvsluttDeltakelseInnhold -> Endringsmelding.Innhold.AvsluttDeltakelseInnhold(this.sluttdato, this.aarsak)
+	is Innhold.DeltakerIkkeAktuellInnhold -> Endringsmelding.Innhold.DeltakerIkkeAktuellInnhold(this.aarsak)
+	is Innhold.EndreSluttdatoInnhold -> Endringsmelding.Innhold.EndreSluttdatoInnhold(this.sluttdato)
+	is Innhold.EndreSluttaarsakInnhold -> Endringsmelding.Innhold.EndreSluttaarsakInnhold(this.aarsak)
 }

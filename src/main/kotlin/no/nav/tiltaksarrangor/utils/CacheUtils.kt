@@ -23,7 +23,5 @@ object CacheUtils {
 		cache: Cache<K, V>,
 		key: K,
 		valueSupplier: () -> V,
-	): V {
-		return tryCacheFirstNullable(cache, key) { valueSupplier.invoke() }!!
-	}
+	): V = tryCacheFirstNullable(cache, key) { valueSupplier.invoke() }!!
 }

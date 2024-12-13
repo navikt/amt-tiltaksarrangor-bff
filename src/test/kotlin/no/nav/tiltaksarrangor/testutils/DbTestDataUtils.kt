@@ -39,9 +39,7 @@ object DbTestDataUtils {
 		}
 	}
 
-	fun <V> parameters(vararg pairs: Pair<String, V>): MapSqlParameterSource {
-		return MapSqlParameterSource().addValues(pairs.toMap())
-	}
+	fun <V> parameters(vararg pairs: Pair<String, V>): MapSqlParameterSource = MapSqlParameterSource().addValues(pairs.toMap())
 
 	private fun getAllTables(jdbcTemplate: JdbcTemplate, schema: String): List<String> {
 		val sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = ?"

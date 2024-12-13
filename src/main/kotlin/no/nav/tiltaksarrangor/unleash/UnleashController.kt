@@ -16,7 +16,5 @@ class UnleashController(
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun getFeaturetoggles(
 		@RequestParam("feature") features: List<String>,
-	): Map<String, Boolean> {
-		return unleashService.getFeaturetoggles(features)
-	}
+	): Map<String, Boolean> = unleashService.getFeaturetoggles(features)
 }

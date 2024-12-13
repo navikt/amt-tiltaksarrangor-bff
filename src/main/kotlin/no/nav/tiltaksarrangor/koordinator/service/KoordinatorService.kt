@@ -183,14 +183,15 @@ class KoordinatorService(
 	private fun getDeltakerliste(deltakerlisteMedArrangor: DeltakerlisteMedArrangorDbo, ansattId: UUID): Deltakerliste {
 		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
 		val koordinatorer =
-			ansattService.getKoordinatorerForDeltakerliste(
-				deltakerlisteId = deltakerlisteMedArrangor.deltakerlisteDbo.id,
-				arrangorId = deltakerlisteMedArrangor.arrangorDbo.id,
-			)
-				.sortedBy { it.etternavn } // sorteringen er kun for KoordinatorControllerTest sin skyld
+			ansattService
+				.getKoordinatorerForDeltakerliste(
+					deltakerlisteId = deltakerlisteMedArrangor.deltakerlisteDbo.id,
+					arrangorId = deltakerlisteMedArrangor.arrangorDbo.id,
+				).sortedBy { it.etternavn } // sorteringen er kun for KoordinatorControllerTest sin skyld
 
 		val deltakere =
-			deltakerRepository.getDeltakereForDeltakerliste(deltakerlisteMedArrangor.deltakerlisteDbo.id)
+			deltakerRepository
+				.getDeltakereForDeltakerliste(deltakerlisteMedArrangor.deltakerlisteDbo.id)
 				.filter { !it.erSkjult() }
 				.filter { it.skalVises() }
 
@@ -228,16 +229,16 @@ class KoordinatorService(
 		)
 	}
 
-	private fun getVeilederFor(veilederDeltakere: List<VeilederDeltakerDbo>): VeilederFor {
-		return VeilederFor(
-			veilederFor = veilederDeltakere.filter { it.veilederType == Veiledertype.VEILEDER }.size,
-			medveilederFor = veilederDeltakere.filter { it.veilederType == Veiledertype.MEDVEILEDER }.size,
-		)
-	}
+	private fun getVeilederFor(veilederDeltakere: List<VeilederDeltakerDbo>): VeilederFor = VeilederFor(
+		veilederFor = veilederDeltakere.filter { it.veilederType == Veiledertype.VEILEDER }.size,
+		medveilederFor = veilederDeltakere.filter { it.veilederType == Veiledertype.MEDVEILEDER }.size,
+	)
 
 	private fun getKoordinatorFor(koordinatorsDeltakerlister: List<KoordinatorDeltakerlisteDbo>): KoordinatorFor {
-		val deltakerlister = deltakerlisteRepository.getDeltakerlister(koordinatorsDeltakerlister.map { it.deltakerlisteId })
-			.filter { it.erTilgjengeligForArrangor() }.toDeltakerliste()
+		val deltakerlister = deltakerlisteRepository
+			.getDeltakerlister(koordinatorsDeltakerlister.map { it.deltakerlisteId })
+			.filter { it.erTilgjengeligForArrangor() }
+			.toDeltakerliste()
 		return KoordinatorFor(deltakerlister = deltakerlister)
 	}
 
@@ -256,50 +257,48 @@ class KoordinatorService(
 		ansattId: UUID,
 		aktiveForslag: List<Forslag>,
 		erKometMasterForTiltakstype: Boolean,
-	): List<Deltaker> {
-		return deltakere.map {
-			val adressebeskyttet = it.adressebeskyttet
-			val veiledereForDeltaker = getVeiledereForDeltaker(it.id, veiledere)
-			Deltaker(
-				id = it.id,
-				fornavn = if (adressebeskyttet) "" else it.fornavn,
-				mellomnavn = if (adressebeskyttet) null else it.mellomnavn,
-				etternavn = if (adressebeskyttet) "" else it.etternavn,
-				fodselsnummer = if (adressebeskyttet) "" else it.personident,
-				soktInnDato = it.innsoktDato.atStartOfDay(),
-				startDato = it.startdato,
-				sluttDato = it.sluttdato,
-				status =
-					DeltakerStatus(
-						type = it.status,
-						endretDato = it.statusGyldigFraDato,
-						aarsak = it.statusAarsak,
-					),
-				veiledere = veiledereForDeltaker,
-				navKontor = if (adressebeskyttet) null else it.navKontor,
-				aktiveEndringsmeldinger = if (adressebeskyttet || erKometMasterForTiltakstype) {
-					emptyList()
-				} else {
-					getEndringsmeldinger(
-						it.id,
-						endringsmeldinger,
-					)
-				},
-				gjeldendeVurderingFraArrangor = if (adressebeskyttet) null else it.getGjeldendeVurdering(),
-				adressebeskyttet = adressebeskyttet,
-				erVeilederForDeltaker = erVeilederForDeltaker(ansattId, veiledereForDeltaker),
-				aktivEndring = getAktivEndring(it.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
-			)
-		}
+	): List<Deltaker> = deltakere.map {
+		val adressebeskyttet = it.adressebeskyttet
+		val veiledereForDeltaker = getVeiledereForDeltaker(it.id, veiledere)
+		Deltaker(
+			id = it.id,
+			fornavn = if (adressebeskyttet) "" else it.fornavn,
+			mellomnavn = if (adressebeskyttet) null else it.mellomnavn,
+			etternavn = if (adressebeskyttet) "" else it.etternavn,
+			fodselsnummer = if (adressebeskyttet) "" else it.personident,
+			soktInnDato = it.innsoktDato.atStartOfDay(),
+			startDato = it.startdato,
+			sluttDato = it.sluttdato,
+			status =
+				DeltakerStatus(
+					type = it.status,
+					endretDato = it.statusGyldigFraDato,
+					aarsak = it.statusAarsak,
+				),
+			veiledere = veiledereForDeltaker,
+			navKontor = if (adressebeskyttet) null else it.navKontor,
+			aktiveEndringsmeldinger = if (adressebeskyttet || erKometMasterForTiltakstype) {
+				emptyList()
+			} else {
+				getEndringsmeldinger(
+					it.id,
+					endringsmeldinger,
+				)
+			},
+			gjeldendeVurderingFraArrangor = if (adressebeskyttet) null else it.getGjeldendeVurdering(),
+			adressebeskyttet = adressebeskyttet,
+			erVeilederForDeltaker = erVeilederForDeltaker(ansattId, veiledereForDeltaker),
+			aktivEndring = getAktivEndring(it.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
+		)
 	}
 
-	private fun getVeiledereForDeltaker(deltakerId: UUID, veiledereDeltakere: List<Veileder>): List<Veileder> {
-		return veiledereDeltakere.filter { it.deltakerId == deltakerId }
+	private fun getVeiledereForDeltaker(deltakerId: UUID, veiledereDeltakere: List<Veileder>): List<Veileder> = veiledereDeltakere.filter {
+		it.deltakerId == deltakerId
 	}
 
-	private fun erVeilederForDeltaker(ansattId: UUID, veiledereDeltakere: List<Veileder>): Boolean {
-		return veiledereDeltakere.find { it.ansattId == ansattId } != null
-	}
+	private fun erVeilederForDeltaker(ansattId: UUID, veiledereDeltakere: List<Veileder>): Boolean = veiledereDeltakere.find {
+		it.ansattId == ansattId
+	} != null
 
 	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
 		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }
@@ -307,15 +306,13 @@ class KoordinatorService(
 	}
 }
 
-fun List<DeltakerlisteDbo>.toDeltakerliste(): List<KoordinatorFor.Deltakerliste> {
-	return this.map {
-		KoordinatorFor.Deltakerliste(
-			id = it.id,
-			navn = it.navn,
-			type = it.tiltakNavn,
-			startdato = it.startDato,
-			sluttdato = it.sluttDato,
-			erKurs = it.erKurs,
-		)
-	}
+fun List<DeltakerlisteDbo>.toDeltakerliste(): List<KoordinatorFor.Deltakerliste> = this.map {
+	KoordinatorFor.Deltakerliste(
+		id = it.id,
+		navn = it.navn,
+		type = it.tiltakNavn,
+		startdato = it.startDato,
+		sluttdato = it.sluttDato,
+		erKurs = it.erKurs,
+	)
 }

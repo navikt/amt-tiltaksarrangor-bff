@@ -10,9 +10,7 @@ data class Endringsmelding(
 	val status: Status,
 	val sendt: LocalDate,
 ) {
-	fun erAktiv(): Boolean {
-		return status == Status.AKTIV
-	}
+	fun erAktiv(): Boolean = status == Status.AKTIV
 
 	enum class Type {
 		LEGG_TIL_OPPSTARTSDATO,

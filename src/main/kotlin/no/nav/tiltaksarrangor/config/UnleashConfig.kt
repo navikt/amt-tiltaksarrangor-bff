@@ -17,7 +17,8 @@ class UnleashConfig {
 	): DefaultUnleash {
 		val appName = "amt-tiltaksarrangor-bff"
 		val config =
-			UnleashConfig.builder()
+			UnleashConfig
+				.builder()
 				.appName(appName)
 				.instanceId(appName)
 				.unleashAPI(unleashUrl)

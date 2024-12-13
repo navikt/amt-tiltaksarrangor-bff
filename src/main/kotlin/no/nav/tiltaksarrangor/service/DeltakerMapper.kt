@@ -46,7 +46,8 @@ class DeltakerMapper(
 
 		val endringsmeldinger = if (unleashService.erKometMasterForTiltakstype(
 				deltakerliste.tiltakType,
-			) || (deltaker.adressebeskyttet && !ansattErVeileder)
+			) ||
+			(deltaker.adressebeskyttet && !ansattErVeileder)
 		) {
 			emptyList()
 		} else {

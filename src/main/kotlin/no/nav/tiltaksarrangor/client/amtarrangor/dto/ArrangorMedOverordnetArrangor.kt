@@ -11,11 +11,9 @@ data class ArrangorMedOverordnetArrangor(
 	val overordnetArrangor: ArrangorDto?,
 )
 
-fun ArrangorMedOverordnetArrangor.toArrangorDbo(): ArrangorDbo {
-	return ArrangorDbo(
-		id = id,
-		navn = navn,
-		organisasjonsnummer = organisasjonsnummer,
-		overordnetArrangorId = overordnetArrangor?.id,
-	)
-}
+fun ArrangorMedOverordnetArrangor.toArrangorDbo(): ArrangorDbo = ArrangorDbo(
+	id = id,
+	navn = navn,
+	organisasjonsnummer = organisasjonsnummer,
+	overordnetArrangorId = overordnetArrangor?.id,
+)

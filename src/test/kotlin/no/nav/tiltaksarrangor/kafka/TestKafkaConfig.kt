@@ -26,13 +26,11 @@ class TestKafkaConfig(
 	) + kafkaConfig.commonConfig()
 
 	@Bean
-	fun testKafkaConsumer(): Consumer<String, String> {
-		return DefaultKafkaConsumerFactory(
-			testConsumerProps("bff-consumer"),
-			StringDeserializer(),
-			StringDeserializer(),
-		).createConsumer()
-	}
+	fun testKafkaConsumer(): Consumer<String, String> = DefaultKafkaConsumerFactory(
+		testConsumerProps("bff-consumer"),
+		StringDeserializer(),
+		StringDeserializer(),
+	).createConsumer()
 
 	@Bean
 	fun testKafkaProducer(): KafkaProducer<String, String> {
@@ -52,7 +50,5 @@ class TestKafkaConfig(
 @Profile("test")
 class TestKafkaProducerConfig {
 	@Bean
-	fun testConfig(): no.nav.amt.lib.kafka.config.KafkaConfig {
-		return LocalKafkaConfig(SingletonKafkaProvider.getHost())
-	}
+	fun testConfig(): no.nav.amt.lib.kafka.config.KafkaConfig = LocalKafkaConfig(SingletonKafkaProvider.getHost())
 }

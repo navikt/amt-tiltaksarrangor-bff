@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component
 import java.util.UUID
 
 @Component
-class NavEnhetRepository(private val template: NamedParameterJdbcTemplate) {
+class NavEnhetRepository(
+	private val template: NamedParameterJdbcTemplate,
+) {
 	private val rowMapper = RowMapper { rs, _ ->
 		NavEnhetDbo(
 			id = UUID.fromString(rs.getString("id")),

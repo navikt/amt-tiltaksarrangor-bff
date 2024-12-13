@@ -37,7 +37,8 @@ class VeilederService(
 		}
 
 		val deltakere =
-			deltakerRepository.getDeltakereMedDeltakerliste(ansatt.veilederDeltakere.map { it.deltakerId })
+			deltakerRepository
+				.getDeltakereMedDeltakerliste(ansatt.veilederDeltakere.map { it.deltakerId })
 				.filter { ansattService.harRolleHosArrangor(it.deltakerliste.arrangorId, AnsattRolle.VEILEDER, ansatt.roller) }
 				.filter { !it.deltaker.erSkjult() }
 				.filter { it.deltaker.skalVises() }
@@ -57,47 +58,46 @@ class VeilederService(
 		ansattsVeilederDeltakere: List<VeilederDeltakerDbo>,
 		endringsmeldinger: List<EndringsmeldingDbo>,
 		aktiveForslag: List<Forslag>,
-	): List<Deltaker> {
-		return deltakere.map {
-			val erKometMasterForTiltakstype = unleashService.erKometMasterForTiltakstype(it.deltakerliste.tiltakType)
-			val adressebeskyttet = it.deltaker.adressebeskyttet
-			Deltaker(
-				id = it.deltaker.id,
-				deltakerliste =
-					Deltaker.Deltakerliste(
-						id = it.deltakerliste.id,
-						type = it.deltakerliste.tiltakNavn,
-						navn = it.deltakerliste.navn,
-					),
-				fornavn = if (adressebeskyttet) "" else it.deltaker.fornavn,
-				mellomnavn = if (adressebeskyttet) null else it.deltaker.mellomnavn,
-				etternavn = if (adressebeskyttet) "" else it.deltaker.etternavn,
-				fodselsnummer = if (adressebeskyttet) "" else it.deltaker.personident,
-				status =
-					DeltakerStatus(
-						type = it.deltaker.status,
-						endretDato = it.deltaker.statusGyldigFraDato,
-						aarsak = it.deltaker.statusAarsak,
-					),
-				startDato = it.deltaker.startdato,
-				sluttDato = it.deltaker.sluttdato,
-				veiledertype = getVeiledertype(it.deltaker.id, ansattsVeilederDeltakere),
-				aktiveEndringsmeldinger = if (erKometMasterForTiltakstype) {
-					emptyList()
-				} else {
-					getEndringsmeldinger(it.deltaker.id, endringsmeldinger)
-				},
-				aktivEndring = getAktivEndring(it.deltaker.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
-				sistEndret = it.deltaker.sistEndret,
-				adressebeskyttet = adressebeskyttet,
-			)
-		}
+	): List<Deltaker> = deltakere.map {
+		val erKometMasterForTiltakstype = unleashService.erKometMasterForTiltakstype(it.deltakerliste.tiltakType)
+		val adressebeskyttet = it.deltaker.adressebeskyttet
+		Deltaker(
+			id = it.deltaker.id,
+			deltakerliste =
+				Deltaker.Deltakerliste(
+					id = it.deltakerliste.id,
+					type = it.deltakerliste.tiltakNavn,
+					navn = it.deltakerliste.navn,
+				),
+			fornavn = if (adressebeskyttet) "" else it.deltaker.fornavn,
+			mellomnavn = if (adressebeskyttet) null else it.deltaker.mellomnavn,
+			etternavn = if (adressebeskyttet) "" else it.deltaker.etternavn,
+			fodselsnummer = if (adressebeskyttet) "" else it.deltaker.personident,
+			status =
+				DeltakerStatus(
+					type = it.deltaker.status,
+					endretDato = it.deltaker.statusGyldigFraDato,
+					aarsak = it.deltaker.statusAarsak,
+				),
+			startDato = it.deltaker.startdato,
+			sluttDato = it.deltaker.sluttdato,
+			veiledertype = getVeiledertype(it.deltaker.id, ansattsVeilederDeltakere),
+			aktiveEndringsmeldinger = if (erKometMasterForTiltakstype) {
+				emptyList()
+			} else {
+				getEndringsmeldinger(it.deltaker.id, endringsmeldinger)
+			},
+			aktivEndring = getAktivEndring(it.deltaker.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
+			sistEndret = it.deltaker.sistEndret,
+			adressebeskyttet = adressebeskyttet,
+		)
 	}
 
-	private fun getVeiledertype(deltakerId: UUID, ansattsVeilederDeltakere: List<VeilederDeltakerDbo>): Veiledertype {
-		return ansattsVeilederDeltakere.find { it.deltakerId == deltakerId }?.veilederType
-			?: throw IllegalStateException("Deltaker med id $deltakerId mangler fra listen, skal ikke kunne skje!")
-	}
+	private fun getVeiledertype(deltakerId: UUID, ansattsVeilederDeltakere: List<VeilederDeltakerDbo>): Veiledertype = ansattsVeilederDeltakere
+		.find {
+			it.deltakerId == deltakerId
+		}?.veilederType
+		?: throw IllegalStateException("Deltaker med id $deltakerId mangler fra listen, skal ikke kunne skje!")
 
 	private fun getEndringsmeldinger(deltakerId: UUID, endringsmeldinger: List<EndringsmeldingDbo>): List<Endringsmelding> {
 		val endringsmeldingerForDeltaker = endringsmeldinger.filter { it.deltakerId == deltakerId }

@@ -52,14 +52,12 @@ data class AnsattVeilederDbo(
 	val ansattPersonaliaDbo: AnsattPersonaliaDbo,
 	val veilederDeltakerDbo: VeilederDeltakerDbo,
 ) {
-	fun toVeileder(): Veileder {
-		return Veileder(
-			ansattId = ansattPersonaliaDbo.id,
-			deltakerId = veilederDeltakerDbo.deltakerId,
-			veiledertype = veilederDeltakerDbo.veilederType,
-			fornavn = ansattPersonaliaDbo.fornavn,
-			mellomnavn = ansattPersonaliaDbo.mellomnavn,
-			etternavn = ansattPersonaliaDbo.etternavn,
-		)
-	}
+	fun toVeileder(): Veileder = Veileder(
+		ansattId = ansattPersonaliaDbo.id,
+		deltakerId = veilederDeltakerDbo.deltakerId,
+		veiledertype = veilederDeltakerDbo.veilederType,
+		fornavn = ansattPersonaliaDbo.fornavn,
+		mellomnavn = ansattPersonaliaDbo.mellomnavn,
+		etternavn = ansattPersonaliaDbo.etternavn,
+	)
 }

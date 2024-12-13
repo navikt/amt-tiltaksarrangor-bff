@@ -69,7 +69,8 @@ class MetricsService(
 	}
 
 	fun incVurderingOpprettet(vurderingstype: Vurderingstype) {
-		Counter.builder(VURDERING_OPPRETTET_METRIC)
+		Counter
+			.builder(VURDERING_OPPRETTET_METRIC)
 			.tags("vurderingstype", vurderingstype.name)
 			.register(registry)
 			.increment()

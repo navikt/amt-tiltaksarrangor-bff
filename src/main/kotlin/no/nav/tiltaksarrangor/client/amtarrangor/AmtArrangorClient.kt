@@ -26,7 +26,8 @@ class AmtArrangorClient(
 
 	fun getAnsatt(personIdent: String): AnsattDto? {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtArrangorUrl/api/ansatt")
 				.get()
 				.build()
@@ -55,7 +56,8 @@ class AmtArrangorClient(
 		arrangorId: UUID,
 	) {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtArrangorUrl/api/ansatt/koordinator/$arrangorId/$deltakerlisteId")
 				.post("".toRequestBody(mediaTypeJson))
 				.build()
@@ -81,7 +83,8 @@ class AmtArrangorClient(
 		arrangorId: UUID,
 	) {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtArrangorUrl/api/ansatt/koordinator/$arrangorId/$deltakerlisteId")
 				.delete()
 				.build()
@@ -103,7 +106,8 @@ class AmtArrangorClient(
 
 	fun oppdaterVeilederForDeltaker(deltakerId: UUID, oppdaterVeiledereForDeltakerRequest: OppdaterVeiledereForDeltakerRequest) {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtArrangorUrl/api/ansatt/veiledere/$deltakerId")
 				.post(objectMapper.writeValueAsString(oppdaterVeiledereForDeltakerRequest).toRequestBody(mediaTypeJson))
 				.build()
@@ -125,7 +129,8 @@ class AmtArrangorClient(
 
 	fun getArrangor(orgnummer: String): ArrangorMedOverordnetArrangor? {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtArrangorUrl/api/service/arrangor/organisasjonsnummer/$orgnummer")
 				.get()
 				.build()

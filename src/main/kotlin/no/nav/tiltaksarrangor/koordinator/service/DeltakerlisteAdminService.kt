@@ -47,8 +47,7 @@ class DeltakerlisteAdminService(
 				startDato = it.deltakerlisteDbo.startDato,
 				sluttDato = it.deltakerlisteDbo.sluttDato,
 				lagtTil =
-					ansatt.deltakerlister.find {
-							koordinatorDeltakerliste ->
+					ansatt.deltakerlister.find { koordinatorDeltakerliste ->
 						koordinatorDeltakerliste.deltakerlisteId == it.deltakerlisteDbo.id
 					} != null,
 			)
@@ -121,7 +120,9 @@ class DeltakerlisteAdminService(
 		return ansatt
 	}
 
-	private fun finnOverordnetArrangorNavn(overordnetArrangorId: UUID, overordnedeArrangorer: List<ArrangorDbo>): String? {
-		return overordnedeArrangorer.find { it.id == overordnetArrangorId }?.navn
-	}
+	private fun finnOverordnetArrangorNavn(overordnetArrangorId: UUID, overordnedeArrangorer: List<ArrangorDbo>): String? =
+		overordnedeArrangorer
+			.find {
+				it.id == overordnetArrangorId
+			}?.navn
 }
