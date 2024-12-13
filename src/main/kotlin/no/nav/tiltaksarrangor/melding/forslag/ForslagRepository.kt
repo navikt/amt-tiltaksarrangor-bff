@@ -88,7 +88,8 @@ class ForslagRepository(
 
 		val sql = "select * from forslag where deltaker_id in(:ids)"
 		val params = sqlParameters("ids" to deltakerIder)
-		return template.query(sql, params, rowMapper)
+		return template
+			.query(sql, params, rowMapper)
 			.filter { it.status is Forslag.Status.VenterPaSvar }
 	}
 

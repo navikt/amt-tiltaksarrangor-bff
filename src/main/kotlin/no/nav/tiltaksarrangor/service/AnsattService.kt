@@ -37,12 +37,13 @@ class AnsattService(
 		log.info("Lagret eller oppdatert ansatt med id ${ansatt.id}")
 		ansattRepository.updateSistInnlogget(ansatt.id)
 
-		return ansatt.arrangorer.flatMap { it.roller }.map { it.name }.distinct()
+		return ansatt.arrangorer
+			.flatMap { it.roller }
+			.map { it.name }
+			.distinct()
 	}
 
-	fun getAnsatt(personIdent: String): AnsattDbo? {
-		return ansattRepository.getAnsatt(personIdent)
-	}
+	fun getAnsatt(personIdent: String): AnsattDbo? = ansattRepository.getAnsatt(personIdent)
 
 	fun getAnsattMedRoller(personIdent: String): AnsattDbo {
 		val ansatt = getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
@@ -52,9 +53,8 @@ class AnsattService(
 		return ansatt
 	}
 
-	fun getVeiledereForDeltaker(deltakerId: UUID): List<Veileder> {
-		return ansattRepository.getVeiledereForDeltaker(deltakerId).map { it.toVeileder() }
-	}
+	fun getVeiledereForDeltaker(deltakerId: UUID): List<Veileder> =
+		ansattRepository.getVeiledereForDeltaker(deltakerId).map { it.toVeileder() }
 
 	fun getVeiledereForDeltakere(deltakerIder: List<UUID>): List<Veileder> {
 		if (deltakerIder.isEmpty()) {
@@ -105,13 +105,10 @@ class AnsattService(
 		)
 	}
 
-	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID, arrangorId: UUID): List<AnsattPersonaliaDbo> {
-		return ansattRepository.getKoordinatorerForDeltakerliste(deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
-	}
+	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID, arrangorId: UUID): List<AnsattPersonaliaDbo> =
+		ansattRepository.getKoordinatorerForDeltakerliste(deltakerlisteId = deltakerlisteId, arrangorId = arrangorId)
 
-	fun getVeiledereForArrangor(arrangorId: UUID): List<AnsattPersonaliaDbo> {
-		return ansattRepository.getVeiledereForArrangor(arrangorId)
-	}
+	fun getVeiledereForArrangor(arrangorId: UUID): List<AnsattPersonaliaDbo> = ansattRepository.getVeiledereForArrangor(arrangorId)
 
 	fun erAlleAnsatteVeiledereHosArrangor(ansattIder: List<UUID>, arrangorId: UUID): Boolean {
 		if (ansattIder.isEmpty()) {
@@ -148,9 +145,7 @@ class AnsattService(
 		arrangorId: UUID,
 		rolle: AnsattRolle,
 		roller: List<AnsattRolleDbo>,
-	): Boolean {
-		return roller.find { it.arrangorId == arrangorId && it.rolle == rolle } != null
-	}
+	): Boolean = roller.find { it.arrangorId == arrangorId && it.rolle == rolle } != null
 
 	fun harTilgangTilDeltaker(
 		deltakerId: UUID,
@@ -185,19 +180,19 @@ class AnsattService(
 	fun harTilgangTilEndringsmeldingerOgVurderingForDeltaker(
 		deltakerMedDeltakerliste: DeltakerMedDeltakerlisteDbo,
 		ansatt: AnsattDbo,
-	): Boolean {
-		return !deltakerMedDeltakerliste.deltaker.adressebeskyttet || (
-			deltakerMedDeltakerliste.deltaker.adressebeskyttet && erVeilederForDeltaker(
-				deltakerId = deltakerMedDeltakerliste.deltaker.id,
-				deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
-				ansattDbo = ansatt,
-			)
+	): Boolean = !deltakerMedDeltakerliste.deltaker.adressebeskyttet ||
+		(
+			deltakerMedDeltakerliste.deltaker.adressebeskyttet &&
+				erVeilederForDeltaker(
+					deltakerId = deltakerMedDeltakerliste.deltaker.id,
+					deltakerlisteArrangorId = deltakerMedDeltakerliste.deltakerliste.arrangorId,
+					ansattDbo = ansatt,
+				)
 		)
-	}
 
-	fun deltakerlisteErLagtTil(ansattDbo: AnsattDbo, deltakerlisteId: UUID): Boolean {
-		return ansattDbo.deltakerlister.find { it.deltakerlisteId == deltakerlisteId } != null
-	}
+	fun deltakerlisteErLagtTil(ansattDbo: AnsattDbo, deltakerlisteId: UUID): Boolean = ansattDbo.deltakerlister.find {
+		it.deltakerlisteId == deltakerlisteId
+	} != null
 
 	private fun createOppdaterVeiledereForDeltakerRequest(
 		arrangorId: UUID,

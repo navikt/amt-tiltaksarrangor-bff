@@ -119,13 +119,12 @@ class DeltakerlisteRepository(
 		)
 	}
 
-	fun getDeltakerliste(deltakerlisteId: UUID): DeltakerlisteDbo? {
-		return template.query(
+	fun getDeltakerliste(deltakerlisteId: UUID): DeltakerlisteDbo? = template
+		.query(
 			"SELECT * FROM deltakerliste WHERE id = :id",
 			sqlParameters("id" to deltakerlisteId),
 			deltakerlisteRowMapper,
 		).firstOrNull()
-	}
 
 	fun getDeltakerlister(deltakerlisteIder: List<UUID>): List<DeltakerlisteDbo> {
 		if (deltakerlisteIder.isEmpty()) {
@@ -138,8 +137,8 @@ class DeltakerlisteRepository(
 		)
 	}
 
-	fun getDeltakerlisteMedArrangor(deltakerlisteId: UUID): DeltakerlisteMedArrangorDbo? {
-		return template.query(
+	fun getDeltakerlisteMedArrangor(deltakerlisteId: UUID): DeltakerlisteMedArrangorDbo? = template
+		.query(
 			"""
 			SELECT deltakerliste.id as deltakerliste_id,
 					deltakerliste.navn as deltakerliste_navn,
@@ -161,7 +160,6 @@ class DeltakerlisteRepository(
 			sqlParameters("id" to deltakerlisteId),
 			deltakerlisteMedArrangorRowMapper,
 		).firstOrNull()
-	}
 
 	fun getDeltakerlisterMedArrangor(arrangorIder: List<UUID>): List<DeltakerlisteMedArrangorDbo> {
 		if (arrangorIder.isEmpty()) {
@@ -191,12 +189,10 @@ class DeltakerlisteRepository(
 		)
 	}
 
-	fun getDeltakerlisterSomSkalSlettes(slettesDato: LocalDate): List<UUID> {
-		return template.query(
-			"SELECT id from deltakerliste WHERE status='AVSLUTTET' AND slutt_dato is not NULL AND slutt_dato < :slettesDato",
-			sqlParameters("slettesDato" to slettesDato),
-		) { rs, _ ->
-			UUID.fromString(rs.getString("id"))
-		}
+	fun getDeltakerlisterSomSkalSlettes(slettesDato: LocalDate): List<UUID> = template.query(
+		"SELECT id from deltakerliste WHERE status='AVSLUTTET' AND slutt_dato is not NULL AND slutt_dato < :slettesDato",
+		sqlParameters("slettesDato" to slettesDato),
+	) { rs, _ ->
+		UUID.fromString(rs.getString("id"))
 	}
 }

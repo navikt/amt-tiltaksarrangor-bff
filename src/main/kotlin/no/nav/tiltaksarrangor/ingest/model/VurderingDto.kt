@@ -16,14 +16,12 @@ data class VurderingDto(
 	val gyldigFra: LocalDateTime,
 	val gyldigTil: LocalDateTime?,
 ) {
-	fun toVurdering(): Vurdering {
-		return Vurdering(
-			vurderingstype = vurderingstype,
-			begrunnelse = begrunnelse,
-			gyldigFra = gyldigFra,
-			gyldigTil = gyldigTil,
-		)
-	}
+	fun toVurdering(): Vurdering = Vurdering(
+		vurderingstype = vurderingstype,
+		begrunnelse = begrunnelse,
+		gyldigFra = gyldigFra,
+		gyldigTil = gyldigTil,
+	)
 }
 
 fun List<VurderingDto>.toPGObject() = PGobject().also {

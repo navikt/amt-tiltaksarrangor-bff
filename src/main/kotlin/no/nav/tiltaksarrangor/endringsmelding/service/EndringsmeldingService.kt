@@ -39,7 +39,8 @@ class EndringsmeldingService(
 
 	fun getAlleEndringsmeldinger(deltakerId: UUID, personIdent: String): EndringsmeldingResponse {
 		val ansatt = ansattService.getAnsattMedRoller(personIdent)
-		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+		val deltakerMedDeltakerliste = deltakerRepository
+			.getDeltakerMedDeltakerliste(deltakerId)
 			?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
@@ -51,9 +52,13 @@ class EndringsmeldingService(
 			endringsmeldingRepository.getEndringsmeldingerForDeltaker(deltakerId)
 		}
 		return EndringsmeldingResponse(
-			aktiveEndringsmeldinger = endringsmeldinger.sortedBy { it.sendt }.filter { it.erAktiv() }
+			aktiveEndringsmeldinger = endringsmeldinger
+				.sortedBy { it.sendt }
+				.filter { it.erAktiv() }
 				.map { it.toEndringsmelding() },
-			historiskeEndringsmeldinger = endringsmeldinger.sortedByDescending { it.sendt }.filter { !it.erAktiv() }
+			historiskeEndringsmeldinger = endringsmeldinger
+				.sortedByDescending { it.sendt }
+				.filter { !it.erAktiv() }
 				.map { it.toEndringsmelding() },
 		)
 	}
@@ -64,7 +69,8 @@ class EndringsmeldingService(
 		personIdent: String,
 	) {
 		val ansatt = ansattService.getAnsattMedRoller(personIdent)
-		val deltakerMedDeltakerliste = deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)
+		val deltakerMedDeltakerliste = deltakerRepository
+			.getDeltakerMedDeltakerliste(deltakerId)
 			?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)

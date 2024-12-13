@@ -69,9 +69,10 @@ class TiltaksarrangorService(
 		val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
 
 		val deltakerlisteMedArrangor =
-			deltakerlisteRepository.getDeltakerlisteMedArrangor(
-				deltaker.deltakerliste.id,
-			)?.takeIf { it.deltakerlisteDbo.erTilgjengeligForArrangor() }
+			deltakerlisteRepository
+				.getDeltakerlisteMedArrangor(
+					deltaker.deltakerliste.id,
+				)?.takeIf { it.deltakerlisteDbo.erTilgjengeligForArrangor() }
 				?: throw NoSuchElementException("Fant ikke deltakerliste med id ${deltaker.deltakerliste.id}")
 
 		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }

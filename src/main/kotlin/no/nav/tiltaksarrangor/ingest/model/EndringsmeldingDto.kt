@@ -30,13 +30,11 @@ data class EndringsmeldingDto(
 	val createdAt: LocalDateTime,
 )
 
-fun EndringsmeldingDto.toEndringsmeldingDbo(): EndringsmeldingDbo {
-	return EndringsmeldingDbo(
-		id = id,
-		deltakerId = deltakerId,
-		type = type,
-		innhold = innhold,
-		status = status,
-		sendt = createdAt,
-	)
-}
+fun EndringsmeldingDto.toEndringsmeldingDbo(): EndringsmeldingDbo = EndringsmeldingDbo(
+	id = id,
+	deltakerId = deltakerId,
+	type = type,
+	innhold = innhold,
+	status = status,
+	sendt = createdAt,
+)

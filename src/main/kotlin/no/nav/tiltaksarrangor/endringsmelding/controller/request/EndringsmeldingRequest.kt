@@ -30,7 +30,9 @@ data class EndringsmeldingRequest(
 		ENDRE_SLUTTAARSAK,
 	}
 
-	sealed class Innhold(val type: EndringsmeldingType) {
+	sealed class Innhold(
+		val type: EndringsmeldingType,
+	) {
 		data class LeggTilOppstartsdatoInnhold(
 			val oppstartsdato: LocalDate,
 		) : Innhold(EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO)

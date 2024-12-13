@@ -8,7 +8,5 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class LogConfig {
 	@Bean
-	fun auditLogger(): AuditLogger {
-		return AuditLoggerImpl()
-	}
+	fun auditLogger(): AuditLogger = AuditLoggerImpl()
 }

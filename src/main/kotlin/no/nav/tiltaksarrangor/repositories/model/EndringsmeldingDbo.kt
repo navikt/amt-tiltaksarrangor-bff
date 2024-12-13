@@ -15,17 +15,13 @@ data class EndringsmeldingDbo(
 	val status: Endringsmelding.Status,
 	val sendt: LocalDateTime,
 ) {
-	fun toEndringsmelding(): Endringsmelding {
-		return Endringsmelding(
-			id = id,
-			innhold = innhold?.toEndringsmeldingInnhold(),
-			type = Endringsmelding.Type.valueOf(type.name),
-			status = status,
-			sendt = sendt.toLocalDate(),
-		)
-	}
+	fun toEndringsmelding(): Endringsmelding = Endringsmelding(
+		id = id,
+		innhold = innhold?.toEndringsmeldingInnhold(),
+		type = Endringsmelding.Type.valueOf(type.name),
+		status = status,
+		sendt = sendt.toLocalDate(),
+	)
 
-	fun erAktiv(): Boolean {
-		return status == Endringsmelding.Status.AKTIV
-	}
+	fun erAktiv(): Boolean = status == Endringsmelding.Status.AKTIV
 }

@@ -1242,7 +1242,9 @@ class KoordinatorServiceTest {
 			amtArrangorClient.oppdaterVeilederForDeltaker(
 				deltakerId,
 				match {
-					it.arrangorId == arrangorId && it.veilederSomFjernes.size == 1 && it.veilederSomLeggesTil.size == 2 &&
+					it.arrangorId == arrangorId &&
+						it.veilederSomFjernes.size == 1 &&
+						it.veilederSomLeggesTil.size == 2 &&
 						it.veilederSomFjernes.contains(VeilederAnsatt(veileder2Id, Veiledertype.MEDVEILEDER)) &&
 						it.veilederSomLeggesTil.contains(VeilederAnsatt(veileder1Id, Veiledertype.MEDVEILEDER)) &&
 						it.veilederSomLeggesTil.contains(VeilederAnsatt(veileder2Id, Veiledertype.VEILEDER))
@@ -1313,7 +1315,9 @@ class KoordinatorServiceTest {
 			amtArrangorClient.oppdaterVeilederForDeltaker(
 				deltakerId,
 				match {
-					it.arrangorId == arrangorId && it.veilederSomFjernes.size == 1 && it.veilederSomLeggesTil.isEmpty() &&
+					it.arrangorId == arrangorId &&
+						it.veilederSomFjernes.size == 1 &&
+						it.veilederSomLeggesTil.isEmpty() &&
 						it.veilederSomFjernes.contains(VeilederAnsatt(veileder1Id, Veiledertype.VEILEDER))
 				},
 			)

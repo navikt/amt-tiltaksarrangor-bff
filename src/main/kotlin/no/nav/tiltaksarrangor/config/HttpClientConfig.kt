@@ -52,13 +52,12 @@ class HttpClientConfig {
 	}
 
 	@Bean
-	fun simpleHttpClient(): OkHttpClient {
-		return OkHttpClient.Builder()
-			.connectTimeout(5, TimeUnit.SECONDS)
-			.readTimeout(5, TimeUnit.SECONDS)
-			.followRedirects(false)
-			.build()
-	}
+	fun simpleHttpClient(): OkHttpClient = OkHttpClient
+		.Builder()
+		.connectTimeout(5, TimeUnit.SECONDS)
+		.readTimeout(5, TimeUnit.SECONDS)
+		.followRedirects(false)
+		.build()
 
 	private fun buildClient(
 		registrationName: String,
@@ -68,7 +67,8 @@ class HttpClientConfig {
 		val clientProperties =
 			clientConfigurationProperties.registration[registrationName]
 				?: error("Fant ikke config for $registrationName")
-		return OkHttpClient.Builder()
+		return OkHttpClient
+			.Builder()
 			.connectTimeout(5, TimeUnit.SECONDS)
 			.readTimeout(5, TimeUnit.SECONDS)
 			.followRedirects(false)
@@ -76,15 +76,15 @@ class HttpClientConfig {
 			.build()
 	}
 
-	private fun bearerTokenInterceptor(clientProperties: ClientProperties, oAuth2AccessTokenService: OAuth2AccessTokenService): Interceptor {
-		return Interceptor { chain: Interceptor.Chain ->
+	private fun bearerTokenInterceptor(clientProperties: ClientProperties, oAuth2AccessTokenService: OAuth2AccessTokenService): Interceptor =
+		Interceptor { chain: Interceptor.Chain ->
 			val accessTokenResponse = oAuth2AccessTokenService.getAccessToken(clientProperties)
 			val request = chain.request()
 			val requestWithToken =
-				request.newBuilder()
+				request
+					.newBuilder()
 					.addHeader("Authorization", "Bearer ${accessTokenResponse.access_token}")
 					.build()
 			chain.proceed(requestWithToken)
 		}
-	}
 }

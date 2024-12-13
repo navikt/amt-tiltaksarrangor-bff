@@ -28,10 +28,12 @@ class LeaderElection(
 		val hostname: String = InetAddress.getLocalHost().hostName
 
 		val uriString =
-			UriComponentsBuilder.fromHttpUrl(getHttpPath(electorPath))
+			UriComponentsBuilder
+				.fromHttpUrl(getHttpPath(electorPath))
 				.toUriString()
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url(uriString)
 				.get()
 				.build()
@@ -59,5 +61,7 @@ class LeaderElection(
 		else -> "http://$url"
 	}
 
-	private data class Leader(val name: String)
+	private data class Leader(
+		val name: String,
+	)
 }

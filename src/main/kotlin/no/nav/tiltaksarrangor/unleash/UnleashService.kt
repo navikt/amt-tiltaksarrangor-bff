@@ -19,12 +19,8 @@ class UnleashService(
 	// her kan vi legge inn de neste tiltakstypene vi skal ta over
 	private val tiltakstyperKometKanskjeErMasterFor = emptyList<String>()
 
-	fun erKometMasterForTiltakstype(tiltakstype: String): Boolean {
-		return tiltakstype in tiltakstyperKometAlltidErMasterFor ||
-			(unleash.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
-	}
+	fun erKometMasterForTiltakstype(tiltakstype: String): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFor ||
+		(unleash.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
 
-	fun getFeaturetoggles(features: List<String>): Map<String, Boolean> {
-		return features.associateWith { unleash.isEnabled(it) }
-	}
+	fun getFeaturetoggles(features: List<String>): Map<String, Boolean> = features.associateWith { unleash.isEnabled(it) }
 }

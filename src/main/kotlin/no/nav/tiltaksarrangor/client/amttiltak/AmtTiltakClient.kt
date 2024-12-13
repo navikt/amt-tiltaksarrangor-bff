@@ -34,7 +34,8 @@ class AmtTiltakClient(
 
 	fun leggTilOppstartsdato(deltakerId: UUID, leggTilOppstartsdatoRequest: LeggTilOppstartsdatoRequest): UUID {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/oppstartsdato")
 				.post(objectMapper.writeValueAsString(leggTilOppstartsdatoRequest).toRequestBody(mediaTypeJson))
 				.build()
@@ -51,7 +52,8 @@ class AmtTiltakClient(
 
 	fun endreOppstartsdato(deltakerId: UUID, endreOppstartsdatoRequest: EndreOppstartsdatoRequest): UUID {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/oppstartsdato")
 				.patch(objectMapper.writeValueAsString(endreOppstartsdatoRequest).toRequestBody(mediaTypeJson))
 				.build()
@@ -68,7 +70,8 @@ class AmtTiltakClient(
 
 	fun avsluttDeltakelse(deltakerId: UUID, avsluttDeltakelseRequest: AvsluttDeltakelseRequest): UUID {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/avslutt-deltakelse")
 				.patch(objectMapper.writeValueAsString(avsluttDeltakelseRequest).toRequestBody(mediaTypeJson))
 				.build()
@@ -85,7 +88,8 @@ class AmtTiltakClient(
 
 	fun forlengDeltakelse(deltakerId: UUID, forlengDeltakelseRequest: ForlengDeltakelseRequest): UUID {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/forleng-deltakelse")
 				.patch(objectMapper.writeValueAsString(forlengDeltakelseRequest).toRequestBody(mediaTypeJson))
 				.build()
@@ -102,7 +106,8 @@ class AmtTiltakClient(
 
 	fun endreDeltakelsesprosent(deltakerId: UUID, endreDeltakelsesprosentRequest: EndreDeltakelsesprosentRequest): UUID {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/deltakelse-prosent")
 				.patch(objectMapper.writeValueAsString(endreDeltakelsesprosentRequest).toRequestBody(mediaTypeJson))
 				.build()
@@ -119,7 +124,8 @@ class AmtTiltakClient(
 
 	fun deltakerIkkeAktuell(deltakerId: UUID, deltakerIkkeAktuellRequest: DeltakerIkkeAktuellRequest): UUID {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/ikke-aktuell")
 				.patch(objectMapper.writeValueAsString(deltakerIkkeAktuellRequest).toRequestBody(mediaTypeJson))
 				.build()
@@ -136,7 +142,8 @@ class AmtTiltakClient(
 
 	fun endreSluttdato(deltakerId: UUID, endreSluttdatoRequest: EndreSluttdatoRequest): UUID {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/endre-sluttdato")
 				.patch(objectMapper.writeValueAsString(endreSluttdatoRequest).toRequestBody(mediaTypeJson))
 				.build()
@@ -156,7 +163,8 @@ class AmtTiltakClient(
 
 	fun endreSluttaarsak(deltakerId: UUID, endreSluttaarsakRequest: EndreSluttaarsakRequest): UUID {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/sluttaarsak")
 				.patch(objectMapper.writeValueAsString(endreSluttaarsakRequest).toRequestBody(mediaTypeJson))
 				.build()
@@ -173,7 +181,8 @@ class AmtTiltakClient(
 
 	fun tilbakekallEndringsmelding(endringsmeldingId: UUID) {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/endringsmelding/$endringsmeldingId/tilbakekall")
 				.patch(emptyRequest())
 				.build()
@@ -187,7 +196,8 @@ class AmtTiltakClient(
 
 	fun registrerVurdering(deltakerId: UUID, registrerVurderingRequest: RegistrerVurderingRequest): List<VurderingDto> {
 		val request =
-			Request.Builder()
+			Request
+				.Builder()
 				.url("$amtTiltakUrl/api/tiltaksarrangor/deltaker/$deltakerId/vurdering")
 				.post(objectMapper.writeValueAsString(registrerVurderingRequest).toRequestBody(mediaTypeJson))
 				.build()

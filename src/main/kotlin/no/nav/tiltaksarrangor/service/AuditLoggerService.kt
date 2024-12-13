@@ -45,7 +45,8 @@ class AuditLoggerService(
 		val extensions = mapOf("cn1" to arrangorOrgnummer)
 
 		val builder =
-			CefMessage.builder()
+			CefMessage
+				.builder()
 				.applicationName(APPLICATION_NAME)
 				.event(CefMessageEvent.ACCESS)
 				.name(AUDIT_LOG_NAME)

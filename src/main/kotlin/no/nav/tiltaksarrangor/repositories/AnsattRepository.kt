@@ -279,12 +279,10 @@ class AnsattRepository(
 		}
 	}
 
-	fun deleteAnsatt(ansattId: UUID): Int {
-		return template.update(
-			"DELETE FROM ansatt WHERE id = :id",
-			sqlParameters("id" to ansattId),
-		)
-	}
+	fun deleteAnsatt(ansattId: UUID): Int = template.update(
+		"DELETE FROM ansatt WHERE id = :id",
+		sqlParameters("id" to ansattId),
+	)
 
 	fun getAnsatt(ansattId: UUID): AnsattDbo? {
 		val ansattRolleListe = getAnsattRolleListe(ansattId)
@@ -312,10 +310,12 @@ class AnsattRepository(
 		val unikeRoller = ansattRolleListe.map { it.rolle }.distinct()
 
 		val koordinatorDeltakerlisteDboListe =
-			unikeRoller.find { it == AnsattRolle.KOORDINATOR }
+			unikeRoller
+				.find { it == AnsattRolle.KOORDINATOR }
 				?.let { getKoordinatorDeltakerlisteDboListe(ansattPersonaliaDbo.id) } ?: emptyList()
 		val veilederDeltakerDboListe =
-			unikeRoller.find { it == AnsattRolle.VEILEDER }
+			unikeRoller
+				.find { it == AnsattRolle.VEILEDER }
 				?.let { getVeilederDeltakerDboListe(ansattPersonaliaDbo.id) } ?: emptyList()
 
 		return AnsattDbo(
@@ -330,119 +330,101 @@ class AnsattRepository(
 		)
 	}
 
-	fun getVeiledereForDeltaker(deltakerId: UUID): List<AnsattVeilederDbo> {
-		return template.query(
-			"""
-			SELECT *
-			FROM veileder_deltaker
-					 INNER JOIN ansatt a ON a.id = veileder_deltaker.ansatt_id
-			WHERE veileder_deltaker.deltaker_id = :deltaker_id;
-			""".trimIndent(),
-			sqlParameters("deltaker_id" to deltakerId),
-			ansattVeilederRowMapper,
-		)
-	}
+	fun getVeiledereForDeltaker(deltakerId: UUID): List<AnsattVeilederDbo> = template.query(
+		"""
+		SELECT *
+		FROM veileder_deltaker
+				 INNER JOIN ansatt a ON a.id = veileder_deltaker.ansatt_id
+		WHERE veileder_deltaker.deltaker_id = :deltaker_id;
+		""".trimIndent(),
+		sqlParameters("deltaker_id" to deltakerId),
+		ansattVeilederRowMapper,
+	)
 
-	fun getVeiledereForDeltakere(deltakerIder: List<UUID>): List<AnsattVeilederDbo> {
-		return template.query(
-			"""
-			SELECT *
-			FROM veileder_deltaker
-					 INNER JOIN ansatt a ON a.id = veileder_deltaker.ansatt_id
-			WHERE veileder_deltaker.deltaker_id in(:deltaker_ids);
-			""".trimIndent(),
-			sqlParameters("deltaker_ids" to deltakerIder),
-			ansattVeilederRowMapper,
-		)
-	}
+	fun getVeiledereForDeltakere(deltakerIder: List<UUID>): List<AnsattVeilederDbo> = template.query(
+		"""
+		SELECT *
+		FROM veileder_deltaker
+				 INNER JOIN ansatt a ON a.id = veileder_deltaker.ansatt_id
+		WHERE veileder_deltaker.deltaker_id in(:deltaker_ids);
+		""".trimIndent(),
+		sqlParameters("deltaker_ids" to deltakerIder),
+		ansattVeilederRowMapper,
+	)
 
-	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID, arrangorId: UUID): List<AnsattPersonaliaDbo> {
-		return template.query(
-			"""
-			SELECT distinct a.*
-			FROM ansatt a
-					 INNER JOIN ansatt_rolle ar on a.id = ar.ansatt_id
-					 INNER JOIN koordinator_deltakerliste kdl on ar.ansatt_id = kdl.ansatt_id
-			WHERE kdl.deltakerliste_id = :deltakerliste_id
-			  AND ar.arrangor_id = :arrangor_id
-			  AND ar.rolle = :rolle;
-			""".trimIndent(),
-			sqlParameters(
-				"deltakerliste_id" to deltakerlisteId,
-				"arrangor_id" to arrangorId,
-				"rolle" to AnsattRolle.KOORDINATOR.name,
-			),
-			ansattPersonaliaRowMapper,
-		)
-	}
+	fun getKoordinatorerForDeltakerliste(deltakerlisteId: UUID, arrangorId: UUID): List<AnsattPersonaliaDbo> = template.query(
+		"""
+		SELECT distinct a.*
+		FROM ansatt a
+				 INNER JOIN ansatt_rolle ar on a.id = ar.ansatt_id
+				 INNER JOIN koordinator_deltakerliste kdl on ar.ansatt_id = kdl.ansatt_id
+		WHERE kdl.deltakerliste_id = :deltakerliste_id
+		  AND ar.arrangor_id = :arrangor_id
+		  AND ar.rolle = :rolle;
+		""".trimIndent(),
+		sqlParameters(
+			"deltakerliste_id" to deltakerlisteId,
+			"arrangor_id" to arrangorId,
+			"rolle" to AnsattRolle.KOORDINATOR.name,
+		),
+		ansattPersonaliaRowMapper,
+	)
 
-	fun getVeiledereForArrangor(arrangorId: UUID): List<AnsattPersonaliaDbo> {
-		return template.query(
-			"""
-			SELECT distinct a.*
-			FROM ansatt a
-					 INNER JOIN ansatt_rolle ar on a.id = ar.ansatt_id
-			WHERE ar.arrangor_id = :arrangor_id
-			  AND ar.rolle = :rolle;
-			""".trimIndent(),
-			sqlParameters(
-				"arrangor_id" to arrangorId,
-				"rolle" to AnsattRolle.VEILEDER.name,
-			),
-			ansattPersonaliaRowMapper,
-		)
-	}
+	fun getVeiledereForArrangor(arrangorId: UUID): List<AnsattPersonaliaDbo> = template.query(
+		"""
+		SELECT distinct a.*
+		FROM ansatt a
+				 INNER JOIN ansatt_rolle ar on a.id = ar.ansatt_id
+		WHERE ar.arrangor_id = :arrangor_id
+		  AND ar.rolle = :rolle;
+		""".trimIndent(),
+		sqlParameters(
+			"arrangor_id" to arrangorId,
+			"rolle" to AnsattRolle.VEILEDER.name,
+		),
+		ansattPersonaliaRowMapper,
+	)
 
-	fun getAnsattRolleListe(ansattId: UUID): List<AnsattRolleDbo> {
-		return template.query(
-			"SELECT * FROM ansatt_rolle WHERE ansatt_id = :ansatt_id",
-			sqlParameters("ansatt_id" to ansattId),
-			ansattRolleRowMapper,
-		)
-	}
+	fun getAnsattRolleListe(ansattId: UUID): List<AnsattRolleDbo> = template.query(
+		"SELECT * FROM ansatt_rolle WHERE ansatt_id = :ansatt_id",
+		sqlParameters("ansatt_id" to ansattId),
+		ansattRolleRowMapper,
+	)
 
-	fun getAnsattRolleLister(ansattIder: List<UUID>): List<AnsattRolleMedAnsattIdDbo> {
-		return template.query(
-			"SELECT * FROM ansatt_rolle WHERE ansatt_id in(:ansatt_ids)",
-			sqlParameters("ansatt_ids" to ansattIder),
-			ansattRolleMedAnsattIdRowMapper,
-		)
-	}
+	fun getAnsattRolleLister(ansattIder: List<UUID>): List<AnsattRolleMedAnsattIdDbo> = template.query(
+		"SELECT * FROM ansatt_rolle WHERE ansatt_id in(:ansatt_ids)",
+		sqlParameters("ansatt_ids" to ansattIder),
+		ansattRolleMedAnsattIdRowMapper,
+	)
 
-	fun getKoordinatorDeltakerlisteDboListe(ansattId: UUID): List<KoordinatorDeltakerlisteDbo> {
-		return template.query(
-			"SELECT * FROM koordinator_deltakerliste WHERE ansatt_id = :ansatt_id",
-			sqlParameters("ansatt_id" to ansattId),
-			koordinatorDeltakerlisterRowMapper,
-		)
-	}
+	fun getKoordinatorDeltakerlisteDboListe(ansattId: UUID): List<KoordinatorDeltakerlisteDbo> = template.query(
+		"SELECT * FROM koordinator_deltakerliste WHERE ansatt_id = :ansatt_id",
+		sqlParameters("ansatt_id" to ansattId),
+		koordinatorDeltakerlisterRowMapper,
+	)
 
-	fun getVeilederDeltakerDboListe(ansattId: UUID): List<VeilederDeltakerDbo> {
-		return template.query(
-			"""
-			SELECT *
-			FROM veileder_deltaker
-			         INNER JOIN deltaker d ON d.id = veileder_deltaker.deltaker_id
-			WHERE skjult_dato is NULL AND ansatt_id = :ansatt_id;
-			""".trimIndent(),
-			sqlParameters("ansatt_id" to ansattId),
-			veilederDeltakerRowMapper,
-		)
-	}
+	fun getVeilederDeltakerDboListe(ansattId: UUID): List<VeilederDeltakerDbo> = template.query(
+		"""
+		SELECT *
+		FROM veileder_deltaker
+		         INNER JOIN deltaker d ON d.id = veileder_deltaker.deltaker_id
+		WHERE skjult_dato is NULL AND ansatt_id = :ansatt_id;
+		""".trimIndent(),
+		sqlParameters("ansatt_id" to ansattId),
+		veilederDeltakerRowMapper,
+	)
 
-	private fun getAnsattPersonaliaDbo(personIdent: String): AnsattPersonaliaDbo? {
-		return template.query(
+	private fun getAnsattPersonaliaDbo(personIdent: String): AnsattPersonaliaDbo? = template
+		.query(
 			"SELECT * FROM ansatt WHERE personident = :personIdent",
 			sqlParameters("personIdent" to personIdent),
 			ansattPersonaliaRowMapper,
 		).firstOrNull()
-	}
 
-	private fun getAnsattPersonaliaDbo(ansattId: UUID): AnsattPersonaliaDbo? {
-		return template.query(
+	private fun getAnsattPersonaliaDbo(ansattId: UUID): AnsattPersonaliaDbo? = template
+		.query(
 			"SELECT * FROM ansatt WHERE id = :id",
 			sqlParameters("id" to ansattId),
 			ansattPersonaliaRowMapper,
 		).firstOrNull()
-	}
 }

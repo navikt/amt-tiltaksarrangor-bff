@@ -37,40 +37,38 @@ class MockAmtArrangorHttpServer : MockHttpServer(name = "Amt-Arrangor Mock Serve
 		)
 	}
 
-	private fun getAnsatt(ansattId: UUID, personIdent: String): AnsattDto {
-		return AnsattDto(
-			id = ansattId,
-			personalia =
-				AnsattPersonaliaDto(
-					personident = personIdent,
-					navn =
-						NavnDto(
-							fornavn = "Fornavn",
-							mellomnavn = null,
-							etternavn = "Etternavn",
-						),
+	private fun getAnsatt(ansattId: UUID, personIdent: String): AnsattDto = AnsattDto(
+		id = ansattId,
+		personalia =
+			AnsattPersonaliaDto(
+				personident = personIdent,
+				navn =
+					NavnDto(
+						fornavn = "Fornavn",
+						mellomnavn = null,
+						etternavn = "Etternavn",
+					),
+			),
+		arrangorer =
+			listOf(
+				TilknyttetArrangorDto(
+					arrangorId = UUID.randomUUID(),
+					roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
+					veileder = listOf(VeilederDto(UUID.randomUUID(), Veiledertype.VEILEDER)),
+					koordinator = listOf(UUID.randomUUID()),
 				),
-			arrangorer =
-				listOf(
-					TilknyttetArrangorDto(
-						arrangorId = UUID.randomUUID(),
-						roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
-						veileder = listOf(VeilederDto(UUID.randomUUID(), Veiledertype.VEILEDER)),
-						koordinator = listOf(UUID.randomUUID()),
-					),
-					TilknyttetArrangorDto(
-						arrangorId = UUID.randomUUID(),
-						roller = listOf(AnsattRolle.KOORDINATOR),
-						veileder = emptyList(),
-						koordinator = listOf(UUID.randomUUID()),
-					),
-					TilknyttetArrangorDto(
-						arrangorId = UUID.randomUUID(),
-						roller = listOf(AnsattRolle.VEILEDER),
-						veileder = listOf(VeilederDto(UUID.randomUUID(), Veiledertype.VEILEDER)),
-						koordinator = emptyList(),
-					),
+				TilknyttetArrangorDto(
+					arrangorId = UUID.randomUUID(),
+					roller = listOf(AnsattRolle.KOORDINATOR),
+					veileder = emptyList(),
+					koordinator = listOf(UUID.randomUUID()),
 				),
-		)
-	}
+				TilknyttetArrangorDto(
+					arrangorId = UUID.randomUUID(),
+					roller = listOf(AnsattRolle.VEILEDER),
+					veileder = listOf(VeilederDto(UUID.randomUUID(), Veiledertype.VEILEDER)),
+					koordinator = emptyList(),
+				),
+			),
+	)
 }

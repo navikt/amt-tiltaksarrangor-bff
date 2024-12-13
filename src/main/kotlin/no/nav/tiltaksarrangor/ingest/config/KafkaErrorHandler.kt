@@ -10,12 +10,13 @@ import org.springframework.stereotype.Component
 import org.springframework.util.backoff.ExponentialBackOff
 
 @Component
-class KafkaErrorHandler : DefaultErrorHandler(
-	null,
-	ExponentialBackOff(1000L, 1.5).also {
-		it.maxInterval = 60_000L * 10
-	},
-) {
+class KafkaErrorHandler :
+	DefaultErrorHandler(
+		null,
+		ExponentialBackOff(1000L, 1.5).also {
+			it.maxInterval = 60_000L * 10
+		},
+	) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	override fun handleRemaining(

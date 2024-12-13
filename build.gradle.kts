@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlinVersion = "2.0.21"
+    val kotlinVersion = "2.1.0"
 
     id("org.springframework.boot") version "3.4.0"
     id("io.spring.dependency-management") version "1.1.6"
@@ -28,7 +28,7 @@ val testcontainersVersion = "1.20.4"
 val mockkVersion = "1.13.13"
 val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
 val unleashVersion = "9.2.6"
-val ktlintVersion = "1.2.1"
+val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2024.11.29_14.46-561c9bf2385c"
 
 dependencies {
