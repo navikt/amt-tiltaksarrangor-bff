@@ -78,10 +78,13 @@ class IntegrationTest {
 
 			val container = SingletonPostgresContainer.getContainer()
 
-			KafkaContainer(DockerImageName.parse("apache/kafka")).apply {
-				start()
-				System.setProperty("KAFKA_BROKERS", bootstrapServers)
-			}
+			KafkaContainer(DockerImageName.parse("apache/kafka"))
+				.withEnv("KAFKA_LISTENERS", "PLAINTEXT://:9092,BROKER://:9093,CONTROLLER://:9094")
+				// workaround for https://github.com/testcontainers/testcontainers-java/issues/9506
+				.apply {
+					start()
+					System.setProperty("KAFKA_BROKERS", bootstrapServers)
+				}
 
 			registry.add("spring.datasource.url") { container.jdbcUrl }
 			registry.add("spring.datasource.username") { container.username }

@@ -25,6 +25,7 @@ data class AktivEndring(
 		Sluttdato,
 		Startdato,
 		Sluttarsak,
+		FjernOppstartsdato,
 	}
 }
 
@@ -47,6 +48,7 @@ fun getTypeFromForslag(endring: Forslag.Endring): AktivEndring.EndringsType = wh
 	is Forslag.Deltakelsesmengde -> AktivEndring.EndringsType.Deltakelsesmengde
 	is Forslag.Sluttdato -> AktivEndring.EndringsType.Sluttdato
 	is Forslag.Startdato -> AktivEndring.EndringsType.Startdato
+	is Forslag.FjernOppstartsdato -> AktivEndring.EndringsType.FjernOppstartsdato
 }
 
 fun getAktivEndring(

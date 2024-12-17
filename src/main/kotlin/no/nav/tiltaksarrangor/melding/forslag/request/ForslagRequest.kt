@@ -46,3 +46,7 @@ data class SluttarsakRequest(
 	val aarsak: EndringAarsak,
 	override val begrunnelse: String?,
 ) : ForslagRequest
+
+data class FjernOppstartsdatoRequest(
+	override val begrunnelse: String,
+) : ForslagRequest
