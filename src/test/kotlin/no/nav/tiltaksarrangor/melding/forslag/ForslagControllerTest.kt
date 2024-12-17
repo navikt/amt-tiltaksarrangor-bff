@@ -7,6 +7,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.FjernOppstartsdatoRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
@@ -35,6 +36,7 @@ class ForslagControllerTest : IntegrationTest() {
 	private val sluttdatoRequest = SluttdatoRequest(LocalDate.now().plusWeeks(42), "Endres fordi...")
 	private val startdatoRequest = StartdatoRequest(LocalDate.now(), LocalDate.now().plusWeeks(4), begrunnelse = "Startdato fordi...")
 	private val sluttarsakRequest = SluttarsakRequest(EndringAarsak.Utdanning, begrunnelse = "Sluttårsak fordi...")
+	private val fjernOppstartdatoRequest = FjernOppstartsdatoRequest("begrunnelse")
 
 	val requests = listOf(
 		forlengDeltakelseRequest,
@@ -44,6 +46,7 @@ class ForslagControllerTest : IntegrationTest() {
 		sluttdatoRequest,
 		startdatoRequest,
 		sluttarsakRequest,
+		fjernOppstartdatoRequest,
 	)
 
 	@Autowired
@@ -60,6 +63,7 @@ class ForslagControllerTest : IntegrationTest() {
 			Request.Builder().post(emptyRequest()).url("$url/deltakelsesmengde"),
 			Request.Builder().post(emptyRequest()).url("$url/startdato"),
 			Request.Builder().post(emptyRequest()).url("$url/sluttarsak"),
+			Request.Builder().post(emptyRequest()).url("$url/fjern-oppstartsdato"),
 			Request.Builder().post(emptyRequest()).url("$url/${UUID.randomUUID()}/tilbakekall"),
 		)
 		testTokenAutentisering(requestBuilders)
@@ -164,6 +168,13 @@ class ForslagControllerTest : IntegrationTest() {
 	}
 
 	@Test
+	fun `fjern-oppstartsdato - nytt forslag - skal returnere 200 og riktig response`() {
+		testOpprettetForslag(fjernOppstartdatoRequest) { endring ->
+			endring as Forslag.FjernOppstartsdato
+		}
+	}
+
+	@Test
 	fun `tilbakekall - aktivt forslag - skal returnere 200`() {
 		with(ForslagCtx(forlengDeltakelseForslag())) {
 			upsertForslag()
@@ -202,6 +213,7 @@ class ForslagControllerTest : IntegrationTest() {
 			is SluttdatoRequest -> "sluttdato"
 			is SluttarsakRequest -> "sluttarsak"
 			is StartdatoRequest -> "startdato"
+			is FjernOppstartsdatoRequest -> "fjern-oppstartsdato"
 		}
 
 		return sendRequest(

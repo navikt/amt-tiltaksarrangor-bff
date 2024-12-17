@@ -4,6 +4,7 @@ import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.tiltaksarrangor.melding.MeldingTilgangskontrollService
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.FjernOppstartsdatoRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.IkkeAktuellRequest
@@ -71,6 +72,13 @@ class ForslagController(
 	fun sluttdato(
 		@PathVariable deltakerId: UUID,
 		@RequestBody request: SluttarsakRequest,
+	): AktivtForslagResponse = opprettForslag(deltakerId, request)
+
+	@PostMapping("/fjern-oppstartsdato")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun fjernOppstartsdato(
+		@PathVariable deltakerId: UUID,
+		@RequestBody request: FjernOppstartsdatoRequest,
 	): AktivtForslagResponse = opprettForslag(deltakerId, request)
 
 	@PostMapping("/{forslagId}/tilbakekall")
