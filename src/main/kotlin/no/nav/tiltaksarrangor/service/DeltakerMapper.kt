@@ -56,7 +56,8 @@ class DeltakerMapper(
 		val veiledere = ansattService.getVeiledereForDeltaker(deltaker.id)
 
 		val deltakelsesmengder = if (deltakerliste.tiltakType in tiltakMedDeltakelsesmengder) {
-			deltaker.historikk.toDeltakelsesmengder()
+			deltaker.startdato?.let { deltaker.historikk.toDeltakelsesmengder().periode(it, deltaker.sluttdato) }
+				?: deltaker.historikk.toDeltakelsesmengder()
 		} else {
 			null
 		}
@@ -86,13 +87,13 @@ private fun tilDeltaker(
 	val deltaker = Deltaker(
 		id = deltakerDbo.id,
 		deltakerliste =
-			Deltaker.Deltakerliste(
-				id = deltakerliste.id,
-				startDato = deltakerliste.startDato,
-				sluttDato = deltakerliste.sluttDato,
-				erKurs = deltakerliste.erKurs,
-				tiltakstype = deltakerliste.tiltakType,
-			),
+		Deltaker.Deltakerliste(
+			id = deltakerliste.id,
+			startDato = deltakerliste.startDato,
+			sluttDato = deltakerliste.sluttDato,
+			erKurs = deltakerliste.erKurs,
+			tiltakstype = deltakerliste.tiltakType,
+		),
 		fornavn = deltakerDbo.fornavn,
 		mellomnavn = deltakerDbo.mellomnavn,
 		etternavn = deltakerDbo.etternavn,
@@ -100,11 +101,11 @@ private fun tilDeltaker(
 		telefonnummer = deltakerDbo.telefonnummer,
 		epost = deltakerDbo.epost,
 		status =
-			DeltakerStatus(
-				type = deltakerDbo.status,
-				endretDato = deltakerDbo.statusOpprettetDato,
-				aarsak = deltakerDbo.statusAarsak,
-			),
+		DeltakerStatus(
+			type = deltakerDbo.status,
+			endretDato = deltakerDbo.statusOpprettetDato,
+			aarsak = deltakerDbo.statusAarsak,
+		),
 		startDato = deltakerDbo.startdato,
 		sluttDato = deltakerDbo.sluttdato,
 		deltakelseProsent = deltakerDbo.prosentStilling?.toInt(),
@@ -116,17 +117,17 @@ private fun tilDeltaker(
 		innhold = deltakerDbo.innhold,
 		fjernesDato = deltakerDbo.skalFjernesDato(),
 		navInformasjon =
-			NavInformasjon(
-				navkontor = deltakerDbo.navKontor,
-				navVeileder =
-					deltakerDbo.navVeilederId?.let {
-						NavVeileder(
-							navn = deltakerDbo.navVeilederNavn ?: "",
-							epost = deltakerDbo.navVeilederEpost,
-							telefon = deltakerDbo.navVeilederTelefon,
-						)
-					},
-			),
+		NavInformasjon(
+			navkontor = deltakerDbo.navKontor,
+			navVeileder =
+			deltakerDbo.navVeilederId?.let {
+				NavVeileder(
+					navn = deltakerDbo.navVeilederNavn ?: "",
+					epost = deltakerDbo.navVeilederEpost,
+					telefon = deltakerDbo.navVeilederTelefon,
+				)
+			},
+		),
 		veiledere = veiledere,
 		aktiveForslag = aktiveForslag,
 		aktiveEndringsmeldinger = endringsmeldinger.filter { it.erAktiv() }.sortedBy { it.sendt }.map { it.toEndringsmelding() },
