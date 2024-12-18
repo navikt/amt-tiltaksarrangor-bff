@@ -56,7 +56,8 @@ class DeltakerMapper(
 		val veiledere = ansattService.getVeiledereForDeltaker(deltaker.id)
 
 		val deltakelsesmengder = if (deltakerliste.tiltakType in tiltakMedDeltakelsesmengder) {
-			deltaker.historikk.toDeltakelsesmengder()
+			deltaker.startdato?.let { deltaker.historikk.toDeltakelsesmengder().periode(it, deltaker.sluttdato) }
+				?: deltaker.historikk.toDeltakelsesmengder()
 		} else {
 			null
 		}
