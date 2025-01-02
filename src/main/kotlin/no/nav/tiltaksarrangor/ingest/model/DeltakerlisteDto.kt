@@ -22,12 +22,10 @@ data class DeltakerlisteDto(
 	)
 
 	enum class Status {
-		PLANLAGT,
 		GJENNOMFORES,
 		AVBRUTT,
 		AVLYST,
 		AVSLUTTET,
-		APENT_FOR_INNSOK,
 	}
 
 	enum class Oppstartstype {
@@ -35,12 +33,10 @@ data class DeltakerlisteDto(
 		FELLES,
 	}
 
-	fun erKurs(): Boolean {
-		if (oppstart != null) {
-			return oppstart == Oppstartstype.FELLES
-		} else {
-			return kursTiltak.contains(tiltakstype.arenaKode)
-		}
+	fun erKurs(): Boolean = if (oppstart != null) {
+		oppstart == Oppstartstype.FELLES
+	} else {
+		kursTiltak.contains(tiltakstype.arenaKode)
 	}
 
 	private val kursTiltak =
@@ -51,7 +47,6 @@ data class DeltakerlisteDto(
 		)
 
 	fun toDeltakerlisteStatus(): DeltakerlisteStatus = when (status) {
-		Status.PLANLAGT, Status.APENT_FOR_INNSOK -> DeltakerlisteStatus.PLANLAGT
 		Status.GJENNOMFORES -> DeltakerlisteStatus.GJENNOMFORES
 		Status.AVSLUTTET -> DeltakerlisteStatus.AVSLUTTET
 		else -> throw IllegalStateException("Ukjent status: $status")

@@ -26,7 +26,6 @@ import no.nav.tiltaksarrangor.ingest.model.NavnDto
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
@@ -123,58 +122,6 @@ class IngestServiceTest {
 		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
 		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerliste - status APENT_FOR_INNSOK - lagres som PLANLAGT`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto =
-			DeltakerlisteDto(
-				id = deltakerlisteId,
-				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
-						id = UUID.randomUUID(),
-						navn = "Det flotte tiltaket",
-						arenaKode = "DIGIOPPARB",
-					),
-				navn = "Gjennomføring av tiltak",
-				startDato = LocalDate.now().minusYears(2),
-				sluttDato = null,
-				status = DeltakerlisteDto.Status.APENT_FOR_INNSOK,
-				virksomhetsnummer = "88888888",
-				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().minusYears(2),
-			)
-
-		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(match { it.status == DeltakerlisteStatus.PLANLAGT }) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerliste - status PLANLAGT - lagres`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto =
-			DeltakerlisteDto(
-				id = deltakerlisteId,
-				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
-						id = UUID.randomUUID(),
-						navn = "Det flotte tiltaket",
-						arenaKode = "DIGIOPPARB",
-					),
-				navn = "Gjennomføring av tiltak",
-				startDato = LocalDate.now().minusYears(2),
-				sluttDato = null,
-				status = DeltakerlisteDto.Status.PLANLAGT,
-				virksomhetsnummer = "88888888",
-				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = null,
-			)
-
-		ingestService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(match { it.status == DeltakerlisteStatus.PLANLAGT }) }
 	}
 
 	@Test
