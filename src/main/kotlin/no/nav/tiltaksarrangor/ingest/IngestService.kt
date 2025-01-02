@@ -224,10 +224,7 @@ fun DeltakerlisteDto.skalLagres(): Boolean {
 	if (!stottedeTiltak.contains(tiltakstype.arenaKode)) {
 		return false
 	}
-	if (status == DeltakerlisteDto.Status.GJENNOMFORES ||
-		status == DeltakerlisteDto.Status.APENT_FOR_INNSOK ||
-		status == DeltakerlisteDto.Status.PLANLAGT
-	) {
+	if (status == DeltakerlisteDto.Status.GJENNOMFORES) {
 		return true
 	} else if (status == DeltakerlisteDto.Status.AVSLUTTET &&
 		sluttDato != null &&
