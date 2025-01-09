@@ -224,12 +224,6 @@ class TiltaksarrangorServiceTest {
 		deltaker.adresse?.tilleggsnavn shouldBe null
 		deltaker.adresse?.adressenavn shouldBe "Gate 1"
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
-		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 1
-		deltaker.historiskeVurderingerFraArrangor?.firstOrNull()?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
-		deltaker.historiskeVurderingerFraArrangor
-			?.firstOrNull()
-			?.gyldigTil
-			?.toLocalDate() shouldBe LocalDate.now()
 		deltaker.adressebeskyttet shouldBe false
 	}
 
@@ -354,7 +348,6 @@ class TiltaksarrangorServiceTest {
 		veileder.ansattId shouldBe veilederId
 		veileder.veiledertype shouldBe Veiledertype.VEILEDER
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
-		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 0
 	}
 
 	@Test
@@ -422,7 +415,6 @@ class TiltaksarrangorServiceTest {
 		veileder.ansattId shouldBe veilederId
 		veileder.veiledertype shouldBe Veiledertype.VEILEDER
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
-		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 0
 	}
 
 	@Test
@@ -493,8 +485,6 @@ class TiltaksarrangorServiceTest {
 		deltaker.veiledere.size shouldBe 1
 		deltaker.adresse shouldBe null
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
-		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 1
-		deltaker.historiskeVurderingerFraArrangor?.firstOrNull()?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
 		deltaker.adressebeskyttet shouldBe true
 	}
 
@@ -566,7 +556,6 @@ class TiltaksarrangorServiceTest {
 		deltaker.veiledere.size shouldBe 0
 		deltaker.adresse shouldBe null
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe null
-		deltaker.historiskeVurderingerFraArrangor shouldBe null
 		deltaker.adressebeskyttet shouldBe true
 	}
 

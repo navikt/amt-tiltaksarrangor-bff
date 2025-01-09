@@ -137,7 +137,6 @@ private fun tilDeltaker(
 			.map { it.toEndringsmelding() },
 		adresse = if (adressebeskyttet) null else deltakerDbo.getAdresse(deltakerliste),
 		gjeldendeVurderingFraArrangor = deltakerDbo.getGjeldendeVurdering(),
-		historiskeVurderingerFraArrangor = deltakerDbo.getHistoriskeVurderinger(),
 		adressebeskyttet = adressebeskyttet,
 		kilde = deltakerDbo.kilde ?: Kilde.ARENA,
 		historikk = deltakerDbo.historikk,
@@ -174,7 +173,6 @@ fun Deltaker.utenPersonligInformasjon() = this.copy(
 	aktiveEndringsmeldinger = emptyList(),
 	historiskeEndringsmeldinger = emptyList(),
 	gjeldendeVurderingFraArrangor = null,
-	historiskeVurderingerFraArrangor = null,
 	historikk = emptyList(),
 )
 
@@ -194,23 +192,4 @@ fun DeltakerDbo.getGjeldendeVurdering(): Vurdering? {
 		gyldigFra = gjeldendeVurdering.opprettet,
 		gyldigTil = null,
 	)
-}
-
-fun DeltakerDbo.getHistoriskeVurderinger(): List<Vurdering>? {
-	val vurderinger = vurderingerFraArrangor?.sortedBy { it.opprettet } ?: return null
-	val historiskeVurderinger = mutableListOf<Vurdering>()
-
-	var i = 0
-	while (i < vurderinger.size - 1) {
-		val lagretVurdering = vurderinger[i]
-		val vurdering = Vurdering(
-			vurderingstype = lagretVurdering.vurderingstype,
-			begrunnelse = lagretVurdering.begrunnelse,
-			gyldigFra = lagretVurdering.opprettet,
-			gyldigTil = vurderinger[i + 1].opprettet,
-		)
-		historiskeVurderinger.add(vurdering)
-		i++
-	}
-	return historiskeVurderinger
 }
