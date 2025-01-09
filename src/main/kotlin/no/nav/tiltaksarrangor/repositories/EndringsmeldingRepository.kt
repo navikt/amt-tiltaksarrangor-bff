@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.repositories
 
-import no.nav.amt.lib.models.arrangor.melding.Vurdering
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
@@ -73,7 +73,7 @@ class EndringsmeldingRepository(
 						epost = rs.getString("epost"),
 						erSkjermet = rs.getBoolean("er_skjermet"),
 						adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
-						vurderingerFraArrangor = rs.getString("vurderinger")?.let { fromJsonString<List<Vurdering>>(it) },
+						vurderingerFraArrangor = rs.getString("vurderinger")?.let { objectMapper.readValue(it) },
 						status = StatusType.valueOf(rs.getString("deltakerstatus")),
 						statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 						statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
