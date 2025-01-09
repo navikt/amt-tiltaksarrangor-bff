@@ -221,54 +221,6 @@ class KafkaListenerTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `listen - melding pa arrangor-ansatt-topic med tom arrangorliste - slettes database`() {
-		val deltaker = getDeltaker(UUID.randomUUID())
-		deltakerRepository.insertOrUpdateDeltaker(deltaker)
-		val ansattId = UUID.randomUUID()
-		val ansattDto =
-			AnsattDto(
-				id = ansattId,
-				personalia =
-					AnsattPersonaliaDto(
-						personident = "12345678910",
-						navn =
-							NavnDto(
-								fornavn = "Fornavn",
-								mellomnavn = null,
-								etternavn = "Etternavn",
-							),
-					),
-				arrangorer =
-					listOf(
-						TilknyttetArrangorDto(
-							arrangorId = UUID.randomUUID(),
-							roller = listOf(AnsattRolle.KOORDINATOR, AnsattRolle.VEILEDER),
-							veileder = listOf(VeilederDto(deltaker.id, Veiledertype.VEILEDER)),
-							koordinator = listOf(UUID.randomUUID()),
-						),
-					),
-			)
-		ansattRepository.insertOrUpdateAnsatt(ansattDto.toAnsattDbo())
-
-		testKafkaProducer
-			.send(
-				ProducerRecord(
-					ARRANGOR_ANSATT_TOPIC,
-					null,
-					ansattId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(ansattDto.copy(arrangorer = emptyList())),
-				),
-			).get()
-
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			ansattRepository.getAnsattRolleListe(ansattId).isEmpty() &&
-				ansattRepository.getKoordinatorDeltakerlisteDboListe(ansattId).isEmpty() &&
-				ansattRepository.getVeilederDeltakerDboListe(ansattId).isEmpty() &&
-				ansattRepository.getAnsatt(ansattId) == null
-		}
-	}
-
-	@Test
 	fun `listen - melding pa deltakerliste-topic - lagres i database`() {
 		val arrangorDto =
 			ArrangorDto(
