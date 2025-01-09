@@ -1,12 +1,14 @@
 package no.nav.tiltaksarrangor.service
 
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
+import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.controller.response.DeltakerHistorikkResponse
 import no.nav.tiltaksarrangor.controller.response.toResponse
+import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.StatusType
-import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -16,6 +18,7 @@ import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
 import no.nav.tiltaksarrangor.utils.toTitleCase
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Component
@@ -31,6 +34,7 @@ class TiltaksarrangorService(
 	private val navEnhetService: NavEnhetService,
 	private val deltakerMapper: DeltakerMapper,
 	private val arrangorRepository: ArrangorRepository,
+	private val meldingProducer: MeldingProducer,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -103,7 +107,18 @@ class TiltaksarrangorService(
 			throw ValidationException("Kan ikke registrere vurdering for deltaker med id $deltakerId. Begrunnelse mangler.")
 		}
 
-		val oppdaterteVurderinger = amtTiltakClient.registrerVurdering(deltakerId, request)
+		val vurdering = Vurdering(
+			id = UUID.randomUUID(),
+			deltakerId = deltakerId,
+			opprettetAvArrangorAnsattId = ansatt.id,
+			opprettet = LocalDateTime.now(),
+			vurderingstype = request.vurderingstype,
+			begrunnelse = request.begrunnelse,
+		)
+		meldingProducer.produce(vurdering)
+		amtTiltakClient.registrerVurdering(deltakerId, vurdering.toRegistrerVurderingRequest())
+		val opprinneligeVurderinger = deltakerMedDeltakerliste.deltaker.vurderingerFraArrangor ?: emptyList()
+		val oppdaterteVurderinger = listOf(vurdering) + opprinneligeVurderinger
 		deltakerRepository.oppdaterVurderingerForDeltaker(deltakerId, oppdaterteVurderinger)
 		metricsService.incVurderingOpprettet(request.vurderingstype)
 		log.info("Registrert vurdering for deltaker med id $deltakerId")
@@ -129,4 +144,11 @@ class TiltaksarrangorService(
 	}
 
 	private fun kanSkjules(deltakerDbo: DeltakerDbo): Boolean = deltakerDbo.status in STATUSER_SOM_KAN_SKJULES
+
+	private fun Vurdering.toRegistrerVurderingRequest() = no.nav.tiltaksarrangor.client.amttiltak.request.RegistrerVurderingRequest(
+		id = id,
+		opprettet = opprettet,
+		vurderingstype = vurderingstype,
+		begrunnelse = begrunnelse,
+	)
 }

@@ -1,9 +1,9 @@
 package no.nav.tiltaksarrangor.repositories
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
-import no.nav.tiltaksarrangor.ingest.model.VurderingDto
-import no.nav.tiltaksarrangor.ingest.model.toPGObject
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Kilde
@@ -12,6 +12,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
+import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import no.nav.tiltaksarrangor.utils.getNullableDouble
 import no.nav.tiltaksarrangor.utils.getNullableFloat
 import no.nav.tiltaksarrangor.utils.getNullableLocalDate
@@ -42,7 +43,7 @@ class DeltakerRepository(
 				epost = rs.getString("epost"),
 				erSkjermet = rs.getBoolean("er_skjermet"),
 				adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
-				vurderingerFraArrangor = rs.getString("vurderinger")?.let { fromJsonString<List<VurderingDto>>(it) },
+				vurderingerFraArrangor = rs.getString("vurderinger")?.let { objectMapper.readValue(it) },
 				status = StatusType.valueOf(rs.getString("status")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
@@ -83,7 +84,7 @@ class DeltakerRepository(
 						epost = rs.getString("epost"),
 						erSkjermet = rs.getBoolean("er_skjermet"),
 						adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
-						vurderingerFraArrangor = rs.getString("vurderinger")?.let { fromJsonString<List<VurderingDto>>(it) },
+						vurderingerFraArrangor = rs.getString("vurderinger")?.let { objectMapper.readValue(it) },
 						status = StatusType.valueOf(rs.getString("deltakerstatus")),
 						statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 						statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
@@ -229,7 +230,7 @@ class DeltakerRepository(
 				"skjult_av_ansatt_id" to deltakerDbo.skjultAvAnsattId,
 				"skjult_dato" to deltakerDbo.skjultDato,
 				"adresse" to deltakerDbo.adresse?.toPGObject(),
-				"vurderinger" to deltakerDbo.vurderingerFraArrangor?.toPGObject(),
+				"vurderinger" to toPGObject(deltakerDbo.vurderingerFraArrangor),
 				"adressebeskyttet" to deltakerDbo.adressebeskyttet,
 				"innhold" to toPGObject(deltakerDbo.innhold),
 				"kilde" to deltakerDbo.kilde?.name,
@@ -415,7 +416,7 @@ class DeltakerRepository(
 		)
 	}
 
-	fun oppdaterVurderingerForDeltaker(deltakerId: UUID, oppdaterteVurderinger: List<VurderingDto>) {
+	fun oppdaterVurderingerForDeltaker(deltakerId: UUID, oppdaterteVurderinger: List<Vurdering>) {
 		val sql =
 			"""
 			UPDATE deltaker SET vurderinger = :vurderinger WHERE id = :deltakerId
@@ -424,7 +425,7 @@ class DeltakerRepository(
 		template.update(
 			sql,
 			sqlParameters(
-				"vurderinger" to oppdaterteVurderinger.toPGObject(),
+				"vurderinger" to toPGObject(oppdaterteVurderinger),
 				"deltakerId" to deltakerId,
 			),
 		)

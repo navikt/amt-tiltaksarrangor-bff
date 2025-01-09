@@ -1,9 +1,9 @@
 package no.nav.tiltaksarrangor.repositories.model
 
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
-import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
@@ -39,7 +39,7 @@ data class DeltakerDbo(
 	val navVeilederTelefon: String?,
 	val skjultAvAnsattId: UUID?,
 	val skjultDato: LocalDateTime?,
-	val vurderingerFraArrangor: List<VurderingDto>?,
+	val vurderingerFraArrangor: List<Vurdering>?,
 	val adressebeskyttet: Boolean,
 	val innhold: Deltakelsesinnhold?,
 	val kilde: Kilde?,

@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.ingest
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
@@ -187,7 +188,10 @@ class IngestService(
 		}
 		when (melding) {
 			is Forslag -> handleForslag(melding)
-			is EndringFraArrangor -> {}
+			is EndringFraArrangor,
+			is Vurdering,
+			-> {
+			}
 		}
 	}
 

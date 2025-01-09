@@ -1,10 +1,10 @@
 package no.nav.tiltaksarrangor.repositories
 
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
-import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
@@ -73,7 +73,7 @@ class EndringsmeldingRepository(
 						epost = rs.getString("epost"),
 						erSkjermet = rs.getBoolean("er_skjermet"),
 						adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
-						vurderingerFraArrangor = rs.getString("vurderinger")?.let { fromJsonString<List<VurderingDto>>(it) },
+						vurderingerFraArrangor = rs.getString("vurderinger")?.let { fromJsonString<List<Vurdering>>(it) },
 						status = StatusType.valueOf(rs.getString("deltakerstatus")),
 						statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 						statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),

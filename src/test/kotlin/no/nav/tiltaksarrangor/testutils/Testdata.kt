@@ -1,6 +1,8 @@
 package no.nav.tiltaksarrangor.testutils
 
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
+import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
@@ -12,13 +14,11 @@ import no.nav.tiltaksarrangor.ingest.model.Matrikkeladresse
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
 import no.nav.tiltaksarrangor.ingest.model.Vegadresse
-import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
-import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
@@ -147,15 +147,14 @@ fun getAdresse(): AdresseDto = AdresseDto(
 		),
 )
 
-fun getVurderinger(deltakerId: UUID, gyldigFra: LocalDateTime = LocalDateTime.now()): List<VurderingDto> = listOf(
-	VurderingDto(
+fun getVurderinger(deltakerId: UUID, opprettet: LocalDateTime = LocalDateTime.now()): List<Vurdering> = listOf(
+	Vurdering(
 		id = UUID.randomUUID(),
 		deltakerId = deltakerId,
 		vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
 		begrunnelse = "Mangler førerkort",
 		opprettetAvArrangorAnsattId = UUID.randomUUID(),
-		gyldigFra = gyldigFra,
-		gyldigTil = null,
+		opprettet = opprettet,
 	),
 )
 

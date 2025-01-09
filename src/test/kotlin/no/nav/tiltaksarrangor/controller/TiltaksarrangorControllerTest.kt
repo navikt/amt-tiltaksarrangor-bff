@@ -3,18 +3,18 @@ package no.nav.tiltaksarrangor.controller
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
+import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
-import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
-import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -435,14 +435,13 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val opprinneligVurdering =
-			VurderingDto(
+			Vurdering(
 				id = UUID.randomUUID(),
 				deltakerId = deltakerId,
 				vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
 				begrunnelse = "Mangler førerkort",
 				opprettetAvArrangorAnsattId = UUID.randomUUID(),
-				gyldigFra = LocalDateTime.now().minusWeeks(1),
-				gyldigTil = null,
+				opprettet = LocalDateTime.now().minusWeeks(1),
 			)
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id)
@@ -471,15 +470,14 @@ class TiltaksarrangorControllerTest : IntegrationTest() {
 		mockAmtTiltakServer.addRegistrerVurderingResponse(
 			deltakerId,
 			listOf(
-				opprinneligVurdering.copy(gyldigTil = LocalDateTime.now()),
-				VurderingDto(
+				opprinneligVurdering.copy(opprettet = LocalDateTime.now()),
+				Vurdering(
 					id = UUID.randomUUID(),
 					deltakerId = deltakerId,
 					vurderingstype = requestBody.vurderingstype,
 					begrunnelse = requestBody.begrunnelse,
 					opprettetAvArrangorAnsattId = UUID.randomUUID(),
-					gyldigFra = LocalDateTime.now(),
-					gyldigTil = null,
+					opprettet = LocalDateTime.now(),
 				),
 			),
 		)
