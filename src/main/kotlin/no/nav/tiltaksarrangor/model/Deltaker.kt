@@ -35,7 +35,6 @@ data class Deltaker(
 	val historiskeEndringsmeldinger: List<Endringsmelding>,
 	val adresse: Adresse?,
 	val gjeldendeVurderingFraArrangor: Vurdering?,
-	val historiskeVurderingerFraArrangor: List<Vurdering>?,
 	val adressebeskyttet: Boolean,
 	val kilde: Kilde,
 	val historikk: List<DeltakerHistorikk>,

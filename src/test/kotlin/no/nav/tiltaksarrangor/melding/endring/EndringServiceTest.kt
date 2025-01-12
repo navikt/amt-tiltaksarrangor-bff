@@ -8,6 +8,7 @@ import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.testing.AsyncUtils
 import no.nav.amt.lib.testing.SingletonKafkaProvider
 import no.nav.tiltaksarrangor.kafka.stringStringConsumer
@@ -120,7 +121,9 @@ fun <T : EndringFraArrangor.Endring> assertProducedEndring(deltakerId: UUID, end
 						null
 					}
 				}
-				is Forslag -> null
+				is Forslag,
+				is Vurdering,
+				-> null
 			}
 		}
 

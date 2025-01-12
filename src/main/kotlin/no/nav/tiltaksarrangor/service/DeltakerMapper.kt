@@ -137,7 +137,6 @@ private fun tilDeltaker(
 			.map { it.toEndringsmelding() },
 		adresse = if (adressebeskyttet) null else deltakerDbo.getAdresse(deltakerliste),
 		gjeldendeVurderingFraArrangor = deltakerDbo.getGjeldendeVurdering(),
-		historiskeVurderingerFraArrangor = deltakerDbo.getHistoriskeVurderinger(),
 		adressebeskyttet = adressebeskyttet,
 		kilde = deltakerDbo.kilde ?: Kilde.ARENA,
 		historikk = deltakerDbo.historikk,
@@ -174,7 +173,6 @@ fun Deltaker.utenPersonligInformasjon() = this.copy(
 	aktiveEndringsmeldinger = emptyList(),
 	historiskeEndringsmeldinger = emptyList(),
 	gjeldendeVurderingFraArrangor = null,
-	historiskeVurderingerFraArrangor = null,
 	historikk = emptyList(),
 )
 
@@ -186,9 +184,12 @@ fun DeltakerDbo.getAdresse(deltakerliste: DeltakerlisteDbo) = if (deltakerliste.
 	null
 }
 
-fun DeltakerDbo.getGjeldendeVurdering(): Vurdering? = vurderingerFraArrangor?.firstOrNull { it.gyldigTil == null }?.toVurdering()
-
-fun DeltakerDbo.getHistoriskeVurderinger(): List<Vurdering>? = vurderingerFraArrangor
-	?.filter {
-		it.gyldigTil != null
-	}?.map { it.toVurdering() }
+fun DeltakerDbo.getGjeldendeVurdering(): Vurdering? {
+	val gjeldendeVurdering = vurderingerFraArrangor?.maxByOrNull { it.opprettet } ?: return null
+	return Vurdering(
+		vurderingstype = gjeldendeVurdering.vurderingstype,
+		begrunnelse = gjeldendeVurdering.begrunnelse,
+		gyldigFra = gjeldendeVurdering.opprettet,
+		gyldigTil = null,
+	)
+}

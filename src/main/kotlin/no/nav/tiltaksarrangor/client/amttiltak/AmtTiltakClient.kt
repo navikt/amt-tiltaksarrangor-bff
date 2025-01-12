@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.client.amttiltak
 
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.tiltaksarrangor.client.amttiltak.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.DeltakerIkkeAktuellRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreDeltakelsesprosentRequest
@@ -8,9 +9,8 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttaarsakRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
+import no.nav.tiltaksarrangor.client.amttiltak.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.client.amttiltak.response.OpprettEndringsmeldingResponse
-import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
-import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
@@ -194,7 +194,7 @@ class AmtTiltakClient(
 		}
 	}
 
-	fun registrerVurdering(deltakerId: UUID, registrerVurderingRequest: RegistrerVurderingRequest): List<VurderingDto> {
+	fun registrerVurdering(deltakerId: UUID, registrerVurderingRequest: RegistrerVurderingRequest): List<Vurdering> {
 		val request =
 			Request
 				.Builder()
@@ -208,7 +208,7 @@ class AmtTiltakClient(
 			}
 			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
 
-			return JsonUtils.fromJsonString<List<VurderingDto>>(body)
+			return JsonUtils.fromJsonString<List<Vurdering>>(body)
 		}
 	}
 

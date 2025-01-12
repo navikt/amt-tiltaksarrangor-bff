@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.ingest.model
 
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
@@ -24,7 +25,7 @@ data class DeltakerDto(
 	val navKontor: String?,
 	val navVeileder: DeltakerNavVeilederDto?,
 	val deltarPaKurs: Boolean,
-	val vurderingerFraArrangor: List<VurderingDto>?,
+	val vurderingerFraArrangor: List<Vurdering>?,
 	val innhold: Deltakelsesinnhold?,
 	val kilde: Kilde?,
 	val historikk: List<DeltakerHistorikk>?,

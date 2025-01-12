@@ -1,8 +1,10 @@
 package no.nav.tiltaksarrangor.mock
 
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.tiltaksarrangor.client.amttiltak.response.OpprettEndringsmeldingResponse
-import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.utils.JsonUtils
+import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
+import no.nav.tiltaksarrangor.utils.writePolymorphicListAsString
 import okhttp3.mockwebserver.MockResponse
 import java.util.UUID
 
@@ -51,12 +53,12 @@ class MockAmtTiltakHttpServer : MockHttpServer(name = "Amt-Tiltak Mock Server") 
 		)
 	}
 
-	fun addRegistrerVurderingResponse(deltakerId: UUID, vurderinger: List<VurderingDto>) {
+	fun addRegistrerVurderingResponse(deltakerId: UUID, vurderinger: List<Vurdering>) {
 		addResponseHandler(
 			path = "/api/tiltaksarrangor/deltaker/$deltakerId/vurdering",
 			MockResponse()
 				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(vurderinger)),
+				.setBody(objectMapper.writePolymorphicListAsString(vurderinger)),
 		)
 	}
 }

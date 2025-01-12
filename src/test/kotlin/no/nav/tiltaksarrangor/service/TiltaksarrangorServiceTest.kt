@@ -6,6 +6,8 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
+import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
@@ -19,7 +21,6 @@ import no.nav.tiltaksarrangor.ingest.model.Matrikkeladresse
 import no.nav.tiltaksarrangor.ingest.model.Oppholdsadresse
 import no.nav.tiltaksarrangor.ingest.model.Postboksadresse
 import no.nav.tiltaksarrangor.ingest.model.Vegadresse
-import no.nav.tiltaksarrangor.ingest.model.VurderingDto
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
@@ -27,7 +28,6 @@ import no.nav.tiltaksarrangor.model.Adressetype
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
-import no.nav.tiltaksarrangor.model.Vurderingstype
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
@@ -89,6 +89,7 @@ class TiltaksarrangorServiceTest {
 			navEnhetService,
 			deltakerMapper,
 			arrangorRepository,
+			meldingProducer,
 		)
 
 	@AfterEach
@@ -173,23 +174,21 @@ class TiltaksarrangorServiceTest {
 			getDeltaker(deltakerId, deltakerliste.id).copy(
 				vurderingerFraArrangor =
 					listOf(
-						VurderingDto(
+						Vurdering(
 							id = UUID.randomUUID(),
 							deltakerId = deltakerId,
 							vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
 							begrunnelse = "Mangler førerkort",
 							opprettetAvArrangorAnsattId = UUID.randomUUID(),
-							gyldigFra = LocalDateTime.now().minusWeeks(2),
-							gyldigTil = LocalDateTime.now(),
+							opprettet = LocalDateTime.now().minusWeeks(2),
 						),
-						VurderingDto(
+						Vurdering(
 							id = UUID.randomUUID(),
 							deltakerId = deltakerId,
 							vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
 							begrunnelse = null,
 							opprettetAvArrangorAnsattId = UUID.randomUUID(),
-							gyldigFra = LocalDateTime.now(),
-							gyldigTil = null,
+							opprettet = LocalDateTime.now(),
 						),
 					),
 			),
@@ -225,8 +224,6 @@ class TiltaksarrangorServiceTest {
 		deltaker.adresse?.tilleggsnavn shouldBe null
 		deltaker.adresse?.adressenavn shouldBe "Gate 1"
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
-		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 1
-		deltaker.historiskeVurderingerFraArrangor?.firstOrNull()?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
 		deltaker.adressebeskyttet shouldBe false
 	}
 
@@ -243,23 +240,21 @@ class TiltaksarrangorServiceTest {
 			getDeltaker(deltakerId, deltakerliste.id).copy(
 				vurderingerFraArrangor =
 					listOf(
-						VurderingDto(
+						Vurdering(
 							id = UUID.randomUUID(),
 							deltakerId = deltakerId,
 							vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
 							begrunnelse = "Mangler førerkort",
 							opprettetAvArrangorAnsattId = UUID.randomUUID(),
-							gyldigFra = LocalDateTime.now().minusWeeks(2),
-							gyldigTil = LocalDateTime.now(),
+							opprettet = LocalDateTime.now().minusWeeks(2),
 						),
-						VurderingDto(
+						Vurdering(
 							id = UUID.randomUUID(),
 							deltakerId = deltakerId,
 							vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
 							begrunnelse = null,
 							opprettetAvArrangorAnsattId = UUID.randomUUID(),
-							gyldigFra = LocalDateTime.now(),
-							gyldigTil = null,
+							opprettet = LocalDateTime.now(),
 						),
 					),
 			),
@@ -353,7 +348,6 @@ class TiltaksarrangorServiceTest {
 		veileder.ansattId shouldBe veilederId
 		veileder.veiledertype shouldBe Veiledertype.VEILEDER
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
-		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 0
 	}
 
 	@Test
@@ -421,7 +415,6 @@ class TiltaksarrangorServiceTest {
 		veileder.ansattId shouldBe veilederId
 		veileder.veiledertype shouldBe Veiledertype.VEILEDER
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
-		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 0
 	}
 
 	@Test
@@ -434,23 +427,21 @@ class TiltaksarrangorServiceTest {
 		val deltakerDbo = getDeltaker(deltakerId, deltakerliste.id, adressebeskyttet = true).copy(
 			vurderingerFraArrangor =
 				listOf(
-					VurderingDto(
+					Vurdering(
 						id = UUID.randomUUID(),
 						deltakerId = deltakerId,
 						vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
 						begrunnelse = "Mangler førerkort",
 						opprettetAvArrangorAnsattId = UUID.randomUUID(),
-						gyldigFra = LocalDateTime.now().minusWeeks(2),
-						gyldigTil = LocalDateTime.now(),
+						opprettet = LocalDateTime.now().minusWeeks(2),
 					),
-					VurderingDto(
+					Vurdering(
 						id = UUID.randomUUID(),
 						deltakerId = deltakerId,
 						vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
 						begrunnelse = null,
 						opprettetAvArrangorAnsattId = UUID.randomUUID(),
-						gyldigFra = LocalDateTime.now(),
-						gyldigTil = null,
+						opprettet = LocalDateTime.now(),
 					),
 				),
 		)
@@ -494,8 +485,6 @@ class TiltaksarrangorServiceTest {
 		deltaker.veiledere.size shouldBe 1
 		deltaker.adresse shouldBe null
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
-		deltaker.historiskeVurderingerFraArrangor?.size shouldBe 1
-		deltaker.historiskeVurderingerFraArrangor?.firstOrNull()?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
 		deltaker.adressebeskyttet shouldBe true
 	}
 
@@ -509,23 +498,21 @@ class TiltaksarrangorServiceTest {
 		val deltakerDbo = getDeltaker(deltakerId, deltakerliste.id, adressebeskyttet = true).copy(
 			vurderingerFraArrangor =
 				listOf(
-					VurderingDto(
+					Vurdering(
 						id = UUID.randomUUID(),
 						deltakerId = deltakerId,
 						vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
 						begrunnelse = "Mangler førerkort",
 						opprettetAvArrangorAnsattId = UUID.randomUUID(),
-						gyldigFra = LocalDateTime.now().minusWeeks(2),
-						gyldigTil = LocalDateTime.now(),
+						opprettet = LocalDateTime.now().minusWeeks(2),
 					),
-					VurderingDto(
+					Vurdering(
 						id = UUID.randomUUID(),
 						deltakerId = deltakerId,
 						vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
 						begrunnelse = null,
 						opprettetAvArrangorAnsattId = UUID.randomUUID(),
-						gyldigFra = LocalDateTime.now(),
-						gyldigTil = null,
+						opprettet = LocalDateTime.now(),
 					),
 				),
 		)
@@ -569,7 +556,6 @@ class TiltaksarrangorServiceTest {
 		deltaker.veiledere.size shouldBe 0
 		deltaker.adresse shouldBe null
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe null
-		deltaker.historiskeVurderingerFraArrangor shouldBe null
 		deltaker.adressebeskyttet shouldBe true
 	}
 
@@ -708,28 +694,26 @@ class TiltaksarrangorServiceTest {
 		val deltakerId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
 		val forsteVurdering =
-			VurderingDto(
+			Vurdering(
 				id = UUID.randomUUID(),
 				deltakerId = deltakerId,
 				vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
 				begrunnelse = "Mangler grunnkurs",
 				opprettetAvArrangorAnsattId = UUID.randomUUID(),
-				gyldigFra = LocalDateTime.now().minusWeeks(1),
-				gyldigTil = null,
+				opprettet = LocalDateTime.now().minusWeeks(1),
 			)
 		val andreVurdering =
-			VurderingDto(
+			Vurdering(
 				id = UUID.randomUUID(),
 				deltakerId = deltakerId,
 				vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
 				begrunnelse = null,
 				opprettetAvArrangorAnsattId = ansattId,
-				gyldigFra = LocalDateTime.now(),
-				gyldigTil = null,
+				opprettet = LocalDateTime.now(),
 			)
 		coEvery { amtTiltakClient.registrerVurdering(any(), any()) } returns
 			listOf(
-				forsteVurdering.copy(gyldigTil = LocalDateTime.now()),
+				forsteVurdering,
 				andreVurdering,
 			)
 		val personIdent = "12345678910"
@@ -766,8 +750,8 @@ class TiltaksarrangorServiceTest {
 
 		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
 		deltakerFraDb?.vurderingerFraArrangor?.size shouldBe 2
-		deltakerFraDb?.vurderingerFraArrangor?.find { it.gyldigTil == null }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
-		deltakerFraDb?.vurderingerFraArrangor?.find { it.gyldigTil != null }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
+		deltakerFraDb?.vurderingerFraArrangor?.maxBy { it.opprettet }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
+		deltakerFraDb?.vurderingerFraArrangor?.minBy { it.opprettet }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
 	}
 
 	@Test
@@ -851,28 +835,26 @@ class TiltaksarrangorServiceTest {
 		val deltakerId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
 		val forsteVurdering =
-			VurderingDto(
+			Vurdering(
 				id = UUID.randomUUID(),
 				deltakerId = deltakerId,
 				vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
 				begrunnelse = "Mangler grunnkurs",
 				opprettetAvArrangorAnsattId = UUID.randomUUID(),
-				gyldigFra = LocalDateTime.now().minusWeeks(1),
-				gyldigTil = null,
+				opprettet = LocalDateTime.now().minusWeeks(1),
 			)
 		val andreVurdering =
-			VurderingDto(
+			Vurdering(
 				id = UUID.randomUUID(),
 				deltakerId = deltakerId,
 				vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
 				begrunnelse = null,
 				opprettetAvArrangorAnsattId = ansattId,
-				gyldigFra = LocalDateTime.now(),
-				gyldigTil = null,
+				opprettet = LocalDateTime.now(),
 			)
 		coEvery { amtTiltakClient.registrerVurdering(any(), any()) } returns
 			listOf(
-				forsteVurdering.copy(gyldigTil = LocalDateTime.now()),
+				forsteVurdering,
 				andreVurdering,
 			)
 		val personIdent = "12345678910"
@@ -909,8 +891,8 @@ class TiltaksarrangorServiceTest {
 
 		val deltakerFraDb = deltakerRepository.getDeltaker(deltakerId)
 		deltakerFraDb?.vurderingerFraArrangor?.size shouldBe 2
-		deltakerFraDb?.vurderingerFraArrangor?.find { it.gyldigTil == null }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
-		deltakerFraDb?.vurderingerFraArrangor?.find { it.gyldigTil != null }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
+		deltakerFraDb?.vurderingerFraArrangor?.maxBy { it.opprettet }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_KRAVENE
+		deltakerFraDb?.vurderingerFraArrangor?.minBy { it.opprettet }?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
 	}
 
 	@Test
@@ -918,14 +900,13 @@ class TiltaksarrangorServiceTest {
 		val deltakerId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
 		val forsteVurdering =
-			VurderingDto(
+			Vurdering(
 				id = UUID.randomUUID(),
 				deltakerId = deltakerId,
 				vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
 				begrunnelse = "Mangler grunnkurs",
 				opprettetAvArrangorAnsattId = UUID.randomUUID(),
-				gyldigFra = LocalDateTime.now().minusWeeks(1),
-				gyldigTil = null,
+				opprettet = LocalDateTime.now().minusWeeks(1),
 			)
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()

@@ -2,7 +2,7 @@ package no.nav.tiltaksarrangor.service
 
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.tiltaksarrangor.model.Vurderingstype
+import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import org.springframework.stereotype.Service
 
 private const val INNLOGGING_METRIC = "tiltaksarrangorbff_innlogging"

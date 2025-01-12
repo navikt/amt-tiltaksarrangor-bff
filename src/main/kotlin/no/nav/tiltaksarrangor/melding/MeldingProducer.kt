@@ -5,6 +5,7 @@ import no.nav.amt.lib.kafka.config.KafkaConfig
 import no.nav.amt.lib.kafka.config.KafkaConfigImpl
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
@@ -41,6 +42,11 @@ class MeldingProducer(
 	fun produce(endring: EndringFraArrangor) {
 		producer.produce(MELDING_TOPIC, endring.id.toString(), JsonUtils.objectMapper.writeValueAsString(endring))
 		log.info("Produserte endring fra arrangør ${endring.id}")
+	}
+
+	fun produce(vurdering: Vurdering) {
+		producer.produce(MELDING_TOPIC, vurdering.id.toString(), JsonUtils.objectMapper.writeValueAsString(vurdering))
+		log.info("Produserte vurdering fra arrangør ${vurdering.id}")
 	}
 }
 
