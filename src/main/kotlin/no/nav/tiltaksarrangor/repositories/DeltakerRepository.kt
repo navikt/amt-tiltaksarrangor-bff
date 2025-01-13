@@ -43,12 +43,7 @@ class DeltakerRepository(
 				epost = rs.getString("epost"),
 				erSkjermet = rs.getBoolean("er_skjermet"),
 				adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
-				vurderingerFraArrangor = try {
-					rs.getString("vurderinger")?.let { objectMapper.readValue(it) }
-				} catch (e: Exception) {
-					emptyList()
-					// dette skal fjernes når alle deltakere har fått oppdatert vurderinger til nytt format
-				},
+				vurderingerFraArrangor = rs.getString("vurderinger")?.let { objectMapper.readValue(it) },
 				status = StatusType.valueOf(rs.getString("status")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
