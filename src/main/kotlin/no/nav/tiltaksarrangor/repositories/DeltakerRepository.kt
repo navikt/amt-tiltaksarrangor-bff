@@ -66,6 +66,7 @@ class DeltakerRepository(
 				kilde = Kilde.valueOf(rs.getString("kilde")),
 				historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 				sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
+				forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet")
 			)
 		}
 
@@ -107,6 +108,7 @@ class DeltakerRepository(
 						kilde = Kilde.valueOf(rs.getString("kilde")),
 						historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
+						forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet")
 					),
 				deltakerliste =
 					DeltakerlisteDbo(
@@ -132,7 +134,7 @@ class DeltakerRepository(
 								 start_dato, slutt_dato,
 								 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
 								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
-								 innhold, kilde, historikk, modified_at)
+								 innhold, kilde, historikk, modified_at, forste_vedtak_fattet)
 			VALUES (:id,
 					:deltakerliste_id,
 					:personident,
@@ -165,7 +167,8 @@ class DeltakerRepository(
 					:innhold,
 					:kilde,
 					:historikk,
-					:modified_at)
+					:modified_at,
+					:forste_vedtak_fattet)
 			ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
 										   personident           = :personident,
 										   fornavn               = :fornavn,
@@ -197,7 +200,8 @@ class DeltakerRepository(
 										   innhold 				 = :innhold,
 										   kilde		 		 = :kilde,
 										   historikk             = :historikk,
-										   modified_at           = :modified_at
+										   modified_at           = :modified_at,
+										   forste_vedtak_fattet  = :forste_vedtak_fattet,
 			""".trimIndent()
 
 		template.update(
@@ -236,6 +240,7 @@ class DeltakerRepository(
 				"kilde" to deltakerDbo.kilde?.name,
 				"historikk" to toPGObject(deltakerDbo.historikk),
 				"modified_at" to deltakerDbo.sistEndret,
+				"forste_vedtak_fattet" to deltakerDbo.forsteVedtakFattet,
 			),
 		)
 	}
@@ -317,6 +322,7 @@ class DeltakerRepository(
 				er_kurs,
 				tilgjengelig_fom,
 				deltaker.modified_at as modified_at
+				forste_vedtak_fattet,
 		FROM deltaker
 				 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 		WHERE deltaker.id IN (:ids);
@@ -369,7 +375,8 @@ class DeltakerRepository(
 					deltakerliste.slutt_dato as deltakerliste_slutt_dato,
 					er_kurs,
 					tilgjengelig_fom,
-				    deltaker.modified_at as modified_at
+				    deltaker.modified_at as modified_at,
+					forste_vedtak_fattet
 			FROM deltaker
 					 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 			WHERE deltaker.id = :id;
