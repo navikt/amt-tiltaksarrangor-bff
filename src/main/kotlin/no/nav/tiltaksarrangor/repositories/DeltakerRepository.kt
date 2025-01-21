@@ -66,7 +66,7 @@ class DeltakerRepository(
 				kilde = Kilde.valueOf(rs.getString("kilde")),
 				historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 				sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
-				forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet")
+				forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
 			)
 		}
 
@@ -108,7 +108,7 @@ class DeltakerRepository(
 						kilde = Kilde.valueOf(rs.getString("kilde")),
 						historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
-						forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet")
+						forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
 					),
 				deltakerliste =
 					DeltakerlisteDbo(
@@ -201,7 +201,7 @@ class DeltakerRepository(
 										   kilde		 		 = :kilde,
 										   historikk             = :historikk,
 										   modified_at           = :modified_at,
-										   forste_vedtak_fattet  = :forste_vedtak_fattet,
+										   forste_vedtak_fattet  = :forste_vedtak_fattet
 			""".trimIndent()
 
 		template.update(
@@ -321,8 +321,8 @@ class DeltakerRepository(
 				deltakerliste.slutt_dato as deltakerliste_slutt_dato,
 				er_kurs,
 				tilgjengelig_fom,
-				deltaker.modified_at as modified_at
-				forste_vedtak_fattet,
+				deltaker.modified_at as modified_at,
+				forste_vedtak_fattet
 		FROM deltaker
 				 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 		WHERE deltaker.id IN (:ids);

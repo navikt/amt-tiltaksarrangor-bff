@@ -289,6 +289,7 @@ class KoordinatorService(
 			adressebeskyttet = adressebeskyttet,
 			erVeilederForDeltaker = erVeilederForDeltaker(ansattId, veiledereForDeltaker),
 			aktivEndring = getAktivEndring(it.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
+			forsteVedtakFattetDato = it.forsteVedtakFattet,
 		)
 	}
 

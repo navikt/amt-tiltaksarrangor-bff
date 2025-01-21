@@ -99,6 +99,7 @@ class VeilederControllerTest : IntegrationTest() {
 				kilde = Kilde.ARENA,
 				historikk = emptyList(),
 				sistEndret = LocalDate.of(2024, 10, 12).atStartOfDay(),
+				forsteVedtakFattet = LocalDate.now(),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		ansattRepository.insertOrUpdateAnsatt(
