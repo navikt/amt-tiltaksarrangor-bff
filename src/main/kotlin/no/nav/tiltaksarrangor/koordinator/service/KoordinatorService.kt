@@ -266,7 +266,7 @@ class KoordinatorService(
 			mellomnavn = if (adressebeskyttet) null else it.mellomnavn,
 			etternavn = if (adressebeskyttet) "" else it.etternavn,
 			fodselsnummer = if (adressebeskyttet) "" else it.personident,
-			soktInnDato = it.innsoktDato.atStartOfDay(),
+			soktInnDato = if (it.forsteVedtakFattet != null) it.forsteVedtakFattet.atStartOfDay() else it.innsoktDato.atStartOfDay(),
 			startDato = it.startdato,
 			sluttDato = it.sluttdato,
 			status =
@@ -289,7 +289,6 @@ class KoordinatorService(
 			adressebeskyttet = adressebeskyttet,
 			erVeilederForDeltaker = erVeilederForDeltaker(ansattId, veiledereForDeltaker),
 			aktivEndring = getAktivEndring(it.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
-			forsteVedtakFattetDato = it.forsteVedtakFattet,
 		)
 	}
 
