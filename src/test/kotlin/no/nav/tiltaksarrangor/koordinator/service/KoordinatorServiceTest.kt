@@ -872,12 +872,12 @@ class KoordinatorServiceTest {
 		val deltaker =
 			getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(
 				innsoktDato = LocalDate.now().minusDays(2),
-				forsteVedtakFattet = LocalDate.now()
+				forsteVedtakFattet = LocalDate.now(),
 			)
 		val deltakerUtenForsteVedtakFattet =
 			getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(
 				innsoktDato = LocalDate.now().minusDays(2),
-				forsteVedtakFattet = null
+				forsteVedtakFattet = null,
 			)
 
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -898,8 +898,12 @@ class KoordinatorServiceTest {
 
 		val koordinatorsDeltakerliste = koordinatorService.getDeltakerliste(deltakerlisteId, personIdent)
 
-		koordinatorsDeltakerliste.deltakere.find { d -> d.id.equals(deltaker.id) }!!.soktInnDato shouldBe LocalDate.now().atStartOfDay()
-		koordinatorsDeltakerliste.deltakere.find { d -> d.id.equals(deltakerUtenForsteVedtakFattet.id) }!!.soktInnDato shouldBe LocalDate.now().minusDays(2).atStartOfDay()
+		koordinatorsDeltakerliste.deltakere
+			.find { d -> d.id == deltaker.id }!!
+			.soktInnDato shouldBe LocalDate.now().atStartOfDay()
+		koordinatorsDeltakerliste.deltakere
+			.find { d -> d.id == deltakerUtenForsteVedtakFattet.id }!!
+			.soktInnDato shouldBe LocalDate.now().minusDays(2).atStartOfDay()
 	}
 
 	@Test
