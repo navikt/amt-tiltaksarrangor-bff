@@ -834,6 +834,75 @@ class KoordinatorServiceTest {
 	}
 
 	@Test
+	fun `getDeltakerliste - har tilgang, deltaker har både innsoktdato og forsteVedtakFattet, setter sokt inn til forsteVedtakFattet`() {
+		val personIdent = "12345678910"
+		val deltakerlisteId = UUID.randomUUID()
+		val overordnetArrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = overordnetArrangorId,
+				navn = "Overordnet arrangør AS",
+				organisasjonsnummer = "99999999",
+				overordnetArrangorId = null,
+			),
+		)
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "88888888",
+				overordnetArrangorId = overordnetArrangorId,
+			),
+		)
+
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = deltakerlisteId,
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.of(2023, 2, 1),
+				sluttDato = null,
+				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+			)
+		val deltaker =
+			getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(
+				innsoktDato = LocalDate.now().minusDays(2),
+				forsteVedtakFattet = LocalDate.now()
+			)
+		val deltakerUtenForsteVedtakFattet =
+			getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(
+				innsoktDato = LocalDate.now().minusDays(2),
+				forsteVedtakFattet = null
+			)
+
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		deltakerRepository.insertOrUpdateDeltaker(deltakerUtenForsteVedtakFattet)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		val koordinatorsDeltakerliste = koordinatorService.getDeltakerliste(deltakerlisteId, personIdent)
+
+		koordinatorsDeltakerliste.deltakere.find { d -> d.id.equals(deltaker.id) }!!.soktInnDato shouldBe LocalDate.now().atStartOfDay()
+		koordinatorsDeltakerliste.deltakere.find { d -> d.id.equals(deltakerUtenForsteVedtakFattet.id) }!!.soktInnDato shouldBe LocalDate.now().minusDays(2).atStartOfDay()
+	}
+
+	@Test
 	fun `getTilgjengeligeVeiledere - ansatt har ikke koordinatorrolle hos arrangor - returnerer unauthorized`() {
 		val personIdent = "12345678910"
 		val deltakerlisteId = UUID.randomUUID()
