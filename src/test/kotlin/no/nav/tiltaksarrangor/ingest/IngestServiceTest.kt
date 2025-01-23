@@ -516,6 +516,7 @@ class DeltakerDtoCtx {
 		kilde = Kilde.ARENA,
 		historikk = null, // vedtak?
 		sistEndret = LocalDateTime.now(),
+		forsteVedtakFattet = LocalDate.now().minusMonths(2),
 	)
 
 	fun medSluttdato(dagerSiden: Long) {

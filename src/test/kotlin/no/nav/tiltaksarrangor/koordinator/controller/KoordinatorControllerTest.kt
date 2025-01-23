@@ -417,6 +417,7 @@ class KoordinatorControllerTest : IntegrationTest() {
 				kilde = Kilde.ARENA,
 				historikk = emptyList(),
 				sistEndret = LocalDateTime.now(),
+				forsteVedtakFattet = LocalDate.of(2023, 1, 15),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 
