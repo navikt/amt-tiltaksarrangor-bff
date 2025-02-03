@@ -60,6 +60,7 @@ private fun validerVarighet(
 }
 
 val HELLIGDAGER: Duration = weeks(1)
+
 private fun maxVarighet(deltakerliste: DeltakerlisteDbo): Duration? = when (deltakerliste.tiltakType) {
 	"GRUPPEAMO",
 	"GRUFAGYRKE",
