@@ -64,7 +64,7 @@ private fun maxVarighet(deltakerliste: DeltakerlisteDbo): Duration? = when (delt
 	"GRUFAGYRKE",
 	-> years(3)
 
-	"DIGIOPPARB" -> weeks(8)
+	"DIGIOPPARB" -> weeks(9)
 	"ARBFORB" -> years(2)
 
 	"AVKLARAG",
