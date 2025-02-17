@@ -13,6 +13,7 @@ import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
 import no.nav.tiltaksarrangor.utils.toTitleCase
@@ -35,6 +36,7 @@ class TiltaksarrangorService(
 	private val deltakerMapper: DeltakerMapper,
 	private val arrangorRepository: ArrangorRepository,
 	private val meldingProducer: MeldingProducer,
+	private val ulestEndringRepository: UlestEndringRepository,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -151,4 +153,18 @@ class TiltaksarrangorService(
 		vurderingstype = vurderingstype,
 		begrunnelse = begrunnelse,
 	)
+
+	fun markerEndringSomLest(
+		personIdent: String,
+		deltakerId: UUID,
+		ulestEndringId: UUID,
+	) {
+		val ansatt = ansattService.getAnsattMedRoller(personIdent)
+		val deltakerMedDeltakerliste =
+			deltakerRepository.getDeltakerMedDeltakerliste(deltakerId)?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
+				?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
+
+		tilgangskontrollService.verifiserTilgangTilDeltaker(ansatt, deltakerMedDeltakerliste)
+		ulestEndringRepository.delete(ulestEndringId)
+	}
 }

@@ -11,6 +11,7 @@ import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
+import no.nav.tiltaksarrangor.model.UlestEndring
 import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Vurdering
 import no.nav.tiltaksarrangor.model.toDto
@@ -70,6 +71,7 @@ class DeltakerMapper(
 			aktiveForslag,
 			ansattErVeileder,
 			deltakelsesmengder,
+			ulesteEndringer = emptyList(), // fix
 		)
 	}
 }
@@ -82,6 +84,7 @@ private fun tilDeltaker(
 	aktiveForslag: List<AktivtForslagResponse>,
 	ansattErVeileder: Boolean,
 	deltakelsesmengder: Deltakelsesmengder?,
+	ulesteEndringer: List<UlestEndring>,
 ): Deltaker {
 	val adressebeskyttet = deltakerDbo.adressebeskyttet
 	val deltaker = Deltaker(
@@ -146,6 +149,7 @@ private fun tilDeltaker(
 				sisteDeltakelsesmengde = it.lastOrNull()?.toDto(),
 			)
 		},
+		ulesteEndringer = ulesteEndringer,
 	)
 
 	return if (adressebeskyttet && !ansattErVeileder) {

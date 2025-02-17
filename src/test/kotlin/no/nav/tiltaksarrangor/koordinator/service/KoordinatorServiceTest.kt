@@ -9,15 +9,19 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
+import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.AktivEndring
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
@@ -27,6 +31,7 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
@@ -63,6 +68,7 @@ class KoordinatorServiceTest {
 	private val arrangorRepository = ArrangorRepository(template)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
 	private val forslagRepository = ForslagRepository(template)
+	private val ulestEndringRepository = UlestEndringRepository(template)
 	private val unleashService = mockk<UnleashService>()
 	private val koordinatorService =
 		KoordinatorService(
@@ -73,6 +79,7 @@ class KoordinatorServiceTest {
 			endringsmeldingRepository,
 			metricsService,
 			forslagRepository,
+			ulestEndringRepository,
 			unleashService,
 		)
 
@@ -904,6 +911,113 @@ class KoordinatorServiceTest {
 		koordinatorsDeltakerliste.deltakere
 			.find { d -> d.id == deltakerUtenForsteVedtakFattet.id }!!
 			.soktInnDato shouldBe LocalDate.now().minusDays(2).atStartOfDay()
+	}
+
+	@Test
+	fun `getDeltakerliste - har tilgang, deltaker forslag med svar fra Nav - returnerer deltakere med svar fra Nav`() {
+		val personIdent = "12345678910"
+		val deltakerlisteId = UUID.randomUUID()
+		val overordnetArrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = overordnetArrangorId,
+				navn = "Overordnet arrangør AS",
+				organisasjonsnummer = "99999999",
+				overordnetArrangorId = null,
+			),
+		)
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "88888888",
+				overordnetArrangorId = overordnetArrangorId,
+			),
+		)
+
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = deltakerlisteId,
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.of(2025, 2, 1),
+				sluttDato = null,
+				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
+			)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
+		val deltaker2 = getDeltaker(UUID.randomUUID(), deltakerliste.id)
+
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		ulestEndringRepository.insert(
+			deltaker.id,
+			Oppdatering.AvvistForslag(
+				forlengDeltakelseForslag(
+					status = Forslag.Status.Avvist(
+						Forslag.NavAnsatt(
+							UUID.randomUUID(),
+							UUID.randomUUID(),
+						),
+						LocalDateTime.now(),
+						"fordi...",
+					),
+				),
+			),
+		)
+
+		ulestEndringRepository.insert(
+			deltaker2.id,
+			Oppdatering.DeltakelsesEndring(
+				endring = DeltakerEndring(
+					forslag = forlengDeltakelseForslag(
+						status = Forslag.Status.Godkjent(
+							Forslag.NavAnsatt(
+								UUID.randomUUID(),
+								UUID.randomUUID(),
+							),
+							LocalDateTime.now(),
+						),
+					),
+					id = UUID.randomUUID(),
+					deltakerId = deltaker2.id,
+					endring = DeltakerEndring.Endring.EndreSluttdato(
+						LocalDate.now().plusDays(1),
+						"fordi",
+					),
+					endretAv = arrangorId,
+					endretAvEnhet = UUID.randomUUID(),
+					endret = LocalDateTime.now(),
+				),
+			),
+		)
+
+		val koordinatorsDeltakerliste = koordinatorService.getDeltakerliste(deltakerlisteId, personIdent)
+
+		koordinatorsDeltakerliste.deltakere
+			.find { d -> d.id == deltaker.id }!!
+			.svarFraNav shouldBe true
+		koordinatorsDeltakerliste.deltakere
+			.find { d -> d.id == deltaker2.id }!!
+			.svarFraNav shouldBe true
 	}
 
 	@Test

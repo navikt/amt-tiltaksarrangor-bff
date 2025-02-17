@@ -21,11 +21,13 @@ import no.nav.tiltaksarrangor.ingest.model.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
+import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -48,6 +50,7 @@ class IngestService(
 	private val forslagService: ForslagService,
 	private val navEnhetService: NavEnhetService,
 	private val navAnsattService: NavAnsattService,
+	private val ulestEndringRepository: UlestEndringRepository,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -98,6 +101,14 @@ class IngestService(
 		if (deltakerDto.skalLagres(lagretDeltaker)) {
 			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
 			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
+
+			val nyHistorikk = hentNyHistorikk(lagretDeltaker, deltakerDto)
+			nyHistorikk.forEach {
+				ulestEndringRepository.insert(
+					deltakerId,
+					toDeltakerEndring(it),
+				)
+			}
 			log.info("Lagret deltaker med id $deltakerId")
 		} else {
 			val antallSlettedeDeltakere = deltakerRepository.deleteDeltaker(deltakerId)
@@ -107,6 +118,29 @@ class IngestService(
 				log.info("Ignorert deltaker med id $deltakerId")
 			}
 		}
+	}
+
+	private fun toDeltakerEndring(historikk: DeltakerHistorikk): Oppdatering {
+		when (historikk) {
+			is DeltakerHistorikk.Endring -> return Oppdatering.DeltakelsesEndring(historikk.endring)
+			is DeltakerHistorikk.Forslag -> return Oppdatering.AvvistForslag(historikk.forslag)
+			is DeltakerHistorikk.EndringFraArrangor,
+			is DeltakerHistorikk.ImportertFraArena,
+			is DeltakerHistorikk.Vedtak,
+			-> throw RuntimeException("Uventet historikktype")
+		}
+	}
+
+	private fun hentNyHistorikk(lagretDeltaker: DeltakerDbo?, nyDeltaker: DeltakerDto): List<DeltakerHistorikk> {
+		if (lagretDeltaker == null) {
+			return nyDeltaker.historikk.orEmpty()
+		}
+
+		if (nyDeltaker.historikk.isNullOrEmpty()) {
+			return emptyList()
+		}
+
+		return nyDeltaker.historikk.minus(lagretDeltaker.historikk).filter { it is DeltakerHistorikk.Endring || it is DeltakerHistorikk.Forslag }
 	}
 
 	private fun leggTilNavAnsattOgEnhetHistorikk(deltakerDto: DeltakerDto) {
@@ -199,7 +233,9 @@ class IngestService(
 		when (forslag.status) {
 			is Forslag.Status.Avvist,
 			is Forslag.Status.Godkjent,
-			-> forslagService.delete(forslag.id)
+			-> {
+				forslagService.delete(forslag.id)
+			}
 
 			is Forslag.Status.Erstattet,
 			is Forslag.Status.Tilbakekalt,

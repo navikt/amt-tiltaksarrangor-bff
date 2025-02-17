@@ -5,11 +5,13 @@ import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.UlestEndring
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.model.getAktivEndring
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
@@ -25,6 +27,7 @@ class VeilederService(
 	private val deltakerRepository: DeltakerRepository,
 	private val forslagRepository: ForslagRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val ulestEndringRepository: UlestEndringRepository,
 	private val unleashService: UnleashService,
 ) {
 	fun getMineDeltakere(personIdent: String): List<Deltaker> {
@@ -49,8 +52,9 @@ class VeilederService(
 		}
 		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltakere(deltakere.map { it.deltaker.id })
 		val aktiveForslag = forslagRepository.getAktiveForslagForDeltakere(deltakere.map { it.deltaker.id })
+		val ulesteEndringer = ulestEndringRepository.getUlesteForslagForDeltakere(deltakere.map { it.deltaker.id })
 
-		return tilVeiledersDeltakere(deltakere, ansatt.veilederDeltakere, endringsmeldinger, aktiveForslag)
+		return tilVeiledersDeltakere(deltakere, ansatt.veilederDeltakere, endringsmeldinger, aktiveForslag, ulesteEndringer)
 	}
 
 	private fun tilVeiledersDeltakere(
@@ -58,7 +62,8 @@ class VeilederService(
 		ansattsVeilederDeltakere: List<VeilederDeltakerDbo>,
 		endringsmeldinger: List<EndringsmeldingDbo>,
 		aktiveForslag: List<Forslag>,
-	): List<Deltaker> = deltakere.map {
+		ulesteEndringer: List<UlestEndring>,
+	): List<Deltaker> = deltakere.map { it ->
 		val erKometMasterForTiltakstype = unleashService.erKometMasterForTiltakstype(it.deltakerliste.tiltakType)
 		val adressebeskyttet = it.deltaker.adressebeskyttet
 		Deltaker(
@@ -90,6 +95,8 @@ class VeilederService(
 			aktivEndring = getAktivEndring(it.deltaker.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
 			sistEndret = it.deltaker.sistEndret,
 			adressebeskyttet = adressebeskyttet,
+			svarFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.deltaker.id && ulestEndring.erSvarFraNav() },
+			oppdateringFraNav = false,
 		)
 	}
 

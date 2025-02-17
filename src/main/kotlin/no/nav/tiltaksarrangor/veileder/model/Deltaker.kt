@@ -23,6 +23,8 @@ data class Deltaker(
 	val aktivEndring: AktivEndring?,
 	val sistEndret: LocalDateTime,
 	val adressebeskyttet: Boolean,
+	val svarFraNav: Boolean,
+	val oppdateringFraNav: Boolean,
 ) {
 	data class Deltakerliste(
 		val id: UUID,

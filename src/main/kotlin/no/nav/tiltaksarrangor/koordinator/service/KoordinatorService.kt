@@ -13,6 +13,7 @@ import no.nav.tiltaksarrangor.koordinator.model.VeilederFor
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.UlestEndring
 import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
@@ -22,6 +23,7 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -47,6 +49,7 @@ class KoordinatorService(
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val metricsService: MetricsService,
 	private val forslagRepository: ForslagRepository,
+	private val ulestEndringRepository: UlestEndringRepository,
 	private val unleashService: UnleashService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
@@ -198,6 +201,8 @@ class KoordinatorService(
 		val veiledereForDeltakerliste = ansattService.getVeiledereForDeltakere(deltakere.map { it.id })
 		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltakere(deltakere.map { it.id })
 		val aktiveForslag = forslagRepository.getAktiveForslagForDeltakere(deltakere.map { it.id })
+		val ulesteEndringer = ulestEndringRepository.getUlesteForslagForDeltakere(deltakere.map { it.id })
+
 		val erKometMasterForTiltakstype = unleashService.erKometMasterForTiltakstype(deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType)
 
 		return Deltakerliste(
@@ -223,6 +228,7 @@ class KoordinatorService(
 				ansattId,
 				aktiveForslag,
 				erKometMasterForTiltakstype,
+				ulesteEndringer,
 			),
 			erKurs = deltakerlisteMedArrangor.deltakerlisteDbo.erKurs,
 			tiltakType = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType,
@@ -257,7 +263,8 @@ class KoordinatorService(
 		ansattId: UUID,
 		aktiveForslag: List<Forslag>,
 		erKometMasterForTiltakstype: Boolean,
-	): List<Deltaker> = deltakere.map {
+		ulesteEndringer: List<UlestEndring>,
+	): List<Deltaker> = deltakere.map { it ->
 		val adressebeskyttet = it.adressebeskyttet
 		val veiledereForDeltaker = getVeiledereForDeltaker(it.id, veiledere)
 		Deltaker(
@@ -289,6 +296,8 @@ class KoordinatorService(
 			adressebeskyttet = adressebeskyttet,
 			erVeilederForDeltaker = erVeilederForDeltaker(ansattId, veiledereForDeltaker),
 			aktivEndring = getAktivEndring(it.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
+			svarFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.id && ulestEndring.erSvarFraNav() },
+			oppdateringFraNav = false,
 		)
 	}
 

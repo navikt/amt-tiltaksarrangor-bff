@@ -36,6 +36,7 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
@@ -76,6 +77,7 @@ class TiltaksarrangorServiceTest {
 	private val unleashService = mockk<UnleashService>()
 	private val deltakerMapper = DeltakerMapper(ansattService, forslagService, endringsmeldingRepository, unleashService)
 	private val arrangorRepository = ArrangorRepository(template)
+	private val ulestEndringRepository = UlestEndringRepository(template)
 	private val tiltaksarrangorService =
 		TiltaksarrangorService(
 			amtTiltakClient,
@@ -90,6 +92,7 @@ class TiltaksarrangorServiceTest {
 			deltakerMapper,
 			arrangorRepository,
 			meldingProducer,
+			ulestEndringRepository,
 		)
 
 	@AfterEach

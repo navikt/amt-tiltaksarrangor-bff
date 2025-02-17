@@ -39,6 +39,7 @@ data class Deltaker(
 	val kilde: Kilde,
 	val historikk: List<DeltakerHistorikk>,
 	val deltakelsesmengder: DeltakelsesmengderDto?,
+	val ulesteEndringer: List<UlestEndring>,
 ) {
 	data class Deltakerliste(
 		val id: UUID,

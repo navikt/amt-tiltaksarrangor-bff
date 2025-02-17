@@ -33,7 +33,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.reflect.KClass
 
-class EndringServiceTest {
+class DeltakelsesEndringServiceTest {
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val deltakerRepository = DeltakerRepository(template)
