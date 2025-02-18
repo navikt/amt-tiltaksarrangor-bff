@@ -20,6 +20,7 @@ import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.DeltakerMapper
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
@@ -44,6 +45,7 @@ class EndringServiceTest {
 		ansattService = AnsattService(mockk(), AnsattRepository(template)),
 		forslagService = ForslagService(ForslagRepository(template), producer),
 		endringsmeldingRepository = EndringsmeldingRepository(template),
+		ulestEndringRepository = UlestEndringRepository(template),
 		unleashService = unleashService,
 	)
 

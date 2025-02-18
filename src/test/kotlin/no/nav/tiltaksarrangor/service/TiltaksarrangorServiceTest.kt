@@ -1,11 +1,14 @@
 package no.nav.tiltaksarrangor.service
 
+import io.kotest.matchers.ints.exactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
@@ -24,8 +27,10 @@ import no.nav.tiltaksarrangor.ingest.model.Vegadresse
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
+import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.Adressetype
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
@@ -75,9 +80,10 @@ class TiltaksarrangorServiceTest {
 	private val navAnsattService = mockk<NavAnsattService>(relaxUnitFun = true)
 	private val navEnhetService = mockk<NavEnhetService>(relaxUnitFun = true)
 	private val unleashService = mockk<UnleashService>()
-	private val deltakerMapper = DeltakerMapper(ansattService, forslagService, endringsmeldingRepository, unleashService)
-	private val arrangorRepository = ArrangorRepository(template)
 	private val ulestEndringRepository = UlestEndringRepository(template)
+	private val deltakerMapper =
+		DeltakerMapper(ansattService, forslagService, endringsmeldingRepository, ulestEndringRepository, unleashService)
+	private val arrangorRepository = ArrangorRepository(template)
 	private val tiltaksarrangorService =
 		TiltaksarrangorService(
 			amtTiltakClient,
@@ -104,6 +110,7 @@ class TiltaksarrangorServiceTest {
 	@BeforeEach
 	internal fun setup() {
 		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
+		every { ulestEndringRepository.delete(any()) } returns 1
 	}
 
 	@Test
@@ -1104,5 +1111,51 @@ class TiltaksarrangorServiceTest {
 		adresse?.poststed shouldBe "OSLO"
 		adresse?.tilleggsnavn shouldBe "Gården"
 		adresse?.adressenavn shouldBe "C/O Gutterommet"
+	}
+
+	@Test
+	fun `marker-som-lest - deltaker har forslag med svar fra Nav - sletter i database`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		val ansattId = UUID.randomUUID()
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = ansattId,
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		val ulestEndring = ulestEndringRepository.insert(
+			deltaker.id,
+			Oppdatering.AvvistForslag(
+				forlengDeltakelseForslag(
+					status = Forslag.Status.Avvist(
+						Forslag.NavAnsatt(
+							UUID.randomUUID(),
+							UUID.randomUUID(),
+						),
+						LocalDateTime.now(),
+						"fordi...",
+					),
+				),
+			),
+		)
+
+		tiltaksarrangorService.markerEndringSomLest(personIdent, deltakerId, ulestEndring.id)
+		verify(exactly = 1) { ulestEndringRepository.delete(any()) }
 	}
 }

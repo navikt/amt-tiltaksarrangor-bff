@@ -48,7 +48,7 @@ class TiltaksarrangorController(
 		return objectMapper.writePolymorphicListAsString(tiltaksarrangorService.getDeltakerHistorikk(personIdent, deltakerId))
 	}
 
-	@PostMapping("/deltaker/{deltakerId}/ulest-endring/{ulestEndringId}/marker-som-lest")
+	@PostMapping("/deltaker/{deltakerId}/endring/{ulestEndringId}/marker-som-lest")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun markerSomLest(
 		@PathVariable deltakerId: UUID,

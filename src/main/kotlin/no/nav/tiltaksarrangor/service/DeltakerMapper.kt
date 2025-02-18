@@ -16,6 +16,7 @@ import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Vurdering
 import no.nav.tiltaksarrangor.model.toDto
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -30,6 +31,7 @@ class DeltakerMapper(
 	private val ansattService: AnsattService,
 	private val forslagService: ForslagService,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val ulestEndringRepository: UlestEndringRepository,
 	private val unleashService: UnleashService,
 ) {
 	fun map(
@@ -63,6 +65,8 @@ class DeltakerMapper(
 			null
 		}
 
+		val ulesteEndringer = ulestEndringRepository.getMany(deltaker.id)
+
 		return tilDeltaker(
 			deltaker,
 			deltakerliste,
@@ -71,7 +75,7 @@ class DeltakerMapper(
 			aktiveForslag,
 			ansattErVeileder,
 			deltakelsesmengder,
-			ulesteEndringer = emptyList(), // fix
+			ulesteEndringer,
 		)
 	}
 }
