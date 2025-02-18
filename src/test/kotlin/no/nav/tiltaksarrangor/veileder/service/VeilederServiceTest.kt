@@ -419,7 +419,7 @@ class VeilederServiceTest {
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
-		val deltaker2 = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personid = "12345")
+		val deltaker2 = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
 		ansattRepository.insertOrUpdateAnsatt(
