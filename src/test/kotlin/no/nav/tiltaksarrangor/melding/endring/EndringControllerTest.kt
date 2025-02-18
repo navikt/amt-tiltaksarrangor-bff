@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 
-class DeltakelsesEndringControllerTest : IntegrationTest() {
+class EndringControllerTest : IntegrationTest() {
 	private val leggTilOppstartsdatoRequest = LeggTilOppstartsdatoRequest(LocalDate.now(), LocalDate.now().plusMonths(3))
 
 	private val requests = listOf(

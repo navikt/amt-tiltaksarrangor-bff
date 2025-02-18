@@ -12,7 +12,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-class AktivDeltakelsesEndringTest {
+class AktivEndringTest {
 	@Test
 	fun `getAktivEndring - ingen endringsmeldinger eller forslag - returnerer null`() {
 		val deltakerId = UUID.randomUUID()
