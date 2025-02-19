@@ -41,8 +41,8 @@ class NavEnhetService(
 		return hentEnheter(ider)
 	}
 
-	fun hentEnheterForUlesteEndringer(historikk: List<UlestEndring>): Map<UUID, NavEnhet> {
-		val ider = historikk.map { it.navEnheter() }.distinct()
+	fun hentEnheterForUlesteEndringer(ulesteEndringer: List<UlestEndring>): Map<UUID, NavEnhet> {
+		val ider = ulesteEndringer.map { it.navEnheter() }.distinct()
 		return hentEnheter(ider)
 	}
 
