@@ -14,7 +14,7 @@ data class UlestEndringResponse(
 	val oppdatering: OppdateringResponse,
 )
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes(
 	JsonSubTypes.Type(value = DeltakerEndringResponse::class, name = "DeltakelsesEndring"),
 	JsonSubTypes.Type(value = ForslagHistorikkResponse::class, name = "AvvistForslag"),
