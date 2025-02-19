@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.model
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
+import no.nav.tiltaksarrangor.controller.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -39,7 +40,7 @@ data class Deltaker(
 	val kilde: Kilde,
 	val historikk: List<DeltakerHistorikk>,
 	val deltakelsesmengder: DeltakelsesmengderDto?,
-	val ulesteEndringer: List<UlestEndring>,
+	val ulesteEndringer: List<UlestEndringResponse>,
 ) {
 	data class Deltakerliste(
 		val id: UUID,

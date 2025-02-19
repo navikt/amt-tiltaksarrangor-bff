@@ -5,6 +5,7 @@ import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.controller.response.DeltakerHistorikkResponse
+import no.nav.tiltaksarrangor.controller.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.controller.response.toResponse
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.model.Deltaker
@@ -15,6 +16,7 @@ import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
 import no.nav.tiltaksarrangor.utils.toTitleCase
 import org.slf4j.LoggerFactory
@@ -62,7 +64,30 @@ class TiltaksarrangorService(
 
 		tilgangskontrollService.verifiserTilgangTilDeltaker(ansatt, deltakerMedDeltakerliste)
 
-		return deltakerMapper.map(deltakerMedDeltakerliste.deltaker, deltakerMedDeltakerliste.deltakerliste, ansatt)
+		val ulesteEndringerResponse = getUlesteEndringer(personIdent, deltakerMedDeltakerliste)
+
+		return deltakerMapper.map(deltakerMedDeltakerliste.deltaker, deltakerMedDeltakerliste.deltakerliste, ansatt, ulesteEndringerResponse)
+	}
+
+	fun getUlesteEndringer(personIdent: String, medDeltakerlisteDbo: DeltakerMedDeltakerlisteDbo): List<UlestEndringResponse> {
+		val ulesteEndringer = ulestEndringRepository.getMany(medDeltakerlisteDbo.deltaker.id)
+		if (ulesteEndringer.isEmpty()) {
+			return emptyList()
+		}
+		val ansatte = navAnsattService.hentAnsatteForUlesteEndringer(ulesteEndringer)
+		val enheter = navEnhetService.hentEnheterForUlesteEndringer(ulesteEndringer)
+
+		val deltakerlisteMedArrangor =
+			deltakerlisteRepository
+				.getDeltakerlisteMedArrangor(
+					medDeltakerlisteDbo.deltakerliste.id,
+				)?.takeIf { it.deltakerlisteDbo.erTilgjengeligForArrangor() }
+				?: throw NoSuchElementException("Fant ikke deltakerliste med id ${medDeltakerlisteDbo.deltakerliste.id}")
+
+		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
+
+		val arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn
+		return ulesteEndringer.toResponse(ansatte, toTitleCase(arrangorNavn), enheter)
 	}
 
 	fun getDeltakerHistorikk(personIdent: String, deltakerId: UUID): List<DeltakerHistorikkResponse> {

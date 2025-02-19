@@ -77,7 +77,7 @@ class TiltaksarrangorServiceTest {
 	private val unleashService = mockk<UnleashService>()
 	private val ulestEndringRepository = UlestEndringRepository(template)
 	private val deltakerMapper =
-		DeltakerMapper(ansattService, forslagService, endringsmeldingRepository, ulestEndringRepository, unleashService)
+		DeltakerMapper(ansattService, forslagService, endringsmeldingRepository, unleashService)
 	private val arrangorRepository = ArrangorRepository(template)
 	private val tiltaksarrangorService =
 		TiltaksarrangorService(

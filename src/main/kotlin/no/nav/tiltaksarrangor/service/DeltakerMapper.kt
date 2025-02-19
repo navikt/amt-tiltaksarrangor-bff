@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.service
 
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
+import no.nav.tiltaksarrangor.controller.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.tilAktivtForslagResponse
@@ -11,12 +12,10 @@ import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
-import no.nav.tiltaksarrangor.model.UlestEndring
 import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Vurdering
 import no.nav.tiltaksarrangor.model.toDto
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -31,13 +30,13 @@ class DeltakerMapper(
 	private val ansattService: AnsattService,
 	private val forslagService: ForslagService,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
-	private val ulestEndringRepository: UlestEndringRepository,
 	private val unleashService: UnleashService,
 ) {
 	fun map(
 		deltaker: DeltakerDbo,
 		deltakerliste: DeltakerlisteDbo,
 		ansatt: AnsattDbo,
+		ulesteEndringer: List<UlestEndringResponse> = emptyList(),
 	): Deltaker {
 		val ansattErVeileder = ansattService.erVeilederForDeltaker(
 			deltakerId = deltaker.id,
@@ -65,8 +64,6 @@ class DeltakerMapper(
 			null
 		}
 
-		val ulesteEndringer = ulestEndringRepository.getMany(deltaker.id)
-
 		return tilDeltaker(
 			deltaker,
 			deltakerliste,
@@ -88,7 +85,7 @@ private fun tilDeltaker(
 	aktiveForslag: List<AktivtForslagResponse>,
 	ansattErVeileder: Boolean,
 	deltakelsesmengder: Deltakelsesmengder?,
-	ulesteEndringer: List<UlestEndring>,
+	ulesteEndringer: List<UlestEndringResponse>,
 ): Deltaker {
 	val adressebeskyttet = deltakerDbo.adressebeskyttet
 	val deltaker = Deltaker(
