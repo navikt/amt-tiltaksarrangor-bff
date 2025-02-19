@@ -14,20 +14,20 @@ data class UlestEndringResponse(
 	val oppdatering: OppdateringResponse,
 )
 
-sealed interface OppdateringResponse
-
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes(
-	JsonSubTypes.Type(value = DeltakelsesEndringResponse::class, name = "DeltakelsesEndring"),
-	JsonSubTypes.Type(value = AvvistForslagResponse::class, name = "AvvistForslag"),
+	JsonSubTypes.Type(value = OppdateringResponse.DeltakelsesEndringResponse::class, name = "DeltakelsesEndring"),
+	JsonSubTypes.Type(value = OppdateringResponse.AvvistForslagResponse::class, name = "AvvistForslag"),
 )
-data class DeltakelsesEndringResponse(
-	val endring: DeltakerEndringResponse,
-) : OppdateringResponse
+sealed interface OppdateringResponse {
+	data class DeltakelsesEndringResponse(
+		val endring: DeltakerEndringResponse,
+	) : OppdateringResponse
 
-data class AvvistForslagResponse(
-	val forslag: ForslagHistorikkResponse,
-) : OppdateringResponse
+	data class AvvistForslagResponse(
+		val forslag: ForslagHistorikkResponse,
+	) : OppdateringResponse
+}
 
 fun List<UlestEndring>.toResponse(
 	ansatte: Map<UUID, NavAnsatt>,
