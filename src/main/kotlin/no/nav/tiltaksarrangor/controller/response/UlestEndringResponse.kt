@@ -14,13 +14,14 @@ data class UlestEndringResponse(
 	val oppdatering: OppdateringResponse,
 )
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes(
-	JsonSubTypes.Type(value = DeltakerEndringResponse::class, name = "DeltakelsesEndring"),
-	JsonSubTypes.Type(value = ForslagHistorikkResponse::class, name = "AvvistForslag"),
-)
+
 sealed interface OppdateringResponse
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes(
+	JsonSubTypes.Type(value = DeltakelsesEndringResponse::class, name = "DeltakelsesEndring"),
+	JsonSubTypes.Type(value = AvvistForslagResponse::class, name = "AvvistForslag"),
+)
 data class DeltakelsesEndringResponse(
 	val endring: DeltakerEndringResponse,
 ) : OppdateringResponse
