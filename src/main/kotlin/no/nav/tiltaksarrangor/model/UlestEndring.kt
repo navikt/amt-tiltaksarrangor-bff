@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.model
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Forslag.Status
 import java.util.UUID
