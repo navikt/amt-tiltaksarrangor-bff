@@ -14,7 +14,6 @@ data class UlestEndringResponse(
 	val oppdatering: OppdateringResponse,
 )
 
-
 sealed interface OppdateringResponse
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
