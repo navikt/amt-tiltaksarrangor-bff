@@ -1,14 +1,14 @@
 package no.nav.tiltaksarrangor.repositories
 
+import no.nav.tiltaksarrangor.melding.forslag.toPGObject
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.UlestEndring
+import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
 import java.util.UUID
-import no.nav.tiltaksarrangor.melding.forslag.toPGObject
-import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 
 @Component
 class UlestEndringRepository(
