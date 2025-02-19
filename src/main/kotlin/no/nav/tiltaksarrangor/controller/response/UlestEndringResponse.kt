@@ -38,14 +38,14 @@ fun List<UlestEndring>.toResponse(
 		is Oppdatering.DeltakelsesEndring -> UlestEndringResponse(
 			it.id,
 			it.deltakerId,
-			DeltakelsesEndringResponse(
+			OppdateringResponse.DeltakelsesEndringResponse(
 				it.oppdatering.endring.toResponse(ansatte, enheter, arrangornavn),
 			),
 		)
 		is Oppdatering.AvvistForslag -> UlestEndringResponse(
 			it.id,
 			it.deltakerId,
-			AvvistForslagResponse(
+			OppdateringResponse.AvvistForslagResponse(
 				it.oppdatering.forslag.toResponse(arrangornavn, ansatte, enheter),
 			),
 		)
