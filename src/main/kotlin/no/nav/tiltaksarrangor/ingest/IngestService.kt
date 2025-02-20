@@ -101,6 +101,10 @@ class IngestService(
 		if (deltakerDto.skalLagres(lagretDeltaker)) {
 			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
 
+			if (lagretDeltaker == null) {
+				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
+			}
+
 			val nyHistorikk = hentNyHistorikk(lagretDeltaker, deltakerDto).mapNotNull { toDeltakerEndring(it) }
 			nyHistorikk.forEach {
 				ulestEndringRepository.insert(
@@ -108,7 +112,11 @@ class IngestService(
 					it,
 				)
 			}
-			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
+
+			if (lagretDeltaker != null) {
+				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
+			}
+
 			log.info("Lagret deltaker med id $deltakerId")
 		} else {
 			val antallSlettedeDeltakere = deltakerRepository.deleteDeltaker(deltakerId)
