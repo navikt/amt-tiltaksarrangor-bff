@@ -96,7 +96,9 @@ class VeilederService(
 			sistEndret = it.deltaker.sistEndret,
 			adressebeskyttet = adressebeskyttet,
 			svarFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.deltaker.id && ulestEndring.erSvarFraNav() },
-			oppdateringFraNav = false,
+			oppdateringFraNav = ulesteEndringer.any { ulestEndring ->
+				ulestEndring.deltakerId == it.deltaker.id && ulestEndring.erOppdateringFraNav()
+			},
 		)
 	}
 

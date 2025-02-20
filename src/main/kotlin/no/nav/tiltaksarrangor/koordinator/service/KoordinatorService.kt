@@ -297,7 +297,7 @@ class KoordinatorService(
 			erVeilederForDeltaker = erVeilederForDeltaker(ansattId, veiledereForDeltaker),
 			aktivEndring = getAktivEndring(it.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
 			svarFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.id && ulestEndring.erSvarFraNav() },
-			oppdateringFraNav = false,
+			oppdateringFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.id && ulestEndring.erOppdateringFraNav() },
 		)
 	}
 
