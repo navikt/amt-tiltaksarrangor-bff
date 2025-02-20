@@ -12,7 +12,6 @@ import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
-import no.nav.tiltaksarrangor.controller.response.AvvistForslagResponse
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.Bostedsadresse
@@ -62,6 +61,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
+import no.nav.tiltaksarrangor.controller.response.OppdateringResponse
 
 class TiltaksarrangorServiceTest {
 	private val amtTiltakClient = mockk<AmtTiltakClient>()
@@ -481,7 +481,7 @@ class TiltaksarrangorServiceTest {
 		deltaker.id shouldBe deltakerId
 		deltaker.ulesteEndringer.size shouldBe 1
 		deltaker.ulesteEndringer[0].deltakerId shouldBe deltakerId
-		val avvistForslagResponse = deltaker.ulesteEndringer[0].oppdatering as AvvistForslagResponse
+		val avvistForslagResponse = deltaker.ulesteEndringer[0].oppdatering as OppdateringResponse.AvvistForslagResponse
 		avvistForslagResponse.forslag.begrunnelse shouldBe "Fordi..."
 	}
 
