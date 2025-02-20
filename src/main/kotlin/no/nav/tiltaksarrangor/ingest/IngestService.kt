@@ -102,11 +102,11 @@ class IngestService(
 			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
 			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
 
-			val nyHistorikk = hentNyHistorikk(lagretDeltaker, deltakerDto)
+			val nyHistorikk = hentNyHistorikk(lagretDeltaker, deltakerDto).mapNotNull { toDeltakerEndring(it) }
 			nyHistorikk.forEach {
 				ulestEndringRepository.insert(
 					deltakerId,
-					toDeltakerEndring(it),
+					it,
 				)
 			}
 			log.info("Lagret deltaker med id $deltakerId")
@@ -120,14 +120,14 @@ class IngestService(
 		}
 	}
 
-	private fun toDeltakerEndring(historikk: DeltakerHistorikk): Oppdatering {
+	private fun toDeltakerEndring(historikk: DeltakerHistorikk): Oppdatering? {
 		when (historikk) {
 			is DeltakerHistorikk.Endring -> return Oppdatering.DeltakelsesEndring(historikk.endring)
 			is DeltakerHistorikk.Forslag -> return Oppdatering.AvvistForslag(historikk.forslag)
 			is DeltakerHistorikk.EndringFraArrangor,
 			is DeltakerHistorikk.ImportertFraArena,
 			is DeltakerHistorikk.Vedtak,
-			-> throw RuntimeException("Uventet historikktype")
+			-> return null
 		}
 	}
 
