@@ -101,14 +101,20 @@ class IngestService(
 		if (deltakerDto.skalLagres(lagretDeltaker)) {
 			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
 
-			val nyHistorikk = hentNyHistorikk(lagretDeltaker, deltakerDto).mapNotNull { toDeltakerEndring(it) }
-			nyHistorikk.forEach {
-				ulestEndringRepository.insert(
-					deltakerId,
-					it,
-				)
+			if (lagretDeltaker == null) {
+				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
+			} else {
+				val nyHistorikk = hentNyHistorikk(lagretDeltaker, deltakerDto).mapNotNull { toDeltakerEndring(it) }
+				nyHistorikk.forEach {
+					ulestEndringRepository.insert(
+						deltakerId,
+						it,
+					)
+				}
+
+				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
 			}
-			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
+
 			log.info("Lagret deltaker med id $deltakerId")
 		} else {
 			val antallSlettedeDeltakere = deltakerRepository.deleteDeltaker(deltakerId)
