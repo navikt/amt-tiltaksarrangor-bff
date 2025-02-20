@@ -12,6 +12,7 @@ import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
+import no.nav.tiltaksarrangor.controller.response.OppdateringResponse
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.Bostedsadresse
@@ -61,7 +62,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
-import no.nav.tiltaksarrangor.controller.response.OppdateringResponse
 
 class TiltaksarrangorServiceTest {
 	private val amtTiltakClient = mockk<AmtTiltakClient>()
