@@ -100,7 +100,6 @@ class IngestService(
 		val lagretDeltaker = deltakerRepository.getDeltaker(deltakerId)
 		if (deltakerDto.skalLagres(lagretDeltaker)) {
 			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
-			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
 
 			val nyHistorikk = hentNyHistorikk(lagretDeltaker, deltakerDto).mapNotNull { toDeltakerEndring(it) }
 			nyHistorikk.forEach {
@@ -109,6 +108,7 @@ class IngestService(
 					it,
 				)
 			}
+			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
 			log.info("Lagret deltaker med id $deltakerId")
 		} else {
 			val antallSlettedeDeltakere = deltakerRepository.deleteDeltaker(deltakerId)
@@ -123,7 +123,16 @@ class IngestService(
 	private fun toDeltakerEndring(historikk: DeltakerHistorikk): Oppdatering? {
 		when (historikk) {
 			is DeltakerHistorikk.Endring -> return Oppdatering.DeltakelsesEndring(historikk.endring)
-			is DeltakerHistorikk.Forslag -> return Oppdatering.AvvistForslag(historikk.forslag)
+			is DeltakerHistorikk.Forslag -> {
+				when (historikk.forslag.status) {
+					is Forslag.Status.Avvist -> return Oppdatering.AvvistForslag(historikk.forslag)
+					is Forslag.Status.Godkjent,
+					is Forslag.Status.Erstattet,
+					is Forslag.Status.Tilbakekalt,
+					Forslag.Status.VenterPaSvar,
+					-> return null
+				}
+			}
 			is DeltakerHistorikk.EndringFraArrangor,
 			is DeltakerHistorikk.ImportertFraArena,
 			is DeltakerHistorikk.Vedtak,

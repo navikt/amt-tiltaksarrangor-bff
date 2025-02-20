@@ -33,10 +33,11 @@ class UlestEndringRepository(
 			 	:id,
 				:deltakerId,
 			 	:oppdatering)
+			on conflict (id) do nothing
 			returning *
 			""".trimIndent()
 		val params = sqlParameters(
-			"id" to UUID.randomUUID(),
+			"id" to oppdatering.id,
 			"deltakerId" to deltakerId,
 			"oppdatering" to toPGObject(oppdatering),
 		)

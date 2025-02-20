@@ -47,4 +47,9 @@ sealed interface Oppdatering {
 	data class AvvistForslag(
 		val forslag: Forslag,
 	) : Oppdatering
+
+	val id get() = when (this) {
+		is DeltakelsesEndring -> endring.id
+		is AvvistForslag -> forslag.id
+	}
 }

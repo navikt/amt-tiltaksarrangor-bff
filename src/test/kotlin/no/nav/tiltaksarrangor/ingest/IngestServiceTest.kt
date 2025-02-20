@@ -373,12 +373,13 @@ class IngestServiceTest {
 			with(DeltakerDtoCtx()) {
 				val lagretDeltaker = getDeltaker(deltakerDto.id)
 				val forslag = forlengDeltakelseForslag(
-					status = Forslag.Status.Godkjent(
+					status = Forslag.Status.Avvist(
 						Forslag.NavAnsatt(
 							UUID.randomUUID(),
 							UUID.randomUUID(),
 						),
 						LocalDateTime.now(),
+						"Fordi...",
 					),
 				)
 				val nyDeltaker = deltakerDto.copy(historikk = listOf(DeltakerHistorikk.Forslag(forslag)))
