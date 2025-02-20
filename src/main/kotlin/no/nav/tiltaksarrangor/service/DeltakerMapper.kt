@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.service
 
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
+import no.nav.tiltaksarrangor.controller.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.tilAktivtForslagResponse
@@ -35,6 +36,7 @@ class DeltakerMapper(
 		deltaker: DeltakerDbo,
 		deltakerliste: DeltakerlisteDbo,
 		ansatt: AnsattDbo,
+		ulesteEndringer: List<UlestEndringResponse> = emptyList(),
 	): Deltaker {
 		val ansattErVeileder = ansattService.erVeilederForDeltaker(
 			deltakerId = deltaker.id,
@@ -70,6 +72,7 @@ class DeltakerMapper(
 			aktiveForslag,
 			ansattErVeileder,
 			deltakelsesmengder,
+			ulesteEndringer,
 		)
 	}
 }
@@ -82,6 +85,7 @@ private fun tilDeltaker(
 	aktiveForslag: List<AktivtForslagResponse>,
 	ansattErVeileder: Boolean,
 	deltakelsesmengder: Deltakelsesmengder?,
+	ulesteEndringer: List<UlestEndringResponse>,
 ): Deltaker {
 	val adressebeskyttet = deltakerDbo.adressebeskyttet
 	val deltaker = Deltaker(
@@ -146,6 +150,7 @@ private fun tilDeltaker(
 				sisteDeltakelsesmengde = it.lastOrNull()?.toDto(),
 			)
 		},
+		ulesteEndringer = ulesteEndringer,
 	)
 
 	return if (adressebeskyttet && !ansattErVeileder) {

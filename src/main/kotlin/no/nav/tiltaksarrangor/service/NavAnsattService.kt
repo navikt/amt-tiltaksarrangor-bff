@@ -4,6 +4,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.client.amtperson.NavAnsattResponse
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
+import no.nav.tiltaksarrangor.model.UlestEndring
 import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -45,6 +46,11 @@ class NavAnsattService(
 	}
 
 	private fun hentAnsatte(veilederIder: List<UUID>) = repository.getMany(veilederIder).associateBy { it.id }
+
+	fun hentAnsatteForUlesteEndringer(ulesteEndringer: List<UlestEndring>): Map<UUID, NavAnsatt> {
+		val ider = ulesteEndringer.map { it.hentNavAnsattId() }.distinct()
+		return hentAnsatte(ider)
+	}
 }
 
 fun NavAnsattResponse.toModel() = NavAnsatt(

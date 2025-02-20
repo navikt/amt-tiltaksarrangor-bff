@@ -10,6 +10,7 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.ingest.model.DeltakerDto
@@ -34,6 +35,7 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.service.NavAnsattService
 import no.nav.tiltaksarrangor.service.NavEnhetService
 import no.nav.tiltaksarrangor.testutils.getAdresse
@@ -56,6 +58,7 @@ class IngestServiceTest {
 	private val navAnsattService = mockk<NavAnsattService>(relaxUnitFun = true)
 	private val navEnhetService = mockk<NavEnhetService>(relaxUnitFun = true)
 	private val forslagService = mockk<ForslagService>(relaxUnitFun = true)
+	private val ulestEndringRepository = mockk<UlestEndringRepository>()
 	private val ingestService =
 		IngestService(
 			arrangorRepository,
@@ -67,6 +70,7 @@ class IngestServiceTest {
 			forslagService,
 			navEnhetService,
 			navAnsattService,
+			ulestEndringRepository,
 		)
 
 	private val arrangor =
@@ -95,6 +99,7 @@ class IngestServiceTest {
 		every { endringsmeldingRepository.deleteEndringsmelding(any()) } returns 1
 		every { arrangorRepository.getArrangor("88888888") } returns null
 		every { arrangorRepository.insertOrUpdateArrangor(any()) } just Runs
+		every { ulestEndringRepository.insert(any(), any()) } returns mockk()
 		coEvery { amtArrangorClient.getArrangor("88888888") } returns arrangor
 	}
 
@@ -358,6 +363,61 @@ class IngestServiceTest {
 					},
 				)
 			}
+		}
+	}
+
+	@Test
+	internal fun `lagreDeltaker - historikk inneholder svar på forslag som ikke finnes i db - lagrer ulest endring i db `(): Unit =
+		runBlocking {
+			with(DeltakerDtoCtx()) {
+				val lagretDeltaker = getDeltaker(deltakerDto.id)
+				val forslag = forlengDeltakelseForslag(
+					status = Forslag.Status.Godkjent(
+						Forslag.NavAnsatt(
+							UUID.randomUUID(),
+							UUID.randomUUID(),
+						),
+						LocalDateTime.now(),
+					),
+				)
+				val nyDeltaker = deltakerDto.copy(historikk = listOf(DeltakerHistorikk.Forslag(forslag)))
+				every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
+				every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
+				every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
+				ingestService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
+
+				verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
+			}
+		}
+
+	@Test
+	internal fun `lagreDeltaker - historikk inneholder svar på forslag som  finnes i db - lagrer ikke endring i db `(): Unit = runBlocking {
+		val forslag = DeltakerHistorikk.Forslag(
+			forlengDeltakelseForslag(
+				status = Forslag.Status.Godkjent(
+					Forslag.NavAnsatt(
+						UUID.randomUUID(),
+						UUID.randomUUID(),
+					),
+					LocalDateTime.now(),
+				),
+			),
+		)
+
+		with(DeltakerDtoCtx()) {
+			val lagretDeltaker = getDeltaker(deltakerDto.id).copy(
+				historikk = listOf(
+					forslag,
+				),
+			)
+
+			val nyDeltaker = deltakerDto.copy(historikk = listOf(forslag))
+			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
+			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
+			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
+			ingestService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
+
+			verify(exactly = 0) { ulestEndringRepository.insert(any(), any()) }
 		}
 	}
 

@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.service
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
+import no.nav.tiltaksarrangor.model.UlestEndring
 import no.nav.tiltaksarrangor.repositories.NavEnhetRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -37,6 +38,11 @@ class NavEnhetService(
 
 	fun hentEnheterForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavEnhet> {
 		val ider = historikk.flatMap { it.navEnheter() }.distinct()
+		return hentEnheter(ider)
+	}
+
+	fun hentEnheterForUlesteEndringer(ulesteEndringer: List<UlestEndring>): Map<UUID, NavEnhet> {
+		val ider = ulesteEndringer.map { it.navEnheter() }.distinct()
 		return hentEnheter(ider)
 	}
 

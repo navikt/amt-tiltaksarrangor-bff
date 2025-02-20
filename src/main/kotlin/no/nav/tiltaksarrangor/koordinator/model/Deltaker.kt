@@ -26,4 +26,6 @@ data class Deltaker(
 	val adressebeskyttet: Boolean,
 	val erVeilederForDeltaker: Boolean,
 	val aktivEndring: AktivEndring?,
+	val svarFraNav: Boolean,
+	val oppdateringFraNav: Boolean,
 )

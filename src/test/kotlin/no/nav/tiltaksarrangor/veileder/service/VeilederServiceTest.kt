@@ -6,19 +6,23 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.ingest.model.Innhold
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
+import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.AktivEndring
+import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
@@ -49,9 +53,10 @@ class VeilederServiceTest {
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val endringsmeldingRepository = EndringsmeldingRepository(template)
 	private val forslagRepository = ForslagRepository(template)
+	private val ulestEndringRepository = UlestEndringRepository(template)
 	private val unleashService = mockk<UnleashService>()
 	private val veilederService =
-		VeilederService(ansattService, deltakerRepository, forslagRepository, endringsmeldingRepository, unleashService)
+		VeilederService(ansattService, deltakerRepository, forslagRepository, endringsmeldingRepository, ulestEndringRepository, unleashService)
 
 	@BeforeEach
 	internal fun setup() {
@@ -405,5 +410,85 @@ class VeilederServiceTest {
 		mineDeltakere.size shouldBe 1
 		mineDeltakere.find { it.id == deltaker.id } shouldNotBe null
 		mineDeltakere.find { it.id == deltaker2.id } shouldBe null
+	}
+
+	@Test
+	fun `getMineDeltakere - ansatt er veileder for deltakere med forslag med svar - returnerer deltakere med svar fra Nav`() {
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		val deltakerliste = getDeltakerliste(arrangorId)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
+		val deltaker2 = getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(personident = "12345")
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker2)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Ansatt",
+				mellomnavn = null,
+				etternavn = "Ansattsen",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.VEILEDER)),
+				deltakerlister = emptyList(),
+				veilederDeltakere =
+					listOf(
+						VeilederDeltakerDbo(deltaker.id, Veiledertype.VEILEDER),
+						VeilederDeltakerDbo(deltaker2.id, Veiledertype.VEILEDER),
+					),
+			),
+		)
+
+		ulestEndringRepository.insert(
+			deltaker.id,
+			Oppdatering.AvvistForslag(
+				forlengDeltakelseForslag(
+					status = Forslag.Status.Avvist(
+						Forslag.NavAnsatt(
+							UUID.randomUUID(),
+							UUID.randomUUID(),
+						),
+						LocalDateTime.now(),
+						"fordi...",
+					),
+				),
+			),
+		)
+
+		ulestEndringRepository.insert(
+			deltaker2.id,
+			Oppdatering.DeltakelsesEndring(
+				endring = DeltakerEndring(
+					forslag = forlengDeltakelseForslag(
+						status = Forslag.Status.Godkjent(
+							Forslag.NavAnsatt(
+								UUID.randomUUID(),
+								UUID.randomUUID(),
+							),
+							LocalDateTime.now(),
+						),
+					),
+					id = UUID.randomUUID(),
+					deltakerId = deltaker2.id,
+					endring = DeltakerEndring.Endring.EndreSluttdato(
+						LocalDate.now().plusDays(1),
+						"fordi",
+					),
+					endretAv = arrangorId,
+					endretAvEnhet = UUID.randomUUID(),
+					endret = LocalDateTime.now(),
+				),
+			),
+		)
+
+		val mineDeltakere = veilederService.getMineDeltakere(personIdent)
+
+		mineDeltakere.size shouldBe 2
+		val minDeltaker1 = mineDeltakere.find { it.id == deltaker.id }
+		minDeltaker1 shouldNotBe null
+		minDeltaker1?.svarFraNav shouldBe true
+		val minDeltaker2 = mineDeltakere.find { it.id == deltaker2.id }
+		minDeltaker2 shouldNotBe null
+		minDeltaker2?.svarFraNav shouldBe true
 	}
 }

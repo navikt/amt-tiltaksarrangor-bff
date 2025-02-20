@@ -48,6 +48,16 @@ class TiltaksarrangorController(
 		return objectMapper.writePolymorphicListAsString(tiltaksarrangorService.getDeltakerHistorikk(personIdent, deltakerId))
 	}
 
+	@PostMapping("/deltaker/{deltakerId}/endring/{ulestEndringId}/marker-som-lest")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun markerSomLest(
+		@PathVariable deltakerId: UUID,
+		@PathVariable ulestEndringId: UUID,
+	) {
+		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
+		tiltaksarrangorService.markerEndringSomLest(personIdent, deltakerId, ulestEndringId)
+	}
+
 	@PostMapping("/deltaker/{deltakerId}/vurdering")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
 	fun registrerVurdering(
