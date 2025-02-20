@@ -47,6 +47,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
+import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 
 class IngestServiceTest {
 	private val arrangorRepository = mockk<ArrangorRepository>()
@@ -387,6 +388,33 @@ class IngestServiceTest {
 				ingestService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
 
 				verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
+			}
+		}
+
+	@Test
+	internal fun `lagreDeltaker - historikk inneholder endring fra arrangør - lagrer ikke i db `(): Unit =
+		runBlocking {
+			with(DeltakerDtoCtx()) {
+				val lagretDeltaker = getDeltaker(deltakerDto.id)
+				val endringFraArrangor = DeltakerHistorikk.EndringFraArrangor(
+					EndringFraArrangor(
+						id = UUID.randomUUID(),
+						deltakerId = lagretDeltaker.id,
+						opprettetAvArrangorAnsattId = UUID.randomUUID(),
+						opprettet = LocalDate.of(2023, 1, 1).atStartOfDay(),
+						endring = EndringFraArrangor.LeggTilOppstartsdato(
+							startdato = LocalDate.of(2023, 2, 1),
+							sluttdato = null,
+						),
+					),
+				)
+				val nyDeltaker = deltakerDto.copy(historikk = listOf(endringFraArrangor))
+				every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
+				every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
+				every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
+				ingestService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
+
+				verify(exactly = 0) { ulestEndringRepository.insert(any(), any()) }
 			}
 		}
 
