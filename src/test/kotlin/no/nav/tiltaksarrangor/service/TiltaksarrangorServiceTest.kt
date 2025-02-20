@@ -6,11 +6,13 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
+import no.nav.tiltaksarrangor.controller.response.AvvistForslagResponse
 import no.nav.tiltaksarrangor.ingest.model.AdresseDto
 import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
 import no.nav.tiltaksarrangor.ingest.model.Bostedsadresse
@@ -24,8 +26,10 @@ import no.nav.tiltaksarrangor.ingest.model.Vegadresse
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
+import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.Adressetype
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
@@ -44,8 +48,11 @@ import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.testutils.getArrangor
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
+import no.nav.tiltaksarrangor.testutils.getNavAnsatt
+import no.nav.tiltaksarrangor.testutils.getNavEnhet
 import no.nav.tiltaksarrangor.unleash.UnleashService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -419,6 +426,63 @@ class TiltaksarrangorServiceTest {
 		veileder.ansattId shouldBe veilederId
 		veileder.veiledertype shouldBe Veiledertype.VEILEDER
 		deltaker.gjeldendeVurderingFraArrangor?.vurderingstype shouldBe Vurderingstype.OPPFYLLER_IKKE_KRAVENE
+	}
+
+	@Test
+	fun `getDeltaker - deltaker har uleste forslag og ansatt har tilgang, komet er master - returnerer deltaker`() {
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		val personIdent = "12345678910"
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(getArrangor(arrangorId))
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tilgjengeligForArrangorFraOgMedDato = LocalDate.now().minusDays(1))
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		val deltakerId = UUID.randomUUID()
+		val deltakerDbo = getDeltaker(deltakerId, deltakerliste.id)
+		deltakerRepository.insertOrUpdateDeltaker(deltakerDbo)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller =
+					listOf(
+						AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR),
+					),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerliste.id)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		val navAnsattId = UUID.randomUUID()
+		val navEnhetId = UUID.randomUUID()
+		coEvery { navAnsattService.hentAnsatteForUlesteEndringer(any()) } returns mapOf(navAnsattId to getNavAnsatt(navAnsattId))
+		coEvery { navEnhetService.hentEnheterForUlesteEndringer(any()) } returns mapOf(navEnhetId to getNavEnhet(navEnhetId))
+
+		ulestEndringRepository.insert(
+			deltakerId,
+			Oppdatering.AvvistForslag(
+				forlengDeltakelseForslag(
+					status = Forslag.Status.Avvist(
+						Forslag.NavAnsatt(
+							navAnsattId,
+							navEnhetId,
+						),
+						LocalDateTime.now(),
+						"Fordi...",
+					),
+				),
+			),
+		)
+
+		val deltaker = tiltaksarrangorService.getDeltaker(personIdent, deltakerId)
+
+		deltaker.id shouldBe deltakerId
+		deltaker.ulesteEndringer.size shouldBe 1
+		deltaker.ulesteEndringer[0].deltakerId shouldBe deltakerId
+		val avvistForslagResponse = deltaker.ulesteEndringer[0].oppdatering as AvvistForslagResponse
+		avvistForslagResponse.forslag.begrunnelse shouldBe "Fordi..."
 	}
 
 	@Test
