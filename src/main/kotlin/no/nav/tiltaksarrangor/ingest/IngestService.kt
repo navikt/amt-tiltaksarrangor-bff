@@ -103,17 +103,15 @@ class IngestService(
 
 			if (lagretDeltaker == null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
-			}
+			} else {
+				val nyHistorikk = hentNyHistorikk(lagretDeltaker, deltakerDto).mapNotNull { toDeltakerEndring(it) }
+				nyHistorikk.forEach {
+					ulestEndringRepository.insert(
+						deltakerId,
+						it,
+					)
+				}
 
-			val nyHistorikk = hentNyHistorikk(lagretDeltaker, deltakerDto).mapNotNull { toDeltakerEndring(it) }
-			nyHistorikk.forEach {
-				ulestEndringRepository.insert(
-					deltakerId,
-					it,
-				)
-			}
-
-			if (lagretDeltaker != null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
 			}
 
