@@ -146,16 +146,15 @@ class IngestService(
 		}
 	}
 
-	private fun hentNyHistorikk(lagretDeltaker: DeltakerDbo?, nyDeltaker: DeltakerDto): List<DeltakerHistorikk> {
-		if (lagretDeltaker == null) {
-			return nyDeltaker.historikk.orEmpty()
-		}
-
+	private fun hentNyHistorikk(lagretDeltaker: DeltakerDbo, nyDeltaker: DeltakerDto): List<DeltakerHistorikk> {
 		if (nyDeltaker.historikk.isNullOrEmpty()) {
 			return emptyList()
 		}
 
-		return nyDeltaker.historikk.minus(lagretDeltaker.historikk).filter { it is DeltakerHistorikk.Endring || it is DeltakerHistorikk.Forslag }
+		return nyDeltaker.historikk.minus(lagretDeltaker.historikk).filter {
+			it is DeltakerHistorikk.Endring ||
+				(it is DeltakerHistorikk.Forslag && it.forslag.status is Forslag.Status.Avvist)
+		}
 	}
 
 	private fun leggTilNavAnsattOgEnhetHistorikk(deltakerDto: DeltakerDto) {
