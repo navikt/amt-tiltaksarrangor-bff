@@ -104,8 +104,8 @@ class IngestService(
 			if (lagretDeltaker == null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 			} else {
-				val nyHistorikk = hentNyHistorikk(lagretDeltaker, deltakerDto).mapNotNull { toDeltakerEndring(it) }
-				nyHistorikk.forEach {
+				val ulesteEndringer = hentUlesteEndringer(lagretDeltaker, deltakerDto)
+				ulesteEndringer.forEach {
 					ulestEndringRepository.insert(
 						deltakerId,
 						it,
@@ -126,7 +126,17 @@ class IngestService(
 		}
 	}
 
-	private fun toDeltakerEndring(historikk: DeltakerHistorikk): Oppdatering? {
+	private fun hentUlesteEndringer(lagretDeltaker: DeltakerDbo, nyDeltaker: DeltakerDto): List<Oppdatering> {
+		if (nyDeltaker.historikk.isNullOrEmpty()) {
+			return emptyList()
+		}
+
+		return nyDeltaker.historikk
+			.minus(lagretDeltaker.historikk)
+			.mapNotNull { toDeltakerOppdatering(it) }
+	}
+
+	private fun toDeltakerOppdatering(historikk: DeltakerHistorikk): Oppdatering? {
 		when (historikk) {
 			is DeltakerHistorikk.Endring -> return Oppdatering.DeltakelsesEndring(historikk.endring)
 			is DeltakerHistorikk.Forslag -> {
@@ -143,17 +153,6 @@ class IngestService(
 			is DeltakerHistorikk.ImportertFraArena,
 			is DeltakerHistorikk.Vedtak,
 			-> return null
-		}
-	}
-
-	private fun hentNyHistorikk(lagretDeltaker: DeltakerDbo, nyDeltaker: DeltakerDto): List<DeltakerHistorikk> {
-		if (nyDeltaker.historikk.isNullOrEmpty()) {
-			return emptyList()
-		}
-
-		return nyDeltaker.historikk.minus(lagretDeltaker.historikk).filter {
-			it is DeltakerHistorikk.Endring ||
-				(it is DeltakerHistorikk.Forslag && it.forslag.status is Forslag.Status.Avvist)
 		}
 	}
 
