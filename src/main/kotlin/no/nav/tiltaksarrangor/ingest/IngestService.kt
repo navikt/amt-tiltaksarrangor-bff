@@ -104,7 +104,30 @@ class IngestService(
 			if (lagretDeltaker == null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 			} else {
-				val ulesteEndringer = hentUlesteEndringer(lagretDeltaker, deltakerDto)
+				val ulesteEndringer = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerDto)
+
+				if (lagretDeltaker.harPersonaliaOppdateringer(deltakerDto)) {
+					ulestEndringRepository.insert(
+						deltakerId,
+						Oppdatering.NavBrukerEndring(
+							deltakerDto.personalia.kontaktinformasjon.telefonnummer,
+							deltakerDto.personalia.kontaktinformasjon.epost,
+						),
+					)
+				}
+
+				if (lagretDeltaker.harNavOppdateringer(deltakerDto)) {
+					ulestEndringRepository.insert(
+						deltakerId,
+						Oppdatering.NavEndring(
+							deltakerDto.navVeileder?.navn,
+							deltakerDto.navVeileder?.epost,
+							deltakerDto.navVeileder?.telefonnummer,
+							deltakerDto.navKontor,
+						),
+					)
+				}
+
 				ulesteEndringer.forEach {
 					ulestEndringRepository.insert(
 						deltakerId,
@@ -126,13 +149,13 @@ class IngestService(
 		}
 	}
 
-	private fun hentUlesteEndringer(lagretDeltaker: DeltakerDbo, nyDeltaker: DeltakerDto): List<Oppdatering> {
+	private fun hentUlesteEndringerFraHistorikk(lagretDeltaker: DeltakerDbo, nyDeltaker: DeltakerDto): List<Oppdatering> {
 		if (nyDeltaker.historikk.isNullOrEmpty()) {
 			return emptyList()
 		}
 
 		return nyDeltaker.historikk
-			.minus(lagretDeltaker.historikk)
+			.minus(lagretDeltaker.historikk.toSet())
 			.mapNotNull { toDeltakerOppdatering(it) }
 	}
 
@@ -259,6 +282,18 @@ class IngestService(
 		}
 	}
 }
+
+private fun DeltakerDbo.harPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Boolean = !(
+	this.telefonnummer.equals(nyDeltaker.personalia.kontaktinformasjon.telefonnummer) &&
+		this.epost.equals(nyDeltaker.personalia.kontaktinformasjon.epost)
+)
+
+private fun DeltakerDbo.harNavOppdateringer(nyDeltaker: DeltakerDto): Boolean = !(
+	this.navKontor.equals(nyDeltaker.navKontor) &&
+		this.navVeilederNavn.equals(nyDeltaker.navVeileder?.navn) &&
+		this.navVeilederEpost.equals(nyDeltaker.navVeileder?.epost) &&
+		this.navVeilederTelefon.equals(nyDeltaker.navVeileder?.telefonnummer)
+)
 
 private val stottedeTiltak =
 	setOf(

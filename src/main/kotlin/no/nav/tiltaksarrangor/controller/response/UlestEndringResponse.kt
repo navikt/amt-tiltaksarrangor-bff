@@ -27,6 +27,18 @@ sealed interface OppdateringResponse {
 	data class AvvistForslagResponse(
 		val forslag: ForslagHistorikkResponse,
 	) : OppdateringResponse
+
+	data class NavBrukerEndringResponse(
+		val tlf: String?,
+		val epost: String?,
+	) : OppdateringResponse
+
+	data class NavEndringResponse(
+		val navVeilederNavn: String?,
+		val navVeilederEpost: String?,
+		val navVeilederTelefonnummer: String?,
+		val navEnhet: String?,
+	) : OppdateringResponse
 }
 
 fun List<UlestEndring>.toResponse(
@@ -47,6 +59,21 @@ fun List<UlestEndring>.toResponse(
 			it.deltakerId,
 			OppdateringResponse.AvvistForslagResponse(
 				it.oppdatering.forslag.toResponse(arrangornavn, ansatte, enheter),
+			),
+		)
+		is Oppdatering.NavBrukerEndring -> UlestEndringResponse(
+			it.id,
+			it.deltakerId,
+			OppdateringResponse.NavBrukerEndringResponse(it.oppdatering.tlf, it.oppdatering.epost),
+		)
+		is Oppdatering.NavEndring -> UlestEndringResponse(
+			it.id,
+			it.deltakerId,
+			OppdateringResponse.NavEndringResponse(
+				it.oppdatering.navVeilederNavn,
+				it.oppdatering.navVeilederEpost,
+				it.oppdatering.navVeilederTelefonnummer,
+				it.oppdatering.navEnhet,
 			),
 		)
 	}

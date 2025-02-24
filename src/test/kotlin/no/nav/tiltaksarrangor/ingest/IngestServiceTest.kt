@@ -48,8 +48,6 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
-import no.nav.tiltaksarrangor.ingest.model.AdresseDto
-import no.nav.tiltaksarrangor.ingest.model.Bostedsadresse
 
 class IngestServiceTest {
 	private val arrangorRepository = mockk<ArrangorRepository>()
@@ -384,7 +382,24 @@ class IngestServiceTest {
 						"Fordi...",
 					),
 				)
-				val nyDeltaker = deltakerDto.copy(historikk = listOf(DeltakerHistorikk.Forslag(forslag)))
+				val nyDeltaker = deltakerDto.copy(
+					historikk = listOf(DeltakerHistorikk.Forslag(forslag)),
+					personalia = DeltakerPersonaliaDto(
+						personident = lagretDeltaker.personident,
+						navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
+						kontaktinformasjon = DeltakerKontaktinformasjonDto(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
+						skjermet = lagretDeltaker.erSkjermet,
+						adresse = lagretDeltaker.adresse,
+						adressebeskyttelse = null,
+					),
+					navVeileder = DeltakerNavVeilederDto(
+						lagretDeltaker.navVeilederId!!,
+						lagretDeltaker.navVeilederNavn!!,
+						lagretDeltaker.navVeilederEpost,
+						lagretDeltaker.navVeilederTelefon,
+					),
+					navKontor = lagretDeltaker.navKontor,
+				)
 				every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 				every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
 				every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
@@ -410,7 +425,24 @@ class IngestServiceTest {
 					),
 				),
 			)
-			val nyDeltaker = deltakerDto.copy(historikk = listOf(endringFraArrangor))
+			val nyDeltaker = deltakerDto.copy(
+				historikk = listOf(endringFraArrangor),
+				personalia = DeltakerPersonaliaDto(
+					personident = lagretDeltaker.personident,
+					navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
+					kontaktinformasjon = DeltakerKontaktinformasjonDto(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
+					skjermet = lagretDeltaker.erSkjermet,
+					adresse = lagretDeltaker.adresse,
+					adressebeskyttelse = null,
+				),
+				navVeileder = DeltakerNavVeilederDto(
+					lagretDeltaker.navVeilederId!!,
+					lagretDeltaker.navVeilederNavn!!,
+					lagretDeltaker.navVeilederEpost,
+					lagretDeltaker.navVeilederTelefon,
+				),
+				navKontor = lagretDeltaker.navKontor,
+			)
 			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
 			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
@@ -441,7 +473,24 @@ class IngestServiceTest {
 				),
 			)
 
-			val nyDeltaker = deltakerDto.copy(historikk = listOf(forslag))
+			val nyDeltaker = deltakerDto.copy(
+				personalia = DeltakerPersonaliaDto(
+					personident = lagretDeltaker.personident,
+					navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
+					kontaktinformasjon = DeltakerKontaktinformasjonDto(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
+					skjermet = lagretDeltaker.erSkjermet,
+					adresse = lagretDeltaker.adresse,
+					adressebeskyttelse = null,
+				),
+				historikk = listOf(forslag),
+				navVeileder = DeltakerNavVeilederDto(
+					lagretDeltaker.navVeilederId!!,
+					lagretDeltaker.navVeilederNavn!!,
+					lagretDeltaker.navVeilederEpost,
+					lagretDeltaker.navVeilederTelefon,
+				),
+				navKontor = lagretDeltaker.navKontor,
+			)
 			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
 			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
@@ -452,36 +501,42 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - deltaker har ny adresse, epost og telefonnummer - lagrer uleste endringer i db `(): Unit = runBlocking {
+	internal fun `lagreDeltaker - deltaker har ny epost og telefonnummer - lagrer som ett innslag i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			val lagretDeltaker = getDeltaker(deltakerDto.id).copy(
-					personident = "10987654321",
-					fornavn = "Fornavn",
-					etternavn = "Etternavn",
-					telefonnummer = "98989898",
-					epost = "epost@nav.no",
-					adresse = AdresseDto(bostedsadresse = getAdresse().bostedsadresse, oppholdsadresse = null, kontaktadresse = null),
+				personident = "10987654321",
+				fornavn = "Fornavn",
+				etternavn = "Etternavn",
+				telefonnummer = "98989898",
+				epost = "epost@nav.no",
+				adresse = null,
 			)
 
-
-			val nyDeltaker = deltakerDto.copy(personalia =
-				DeltakerPersonaliaDto(
-					personident = "10987654321",
-					navn = NavnDto("Fornavn", null, "Etternavn"),
-					kontaktinformasjon = DeltakerKontaktinformasjonDto("11111111", "ny-epost@nav.no"),
-					skjermet = false,
-					adresse = getAdresse(),
-					adressebeskyttelse = null,
+			val nyDeltaker = deltakerDto.copy(
+				personalia =
+					DeltakerPersonaliaDto(
+						personident = "10987654321",
+						navn = NavnDto("Fornavn", null, "Etternavn"),
+						kontaktinformasjon = DeltakerKontaktinformasjonDto("11111111", "ny-epost@nav.no"),
+						skjermet = false,
+						adresse = null,
+						adressebeskyttelse = null,
+					),
+				navVeileder = DeltakerNavVeilederDto(
+					lagretDeltaker.navVeilederId!!,
+					lagretDeltaker.navVeilederNavn!!,
+					lagretDeltaker.navVeilederEpost,
+					lagretDeltaker.navVeilederTelefon,
 				),
+				navKontor = lagretDeltaker.navKontor,
 			)
-
 
 			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
 			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
 			ingestService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
 
-			verify(exactly = 2) { ulestEndringRepository.insert(any(), any()) }
+			verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
 		}
 	}
 

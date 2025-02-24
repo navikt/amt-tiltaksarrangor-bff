@@ -14,18 +14,26 @@ data class UlestEndring(
 	fun erSvarFraNav(): Boolean = when (oppdatering) {
 		is Oppdatering.DeltakelsesEndring -> oppdatering.endring.forslag != null
 		is Oppdatering.AvvistForslag -> true
+		is Oppdatering.NavBrukerEndring -> TODO()
+		is Oppdatering.NavEndring -> TODO()
 	}
 
 	fun erOppdateringFraNav(): Boolean = !erSvarFraNav()
 
-	fun hentNavAnsattId(): UUID = when (oppdatering) {
+	fun hentNavAnsattId(): UUID? = when (oppdatering) {
 		is Oppdatering.DeltakelsesEndring -> oppdatering.endring.endretAv
 		is Oppdatering.AvvistForslag -> oppdatering.forslag.getNavAnsattForEndring().id
+		is Oppdatering.NavBrukerEndring,
+		is Oppdatering.NavEndring,
+		-> null
 	}
 
-	fun navEnheter(): UUID = when (oppdatering) {
+	fun navEnheter(): UUID? = when (oppdatering) {
 		is Oppdatering.DeltakelsesEndring -> oppdatering.endring.endretAvEnhet
 		is Oppdatering.AvvistForslag -> oppdatering.forslag.getNavAnsattForEndring().enhetId
+		is Oppdatering.NavBrukerEndring,
+		is Oppdatering.NavEndring,
+		-> null
 	}
 }
 
@@ -48,8 +56,23 @@ sealed interface Oppdatering {
 		val forslag: Forslag,
 	) : Oppdatering
 
+	data class NavBrukerEndring(
+		val tlf: String?,
+		val epost: String?,
+	) : Oppdatering
+
+	data class NavEndring(
+		val navVeilederNavn: String?,
+		val navVeilederEpost: String?,
+		val navVeilederTelefonnummer: String?,
+		val navEnhet: String?,
+	) : Oppdatering
+
 	val id get() = when (this) {
 		is DeltakelsesEndring -> endring.id
 		is AvvistForslag -> forslag.id
+		is NavBrukerEndring,
+		is NavEndring,
+		-> UUID.randomUUID()
 	}
 }
