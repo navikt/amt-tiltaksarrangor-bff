@@ -541,6 +541,45 @@ class IngestServiceTest {
 	}
 
 	@Test
+	internal fun `lagreDeltaker - deltaker har ny Nav-veileder - lagrer i db `(): Unit = runBlocking {
+		with(DeltakerDtoCtx()) {
+			val lagretDeltaker = getDeltaker(deltakerDto.id).copy(
+				personident = "10987654321",
+				fornavn = "Fornavn",
+				etternavn = "Etternavn",
+				telefonnummer = "98989898",
+				epost = "epost@nav.no",
+				adresse = null,
+			)
+
+			val nyDeltaker = deltakerDto.copy(
+				personalia = DeltakerPersonaliaDto(
+					personident = lagretDeltaker.personident,
+					navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
+					kontaktinformasjon = DeltakerKontaktinformasjonDto(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
+					skjermet = lagretDeltaker.erSkjermet,
+					adresse = lagretDeltaker.adresse,
+					adressebeskyttelse = null,
+				),
+				navVeileder = DeltakerNavVeilederDto(
+					lagretDeltaker.navVeilederId!!,
+					"Ny Veilederesen",
+					lagretDeltaker.navVeilederEpost,
+					lagretDeltaker.navVeilederTelefon,
+				),
+				navKontor = lagretDeltaker.navKontor,
+			)
+
+			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
+			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
+			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
+			ingestService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
+
+			verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
+		}
+	}
+
+	@Test
 	internal fun `lagreEndringsmelding - status AKTIV - lagres i db `() {
 		val endringsmeldingId = UUID.randomUUID()
 		val endringsmeldingDto =

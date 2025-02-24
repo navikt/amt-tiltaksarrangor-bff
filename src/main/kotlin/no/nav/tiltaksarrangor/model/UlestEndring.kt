@@ -14,8 +14,9 @@ data class UlestEndring(
 	fun erSvarFraNav(): Boolean = when (oppdatering) {
 		is Oppdatering.DeltakelsesEndring -> oppdatering.endring.forslag != null
 		is Oppdatering.AvvistForslag -> true
-		is Oppdatering.NavBrukerEndring -> TODO()
-		is Oppdatering.NavEndring -> TODO()
+		is Oppdatering.NavBrukerEndring,
+		is Oppdatering.NavEndring,
+		-> false
 	}
 
 	fun erOppdateringFraNav(): Boolean = !erSvarFraNav()
