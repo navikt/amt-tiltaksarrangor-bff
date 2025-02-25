@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Forslag.Status
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import java.time.LocalDate
 import java.util.UUID
 
 data class UlestEndring(
 	val id: UUID,
 	val deltakerId: UUID,
 	val oppdatering: Oppdatering,
+	val oppdatert: LocalDate,
 ) {
 	fun erSvarFraNav(): Boolean = when (oppdatering) {
 		is Oppdatering.DeltakelsesEndring -> oppdatering.endring.forslag != null

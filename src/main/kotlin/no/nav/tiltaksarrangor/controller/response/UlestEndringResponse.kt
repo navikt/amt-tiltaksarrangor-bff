@@ -6,6 +6,7 @@ import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.UlestEndring
+import java.time.LocalDate
 import java.util.UUID
 
 data class UlestEndringResponse(
@@ -31,6 +32,7 @@ sealed interface OppdateringResponse {
 	data class NavBrukerEndringResponse(
 		val tlf: String?,
 		val epost: String?,
+		val oppdatert: LocalDate,
 	) : OppdateringResponse
 
 	data class NavEndringResponse(
@@ -38,6 +40,7 @@ sealed interface OppdateringResponse {
 		val navVeilederEpost: String?,
 		val navVeilederTelefonnummer: String?,
 		val navEnhet: String?,
+		val oppdatert: LocalDate,
 	) : OppdateringResponse
 }
 
@@ -64,7 +67,11 @@ fun List<UlestEndring>.toResponse(
 		is Oppdatering.NavBrukerEndring -> UlestEndringResponse(
 			it.id,
 			it.deltakerId,
-			OppdateringResponse.NavBrukerEndringResponse(it.oppdatering.tlf, it.oppdatering.epost),
+			OppdateringResponse.NavBrukerEndringResponse(
+				it.oppdatering.tlf,
+				it.oppdatering.epost,
+				it.oppdatert,
+			),
 		)
 		is Oppdatering.NavEndring -> UlestEndringResponse(
 			it.id,
@@ -74,6 +81,7 @@ fun List<UlestEndring>.toResponse(
 				it.oppdatering.navVeilederEpost,
 				it.oppdatering.navVeilederTelefonnummer,
 				it.oppdatering.navEnhet,
+				it.oppdatert,
 			),
 		)
 	}
