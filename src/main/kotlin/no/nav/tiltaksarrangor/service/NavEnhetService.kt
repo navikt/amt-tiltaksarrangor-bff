@@ -42,7 +42,7 @@ class NavEnhetService(
 	}
 
 	fun hentEnheterForUlesteEndringer(ulesteEndringer: List<UlestEndring>): Map<UUID, NavEnhet> {
-		val ider = ulesteEndringer.map { it.navEnheter() }.distinct()
+		val ider = ulesteEndringer.mapNotNull { it.navEnheter() }.distinct()
 		return hentEnheter(ider)
 	}
 

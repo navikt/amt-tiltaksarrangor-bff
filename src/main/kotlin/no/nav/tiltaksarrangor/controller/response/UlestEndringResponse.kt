@@ -6,6 +6,7 @@ import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.UlestEndring
+import java.time.LocalDate
 import java.util.UUID
 
 data class UlestEndringResponse(
@@ -18,6 +19,8 @@ data class UlestEndringResponse(
 @JsonSubTypes(
 	JsonSubTypes.Type(value = OppdateringResponse.DeltakelsesEndringResponse::class, name = "DeltakelsesEndring"),
 	JsonSubTypes.Type(value = OppdateringResponse.AvvistForslagResponse::class, name = "AvvistForslag"),
+	JsonSubTypes.Type(value = OppdateringResponse.NavBrukerEndringResponse::class, name = "NavBrukerEndring"),
+	JsonSubTypes.Type(value = OppdateringResponse.NavEndringResponse::class, name = "NavEndring"),
 )
 sealed interface OppdateringResponse {
 	data class DeltakelsesEndringResponse(
@@ -26,6 +29,20 @@ sealed interface OppdateringResponse {
 
 	data class AvvistForslagResponse(
 		val forslag: ForslagHistorikkResponse,
+	) : OppdateringResponse
+
+	data class NavBrukerEndringResponse(
+		val telefonnummer: String?,
+		val epost: String?,
+		val oppdatert: LocalDate,
+	) : OppdateringResponse
+
+	data class NavEndringResponse(
+		val navVeilederNavn: String?,
+		val navVeilederEpost: String?,
+		val navVeilederTelefonnummer: String?,
+		val navEnhet: String?,
+		val oppdatert: LocalDate,
 	) : OppdateringResponse
 }
 
@@ -47,6 +64,26 @@ fun List<UlestEndring>.toResponse(
 			it.deltakerId,
 			OppdateringResponse.AvvistForslagResponse(
 				it.oppdatering.forslag.toResponse(arrangornavn, ansatte, enheter),
+			),
+		)
+		is Oppdatering.NavBrukerEndring -> UlestEndringResponse(
+			it.id,
+			it.deltakerId,
+			OppdateringResponse.NavBrukerEndringResponse(
+				it.oppdatering.telefonnummer,
+				it.oppdatering.epost,
+				it.oppdatert,
+			),
+		)
+		is Oppdatering.NavEndring -> UlestEndringResponse(
+			it.id,
+			it.deltakerId,
+			OppdateringResponse.NavEndringResponse(
+				it.oppdatering.navVeilederNavn,
+				it.oppdatering.navVeilederEpost,
+				it.oppdatering.navVeilederTelefonnummer,
+				it.oppdatering.navEnhet,
+				it.oppdatert,
 			),
 		)
 	}
