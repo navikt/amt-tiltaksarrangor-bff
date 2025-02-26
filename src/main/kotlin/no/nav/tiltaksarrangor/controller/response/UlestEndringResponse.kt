@@ -70,7 +70,7 @@ fun List<UlestEndring>.toResponse(
 			it.id,
 			it.deltakerId,
 			OppdateringResponse.BrukerEndringResponse(
-				it.oppdatering.tlf,
+				it.oppdatering.telefonnummer,
 				it.oppdatering.epost,
 				it.oppdatert,
 			),

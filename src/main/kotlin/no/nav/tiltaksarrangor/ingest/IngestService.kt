@@ -104,19 +104,16 @@ class IngestService(
 			if (lagretDeltaker == null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 			} else {
-				val ulesteEndringer = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerDto)
-
-				if (lagretDeltaker.harPersonaliaOppdateringer(deltakerDto)) {
+				val brukerEndring = lagretDeltaker.harPersonaliaOppdateringer(deltakerDto)
+				if (brukerEndring != null) {
 					ulestEndringRepository.insert(
 						deltakerId,
-						Oppdatering.BrukerEndring(
-							deltakerDto.personalia.kontaktinformasjon.telefonnummer,
-							deltakerDto.personalia.kontaktinformasjon.epost,
-						),
+						brukerEndring,
 					)
 				}
 
-				if (lagretDeltaker.harNavOppdateringer(deltakerDto)) {
+				val navEndring = lagretDeltaker.harNavOppdateringer(deltakerDto)
+				if (navEndring != null) {
 					ulestEndringRepository.insert(
 						deltakerId,
 						Oppdatering.NavEndring(
@@ -128,6 +125,7 @@ class IngestService(
 					)
 				}
 
+				val ulesteEndringer = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerDto)
 				ulesteEndringer.forEach {
 					ulestEndringRepository.insert(
 						deltakerId,
@@ -283,17 +281,44 @@ class IngestService(
 	}
 }
 
-private fun DeltakerDbo.harPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Boolean = !(
-	this.telefonnummer.equals(nyDeltaker.personalia.kontaktinformasjon.telefonnummer) &&
-		this.epost.equals(nyDeltaker.personalia.kontaktinformasjon.epost)
-)
+private fun DeltakerDbo.harPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.BrukerEndring? {
+	val telefonnummer = if (this.telefonnummer ==
+		nyDeltaker.personalia.kontaktinformasjon.telefonnummer
+	) {
+		null
+	} else {
+		nyDeltaker.personalia.kontaktinformasjon.telefonnummer
+	}
+	val epost = if (this.epost == nyDeltaker.personalia.kontaktinformasjon.epost) null else nyDeltaker.personalia.kontaktinformasjon.epost
 
-private fun DeltakerDbo.harNavOppdateringer(nyDeltaker: DeltakerDto): Boolean = !(
-	this.navKontor.equals(nyDeltaker.navKontor) &&
-		this.navVeilederNavn.equals(nyDeltaker.navVeileder?.navn) &&
-		this.navVeilederEpost.equals(nyDeltaker.navVeileder?.epost) &&
-		this.navVeilederTelefon.equals(nyDeltaker.navVeileder?.telefonnummer)
-)
+	if (telefonnummer == null && epost == null) {
+		return null
+	}
+
+	return Oppdatering.BrukerEndring(
+		telefonnummer,
+		epost,
+	)
+}
+
+private fun DeltakerDbo.harNavOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.NavEndring? {
+	val navKontor = if (this.navKontor == nyDeltaker.navKontor) null else nyDeltaker.navKontor
+	if (nyDeltaker.navVeileder == null && navKontor == null) return null
+
+	val navVeilederNavn = if (this.navVeilederNavn == nyDeltaker.navVeileder?.navn) null else nyDeltaker.navVeileder?.navn
+	val navVeilederEpost = if (this.navVeilederEpost == nyDeltaker.navVeileder?.epost) null else nyDeltaker.navVeileder?.epost
+	val navVeilederTelefonnummer =
+		if (this.navVeilederTelefon == nyDeltaker.navVeileder?.telefonnummer) null else nyDeltaker.navVeileder?.telefonnummer
+	if (navVeilederTelefonnummer == null && navVeilederEpost == null && navVeilederNavn == null) {
+		return null
+	}
+	return Oppdatering.NavEndring(
+		navVeilederNavn,
+		navVeilederEpost,
+		navVeilederTelefonnummer,
+		navKontor,
+	)
+}
 
 private val stottedeTiltak =
 	setOf(

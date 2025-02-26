@@ -548,7 +548,7 @@ class IngestServiceTest {
 				fornavn = "Fornavn",
 				etternavn = "Etternavn",
 				telefonnummer = "98989898",
-				epost = "epost@nav.no",
+				epost = null,
 				adresse = null,
 			)
 

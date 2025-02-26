@@ -60,7 +60,7 @@ sealed interface Oppdatering {
 	) : Oppdatering
 
 	data class BrukerEndring(
-		val tlf: String?,
+		val telefonnummer: String?,
 		val epost: String?,
 	) : Oppdatering
 
