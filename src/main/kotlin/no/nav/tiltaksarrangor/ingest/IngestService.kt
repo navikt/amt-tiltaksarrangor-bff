@@ -104,7 +104,7 @@ class IngestService(
 			if (lagretDeltaker == null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 			} else {
-				val navBrukerEndring = lagretDeltaker.harPersonaliaOppdateringer(deltakerDto)
+				val navBrukerEndring = lagretDeltaker.hentPersonaliaOppdateringer(deltakerDto)
 				if (navBrukerEndring != null) {
 					ulestEndringRepository.insert(
 						deltakerId,
@@ -112,7 +112,7 @@ class IngestService(
 					)
 				}
 
-				val navEndring = lagretDeltaker.harNavOppdateringer(deltakerDto)
+				val navEndring = lagretDeltaker.hentNavOppdateringer(deltakerDto)
 				if (navEndring != null) {
 					ulestEndringRepository.insert(
 						deltakerId,
@@ -281,7 +281,7 @@ class IngestService(
 	}
 }
 
-private fun DeltakerDbo.harPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.NavBrukerEndring? {
+private fun DeltakerDbo.hentPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.NavBrukerEndring? {
 	val telefonnummer = if (this.telefonnummer ==
 		nyDeltaker.personalia.kontaktinformasjon.telefonnummer
 	) {
@@ -301,7 +301,7 @@ private fun DeltakerDbo.harPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Opp
 	)
 }
 
-private fun DeltakerDbo.harNavOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.NavEndring? {
+private fun DeltakerDbo.hentNavOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.NavEndring? {
 	val navKontor = if (this.navKontor == nyDeltaker.navKontor) null else nyDeltaker.navKontor
 	if (nyDeltaker.navVeileder == null && navKontor == null) return null
 
