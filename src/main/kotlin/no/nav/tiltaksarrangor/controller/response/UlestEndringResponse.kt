@@ -19,7 +19,7 @@ data class UlestEndringResponse(
 @JsonSubTypes(
 	JsonSubTypes.Type(value = OppdateringResponse.DeltakelsesEndringResponse::class, name = "DeltakelsesEndring"),
 	JsonSubTypes.Type(value = OppdateringResponse.AvvistForslagResponse::class, name = "AvvistForslag"),
-	JsonSubTypes.Type(value = OppdateringResponse.BrukerEndringResponse::class, name = "BrukerEndring"),
+	JsonSubTypes.Type(value = OppdateringResponse.NavBrukerEndringResponse::class, name = "NavBrukerEndring"),
 	JsonSubTypes.Type(value = OppdateringResponse.NavEndringResponse::class, name = "NavEndring"),
 )
 sealed interface OppdateringResponse {
@@ -31,7 +31,7 @@ sealed interface OppdateringResponse {
 		val forslag: ForslagHistorikkResponse,
 	) : OppdateringResponse
 
-	data class BrukerEndringResponse(
+	data class NavBrukerEndringResponse(
 		val tlf: String?,
 		val epost: String?,
 		val oppdatert: LocalDate,
@@ -66,10 +66,10 @@ fun List<UlestEndring>.toResponse(
 				it.oppdatering.forslag.toResponse(arrangornavn, ansatte, enheter),
 			),
 		)
-		is Oppdatering.BrukerEndring -> UlestEndringResponse(
+		is Oppdatering.NavBrukerEndring -> UlestEndringResponse(
 			it.id,
 			it.deltakerId,
-			OppdateringResponse.BrukerEndringResponse(
+			OppdateringResponse.NavBrukerEndringResponse(
 				it.oppdatering.telefonnummer,
 				it.oppdatering.epost,
 				it.oppdatert,

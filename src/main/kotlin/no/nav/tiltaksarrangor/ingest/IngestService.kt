@@ -104,11 +104,11 @@ class IngestService(
 			if (lagretDeltaker == null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 			} else {
-				val brukerEndring = lagretDeltaker.harPersonaliaOppdateringer(deltakerDto)
-				if (brukerEndring != null) {
+				val navBrukerEndring = lagretDeltaker.harPersonaliaOppdateringer(deltakerDto)
+				if (navBrukerEndring != null) {
 					ulestEndringRepository.insert(
 						deltakerId,
-						brukerEndring,
+						navBrukerEndring,
 					)
 				}
 
@@ -281,7 +281,7 @@ class IngestService(
 	}
 }
 
-private fun DeltakerDbo.harPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.BrukerEndring? {
+private fun DeltakerDbo.harPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.NavBrukerEndring? {
 	val telefonnummer = if (this.telefonnummer ==
 		nyDeltaker.personalia.kontaktinformasjon.telefonnummer
 	) {
@@ -295,7 +295,7 @@ private fun DeltakerDbo.harPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Opp
 		return null
 	}
 
-	return Oppdatering.BrukerEndring(
+	return Oppdatering.NavBrukerEndring(
 		telefonnummer,
 		epost,
 	)
