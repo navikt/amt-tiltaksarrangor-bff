@@ -32,7 +32,7 @@ sealed interface OppdateringResponse {
 	) : OppdateringResponse
 
 	data class NavBrukerEndringResponse(
-		val tlf: String?,
+		val telefonnummer: String?,
 		val epost: String?,
 		val oppdatert: LocalDate,
 	) : OppdateringResponse
