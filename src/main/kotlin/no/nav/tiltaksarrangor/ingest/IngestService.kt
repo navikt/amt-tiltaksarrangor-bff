@@ -109,7 +109,7 @@ class IngestService(
 				if (lagretDeltaker.harPersonaliaOppdateringer(deltakerDto)) {
 					ulestEndringRepository.insert(
 						deltakerId,
-						Oppdatering.NavBrukerEndring(
+						Oppdatering.BrukerEndring(
 							deltakerDto.personalia.kontaktinformasjon.telefonnummer,
 							deltakerDto.personalia.kontaktinformasjon.epost,
 						),

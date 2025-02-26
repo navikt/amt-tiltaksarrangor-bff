@@ -1143,7 +1143,7 @@ class KoordinatorServiceTest {
 
 		ulestEndringRepository.insert(
 			deltaker.id,
-			Oppdatering.NavBrukerEndring(
+			Oppdatering.BrukerEndring(
 				"12345678",
 				deltaker.epost,
 			),
