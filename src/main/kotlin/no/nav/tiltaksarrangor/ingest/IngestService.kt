@@ -137,6 +137,7 @@ class IngestService(
 			ulestEndringRepository.insert(
 				deltakerId,
 				Oppdatering.NavEndring(
+					deltakerDto.navVeileder?.id,
 					deltakerDto.navVeileder?.navn,
 					deltakerDto.navVeileder?.epost,
 					deltakerDto.navVeileder?.telefonnummer,
@@ -312,6 +313,7 @@ private fun DeltakerDbo.hentNavOppdateringer(nyDeltaker: DeltakerDto): Oppdateri
 	val navKontor = if (this.navKontor == nyDeltaker.navKontor) null else nyDeltaker.navKontor
 	if (nyDeltaker.navVeileder == null && navKontor == null) return null
 
+	val navVeilederId = if (this.navVeilederId == nyDeltaker.navVeileder?.id) null else nyDeltaker.navVeileder?.id
 	val navVeilederNavn = if (this.navVeilederNavn == nyDeltaker.navVeileder?.navn) null else nyDeltaker.navVeileder?.navn
 	val navVeilederEpost = if (this.navVeilederEpost == nyDeltaker.navVeileder?.epost) null else nyDeltaker.navVeileder?.epost
 	val navVeilederTelefonnummer =
@@ -319,7 +321,9 @@ private fun DeltakerDbo.hentNavOppdateringer(nyDeltaker: DeltakerDto): Oppdateri
 	if (navVeilederTelefonnummer == null && navVeilederEpost == null && navVeilederNavn == null) {
 		return null
 	}
+
 	return Oppdatering.NavEndring(
+		navVeilederId,
 		navVeilederNavn,
 		navVeilederEpost,
 		navVeilederTelefonnummer,

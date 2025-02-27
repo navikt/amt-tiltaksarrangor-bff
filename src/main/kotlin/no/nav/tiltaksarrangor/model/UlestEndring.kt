@@ -65,6 +65,7 @@ sealed interface Oppdatering {
 	) : Oppdatering
 
 	data class NavEndring(
+		val navVeilederId: UUID?,
 		val navVeilederNavn: String?,
 		val navVeilederEpost: String?,
 		val navVeilederTelefonnummer: String?,
