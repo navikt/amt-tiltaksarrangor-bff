@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Vedtak
+import no.nav.amt.lib.models.deltaker.VurderingFraArrangorData
 import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
 import java.time.LocalDate
@@ -71,6 +73,13 @@ data class ImportertFraArenaResponse(
 	val status: DeltakerStatus,
 ) : DeltakerHistorikkResponse
 
+data class VurderingFraArrangorResponse(
+	val vurderingstype: Vurderingstype,
+	val begrunnelse: String?,
+	val opprettetDato: LocalDateTime,
+	val endretAv: String,
+) : DeltakerHistorikkResponse
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 sealed interface ForslagHistorikkResponseStatus {
 	data object VenterPaSvar : ForslagHistorikkResponseStatus
@@ -106,6 +115,7 @@ fun List<DeltakerHistorikk>.toResponse(
 		is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
 		is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
 		is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.toResponse()
+		is DeltakerHistorikk.VurderingFraArrangor -> it.data.toResponse(arrangornavn)
 	}
 }
 
@@ -147,6 +157,13 @@ fun ImportertFraArena.toResponse() = ImportertFraArenaResponse(
 	dagerPerUke = deltakerVedImport.dagerPerUke,
 	deltakelsesprosent = deltakerVedImport.deltakelsesprosent,
 	status = deltakerVedImport.status,
+)
+
+fun VurderingFraArrangorData.toResponse(arrangornavn: String) = VurderingFraArrangorResponse(
+	vurderingstype = vurderingstype,
+	begrunnelse = begrunnelse,
+	opprettetDato = opprettet,
+	endretAv = arrangornavn,
 )
 
 fun Forslag.toResponse(arrangornavn: String) = this.toResponse(arrangornavn, emptyMap(), emptyMap())
