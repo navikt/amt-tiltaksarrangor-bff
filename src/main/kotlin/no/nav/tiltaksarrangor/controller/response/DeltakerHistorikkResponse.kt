@@ -25,6 +25,7 @@ import java.util.UUID
 	JsonSubTypes.Type(value = ForslagHistorikkResponse::class, name = "Forslag"),
 	JsonSubTypes.Type(value = EndringFraArrangorResponse::class, name = "EndringFraArrangor"),
 	JsonSubTypes.Type(value = ImportertFraArenaResponse::class, name = "ImportertFraArena"),
+	JsonSubTypes.Type(value = VurderingFraArrangorResponse::class, name = "VurderingFraArrangor"),
 )
 sealed interface DeltakerHistorikkResponse
 
