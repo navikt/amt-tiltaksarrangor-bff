@@ -29,7 +29,7 @@ val mockkVersion = "1.13.16"
 val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
 val unleashVersion = "10.0.2"
 val ktlintVersion = "1.4.1"
-val amtLibVersion = "1.2025.01.09_06.01-9f86501854f1"
+val amtLibVersion = "1.2025.02.25_09.33-1d4a78781b9c"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")

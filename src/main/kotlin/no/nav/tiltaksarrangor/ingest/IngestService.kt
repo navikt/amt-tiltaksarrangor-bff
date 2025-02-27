@@ -152,6 +152,7 @@ class IngestService(
 			is DeltakerHistorikk.EndringFraArrangor,
 			is DeltakerHistorikk.ImportertFraArena,
 			is DeltakerHistorikk.Vedtak,
+			is DeltakerHistorikk.VurderingFraArrangor,
 			-> return null
 		}
 	}
