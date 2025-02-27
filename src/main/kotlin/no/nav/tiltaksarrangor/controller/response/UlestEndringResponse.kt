@@ -53,37 +53,37 @@ fun List<UlestEndring>.toResponse(
 ): List<UlestEndringResponse> = this.map {
 	when (it.oppdatering) {
 		is Oppdatering.DeltakelsesEndring -> UlestEndringResponse(
-			it.id,
-			it.deltakerId,
-			OppdateringResponse.DeltakelsesEndringResponse(
-				it.oppdatering.endring.toResponse(ansatte, enheter, arrangornavn),
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.DeltakelsesEndringResponse(
+				endring = it.oppdatering.endring.toResponse(ansatte, enheter, arrangornavn),
 			),
 		)
 		is Oppdatering.AvvistForslag -> UlestEndringResponse(
-			it.id,
-			it.deltakerId,
-			OppdateringResponse.AvvistForslagResponse(
-				it.oppdatering.forslag.toResponse(arrangornavn, ansatte, enheter),
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.AvvistForslagResponse(
+				forslag = it.oppdatering.forslag.toResponse(arrangornavn, ansatte, enheter),
 			),
 		)
 		is Oppdatering.NavBrukerEndring -> UlestEndringResponse(
-			it.id,
-			it.deltakerId,
-			OppdateringResponse.NavBrukerEndringResponse(
-				it.oppdatering.telefonnummer,
-				it.oppdatering.epost,
-				it.oppdatert,
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.NavBrukerEndringResponse(
+				telefonnummer = it.oppdatering.telefonnummer,
+				epost = it.oppdatering.epost,
+				oppdatert = it.oppdatert,
 			),
 		)
 		is Oppdatering.NavEndring -> UlestEndringResponse(
-			it.id,
-			it.deltakerId,
-			OppdateringResponse.NavEndringResponse(
-				it.oppdatering.navVeilederNavn,
-				it.oppdatering.navVeilederEpost,
-				it.oppdatering.navVeilederTelefonnummer,
-				it.oppdatering.navEnhet,
-				it.oppdatert,
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.NavEndringResponse(
+				navVeilederNavn = it.oppdatering.navVeilederNavn,
+				navVeilederEpost = it.oppdatering.navVeilederEpost,
+				navVeilederTelefonnummer = it.oppdatering.navVeilederTelefonnummer,
+				navEnhet = it.oppdatering.navEnhet,
+				oppdatert = it.oppdatert,
 			),
 		)
 	}
