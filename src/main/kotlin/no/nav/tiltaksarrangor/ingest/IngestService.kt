@@ -104,34 +104,7 @@ class IngestService(
 			if (lagretDeltaker == null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 			} else {
-				val navBrukerEndring = lagretDeltaker.hentPersonaliaOppdateringer(deltakerDto)
-				if (navBrukerEndring != null) {
-					ulestEndringRepository.insert(
-						deltakerId,
-						navBrukerEndring,
-					)
-				}
-
-				val navEndring = lagretDeltaker.hentNavOppdateringer(deltakerDto)
-				if (navEndring != null) {
-					ulestEndringRepository.insert(
-						deltakerId,
-						Oppdatering.NavEndring(
-							deltakerDto.navVeileder?.navn,
-							deltakerDto.navVeileder?.epost,
-							deltakerDto.navVeileder?.telefonnummer,
-							deltakerDto.navKontor,
-						),
-					)
-				}
-
-				val ulesteEndringer = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerDto)
-				ulesteEndringer.forEach {
-					ulestEndringRepository.insert(
-						deltakerId,
-						it,
-					)
-				}
+				lagreUlesteMeldinger(deltakerId, deltakerDto, lagretDeltaker)
 
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
 			}
@@ -144,6 +117,37 @@ class IngestService(
 			} else {
 				log.info("Ignorert deltaker med id $deltakerId")
 			}
+		}
+	}
+
+	private fun lagreUlesteMeldinger(deltakerId: UUID, deltakerDto: DeltakerDto, lagretDeltaker: DeltakerDbo) {
+		val navBrukerEndring = lagretDeltaker.hentPersonaliaOppdateringer(deltakerDto)
+		if (navBrukerEndring != null) {
+			ulestEndringRepository.insert(
+				deltakerId,
+				navBrukerEndring,
+			)
+		}
+
+		val navEndring = lagretDeltaker.hentNavOppdateringer(deltakerDto)
+		if (navEndring != null) {
+			ulestEndringRepository.insert(
+				deltakerId,
+				Oppdatering.NavEndring(
+					deltakerDto.navVeileder?.navn,
+					deltakerDto.navVeileder?.epost,
+					deltakerDto.navVeileder?.telefonnummer,
+					deltakerDto.navKontor,
+				),
+			)
+		}
+
+		val ulesteEndringer = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerDto)
+		ulesteEndringer.forEach {
+			ulestEndringRepository.insert(
+				deltakerId,
+				it,
+			)
 		}
 	}
 
