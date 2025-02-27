@@ -108,7 +108,6 @@ class IngestService(
 
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
 			}
-
 			log.info("Lagret deltaker med id $deltakerId")
 		} else {
 			val antallSlettedeDeltakere = deltakerRepository.deleteDeltaker(deltakerId)
@@ -120,7 +119,11 @@ class IngestService(
 		}
 	}
 
-	private fun lagreUlesteMeldinger(deltakerId: UUID, deltakerDto: DeltakerDto, lagretDeltaker: DeltakerDbo) {
+	private fun lagreUlesteMeldinger(
+		deltakerId: UUID,
+		deltakerDto: DeltakerDto,
+		lagretDeltaker: DeltakerDbo,
+	) {
 		val navBrukerEndring = lagretDeltaker.hentPersonaliaOppdateringer(deltakerDto)
 		if (navBrukerEndring != null) {
 			ulestEndringRepository.insert(
