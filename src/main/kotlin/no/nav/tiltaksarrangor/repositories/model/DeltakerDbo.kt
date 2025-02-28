@@ -60,7 +60,8 @@ data class DeltakerDbo(
 			return true
 		}
 
-		return sluttdato.isAfter(LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES))
+		val dato = LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES)
+		return sluttdato.isAfter(dato)
 	}
 }
 

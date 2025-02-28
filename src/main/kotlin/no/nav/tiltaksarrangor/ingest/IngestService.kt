@@ -142,13 +142,11 @@ class IngestService(
 					navEnhet = deltakerDto.navKontor,
 				),
 			)
-		}
-
-		if (deltakerDto.navKontor != lagretDeltaker.navKontor) {
+		} else if (deltakerDto.navKontor != lagretDeltaker.navKontor) {
 			ulestEndringRepository.insert(
 				deltakerId,
 				Oppdatering.NavEndring(
-					nyNavVeileder = deltakerDto.navVeileder?.id != lagretDeltaker.navVeilederId,
+					nyNavVeileder = false,
 					navVeilederNavn = deltakerDto.navVeileder?.navn,
 					navVeilederEpost = deltakerDto.navVeileder?.epost,
 					navVeilederTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
@@ -157,8 +155,8 @@ class IngestService(
 			)
 		}
 
-		val ulesteEndringer = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerDto)
-		ulesteEndringer.forEach {
+		val ulesteEndringerFraHistorikk = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerDto)
+		ulesteEndringerFraHistorikk.forEach {
 			ulestEndringRepository.insert(
 				deltakerId,
 				it,
@@ -219,19 +217,34 @@ class IngestService(
 		navAnsattService.upsert(navAnsatt)
 	}
 
-	private fun lagreUlestEndringNavOppdatering(id: UUID) {
-		val lagretNavAnsatt = navAnsattService.hentNavAnsatt(id)
+	private fun lagreUlestEndringNavOppdatering(navAnsattId: UUID) {
+		val lagretNavAnsatt = navAnsattService.hentNavAnsatt(navAnsattId)
 		if (lagretNavAnsatt != null) {
-			deltakerRepository.getDeltakereMedNavAnsatt(id).forEach {
-				val navEndring = lagretNavAnsatt.hentNavOppdateringer(it)
-				if (navEndring != null) {
-					ulestEndringRepository.insert(
-						it.id,
-						navEndring,
-					)
-				}
+			deltakerRepository.getDeltakereMedNavAnsatt(navAnsattId).forEach {
+				lagreNavOppdateringer(it, lagretNavAnsatt)
 			}
 		}
+	}
+
+	private fun lagreNavOppdateringer(deltaker: DeltakerDbo, navAnsatt: NavAnsatt) {
+		val endretNavn = navAnsatt.navn != deltaker.navVeilederNavn
+		val endretEpost = navAnsatt.epost != deltaker.navVeilederEpost
+		val endretTelefonnummer = navAnsatt.telefon != deltaker.navVeilederTelefon
+		val harEndringer = endretNavn || endretEpost || endretTelefonnummer
+		if (!harEndringer) {
+			return
+		}
+
+		ulestEndringRepository.insert(
+			deltaker.id,
+			Oppdatering.NavEndring(
+				nyNavVeileder = false,
+				navVeilederNavn = if (endretNavn) navAnsatt.navn else null,
+				navVeilederEpost = if (endretEpost) navAnsatt.epost else null,
+				navVeilederTelefonnummer = if (endretTelefonnummer) navAnsatt.telefon else null,
+				navEnhet = null,
+			),
+		)
 	}
 
 	fun lagreEndringsmelding(endringsmeldingId: UUID, endringsmeldingDto: EndringsmeldingDto?) {
@@ -335,25 +348,6 @@ private fun DeltakerDbo.hentPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Op
 	return Oppdatering.NavBrukerEndring(
 		telefonnummer,
 		epost,
-	)
-}
-
-private fun NavAnsatt.hentNavOppdateringer(deltaker: DeltakerDbo): Oppdatering.NavEndring? {
-	val navKontor = null
-	val navVeilederNavn = if (this.navn == deltaker.navVeilederNavn) null else this.navn
-	val navVeilederEpost = if (this.epost == deltaker.navVeilederEpost) null else this.epost
-	val navVeilederTelefonnummer =
-		if (this.telefon == deltaker.navVeilederTelefon) null else this.telefon
-	if (navVeilederTelefonnummer == null && navVeilederEpost == null && navVeilederNavn == null) {
-		return null
-	}
-
-	return Oppdatering.NavEndring(
-		nyNavVeileder = false,
-		navVeilederNavn = navVeilederNavn,
-		navVeilederEpost = navVeilederEpost,
-		navVeilederTelefonnummer = navVeilederTelefonnummer,
-		navEnhet = navKontor,
 	)
 }
 
