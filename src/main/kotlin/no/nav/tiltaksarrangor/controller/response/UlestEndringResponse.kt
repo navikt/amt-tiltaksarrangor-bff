@@ -38,7 +38,7 @@ sealed interface OppdateringResponse {
 	) : OppdateringResponse
 
 	data class NavEndringResponse(
-		val navVeilederId: UUID?,
+		val nyNavVeileder: Boolean,
 		val navVeilederNavn: String?,
 		val navVeilederEpost: String?,
 		val navVeilederTelefonnummer: String?,
@@ -80,7 +80,7 @@ fun List<UlestEndring>.toResponse(
 			id = it.id,
 			deltakerId = it.deltakerId,
 			oppdatering = OppdateringResponse.NavEndringResponse(
-				navVeilederId = it.oppdatering.navVeilederId,
+				nyNavVeileder = it.oppdatering.nyNavVeileder,
 				navVeilederNavn = it.oppdatering.navVeilederNavn,
 				navVeilederEpost = it.oppdatering.navVeilederEpost,
 				navVeilederTelefonnummer = it.oppdatering.navVeilederTelefonnummer,
