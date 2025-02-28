@@ -17,6 +17,13 @@ class NavAnsattService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
+	fun hentNavAnsatt(id: UUID): NavAnsatt? {
+		repository
+			.get(id)
+			?.let { return it }
+		return null
+	}
+
 	fun hentEllerOpprettNavAnsatt(id: UUID): NavAnsatt {
 		repository
 			.get(id)

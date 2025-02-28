@@ -131,12 +131,29 @@ class IngestService(
 				navBrukerEndring,
 			)
 		}
-
-		val navEndring = lagretDeltaker.hentNavOppdateringer(deltakerDto)
-		if (navEndring != null) {
+		if (deltakerDto.navVeileder?.id != lagretDeltaker.navVeilederId) {
 			ulestEndringRepository.insert(
 				deltakerId,
-				navEndring,
+				Oppdatering.NavEndring(
+					nyNavVeileder = true,
+					navVeilederNavn = deltakerDto.navVeileder?.navn,
+					navVeilederEpost = deltakerDto.navVeileder?.epost,
+					navVeilederTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
+					navEnhet = deltakerDto.navKontor,
+				),
+			)
+		}
+
+		if (deltakerDto.navKontor != lagretDeltaker.navKontor) {
+			ulestEndringRepository.insert(
+				deltakerId,
+				Oppdatering.NavEndring(
+					nyNavVeileder = deltakerDto.navVeileder?.id != lagretDeltaker.navVeilederId,
+					navVeilederNavn = deltakerDto.navVeileder?.navn,
+					navVeilederEpost = deltakerDto.navVeileder?.epost,
+					navVeilederTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
+					navEnhet = deltakerDto.navKontor,
+				),
 			)
 		}
 
@@ -197,7 +214,24 @@ class IngestService(
 	}
 
 	fun lagreNavAnsatt(id: UUID, navAnsatt: NavAnsatt) {
+		lagreUlestEndringNavOppdatering(id)
+
 		navAnsattService.upsert(navAnsatt)
+	}
+
+	private fun lagreUlestEndringNavOppdatering(id: UUID) {
+		val lagretNavAnsatt = navAnsattService.hentNavAnsatt(id)
+		if (lagretNavAnsatt != null) {
+			deltakerRepository.getDeltakereMedNavAnsatt(id).forEach {
+				val navEndring = lagretNavAnsatt.hentNavOppdateringer(it)
+				if (navEndring != null) {
+					ulestEndringRepository.insert(
+						it.id,
+						navEndring,
+					)
+				}
+			}
+		}
 	}
 
 	fun lagreEndringsmelding(endringsmeldingId: UUID, endringsmeldingDto: EndringsmeldingDto?) {
@@ -304,20 +338,18 @@ private fun DeltakerDbo.hentPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Op
 	)
 }
 
-private fun DeltakerDbo.hentNavOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.NavEndring? {
-	val navKontor = if (this.navKontor == nyDeltaker.navKontor) null else nyDeltaker.navKontor
-	if (nyDeltaker.navVeileder == null && navKontor == null) return null
-
-	val navVeilederNavn = if (this.navVeilederNavn == nyDeltaker.navVeileder?.navn) null else nyDeltaker.navVeileder?.navn
-	val navVeilederEpost = if (this.navVeilederEpost == nyDeltaker.navVeileder?.epost) null else nyDeltaker.navVeileder?.epost
+private fun NavAnsatt.hentNavOppdateringer(deltaker: DeltakerDbo): Oppdatering.NavEndring? {
+	val navKontor = null
+	val navVeilederNavn = if (this.navn == deltaker.navVeilederNavn) null else this.navn
+	val navVeilederEpost = if (this.epost == deltaker.navVeilederEpost) null else this.epost
 	val navVeilederTelefonnummer =
-		if (this.navVeilederTelefon == nyDeltaker.navVeileder?.telefonnummer) null else nyDeltaker.navVeileder?.telefonnummer
+		if (this.telefon == deltaker.navVeilederTelefon) null else this.telefon
 	if (navVeilederTelefonnummer == null && navVeilederEpost == null && navVeilederNavn == null) {
 		return null
 	}
 
 	return Oppdatering.NavEndring(
-		nyNavVeileder = this.navVeilederId != nyDeltaker.navVeileder?.id,
+		nyNavVeileder = false,
 		navVeilederNavn = navVeilederNavn,
 		navVeilederEpost = navVeilederEpost,
 		navVeilederTelefonnummer = navVeilederTelefonnummer,

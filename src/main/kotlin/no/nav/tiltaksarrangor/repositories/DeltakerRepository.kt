@@ -441,4 +441,11 @@ class DeltakerRepository(
 			),
 		)
 	}
+
+	fun getDeltakereMedNavAnsatt(navveilederId: UUID): List<DeltakerDbo> = template
+		.query(
+			"SELECT * FROM deltaker WHERE navveileder_id = :navveileder_id",
+			sqlParameters("navveileder_id" to navveilederId),
+			deltakerRowMapper,
+		).filter { it.skalVises() }
 }

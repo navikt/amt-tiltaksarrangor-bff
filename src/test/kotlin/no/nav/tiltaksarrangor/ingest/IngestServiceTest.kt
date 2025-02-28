@@ -541,7 +541,7 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - deltaker har ny Nav-veileder - lagrer i db `(): Unit = runBlocking {
+	internal fun `lagreDeltaker - deltaker har ny Nav-veileder og nytt kontor - lagrer i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			val lagretDeltaker = getDeltaker(deltakerDto.id).copy(
 				personident = "10987654321",
@@ -562,12 +562,12 @@ class IngestServiceTest {
 					adressebeskyttelse = null,
 				),
 				navVeileder = DeltakerNavVeilederDto(
-					lagretDeltaker.navVeilederId!!,
+					UUID.randomUUID(),
 					"Ny Veilederesen",
 					lagretDeltaker.navVeilederEpost,
 					lagretDeltaker.navVeilederTelefon,
 				),
-				navKontor = lagretDeltaker.navKontor,
+				navKontor = "nytt kontor",
 			)
 
 			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
@@ -575,7 +575,7 @@ class IngestServiceTest {
 			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
 			ingestService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
 
-			verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
+			verify(exactly = 2) { ulestEndringRepository.insert(any(), any()) }
 		}
 	}
 
@@ -624,6 +624,8 @@ class IngestServiceTest {
 	@Test
 	internal fun `lagreNavAnsatt - ny ansatt - lagres`() {
 		val navAnsatt = getNavAnsatt()
+
+		every { navAnsattService.hentNavAnsatt(any()) } returns null
 
 		ingestService.lagreNavAnsatt(navAnsatt.id, navAnsatt)
 
