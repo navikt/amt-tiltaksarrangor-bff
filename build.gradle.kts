@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     val kotlinVersion = "2.1.10"
 
-    id("org.springframework.boot") version "3.4.2"
+    id("org.springframework.boot") version "3.4.3"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
     kotlin("jvm") version kotlinVersion
@@ -27,9 +27,9 @@ val kotestVersion = "5.9.1"
 val testcontainersVersion = "1.20.5"
 val mockkVersion = "1.13.16"
 val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
-val unleashVersion = "10.0.1"
+val unleashVersion = "10.0.2"
 val ktlintVersion = "1.4.1"
-val amtLibVersion = "1.2025.01.09_06.01-9f86501854f1"
+val amtLibVersion = "1.2025.02.25_09.33-1d4a78781b9c"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
