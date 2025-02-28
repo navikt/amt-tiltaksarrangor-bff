@@ -317,7 +317,7 @@ private fun DeltakerDbo.hentNavOppdateringer(nyDeltaker: DeltakerDto): Oppdateri
 	}
 
 	return Oppdatering.NavEndring(
-		nyNavVeileder = this.navVeilederId == nyDeltaker.navVeileder?.id,
+		nyNavVeileder = this.navVeilederId != nyDeltaker.navVeileder?.id,
 		navVeilederNavn = navVeilederNavn,
 		navVeilederEpost = navVeilederEpost,
 		navVeilederTelefonnummer = navVeilederTelefonnummer,
