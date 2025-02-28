@@ -143,15 +143,12 @@ class IngestService(
 				),
 			)
 		} else if (deltakerDto.navKontor != lagretDeltaker.navKontor) {
-			ulestEndringRepository.insert(
-				deltakerId,
-				Oppdatering.NavEndring(
-					nyNavVeileder = false,
-					navVeilederNavn = deltakerDto.navVeileder?.navn,
-					navVeilederEpost = deltakerDto.navVeileder?.epost,
-					navVeilederTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
-					navEnhet = deltakerDto.navKontor,
-				),
+			lagreOppdateringNavEndring(
+				deltaker = lagretDeltaker,
+				nyttNavn = deltakerDto.navVeileder?.navn,
+				nyEpost = deltakerDto.navVeileder?.epost,
+				nyttTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
+				nyNavEnhet = deltakerDto.navKontor,
 			)
 		}
 
@@ -243,6 +240,34 @@ class IngestService(
 				navVeilederEpost = if (endretEpost) navAnsatt.epost else null,
 				navVeilederTelefonnummer = if (endretTelefonnummer) navAnsatt.telefon else null,
 				navEnhet = null,
+			),
+		)
+	}
+
+	private fun lagreOppdateringNavEndring(
+		deltaker: DeltakerDbo,
+		nyttNavn: String?,
+		nyEpost: String?,
+		nyttTelefonnummer: String?,
+		nyNavEnhet: String?,
+	) {
+		val endretNavn = nyttNavn != deltaker.navVeilederNavn
+		val endretEpost = nyEpost != deltaker.navVeilederEpost
+		val endretTelefonnummer = nyttTelefonnummer != deltaker.navVeilederTelefon
+		val endretNavEnhet = nyNavEnhet != deltaker.navKontor
+		val harEndringer = endretNavn || endretEpost || endretTelefonnummer || endretNavEnhet
+		if (!harEndringer) {
+			return
+		}
+
+		ulestEndringRepository.insert(
+			deltaker.id,
+			Oppdatering.NavEndring(
+				nyNavVeileder = false,
+				navVeilederNavn = if (endretNavn) nyttNavn else null,
+				navVeilederEpost = if (endretEpost) nyEpost else null,
+				navVeilederTelefonnummer = if (endretTelefonnummer) nyttTelefonnummer else null,
+				navEnhet = if (endretNavEnhet) nyNavEnhet else null,
 			),
 		)
 	}
