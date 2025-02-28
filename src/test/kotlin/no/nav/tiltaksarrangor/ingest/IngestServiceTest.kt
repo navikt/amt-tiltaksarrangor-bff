@@ -575,7 +575,7 @@ class IngestServiceTest {
 			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
 			ingestService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
 
-			verify(exactly = 2) { ulestEndringRepository.insert(any(), any()) }
+			verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
 		}
 	}
 
