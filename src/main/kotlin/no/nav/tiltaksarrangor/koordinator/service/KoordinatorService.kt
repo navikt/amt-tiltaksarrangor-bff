@@ -298,6 +298,7 @@ class KoordinatorService(
 			aktivEndring = getAktivEndring(it.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
 			svarFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.id && ulestEndring.erSvarFraNav() },
 			oppdateringFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.id && ulestEndring.erOppdateringFraNav() },
+			nyDeltaker = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.id && ulestEndring.erNyDeltaker() },
 		)
 	}
 

@@ -28,4 +28,5 @@ data class Deltaker(
 	val aktivEndring: AktivEndring?,
 	val svarFraNav: Boolean,
 	val oppdateringFraNav: Boolean,
+	val nyDeltaker: Boolean,
 )

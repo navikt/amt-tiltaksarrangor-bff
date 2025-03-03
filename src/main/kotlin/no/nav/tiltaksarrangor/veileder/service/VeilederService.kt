@@ -99,6 +99,7 @@ class VeilederService(
 			oppdateringFraNav = ulesteEndringer.any { ulestEndring ->
 				ulestEndring.deltakerId == it.deltaker.id && ulestEndring.erOppdateringFraNav()
 			},
+			nyDeltaker = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.deltaker.id && ulestEndring.erNyDeltaker() },
 		)
 	}
 
