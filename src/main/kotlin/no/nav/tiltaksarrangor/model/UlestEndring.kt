@@ -91,7 +91,7 @@ sealed interface Oppdatering {
 		is AvvistForslag -> forslag.id
 		is NavBrukerEndring,
 		is NavEndring,
-		is NyDeltaker, // ??
+		is NyDeltaker,
 		-> UUID.randomUUID()
 	}
 }
