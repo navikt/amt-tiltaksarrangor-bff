@@ -103,6 +103,14 @@ class IngestService(
 
 			if (lagretDeltaker == null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
+				ulestEndringRepository.insert(
+					deltakerId,
+					Oppdatering.NyDeltaker(
+						opprettetAvNavn = deltakerDto.navVeileder?.navn,
+						opprettetAvEnhet = deltakerDto.navKontor,
+						opprettet = deltakerDto.innsoktDato,
+					),
+				)
 			} else {
 				lagreUlesteMeldinger(deltakerId, deltakerDto, lagretDeltaker)
 
