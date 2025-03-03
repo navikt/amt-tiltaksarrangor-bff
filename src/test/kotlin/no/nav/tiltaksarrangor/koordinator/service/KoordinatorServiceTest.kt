@@ -1099,6 +1099,65 @@ class KoordinatorServiceTest {
 	}
 
 	@Test
+	fun `getDeltakerliste - har tilgang, deltaker har ny epost - returnerer deltakere med oppdatering fra Nav`() {
+		val personIdent = "12345678910"
+		val deltakerlisteId = UUID.randomUUID()
+		val arrangorId = UUID.randomUUID()
+		arrangorRepository.insertOrUpdateArrangor(
+			ArrangorDbo(
+				id = arrangorId,
+				navn = "Arrangør AS",
+				organisasjonsnummer = "123456789",
+				overordnetArrangorId = null,
+			),
+		)
+
+		val deltakerliste =
+			DeltakerlisteDbo(
+				id = deltakerlisteId,
+				navn = "Gjennomføring 1",
+				status = DeltakerlisteStatus.GJENNOMFORES,
+				arrangorId = arrangorId,
+				tiltakNavn = "Navn på tiltak",
+				tiltakType = "ARBFORB",
+				startDato = LocalDate.of(2025, 2, 1),
+				sluttDato = null,
+				erKurs = false,
+				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
+			)
+		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
+		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		ansattRepository.insertOrUpdateAnsatt(
+			AnsattDbo(
+				id = UUID.randomUUID(),
+				personIdent = personIdent,
+				fornavn = "Fornavn",
+				mellomnavn = null,
+				etternavn = "Etternavn",
+				roller = listOf(AnsattRolleDbo(arrangorId, AnsattRolle.KOORDINATOR)),
+				deltakerlister = listOf(KoordinatorDeltakerlisteDbo(deltakerlisteId)),
+				veilederDeltakere = emptyList(),
+			),
+		)
+
+		ulestEndringRepository.insert(
+			deltaker.id,
+			Oppdatering.NavBrukerEndring(
+				"12345678",
+				deltaker.epost,
+			),
+		)
+
+		val koordinatorsDeltakerliste = koordinatorService.getDeltakerliste(deltakerlisteId, personIdent)
+
+		val minDeltaker = koordinatorsDeltakerliste.deltakere
+			.find { d -> d.id == deltaker.id }!!
+		minDeltaker.oppdateringFraNav shouldBe true
+		minDeltaker.svarFraNav shouldBe false
+	}
+
+	@Test
 	fun `getTilgjengeligeVeiledere - ansatt har ikke koordinatorrolle hos arrangor - returnerer unauthorized`() {
 		val personIdent = "12345678910"
 		val deltakerlisteId = UUID.randomUUID()

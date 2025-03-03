@@ -19,6 +19,7 @@ class UlestEndringRepository(
 			id = UUID.fromString(rs.getString("id")),
 			deltakerId = UUID.fromString(rs.getString("deltaker_id")),
 			oppdatering = fromJsonString<Oppdatering>(rs.getString("oppdatering")),
+			oppdatert = rs.getDate("modified_at").toLocalDate(),
 		)
 	}
 

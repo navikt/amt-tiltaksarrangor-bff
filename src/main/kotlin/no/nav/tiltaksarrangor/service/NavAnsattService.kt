@@ -17,6 +17,13 @@ class NavAnsattService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
+	fun hentNavAnsatt(id: UUID): NavAnsatt? {
+		repository
+			.get(id)
+			?.let { return it }
+		return null
+	}
+
 	fun hentEllerOpprettNavAnsatt(id: UUID): NavAnsatt {
 		repository
 			.get(id)
@@ -48,7 +55,7 @@ class NavAnsattService(
 	private fun hentAnsatte(veilederIder: List<UUID>) = repository.getMany(veilederIder).associateBy { it.id }
 
 	fun hentAnsatteForUlesteEndringer(ulesteEndringer: List<UlestEndring>): Map<UUID, NavAnsatt> {
-		val ider = ulesteEndringer.map { it.hentNavAnsattId() }.distinct()
+		val ider = ulesteEndringer.mapNotNull { it.hentNavAnsattId() }.distinct()
 		return hentAnsatte(ider)
 	}
 }

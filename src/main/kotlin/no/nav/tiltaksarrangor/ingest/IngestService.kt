@@ -104,17 +104,10 @@ class IngestService(
 			if (lagretDeltaker == null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 			} else {
-				val ulesteEndringer = hentUlesteEndringer(lagretDeltaker, deltakerDto)
-				ulesteEndringer.forEach {
-					ulestEndringRepository.insert(
-						deltakerId,
-						it,
-					)
-				}
+				lagreUlesteMeldinger(deltakerId, deltakerDto, lagretDeltaker)
 
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
 			}
-
 			log.info("Lagret deltaker med id $deltakerId")
 		} else {
 			val antallSlettedeDeltakere = deltakerRepository.deleteDeltaker(deltakerId)
@@ -126,13 +119,55 @@ class IngestService(
 		}
 	}
 
-	private fun hentUlesteEndringer(lagretDeltaker: DeltakerDbo, nyDeltaker: DeltakerDto): List<Oppdatering> {
+	private fun lagreUlesteMeldinger(
+		deltakerId: UUID,
+		deltakerDto: DeltakerDto,
+		lagretDeltaker: DeltakerDbo,
+	) {
+		val navBrukerEndring = lagretDeltaker.hentPersonaliaOppdateringer(deltakerDto)
+		if (navBrukerEndring != null) {
+			ulestEndringRepository.insert(
+				deltakerId,
+				navBrukerEndring,
+			)
+		}
+		if (deltakerDto.navVeileder?.id != lagretDeltaker.navVeilederId) {
+			ulestEndringRepository.insert(
+				deltakerId,
+				Oppdatering.NavEndring(
+					nyNavVeileder = true,
+					navVeilederNavn = deltakerDto.navVeileder?.navn,
+					navVeilederEpost = deltakerDto.navVeileder?.epost,
+					navVeilederTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
+					navEnhet = deltakerDto.navKontor,
+				),
+			)
+		} else if (deltakerDto.navKontor != lagretDeltaker.navKontor) {
+			lagreOppdateringNavEndring(
+				deltaker = lagretDeltaker,
+				nyttNavn = deltakerDto.navVeileder?.navn,
+				nyEpost = deltakerDto.navVeileder?.epost,
+				nyttTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
+				nyNavEnhet = deltakerDto.navKontor,
+			)
+		}
+
+		val ulesteEndringerFraHistorikk = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerDto)
+		ulesteEndringerFraHistorikk.forEach {
+			ulestEndringRepository.insert(
+				deltakerId,
+				it,
+			)
+		}
+	}
+
+	private fun hentUlesteEndringerFraHistorikk(lagretDeltaker: DeltakerDbo, nyDeltaker: DeltakerDto): List<Oppdatering> {
 		if (nyDeltaker.historikk.isNullOrEmpty()) {
 			return emptyList()
 		}
 
 		return nyDeltaker.historikk
-			.minus(lagretDeltaker.historikk)
+			.minus(lagretDeltaker.historikk.toSet())
 			.mapNotNull { toDeltakerOppdatering(it) }
 	}
 
@@ -174,7 +209,67 @@ class IngestService(
 	}
 
 	fun lagreNavAnsatt(id: UUID, navAnsatt: NavAnsatt) {
+		lagreUlestEndringNavOppdatering(id)
+
 		navAnsattService.upsert(navAnsatt)
+	}
+
+	private fun lagreUlestEndringNavOppdatering(navAnsattId: UUID) {
+		val lagretNavAnsatt = navAnsattService.hentNavAnsatt(navAnsattId)
+		if (lagretNavAnsatt != null) {
+			deltakerRepository.getDeltakereMedNavAnsatt(navAnsattId).forEach {
+				lagreNavOppdateringer(it, lagretNavAnsatt)
+			}
+		}
+	}
+
+	private fun lagreNavOppdateringer(deltaker: DeltakerDbo, navAnsatt: NavAnsatt) {
+		val endretNavn = navAnsatt.navn != deltaker.navVeilederNavn
+		val endretEpost = navAnsatt.epost != deltaker.navVeilederEpost
+		val endretTelefonnummer = navAnsatt.telefon != deltaker.navVeilederTelefon
+		val harEndringer = endretNavn || endretEpost || endretTelefonnummer
+		if (!harEndringer) {
+			return
+		}
+
+		ulestEndringRepository.insert(
+			deltaker.id,
+			Oppdatering.NavEndring(
+				nyNavVeileder = false,
+				navVeilederNavn = if (endretNavn) navAnsatt.navn else null,
+				navVeilederEpost = if (endretEpost) navAnsatt.epost else null,
+				navVeilederTelefonnummer = if (endretTelefonnummer) navAnsatt.telefon else null,
+				navEnhet = null,
+			),
+		)
+	}
+
+	private fun lagreOppdateringNavEndring(
+		deltaker: DeltakerDbo,
+		nyttNavn: String?,
+		nyEpost: String?,
+		nyttTelefonnummer: String?,
+		nyNavEnhet: String?,
+	) {
+		val endretNavn = nyttNavn != deltaker.navVeilederNavn
+		val endretEpost = nyEpost != deltaker.navVeilederEpost
+		val endretTelefonnummer = nyttTelefonnummer != deltaker.navVeilederTelefon
+		val endretNavEnhet = nyNavEnhet != deltaker.navKontor
+		val harEndringer = endretNavn || endretEpost || endretTelefonnummer || endretNavEnhet
+		if (!harEndringer) {
+			return
+		}
+
+		ulestEndringRepository.insert(
+			deltaker.id,
+			Oppdatering.NavEndring(
+				nyNavVeileder = false,
+				navVeilederNavn = if (endretNavn) nyttNavn else null,
+				navVeilederEpost = if (endretEpost) nyEpost else null,
+				navVeilederTelefonnummer = if (endretTelefonnummer) nyttTelefonnummer else null,
+				navEnhet = if (endretNavEnhet) nyNavEnhet else null,
+			),
+		)
 	}
 
 	fun lagreEndringsmelding(endringsmeldingId: UUID, endringsmeldingDto: EndringsmeldingDto?) {
@@ -259,6 +354,26 @@ class IngestService(
 			}
 		}
 	}
+}
+
+private fun DeltakerDbo.hentPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.NavBrukerEndring? {
+	val telefonnummer = if (this.telefonnummer ==
+		nyDeltaker.personalia.kontaktinformasjon.telefonnummer
+	) {
+		null
+	} else {
+		nyDeltaker.personalia.kontaktinformasjon.telefonnummer
+	}
+	val epost = if (this.epost == nyDeltaker.personalia.kontaktinformasjon.epost) null else nyDeltaker.personalia.kontaktinformasjon.epost
+
+	if (telefonnummer == null && epost == null) {
+		return null
+	}
+
+	return Oppdatering.NavBrukerEndring(
+		telefonnummer,
+		epost,
+	)
 }
 
 private val stottedeTiltak =

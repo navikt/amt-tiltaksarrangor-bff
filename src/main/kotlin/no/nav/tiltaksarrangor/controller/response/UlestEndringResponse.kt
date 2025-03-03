@@ -6,6 +6,7 @@ import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
 import no.nav.tiltaksarrangor.ingest.model.NavEnhet
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.UlestEndring
+import java.time.LocalDate
 import java.util.UUID
 
 data class UlestEndringResponse(
@@ -18,6 +19,8 @@ data class UlestEndringResponse(
 @JsonSubTypes(
 	JsonSubTypes.Type(value = OppdateringResponse.DeltakelsesEndringResponse::class, name = "DeltakelsesEndring"),
 	JsonSubTypes.Type(value = OppdateringResponse.AvvistForslagResponse::class, name = "AvvistForslag"),
+	JsonSubTypes.Type(value = OppdateringResponse.NavBrukerEndringResponse::class, name = "NavBrukerEndring"),
+	JsonSubTypes.Type(value = OppdateringResponse.NavEndringResponse::class, name = "NavEndring"),
 )
 sealed interface OppdateringResponse {
 	data class DeltakelsesEndringResponse(
@@ -26,6 +29,21 @@ sealed interface OppdateringResponse {
 
 	data class AvvistForslagResponse(
 		val forslag: ForslagHistorikkResponse,
+	) : OppdateringResponse
+
+	data class NavBrukerEndringResponse(
+		val telefonnummer: String?,
+		val epost: String?,
+		val oppdatert: LocalDate,
+	) : OppdateringResponse
+
+	data class NavEndringResponse(
+		val nyNavVeileder: Boolean,
+		val navVeilederNavn: String?,
+		val navVeilederEpost: String?,
+		val navVeilederTelefonnummer: String?,
+		val navEnhet: String?,
+		val oppdatert: LocalDate,
 	) : OppdateringResponse
 }
 
@@ -36,17 +54,38 @@ fun List<UlestEndring>.toResponse(
 ): List<UlestEndringResponse> = this.map {
 	when (it.oppdatering) {
 		is Oppdatering.DeltakelsesEndring -> UlestEndringResponse(
-			it.id,
-			it.deltakerId,
-			OppdateringResponse.DeltakelsesEndringResponse(
-				it.oppdatering.endring.toResponse(ansatte, enheter, arrangornavn),
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.DeltakelsesEndringResponse(
+				endring = it.oppdatering.endring.toResponse(ansatte, enheter, arrangornavn),
 			),
 		)
 		is Oppdatering.AvvistForslag -> UlestEndringResponse(
-			it.id,
-			it.deltakerId,
-			OppdateringResponse.AvvistForslagResponse(
-				it.oppdatering.forslag.toResponse(arrangornavn, ansatte, enheter),
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.AvvistForslagResponse(
+				forslag = it.oppdatering.forslag.toResponse(arrangornavn, ansatte, enheter),
+			),
+		)
+		is Oppdatering.NavBrukerEndring -> UlestEndringResponse(
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.NavBrukerEndringResponse(
+				telefonnummer = it.oppdatering.telefonnummer,
+				epost = it.oppdatering.epost,
+				oppdatert = it.oppdatert,
+			),
+		)
+		is Oppdatering.NavEndring -> UlestEndringResponse(
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.NavEndringResponse(
+				nyNavVeileder = it.oppdatering.nyNavVeileder,
+				navVeilederNavn = it.oppdatering.navVeilederNavn,
+				navVeilederEpost = it.oppdatering.navVeilederEpost,
+				navVeilederTelefonnummer = it.oppdatering.navVeilederTelefonnummer,
+				navEnhet = it.oppdatering.navEnhet,
+				oppdatert = it.oppdatert,
 			),
 		)
 	}
