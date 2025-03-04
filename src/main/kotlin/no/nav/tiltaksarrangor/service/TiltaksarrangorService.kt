@@ -18,6 +18,7 @@ import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
+import no.nav.tiltaksarrangor.unleash.UnleashService
 import no.nav.tiltaksarrangor.utils.toTitleCase
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -39,6 +40,7 @@ class TiltaksarrangorService(
 	private val arrangorRepository: ArrangorRepository,
 	private val meldingProducer: MeldingProducer,
 	private val ulestEndringRepository: UlestEndringRepository,
+	private val unleashService: UnleashService
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -142,8 +144,12 @@ class TiltaksarrangorService(
 			vurderingstype = request.vurderingstype,
 			begrunnelse = request.begrunnelse,
 		)
+
+		if(!unleashService.erKometMasterForTiltakstype(deltakerMedDeltakerliste.deltakerliste.tiltakType)){
+			amtTiltakClient.registrerVurdering(deltakerId, vurdering.toRegistrerVurderingRequest())
+		}
 		meldingProducer.produce(vurdering)
-		amtTiltakClient.registrerVurdering(deltakerId, vurdering.toRegistrerVurderingRequest())
+
 		val opprinneligeVurderinger = deltakerMedDeltakerliste.deltaker.vurderingerFraArrangor ?: emptyList()
 		val oppdaterteVurderinger = listOf(vurdering) + opprinneligeVurderinger
 		deltakerRepository.oppdaterVurderingerForDeltaker(deltakerId, oppdaterteVurderinger)
