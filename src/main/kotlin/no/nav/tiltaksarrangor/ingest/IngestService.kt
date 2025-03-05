@@ -124,13 +124,6 @@ class IngestService(
 		deltakerDto: DeltakerDto,
 		lagretDeltaker: DeltakerDbo,
 	) {
-		val navBrukerEndring = lagretDeltaker.hentPersonaliaOppdateringer(deltakerDto)
-		if (navBrukerEndring != null) {
-			ulestEndringRepository.insert(
-				deltakerId,
-				navBrukerEndring,
-			)
-		}
 		if (deltakerDto.navVeileder?.id != lagretDeltaker.navVeilederId) {
 			ulestEndringRepository.insert(
 				deltakerId,

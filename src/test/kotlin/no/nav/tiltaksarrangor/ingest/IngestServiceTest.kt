@@ -501,46 +501,6 @@ class IngestServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - deltaker har ny epost og telefonnummer - lagrer som ett innslag i db `(): Unit = runBlocking {
-		with(DeltakerDtoCtx()) {
-			val lagretDeltaker = getDeltaker(deltakerDto.id).copy(
-				personident = "10987654321",
-				fornavn = "Fornavn",
-				etternavn = "Etternavn",
-				telefonnummer = "98989898",
-				epost = "epost@nav.no",
-				adresse = null,
-			)
-
-			val nyDeltaker = deltakerDto.copy(
-				personalia =
-					DeltakerPersonaliaDto(
-						personident = "10987654321",
-						navn = NavnDto("Fornavn", null, "Etternavn"),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto("11111111", "ny-epost@nav.no"),
-						skjermet = false,
-						adresse = null,
-						adressebeskyttelse = null,
-					),
-				navVeileder = DeltakerNavVeilederDto(
-					lagretDeltaker.navVeilederId!!,
-					lagretDeltaker.navVeilederNavn!!,
-					lagretDeltaker.navVeilederEpost,
-					lagretDeltaker.navVeilederTelefon,
-				),
-				navKontor = lagretDeltaker.navKontor,
-			)
-
-			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
-			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
-			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
-			ingestService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
-
-			verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
-		}
-	}
-
-	@Test
 	internal fun `lagreDeltaker - deltaker har ny Nav-veileder og nytt kontor - lagrer i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			val lagretDeltaker = getDeltaker(deltakerDto.id).copy(
