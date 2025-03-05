@@ -453,6 +453,54 @@ class IngestServiceTest {
 	}
 
 	@Test
+	internal fun `lagreDeltaker - historikk inneholder svar på forslag som  finnes i db - lagrer ikke endring i db `(): Unit = runBlocking {
+		val forslag = DeltakerHistorikk.Forslag(
+			forlengDeltakelseForslag(
+				status = Forslag.Status.Godkjent(
+					Forslag.NavAnsatt(
+						UUID.randomUUID(),
+						UUID.randomUUID(),
+					),
+					LocalDateTime.now(),
+				),
+			),
+		)
+
+		with(DeltakerDtoCtx()) {
+			val lagretDeltaker = getDeltaker(deltakerDto.id).copy(
+				historikk = listOf(
+					forslag,
+				),
+			)
+
+			val nyDeltaker = deltakerDto.copy(
+				personalia = DeltakerPersonaliaDto(
+					personident = lagretDeltaker.personident,
+					navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
+					kontaktinformasjon = DeltakerKontaktinformasjonDto(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
+					skjermet = lagretDeltaker.erSkjermet,
+					adresse = lagretDeltaker.adresse,
+					adressebeskyttelse = null,
+				),
+				historikk = listOf(forslag),
+				navVeileder = DeltakerNavVeilederDto(
+					lagretDeltaker.navVeilederId!!,
+					lagretDeltaker.navVeilederNavn!!,
+					lagretDeltaker.navVeilederEpost,
+					lagretDeltaker.navVeilederTelefon,
+				),
+				navKontor = lagretDeltaker.navKontor,
+			)
+			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
+			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
+			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
+			ingestService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
+
+			verify(exactly = 0) { ulestEndringRepository.insert(any(), any()) }
+		}
+	}
+
+	@Test
 	internal fun `lagreDeltaker - deltaker har ny Nav-veileder og nytt kontor - lagrer i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			val lagretDeltaker = getDeltaker(deltakerDto.id).copy(
