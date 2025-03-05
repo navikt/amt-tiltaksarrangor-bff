@@ -40,7 +40,7 @@ class TiltaksarrangorService(
 	private val arrangorRepository: ArrangorRepository,
 	private val meldingProducer: MeldingProducer,
 	private val ulestEndringRepository: UlestEndringRepository,
-	private val unleashService: UnleashService
+	private val unleashService: UnleashService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -145,7 +145,7 @@ class TiltaksarrangorService(
 			begrunnelse = request.begrunnelse,
 		)
 
-		if(!unleashService.erKometMasterForTiltakstype(deltakerMedDeltakerliste.deltakerliste.tiltakType)){
+		if (!unleashService.erKometMasterForTiltakstype(deltakerMedDeltakerliste.deltakerliste.tiltakType)) {
 			amtTiltakClient.registrerVurdering(deltakerId, vurdering.toRegistrerVurderingRequest())
 		}
 		meldingProducer.produce(vurdering)

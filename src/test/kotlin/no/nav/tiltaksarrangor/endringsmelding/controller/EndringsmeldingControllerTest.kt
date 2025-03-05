@@ -1,5 +1,4 @@
 package no.nav.tiltaksarrangor.endringsmelding.controller
-
 import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
@@ -57,10 +56,11 @@ class EndringsmeldingControllerTest : IntegrationTest() {
 	fun `getAlleEndringsmeldinger - autentisert - returnerer 200`() {
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "JOBBK")
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "TILTAKSTYPE")
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")
 		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id))
+
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
 				id = UUID.randomUUID(),
