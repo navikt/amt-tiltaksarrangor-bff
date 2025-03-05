@@ -501,7 +501,7 @@ class IngestServiceTest {
 		}
 	}
 
-	@Ignore
+	/*
 	@Test
 	internal fun `lagreDeltaker - deltaker har ny epost og telefonnummer - lagrer som ett innslag i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
@@ -540,7 +540,7 @@ class IngestServiceTest {
 
 			verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
 		}
-	}
+	} */
 
 	@Test
 	internal fun `lagreDeltaker - deltaker har ny Nav-veileder og nytt kontor - lagrer i db `(): Unit = runBlocking {
