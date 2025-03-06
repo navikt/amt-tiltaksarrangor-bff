@@ -5,6 +5,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.ingest.model.AVSLUTTENDE_STATUSER
@@ -103,6 +104,7 @@ class IngestService(
 
 			if (lagretDeltaker == null) {
 				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
+				lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
 			} else {
 				lagreUlesteMeldinger(deltakerId, deltakerDto, lagretDeltaker)
 
@@ -116,6 +118,33 @@ class IngestService(
 			} else {
 				log.info("Ignorert deltaker med id $deltakerId")
 			}
+		}
+	}
+
+	private fun lagreNyDeltakerUlestEndring(deltakerDto: DeltakerDto, deltakerId: UUID) {
+		val vedtak = deltakerDto.historikk?.filterIsInstance<DeltakerHistorikk.Vedtak>()
+
+		if (deltakerDto.historikk == null || vedtak.isNullOrEmpty()) {
+			ulestEndringRepository.insert(
+				deltakerId,
+				Oppdatering.NyDeltaker(
+					opprettetAvNavn = null,
+					opprettetAvEnhet = null,
+					opprettet = deltakerDto.innsoktDato,
+				),
+			)
+			return
+		}
+
+		vedtak.minBy { it.vedtak.opprettet }.vedtak.let {
+			ulestEndringRepository.insert(
+				deltakerId,
+				Oppdatering.NyDeltaker(
+					opprettetAvNavn = navAnsattService.hentNavAnsatt(it.opprettetAv)?.navn,
+					opprettetAvEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(it.opprettetAvEnhet).navn,
+					opprettet = it.opprettet.toLocalDate(),
+				),
+			)
 		}
 	}
 
