@@ -1,0 +1,428 @@
+package no.nav.tiltaksarrangor.consumer
+
+import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
+import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.arrangor.melding.Melding
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
+import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
+import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
+import no.nav.tiltaksarrangor.consumer.model.AnsattDto
+import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
+import no.nav.tiltaksarrangor.consumer.model.DeltakerDto
+import no.nav.tiltaksarrangor.consumer.model.DeltakerStatus
+import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
+import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
+import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
+import no.nav.tiltaksarrangor.consumer.model.SKJULES_ALLTID_STATUSER
+import no.nav.tiltaksarrangor.consumer.model.toAnsattDbo
+import no.nav.tiltaksarrangor.consumer.model.toArrangorDbo
+import no.nav.tiltaksarrangor.consumer.model.toDeltakerDbo
+import no.nav.tiltaksarrangor.consumer.model.toEndringsmeldingDbo
+import no.nav.tiltaksarrangor.melding.forslag.ForslagService
+import no.nav.tiltaksarrangor.model.Oppdatering
+import no.nav.tiltaksarrangor.repositories.AnsattRepository
+import no.nav.tiltaksarrangor.repositories.ArrangorRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
+import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
+import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
+import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
+import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.service.NavAnsattService
+import no.nav.tiltaksarrangor.service.NavEnhetService
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
+
+@Component
+class KafkaConsumerService(
+	private val arrangorRepository: ArrangorRepository,
+	private val ansattRepository: AnsattRepository,
+	private val deltakerlisteRepository: DeltakerlisteRepository,
+	private val deltakerRepository: DeltakerRepository,
+	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val amtArrangorClient: AmtArrangorClient,
+	private val forslagService: ForslagService,
+	private val navEnhetService: NavEnhetService,
+	private val navAnsattService: NavAnsattService,
+	private val ulestEndringRepository: UlestEndringRepository,
+) {
+	private val log = LoggerFactory.getLogger(javaClass)
+
+	fun lagreArrangor(arrangorId: UUID, arrangor: ArrangorDto?) {
+		if (arrangor == null) {
+			arrangorRepository.deleteArrangor(arrangorId)
+			log.info("Slettet arrangør med id $arrangorId")
+		} else {
+			arrangorRepository.insertOrUpdateArrangor(arrangor.toArrangorDbo())
+			log.info("Lagret arrangør med id $arrangorId")
+		}
+	}
+
+	fun lagreAnsatt(ansattId: UUID, ansatt: AnsattDto?) {
+		if (ansatt == null) {
+			ansattRepository.deleteAnsatt(ansattId)
+			log.info("Slettet ansatt med id $ansattId")
+		} else {
+			ansattRepository.insertOrUpdateAnsatt(ansatt.toAnsattDbo())
+			log.info("Lagret ansatt med id $ansattId")
+		}
+	}
+
+	fun lagreDeltakerliste(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteDto?) {
+		if (deltakerlisteDto == null) {
+			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
+			log.info("Slettet tombstonet deltakerliste med id $deltakerlisteId")
+		} else if (deltakerlisteDto.skalLagres()) {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(toDeltakerlisteDbo(deltakerlisteDto))
+			log.info("Lagret deltakerliste med id $deltakerlisteId")
+		} else {
+			val antallSlettedeDeltakerlister = deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
+			if (antallSlettedeDeltakerlister > 0) {
+				log.info("Slettet deltakerliste med id $deltakerlisteId")
+			} else {
+				log.info("Ignorert deltakerliste med id $deltakerlisteId")
+			}
+		}
+	}
+
+	fun lagreDeltaker(deltakerId: UUID, deltakerDto: DeltakerDto?) {
+		if (deltakerDto == null) {
+			deltakerRepository.deleteDeltaker(deltakerId)
+			log.info("Slettet tombstonet deltaker med id $deltakerId")
+			return
+		}
+		val lagretDeltaker = deltakerRepository.getDeltaker(deltakerId)
+		if (deltakerDto.skalLagres(lagretDeltaker)) {
+			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
+
+			if (lagretDeltaker == null) {
+				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
+				lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
+			} else {
+				lagreUlesteMeldinger(deltakerId, deltakerDto, lagretDeltaker)
+
+				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
+			}
+			log.info("Lagret deltaker med id $deltakerId")
+		} else {
+			val antallSlettedeDeltakere = deltakerRepository.deleteDeltaker(deltakerId)
+			if (antallSlettedeDeltakere > 0) {
+				log.info("Slettet deltaker med id $deltakerId")
+			} else {
+				log.info("Ignorert deltaker med id $deltakerId")
+			}
+		}
+	}
+
+	private fun lagreNyDeltakerUlestEndring(deltakerDto: DeltakerDto, deltakerId: UUID) {
+		val vedtak = deltakerDto.historikk?.filterIsInstance<DeltakerHistorikk.Vedtak>()
+
+		if (deltakerDto.historikk == null || vedtak.isNullOrEmpty()) {
+			ulestEndringRepository.insert(
+				deltakerId,
+				Oppdatering.NyDeltaker(
+					opprettetAvNavn = null,
+					opprettetAvEnhet = null,
+					opprettet = deltakerDto.innsoktDato,
+				),
+			)
+			return
+		}
+
+		vedtak.minBy { it.vedtak.opprettet }.vedtak.let {
+			ulestEndringRepository.insert(
+				deltakerId,
+				Oppdatering.NyDeltaker(
+					opprettetAvNavn = navAnsattService.hentNavAnsatt(it.opprettetAv)?.navn,
+					opprettetAvEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(it.opprettetAvEnhet).navn,
+					opprettet = it.opprettet.toLocalDate(),
+				),
+			)
+		}
+	}
+
+	private fun lagreUlesteMeldinger(
+		deltakerId: UUID,
+		deltakerDto: DeltakerDto,
+		lagretDeltaker: DeltakerDbo,
+	) {
+		if (deltakerDto.navVeileder?.id != lagretDeltaker.navVeilederId) {
+			ulestEndringRepository.insert(
+				deltakerId,
+				Oppdatering.NavEndring(
+					nyNavVeileder = true,
+					navVeilederNavn = deltakerDto.navVeileder?.navn,
+					navVeilederEpost = deltakerDto.navVeileder?.epost,
+					navVeilederTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
+					navEnhet = deltakerDto.navKontor,
+				),
+			)
+		} else if (deltakerDto.navKontor != lagretDeltaker.navKontor) {
+			lagreOppdateringNavEndring(
+				deltaker = lagretDeltaker,
+				nyttNavn = deltakerDto.navVeileder?.navn,
+				nyEpost = deltakerDto.navVeileder?.epost,
+				nyttTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
+				nyNavEnhet = deltakerDto.navKontor,
+			)
+		}
+
+		val ulesteEndringerFraHistorikk = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerDto)
+		ulesteEndringerFraHistorikk.forEach {
+			ulestEndringRepository.insert(
+				deltakerId,
+				it,
+			)
+		}
+	}
+
+	private fun hentUlesteEndringerFraHistorikk(lagretDeltaker: DeltakerDbo, nyDeltaker: DeltakerDto): List<Oppdatering> {
+		if (nyDeltaker.historikk.isNullOrEmpty()) {
+			return emptyList()
+		}
+
+		return nyDeltaker.historikk
+			.minus(lagretDeltaker.historikk.toSet())
+			.mapNotNull { toDeltakerOppdatering(it) }
+	}
+
+	private fun toDeltakerOppdatering(historikk: DeltakerHistorikk): Oppdatering? {
+		when (historikk) {
+			is DeltakerHistorikk.Endring -> return Oppdatering.DeltakelsesEndring(historikk.endring)
+			is DeltakerHistorikk.Forslag -> {
+				when (historikk.forslag.status) {
+					is Forslag.Status.Avvist -> return Oppdatering.AvvistForslag(historikk.forslag)
+					is Forslag.Status.Godkjent,
+					is Forslag.Status.Erstattet,
+					is Forslag.Status.Tilbakekalt,
+					Forslag.Status.VenterPaSvar,
+					-> return null
+				}
+			}
+			is DeltakerHistorikk.EndringFraArrangor,
+			is DeltakerHistorikk.ImportertFraArena,
+			is DeltakerHistorikk.Vedtak,
+			is DeltakerHistorikk.VurderingFraArrangor,
+			-> return null
+		}
+	}
+
+	private fun leggTilNavAnsattOgEnhetHistorikk(deltakerDto: DeltakerDto) {
+		if (deltakerDto.historikk.isNullOrEmpty()) {
+			return
+		}
+		lagreEnheterForHistorikk(deltakerDto.historikk)
+		lagreAnsatteForHistorikk(deltakerDto.historikk)
+	}
+
+	fun lagreEnheterForHistorikk(historikk: List<DeltakerHistorikk>) {
+		historikk.flatMap { it.navEnheter() }.distinct().forEach { id -> navEnhetService.hentOpprettEllerOppdaterNavEnhet(id) }
+	}
+
+	fun lagreAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) {
+		historikk.flatMap { it.navAnsatte() }.distinct().forEach { id -> navAnsattService.hentEllerOpprettNavAnsatt(id) }
+	}
+
+	fun lagreNavAnsatt(id: UUID, navAnsatt: NavAnsatt) {
+		lagreUlestEndringNavOppdatering(id)
+
+		navAnsattService.upsert(navAnsatt)
+	}
+
+	private fun lagreUlestEndringNavOppdatering(navAnsattId: UUID) {
+		val lagretNavAnsatt = navAnsattService.hentNavAnsatt(navAnsattId)
+		if (lagretNavAnsatt != null) {
+			deltakerRepository.getDeltakereMedNavAnsatt(navAnsattId).forEach {
+				lagreNavOppdateringer(it, lagretNavAnsatt)
+			}
+		}
+	}
+
+	private fun lagreNavOppdateringer(deltaker: DeltakerDbo, navAnsatt: NavAnsatt) {
+		val endretNavn = navAnsatt.navn != deltaker.navVeilederNavn
+		val endretEpost = navAnsatt.epost != deltaker.navVeilederEpost
+		val endretTelefonnummer = navAnsatt.telefon != deltaker.navVeilederTelefon
+		val harEndringer = endretNavn || endretEpost || endretTelefonnummer
+		if (!harEndringer) {
+			return
+		}
+
+		ulestEndringRepository.insert(
+			deltaker.id,
+			Oppdatering.NavEndring(
+				nyNavVeileder = false,
+				navVeilederNavn = if (endretNavn) navAnsatt.navn else null,
+				navVeilederEpost = if (endretEpost) navAnsatt.epost else null,
+				navVeilederTelefonnummer = if (endretTelefonnummer) navAnsatt.telefon else null,
+				navEnhet = null,
+			),
+		)
+	}
+
+	private fun lagreOppdateringNavEndring(
+		deltaker: DeltakerDbo,
+		nyttNavn: String?,
+		nyEpost: String?,
+		nyttTelefonnummer: String?,
+		nyNavEnhet: String?,
+	) {
+		val endretNavn = nyttNavn != deltaker.navVeilederNavn
+		val endretEpost = nyEpost != deltaker.navVeilederEpost
+		val endretTelefonnummer = nyttTelefonnummer != deltaker.navVeilederTelefon
+		val endretNavEnhet = nyNavEnhet != deltaker.navKontor
+		val harEndringer = endretNavn || endretEpost || endretTelefonnummer || endretNavEnhet
+		if (!harEndringer) {
+			return
+		}
+
+		ulestEndringRepository.insert(
+			deltaker.id,
+			Oppdatering.NavEndring(
+				nyNavVeileder = false,
+				navVeilederNavn = if (endretNavn) nyttNavn else null,
+				navVeilederEpost = if (endretEpost) nyEpost else null,
+				navVeilederTelefonnummer = if (endretTelefonnummer) nyttTelefonnummer else null,
+				navEnhet = if (endretNavEnhet) nyNavEnhet else null,
+			),
+		)
+	}
+
+	fun lagreEndringsmelding(endringsmeldingId: UUID, endringsmeldingDto: EndringsmeldingDto?) {
+		if (endringsmeldingDto == null) {
+			endringsmeldingRepository.deleteEndringsmelding(endringsmeldingId)
+			log.info("Slettet tombstonet endringsmelding med id $endringsmeldingId")
+		} else {
+			endringsmeldingRepository.insertOrUpdateEndringsmelding(endringsmeldingDto.toEndringsmeldingDbo())
+			log.info("Lagret endringsmelding med id $endringsmeldingId")
+		}
+	}
+
+	private fun DeltakerDto.skalLagres(lagretDeltaker: DeltakerDbo?): Boolean {
+		if (status.type in SKJULES_ALLTID_STATUSER) {
+			return false
+		} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs && lagretDeltaker == null) {
+			return false
+		} else if (status.type in AVSLUTTENDE_STATUSER) {
+			return harNyligSluttet()
+		}
+		return true
+	}
+
+	private fun DeltakerDto.harNyligSluttet(): Boolean =
+		!LocalDateTime.now().isAfter(status.gyldigFra.plusDays(DAGER_AVSLUTTET_DELTAKER_VISES)) &&
+			(sluttdato == null || sluttdato.isAfter(LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES)))
+
+	private fun toDeltakerlisteDbo(deltakerlisteDto: DeltakerlisteDto): DeltakerlisteDbo = DeltakerlisteDbo(
+		id = deltakerlisteDto.id,
+		navn = deltakerlisteDto.navn,
+		status = deltakerlisteDto.toDeltakerlisteStatus(),
+		arrangorId = getArrangorId(deltakerlisteDto.virksomhetsnummer),
+		tiltakNavn = deltakerlisteDto.tiltakstype.navn,
+		tiltakType = deltakerlisteDto.tiltakstype.arenaKode,
+		startDato = deltakerlisteDto.startDato,
+		sluttDato = deltakerlisteDto.sluttDato,
+		erKurs = deltakerlisteDto.erKurs(),
+		tilgjengeligForArrangorFraOgMedDato = deltakerlisteDto.tilgjengeligForArrangorFraOgMedDato,
+	)
+
+	private fun getArrangorId(organisasjonsnummer: String): UUID {
+		val arrangorId = arrangorRepository.getArrangor(organisasjonsnummer)?.id
+		if (arrangorId != null) {
+			return arrangorId
+		}
+		log.info("Fant ikke arrangør med orgnummer $organisasjonsnummer i databasen, henter fra amt-arrangør")
+		val arrangor =
+			amtArrangorClient.getArrangor(organisasjonsnummer)
+				?: throw RuntimeException("Kunne ikke hente arrangør med orgnummer $organisasjonsnummer")
+		arrangorRepository.insertOrUpdateArrangor(arrangor.toArrangorDbo())
+		return arrangor.id
+	}
+
+	fun handleMelding(id: UUID, melding: Melding?) {
+		if (melding == null) {
+			log.warn("Mottok tombstone for melding med id: $id")
+			forslagService.delete(id)
+			return
+		}
+		when (melding) {
+			is Forslag -> handleForslag(melding)
+			is EndringFraArrangor,
+			is Vurdering,
+			-> {
+			}
+		}
+	}
+
+	private fun handleForslag(forslag: Forslag) {
+		when (forslag.status) {
+			is Forslag.Status.Avvist,
+			is Forslag.Status.Godkjent,
+			-> {
+				forslagService.delete(forslag.id)
+			}
+
+			is Forslag.Status.Erstattet,
+			is Forslag.Status.Tilbakekalt,
+			Forslag.Status.VenterPaSvar,
+			-> {
+				log.debug("Håndterer ikke forslag {} med status {}", forslag.id, forslag.status.javaClass.simpleName)
+			}
+		}
+	}
+}
+
+private fun DeltakerDbo.hentPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.NavBrukerEndring? {
+	val telefonnummer = if (this.telefonnummer ==
+		nyDeltaker.personalia.kontaktinformasjon.telefonnummer
+	) {
+		null
+	} else {
+		nyDeltaker.personalia.kontaktinformasjon.telefonnummer
+	}
+	val epost = if (this.epost == nyDeltaker.personalia.kontaktinformasjon.epost) null else nyDeltaker.personalia.kontaktinformasjon.epost
+
+	if (telefonnummer == null && epost == null) {
+		return null
+	}
+
+	return Oppdatering.NavBrukerEndring(
+		telefonnummer,
+		epost,
+	)
+}
+
+private val stottedeTiltak =
+	setOf(
+		"INDOPPFAG",
+		"ARBFORB",
+		"AVKLARAG",
+		"VASV",
+		"ARBRRHDAG",
+		"DIGIOPPARB",
+		"JOBBK",
+		"GRUPPEAMO",
+		"GRUFAGYRKE",
+	)
+
+fun DeltakerlisteDto.skalLagres(): Boolean {
+	if (!stottedeTiltak.contains(tiltakstype.arenaKode)) {
+		return false
+	}
+	if (status == DeltakerlisteDto.Status.GJENNOMFORES) {
+		return true
+	} else if (status == DeltakerlisteDto.Status.AVSLUTTET &&
+		sluttDato != null &&
+		LocalDate
+			.now()
+			.isBefore(sluttDato.plusDays(15))
+	) {
+		return true
+	}
+	return false
+}

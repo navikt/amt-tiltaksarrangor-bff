@@ -3,7 +3,7 @@ package no.nav.tiltaksarrangor.model
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
-import no.nav.tiltaksarrangor.controller.response.UlestEndringResponse
+import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import java.time.LocalDate
 import java.time.LocalDateTime

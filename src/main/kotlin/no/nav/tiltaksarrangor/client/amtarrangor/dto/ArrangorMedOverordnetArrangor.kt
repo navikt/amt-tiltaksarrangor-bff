@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.client.amtarrangor.dto
 
-import no.nav.tiltaksarrangor.ingest.model.ArrangorDto
+import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import java.util.UUID
 

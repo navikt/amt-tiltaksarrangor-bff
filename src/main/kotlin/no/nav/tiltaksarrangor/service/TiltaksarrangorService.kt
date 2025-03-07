@@ -2,11 +2,11 @@ package no.nav.tiltaksarrangor.service
 
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
+import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
+import no.nav.tiltaksarrangor.api.response.DeltakerHistorikkResponse
+import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
+import no.nav.tiltaksarrangor.api.response.toResponse
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
-import no.nav.tiltaksarrangor.controller.request.RegistrerVurderingRequest
-import no.nav.tiltaksarrangor.controller.response.DeltakerHistorikkResponse
-import no.nav.tiltaksarrangor.controller.response.UlestEndringResponse
-import no.nav.tiltaksarrangor.controller.response.toResponse
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.StatusType

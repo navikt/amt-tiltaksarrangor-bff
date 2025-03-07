@@ -2,7 +2,7 @@ package no.nav.tiltaksarrangor.service
 
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
-import no.nav.tiltaksarrangor.controller.response.UlestEndringResponse
+import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.tilAktivtForslagResponse

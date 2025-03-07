@@ -3,8 +3,8 @@ package no.nav.tiltaksarrangor.model
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
-import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
+import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
 import no.nav.tiltaksarrangor.testutils.getForslag
 import org.junit.jupiter.api.Test

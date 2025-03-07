@@ -2,7 +2,7 @@ package no.nav.tiltaksarrangor.kafka
 
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.testing.SingletonKafkaProvider
-import no.nav.tiltaksarrangor.ingest.config.KafkaConfig
+import no.nav.tiltaksarrangor.consumer.config.KafkaConfig
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.KafkaProducer
