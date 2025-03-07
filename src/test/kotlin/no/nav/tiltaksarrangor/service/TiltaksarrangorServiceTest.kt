@@ -101,6 +101,7 @@ class TiltaksarrangorServiceTest {
 			arrangorRepository,
 			meldingProducer,
 			ulestEndringRepository,
+			unleashService,
 		)
 
 	@AfterEach
