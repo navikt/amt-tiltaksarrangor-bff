@@ -3,7 +3,7 @@ package no.nav.tiltaksarrangor.repositories
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
-import no.nav.tiltaksarrangor.ingest.model.AdresseDto
+import no.nav.tiltaksarrangor.consumer.model.AdresseDto
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Kilde

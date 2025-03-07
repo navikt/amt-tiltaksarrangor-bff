@@ -9,9 +9,9 @@ import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttaarsakRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.EndreSluttdatoRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.client.amttiltak.request.LeggTilOppstartsdatoRequest
-import no.nav.tiltaksarrangor.endringsmelding.controller.request.EndringsmeldingRequest
-import no.nav.tiltaksarrangor.endringsmelding.controller.request.toEndringsmeldingDbo
-import no.nav.tiltaksarrangor.endringsmelding.controller.response.EndringsmeldingResponse
+import no.nav.tiltaksarrangor.endringsmelding.api.request.EndringsmeldingRequest
+import no.nav.tiltaksarrangor.endringsmelding.api.request.toEndringsmeldingDbo
+import no.nav.tiltaksarrangor.endringsmelding.api.response.EndringsmeldingResponse
 import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository

@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.veileder.service
 
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
+import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.model.DeltakerStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding

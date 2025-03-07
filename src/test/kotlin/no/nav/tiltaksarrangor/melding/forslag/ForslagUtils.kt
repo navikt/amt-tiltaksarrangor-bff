@@ -6,8 +6,8 @@ import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.amt.lib.testing.AsyncUtils
-import no.nav.tiltaksarrangor.ingest.model.NavAnsatt
-import no.nav.tiltaksarrangor.ingest.model.NavEnhet
+import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
+import no.nav.tiltaksarrangor.consumer.model.NavEnhet
 import no.nav.tiltaksarrangor.kafka.stringStringConsumer
 import no.nav.tiltaksarrangor.melding.MELDING_TOPIC
 import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
