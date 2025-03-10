@@ -9,9 +9,9 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
-import no.nav.tiltaksarrangor.ingest.model.AnsattRolle
-import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
-import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
+import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
+import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.AktivEndring

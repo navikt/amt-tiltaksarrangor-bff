@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.repositories.model
 
-import no.nav.tiltaksarrangor.ingest.model.NavEnhet
+import no.nav.tiltaksarrangor.consumer.model.NavEnhet
 import java.time.LocalDateTime
 import java.util.UUID
 

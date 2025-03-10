@@ -2,7 +2,7 @@ package no.nav.tiltaksarrangor.client.amtarrangor
 
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.OppdaterVeiledereForDeltakerRequest
-import no.nav.tiltaksarrangor.ingest.model.AnsattDto
+import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper

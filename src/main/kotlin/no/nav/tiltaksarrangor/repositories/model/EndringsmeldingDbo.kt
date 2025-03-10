@@ -1,8 +1,8 @@
 package no.nav.tiltaksarrangor.repositories.model
 
-import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
-import no.nav.tiltaksarrangor.ingest.model.Innhold
-import no.nav.tiltaksarrangor.ingest.model.toEndringsmeldingInnhold
+import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
+import no.nav.tiltaksarrangor.consumer.model.Innhold
+import no.nav.tiltaksarrangor.consumer.model.toEndringsmeldingInnhold
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import java.time.LocalDateTime
 import java.util.UUID

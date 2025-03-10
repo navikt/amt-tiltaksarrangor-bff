@@ -2,9 +2,9 @@ package no.nav.tiltaksarrangor.repositories
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
-import no.nav.tiltaksarrangor.ingest.model.AdresseDto
-import no.nav.tiltaksarrangor.ingest.model.EndringsmeldingType
-import no.nav.tiltaksarrangor.ingest.model.Innhold
+import no.nav.tiltaksarrangor.consumer.model.AdresseDto
+import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
+import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
