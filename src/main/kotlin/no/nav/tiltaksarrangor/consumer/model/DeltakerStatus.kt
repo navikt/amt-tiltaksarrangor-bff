@@ -24,6 +24,7 @@ fun DeltakerStatus.toStatusType(erKurs: Boolean): StatusType = when (this) {
 	DeltakerStatus.IKKE_AKTUELL -> StatusType.IKKE_AKTUELL
 	DeltakerStatus.VURDERES -> StatusType.VURDERES
 	DeltakerStatus.AVBRUTT -> StatusType.AVBRUTT
+	DeltakerStatus.SOKT_INN -> StatusType.SOKT_INN
 	DeltakerStatus.HAR_SLUTTET -> { // denne kan endres når amt-tiltak ikke lenger sender kursdeltakere med status HAR_SLUTTET
 		if (erKurs) {
 			StatusType.FULLFORT

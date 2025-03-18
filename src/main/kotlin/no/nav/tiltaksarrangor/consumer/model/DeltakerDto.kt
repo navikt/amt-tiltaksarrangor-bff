@@ -92,7 +92,6 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 
 val SKJULES_ALLTID_STATUSER =
 	listOf(
-		DeltakerStatus.SOKT_INN,
 		DeltakerStatus.VENTELISTE,
 		DeltakerStatus.PABEGYNT_REGISTRERING,
 		DeltakerStatus.FEILREGISTRERT,

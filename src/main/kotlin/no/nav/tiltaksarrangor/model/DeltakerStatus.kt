@@ -16,4 +16,5 @@ enum class StatusType {
 	VURDERES,
 	AVBRUTT,
 	FULLFORT,
+	SOKT_INN,
 }
