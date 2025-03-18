@@ -96,6 +96,7 @@ fun getDeltaker(
 	historikk = emptyList(),
 	sistEndret = LocalDateTime.now(),
 	forsteVedtakFattet = LocalDate.now(),
+	erManueltDeltMedArrangor = false,
 )
 
 fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo = EndringsmeldingDbo(

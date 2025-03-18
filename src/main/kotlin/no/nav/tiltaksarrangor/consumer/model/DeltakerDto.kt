@@ -31,6 +31,7 @@ data class DeltakerDto(
 	val historikk: List<DeltakerHistorikk>?,
 	val sistEndret: LocalDateTime,
 	val forsteVedtakFattet: LocalDate?,
+	val erManueltDeltMedArrangor: Boolean = false,
 )
 
 fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
@@ -85,6 +86,7 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 		historikk = historikk ?: emptyList(),
 		sistEndret = sistEndret,
 		forsteVedtakFattet = forsteVedtakFattet,
+		erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 	)
 }
 

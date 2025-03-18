@@ -151,6 +151,7 @@ private fun tilDeltaker(
 			)
 		},
 		ulesteEndringer = ulesteEndringer,
+		erManueltDeltMedArrangor = deltakerDbo.erManueltDeltMedArrangor,
 	)
 
 	return if (adressebeskyttet && !ansattErVeileder) {

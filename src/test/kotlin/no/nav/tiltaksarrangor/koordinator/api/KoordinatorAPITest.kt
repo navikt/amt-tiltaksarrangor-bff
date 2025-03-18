@@ -418,6 +418,7 @@ class KoordinatorAPITest : IntegrationTest() {
 				historikk = emptyList(),
 				sistEndret = LocalDateTime.now(),
 				forsteVedtakFattet = LocalDate.of(2023, 1, 15),
+				erManueltDeltMedArrangor = false,
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 

@@ -46,6 +46,7 @@ data class DeltakerDbo(
 	val historikk: List<DeltakerHistorikk>,
 	val sistEndret: LocalDateTime,
 	val forsteVedtakFattet: LocalDate?,
+	val erManueltDeltMedArrangor: Boolean,
 ) {
 	fun erSkjult(): Boolean = skjultDato != null
 
