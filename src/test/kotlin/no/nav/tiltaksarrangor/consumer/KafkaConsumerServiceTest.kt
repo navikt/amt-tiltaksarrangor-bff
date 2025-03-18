@@ -221,7 +221,31 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status SOKT_INN - lagres ikke i db `(): Unit = runBlocking {
+	internal fun `lagreDeltaker - status FEILREGISTRERT - lagres ikke i db `(): Unit = runBlocking {
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.FEILREGISTRERT)
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+
+			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
+		}
+	}
+
+	@Test
+	internal fun `lagreDeltaker - status SOKT_INN - lagres hvis er delt med arrangor`(): Unit = runBlocking {
+		with(DeltakerDtoCtx()) {
+			medErManueltDeltMedArrangor()
+			medStatus(DeltakerStatus.SOKT_INN)
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+
+			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+		}
+	}
+
+	@Test
+	internal fun `lagreDeltaker - status SOKT_INN - lagres ikke hvis ikke er delt med arrangor`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.SOKT_INN)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -734,5 +758,9 @@ class DeltakerDtoCtx {
 
 	fun medVurderinger() {
 		deltakerDto = deltakerDto.copy(vurderingerFraArrangor = getVurderinger(deltakerDto.id))
+	}
+
+	fun medErManueltDeltMedArrangor() {
+		deltakerDto = deltakerDto.copy(erManueltDeltMedArrangor = true)
 	}
 }

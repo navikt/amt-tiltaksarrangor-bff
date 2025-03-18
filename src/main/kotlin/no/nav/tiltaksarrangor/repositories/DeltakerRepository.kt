@@ -67,6 +67,7 @@ class DeltakerRepository(
 				historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 				sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 				forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
+				erManueltDeltMedArrangor = rs.getBoolean("er_manuelt_delt_med_arrangor"),
 			)
 		}
 
@@ -109,6 +110,7 @@ class DeltakerRepository(
 						historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 						forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
+						erManueltDeltMedArrangor = rs.getBoolean("er_manuelt_delt_med_arrangor"),
 					),
 				deltakerliste =
 					DeltakerlisteDbo(
@@ -134,7 +136,7 @@ class DeltakerRepository(
 								 start_dato, slutt_dato,
 								 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
 								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
-								 innhold, kilde, historikk, modified_at, forste_vedtak_fattet)
+								 innhold, kilde, historikk, modified_at, forste_vedtak_fattet, er_manuelt_delt_med_arrangor)
 			VALUES (:id,
 					:deltakerliste_id,
 					:personident,
@@ -168,7 +170,9 @@ class DeltakerRepository(
 					:kilde,
 					:historikk,
 					:modified_at,
-					:forste_vedtak_fattet)
+					:forste_vedtak_fattet,
+					:er_manuelt_delt_med_arrangor
+					)
 			ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
 										   personident           = :personident,
 										   fornavn               = :fornavn,
@@ -201,7 +205,9 @@ class DeltakerRepository(
 										   kilde		 		 = :kilde,
 										   historikk             = :historikk,
 										   modified_at           = :modified_at,
-										   forste_vedtak_fattet  = :forste_vedtak_fattet
+										   forste_vedtak_fattet  = :forste_vedtak_fattet,
+										   er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor
+
 			""".trimIndent()
 
 		template.update(
@@ -241,6 +247,7 @@ class DeltakerRepository(
 				"historikk" to toPGObject(deltakerDbo.historikk),
 				"modified_at" to deltakerDbo.sistEndret,
 				"forste_vedtak_fattet" to deltakerDbo.forsteVedtakFattet,
+				"er_manuelt_delt_med_arrangor" to deltakerDbo.erManueltDeltMedArrangor,
 			),
 		)
 	}
@@ -326,7 +333,8 @@ class DeltakerRepository(
 				er_kurs,
 				tilgjengelig_fom,
 				deltaker.modified_at as modified_at,
-				forste_vedtak_fattet
+				forste_vedtak_fattet,
+				er_manuelt_delt_med_arrangor
 		FROM deltaker
 				 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 		WHERE deltaker.id IN (:ids);
@@ -380,7 +388,8 @@ class DeltakerRepository(
 					er_kurs,
 					tilgjengelig_fom,
 				    deltaker.modified_at as modified_at,
-					forste_vedtak_fattet
+					forste_vedtak_fattet,
+					er_manuelt_delt_med_arrangor
 			FROM deltaker
 					 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 			WHERE deltaker.id = :id;

@@ -100,6 +100,7 @@ class VeilederAPITest : IntegrationTest() {
 				historikk = emptyList(),
 				sistEndret = LocalDate.of(2024, 10, 12).atStartOfDay(),
 				forsteVedtakFattet = LocalDate.now(),
+				erManueltDeltMedArrangor = false,
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		ansattRepository.insertOrUpdateAnsatt(

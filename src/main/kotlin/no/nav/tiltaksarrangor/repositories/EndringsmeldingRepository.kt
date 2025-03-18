@@ -97,6 +97,7 @@ class EndringsmeldingRepository(
 						historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
 						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 						forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
+						erManueltDeltMedArrangor = rs.getBoolean("er_manuelt_delt_med_arrangor"),
 					),
 				deltakerlisteDbo =
 					DeltakerlisteDbo(
@@ -226,7 +227,8 @@ class EndringsmeldingRepository(
 					er_kurs,
 					tilgjengelig_fom,
 					deltaker.modified_at as modified_at,
-					forste_vedtak_fattet
+					forste_vedtak_fattet,
+					er_manuelt_delt_med_arrangor
 			FROM endringsmelding
 			         INNER JOIN deltaker ON deltaker.id = endringsmelding.deltaker_id
 			         INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id

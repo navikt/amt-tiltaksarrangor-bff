@@ -310,6 +310,8 @@ class KafkaConsumerService(
 			return false
 		} else if (status.type in AVSLUTTENDE_STATUSER) {
 			return harNyligSluttet()
+		} else if (status.type == DeltakerStatus.SOKT_INN) {
+			return erManueltDeltMedArrangor
 		}
 		return true
 	}

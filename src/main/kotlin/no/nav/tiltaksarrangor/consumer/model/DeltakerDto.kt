@@ -31,6 +31,7 @@ data class DeltakerDto(
 	val historikk: List<DeltakerHistorikk>?,
 	val sistEndret: LocalDateTime,
 	val forsteVedtakFattet: LocalDate?,
+	val erManueltDeltMedArrangor: Boolean = false,
 )
 
 fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
@@ -85,12 +86,12 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 		historikk = historikk ?: emptyList(),
 		sistEndret = sistEndret,
 		forsteVedtakFattet = forsteVedtakFattet,
+		erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 	)
 }
 
 val SKJULES_ALLTID_STATUSER =
 	listOf(
-		DeltakerStatus.SOKT_INN,
 		DeltakerStatus.VENTELISTE,
 		DeltakerStatus.PABEGYNT_REGISTRERING,
 		DeltakerStatus.FEILREGISTRERT,
