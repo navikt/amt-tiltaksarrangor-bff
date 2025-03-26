@@ -27,7 +27,7 @@ val kotestVersion = "5.9.1"
 val testcontainersVersion = "1.20.6"
 val mockkVersion = "1.13.17"
 val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
-val unleashVersion = "10.2.0"
+val unleashVersion = "10.2.2"
 val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.02.25_09.33-1d4a78781b9c"
 
