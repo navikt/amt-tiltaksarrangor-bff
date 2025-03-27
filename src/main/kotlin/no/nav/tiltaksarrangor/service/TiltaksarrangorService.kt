@@ -126,9 +126,13 @@ class TiltaksarrangorService(
 
 		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)
 
-		if (deltakerMedDeltakerliste.deltaker.status != StatusType.VURDERES) {
+		if (!(
+				deltakerMedDeltakerliste.deltaker.status == StatusType.VURDERES ||
+					deltakerMedDeltakerliste.deltaker.status == StatusType.SOKT_INN
+			)
+		) {
 			throw IllegalStateException(
-				"Kan ikke registrere vurdering for deltaker med id $deltakerId med annen status enn VURDERES. " +
+				"Kan ikke registrere vurdering for deltaker med id $deltakerId med annen status enn VURDERES eller SOKT_INN. " +
 					"Ugyldig status: ${deltakerMedDeltakerliste.deltaker.status.name}",
 			)
 		}
