@@ -6,7 +6,6 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.DeltakerHistorikkResponse
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
-import no.nav.tiltaksarrangor.api.response.VedtakResponse
 import no.nav.tiltaksarrangor.api.response.toResponse
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.melding.MeldingProducer
