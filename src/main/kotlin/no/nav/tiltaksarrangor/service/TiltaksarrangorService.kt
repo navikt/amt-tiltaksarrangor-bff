@@ -2,9 +2,11 @@ package no.nav.tiltaksarrangor.service
 
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.DeltakerHistorikkResponse
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
+import no.nav.tiltaksarrangor.api.response.VedtakResponse
 import no.nav.tiltaksarrangor.api.response.toResponse
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.melding.MeldingProducer
@@ -68,7 +70,12 @@ class TiltaksarrangorService(
 
 		val ulesteEndringerResponse = getUlesteEndringer(personIdent, deltakerMedDeltakerliste)
 
-		return deltakerMapper.map(deltakerMedDeltakerliste.deltaker, deltakerMedDeltakerliste.deltakerliste, ansatt, ulesteEndringerResponse)
+		return deltakerMapper.map(
+			deltakerMedDeltakerliste.deltaker,
+			deltakerMedDeltakerliste.deltakerliste,
+			ansatt,
+			ulesteEndringerResponse,
+		)
 	}
 
 	fun getUlesteEndringer(personIdent: String, medDeltakerlisteDbo: DeltakerMedDeltakerlisteDbo): List<UlestEndringResponse> {
@@ -111,7 +118,9 @@ class TiltaksarrangorService(
 		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
 
 		val arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn
-		return historikk.toResponse(ansatte, toTitleCase(arrangorNavn), enheter)
+		return historikk
+			.filterNot { deltaker.deltakerliste.erKurs && it is DeltakerHistorikk.Vedtak }
+			.toResponse(ansatte, toTitleCase(arrangorNavn), enheter)
 	}
 
 	fun registrerVurdering(

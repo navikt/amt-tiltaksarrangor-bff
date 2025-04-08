@@ -10,8 +10,10 @@ import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.ImportertFraArena
+import no.nav.amt.lib.models.deltaker.InnsokPaaFellesOppstart
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.VurderingFraArrangorData
+import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
 import java.time.LocalDate
@@ -26,6 +28,8 @@ import java.util.UUID
 	JsonSubTypes.Type(value = EndringFraArrangorResponse::class, name = "EndringFraArrangor"),
 	JsonSubTypes.Type(value = ImportertFraArenaResponse::class, name = "ImportertFraArena"),
 	JsonSubTypes.Type(value = VurderingFraArrangorResponse::class, name = "VurderingFraArrangor"),
+	JsonSubTypes.Type(value = EndringFraTiltakskoordinatorResponse::class, name = "EndringFraTiltakskoordinator"),
+	JsonSubTypes.Type(value = InnsokPaaFellesOppstartResponse::class, name = "InnsokPaaFellesOppstart"),
 )
 sealed interface DeltakerHistorikkResponse
 
@@ -81,6 +85,21 @@ data class VurderingFraArrangorResponse(
 	val endretAv: String,
 ) : DeltakerHistorikkResponse
 
+data class InnsokPaaFellesOppstartResponse(
+	val innsokt: LocalDateTime,
+	val innsoktAv: String,
+	val innsoktAvEnhet: String,
+	val deltakelsesinnholdVedInnsok: Deltakelsesinnhold?,
+	val utkastDelt: LocalDateTime?,
+	val utkastGodkjentAvNav: Boolean,
+) : DeltakerHistorikkResponse
+
+data class EndringFraTiltakskoordinatorResponse(
+	val endring: EndringFraTiltakskoordinator.Endring,
+	val endretAv: String,
+	val endret: LocalDateTime,
+) : DeltakerHistorikkResponse
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 sealed interface ForslagHistorikkResponseStatus {
 	data object VenterPaSvar : ForslagHistorikkResponseStatus
@@ -117,6 +136,8 @@ fun List<DeltakerHistorikk>.toResponse(
 		is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
 		is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.toResponse()
 		is DeltakerHistorikk.VurderingFraArrangor -> it.data.toResponse(arrangornavn)
+		is DeltakerHistorikk.InnsokPaaFellesOppstart -> it.data.toResponse(ansatte, enheter)
+		is DeltakerHistorikk.EndringFraTiltakskoordinator -> it.endringFraTiltakskoordinator.toResponse(ansatte)
 	}
 }
 
@@ -180,6 +201,21 @@ fun Forslag.toResponse(
 	arrangorNavn = arrangornavn,
 	endring = endring,
 	status = getForslagResponseStatus(ansatte, enheter),
+)
+
+fun InnsokPaaFellesOppstart.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) = InnsokPaaFellesOppstartResponse(
+	innsokt,
+	ansatte[innsoktAv]!!.navn,
+	enheter[innsoktAvEnhet]!!.navn,
+	deltakelsesinnholdVedInnsok,
+	utkastDelt,
+	utkastGodkjentAvNav,
+)
+
+fun EndringFraTiltakskoordinator.toResponse(ansatte: Map<UUID, NavAnsatt>) = EndringFraTiltakskoordinatorResponse(
+	endring,
+	ansatte[endretAv]!!.navn,
+	endret,
 )
 
 private fun Forslag.getForslagResponseStatus(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>): ForslagHistorikkResponseStatus =

@@ -192,25 +192,26 @@ class KafkaConsumerService(
 			.mapNotNull { toDeltakerOppdatering(it) }
 	}
 
-	private fun toDeltakerOppdatering(historikk: DeltakerHistorikk): Oppdatering? {
-		when (historikk) {
-			is DeltakerHistorikk.Endring -> return Oppdatering.DeltakelsesEndring(historikk.endring)
-			is DeltakerHistorikk.Forslag -> {
-				when (historikk.forslag.status) {
-					is Forslag.Status.Avvist -> return Oppdatering.AvvistForslag(historikk.forslag)
-					is Forslag.Status.Godkjent,
-					is Forslag.Status.Erstattet,
-					is Forslag.Status.Tilbakekalt,
-					Forslag.Status.VenterPaSvar,
-					-> return null
-				}
+	private fun toDeltakerOppdatering(historikk: DeltakerHistorikk): Oppdatering? = when (historikk) {
+		is DeltakerHistorikk.Endring -> Oppdatering.DeltakelsesEndring(historikk.endring)
+		is DeltakerHistorikk.Forslag -> {
+			when (historikk.forslag.status) {
+				is Forslag.Status.Avvist -> Oppdatering.AvvistForslag(historikk.forslag)
+				is Forslag.Status.Godkjent,
+				is Forslag.Status.Erstattet,
+				is Forslag.Status.Tilbakekalt,
+				Forslag.Status.VenterPaSvar,
+				-> null
 			}
-			is DeltakerHistorikk.EndringFraArrangor,
-			is DeltakerHistorikk.ImportertFraArena,
-			is DeltakerHistorikk.Vedtak,
-			is DeltakerHistorikk.VurderingFraArrangor,
-			-> return null
 		}
+
+		is DeltakerHistorikk.EndringFraTiltakskoordinator,
+		is DeltakerHistorikk.InnsokPaaFellesOppstart,
+		is DeltakerHistorikk.EndringFraArrangor,
+		is DeltakerHistorikk.ImportertFraArena,
+		is DeltakerHistorikk.Vedtak,
+		is DeltakerHistorikk.VurderingFraArrangor,
+		-> null
 	}
 
 	private fun leggTilNavAnsattOgEnhetHistorikk(deltakerDto: DeltakerDto) {
