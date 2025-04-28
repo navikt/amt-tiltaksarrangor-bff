@@ -118,7 +118,13 @@ private fun tilDeltaker(
 		soktInnDato = deltakerDbo.innsoktDato.atStartOfDay(),
 		tiltakskode = deltakerliste.tiltakType,
 		bestillingTekst = deltakerDbo.bestillingstekst,
-		innhold = deltakerDbo.innhold,
+		innhold = deltakerDbo.innhold?.let {
+			if (deltakerDbo.innhold.innhold.isEmpty() && deltakerDbo.innhold.ledetekst == null) {
+				null
+			} else {
+				deltakerDbo.innhold
+			}
+		},
 		fjernesDato = deltakerDbo.skalFjernesDato(),
 		navInformasjon =
 			NavInformasjon(
