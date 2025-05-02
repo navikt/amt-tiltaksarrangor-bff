@@ -5,6 +5,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
@@ -124,14 +125,21 @@ class KafkaConsumerService(
 		val vedtak = deltakerDto.historikk?.filterIsInstance<DeltakerHistorikk.Vedtak>()
 
 		if (deltakerDto.historikk == null || vedtak.isNullOrEmpty()) {
-			ulestEndringRepository.insert(
-				deltakerId,
-				Oppdatering.NyDeltaker(
-					opprettetAvNavn = null,
-					opprettetAvEnhet = null,
-					opprettet = deltakerDto.innsoktDato,
-				),
-			)
+			val endring = deltakerDto.historikk?.filterIsInstance<DeltakerHistorikk.EndringFraTiltakskoordinator>()
+			if (endring.isNullOrEmpty()) {
+				ulestEndringRepository.insert(
+					deltakerId,
+					Oppdatering.NyDeltaker(
+						opprettetAvNavn = null,
+						opprettetAvEnhet = null,
+						opprettet = deltakerDto.innsoktDato,
+					),
+				)
+			} else {
+				endring.forEach {
+					lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(it.endringFraTiltakskoordinator, deltakerId)
+				}
+			}
 			return
 		}
 
@@ -143,6 +151,17 @@ class KafkaConsumerService(
 					opprettetAvEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(it.opprettetAvEnhet).navn,
 					opprettet = it.opprettet.toLocalDate(),
 				),
+			)
+		}
+	}
+
+	private fun lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(endring: EndringFraTiltakskoordinator, deltakerId: UUID) {
+		val oppdatering = mapToTiltakskoordinatorOppdatering(endring, true)
+
+		if (oppdatering != null) {
+			ulestEndringRepository.insert(
+				deltakerId,
+				oppdatering,
 			)
 		}
 	}
@@ -204,8 +223,9 @@ class KafkaConsumerService(
 				-> null
 			}
 		}
-
-		is DeltakerHistorikk.EndringFraTiltakskoordinator,
+		is DeltakerHistorikk.EndringFraTiltakskoordinator -> {
+			mapToTiltakskoordinatorOppdatering(historikk.endringFraTiltakskoordinator, false)
+		}
 		is DeltakerHistorikk.InnsokPaaFellesOppstart,
 		is DeltakerHistorikk.EndringFraArrangor,
 		is DeltakerHistorikk.ImportertFraArena,
@@ -213,6 +233,22 @@ class KafkaConsumerService(
 		is DeltakerHistorikk.VurderingFraArrangor,
 		-> null
 	}
+
+	private fun mapToTiltakskoordinatorOppdatering(endring: EndringFraTiltakskoordinator, erNyDeltaker: Boolean): Oppdatering? =
+		when (endring.endring) {
+			is EndringFraTiltakskoordinator.DelMedArrangor -> Oppdatering.DeltMedArrangor(
+				deltAvNavn = navAnsattService.hentNavAnsatt(endring.endretAv)?.navn,
+				deltAvEnhet = null, // navEnhetService.hentOpprettEllerOppdaterNavEnhet(endring.endretAvEnhet).navn
+				delt = endring.endret.toLocalDate(),
+			)
+			is EndringFraTiltakskoordinator.TildelPlass -> Oppdatering.TildeltPlass(
+				tildeltPlassAvNavn = navAnsattService.hentNavAnsatt(endring.endretAv)?.navn,
+				tildeltPlassAvEnhet = null, // navEnhetService.hentOpprettEllerOppdaterNavEnhet(endring.endretAvEnhet).navn
+				tildeltPlass = endring.endret.toLocalDate(),
+				erNyDeltaker,
+			)
+			is EndringFraTiltakskoordinator.SettPaaVenteliste -> null
+		}
 
 	private fun leggTilNavAnsattOgEnhetHistorikk(deltakerDto: DeltakerDto) {
 		if (deltakerDto.historikk.isNullOrEmpty()) {

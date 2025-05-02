@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Forslag.Status
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.tiltaksarrangor.model.Oppdatering.DeltMedArrangor
+import no.nav.tiltaksarrangor.model.Oppdatering.TildeltPlass
 import java.time.LocalDate
 import java.util.UUID
 
@@ -19,19 +21,26 @@ data class UlestEndring(
 		is Oppdatering.NavBrukerEndring,
 		is Oppdatering.NavEndring,
 		is Oppdatering.NyDeltaker,
+		is Oppdatering.DeltMedArrangor,
+		is Oppdatering.TildeltPlass,
 		-> false
 	}
 
 	fun erOppdateringFraNav(): Boolean = !erSvarFraNav() && !erNyDeltaker()
 
 	fun erNyDeltaker(): Boolean = when (oppdatering) {
-		is Oppdatering.NyDeltaker -> true
+		is Oppdatering.TildeltPlass -> oppdatering.erNyDeltaker
+		is Oppdatering.DeltMedArrangor,
+		is Oppdatering.NyDeltaker,
+		-> true
 		else -> false
 	}
 
 	fun hentNavAnsattId(): UUID? = when (oppdatering) {
 		is Oppdatering.DeltakelsesEndring -> oppdatering.endring.endretAv
 		is Oppdatering.AvvistForslag -> oppdatering.forslag.getNavAnsattForEndring().id
+		is Oppdatering.DeltMedArrangor,
+		is Oppdatering.TildeltPlass,
 		is Oppdatering.NavBrukerEndring,
 		is Oppdatering.NavEndring,
 		is Oppdatering.NyDeltaker,
@@ -44,6 +53,8 @@ data class UlestEndring(
 		is Oppdatering.NavBrukerEndring,
 		is Oppdatering.NavEndring,
 		is Oppdatering.NyDeltaker,
+		is Oppdatering.DeltMedArrangor,
+		is Oppdatering.TildeltPlass,
 		-> null
 	}
 }
@@ -86,12 +97,27 @@ sealed interface Oppdatering {
 		val opprettet: LocalDate,
 	) : Oppdatering
 
+	data class DeltMedArrangor(
+		val deltAvNavn: String?,
+		val deltAvEnhet: String?,
+		val delt: LocalDate,
+	) : Oppdatering
+
+	data class TildeltPlass(
+		val tildeltPlassAvNavn: String?,
+		val tildeltPlassAvEnhet: String?,
+		val tildeltPlass: LocalDate,
+		val erNyDeltaker: Boolean,
+	) : Oppdatering
+
 	val id get() = when (this) {
 		is DeltakelsesEndring -> endring.id
 		is AvvistForslag -> forslag.id
 		is NavBrukerEndring,
 		is NavEndring,
 		is NyDeltaker,
+		is DeltMedArrangor,
+		is TildeltPlass,
 		-> UUID.randomUUID()
 	}
 }
