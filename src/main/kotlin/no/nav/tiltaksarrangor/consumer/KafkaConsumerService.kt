@@ -123,24 +123,21 @@ class KafkaConsumerService(
 
 	private fun lagreNyDeltakerUlestEndring(deltakerDto: DeltakerDto, deltakerId: UUID) {
 		val vedtak = deltakerDto.historikk?.filterIsInstance<DeltakerHistorikk.Vedtak>()
+		val endring = deltakerDto.historikk?.filterIsInstance<DeltakerHistorikk.EndringFraTiltakskoordinator>()
 
-		if (deltakerDto.historikk == null || vedtak.isNullOrEmpty()) {
-			val endring = deltakerDto.historikk?.filterIsInstance<DeltakerHistorikk.EndringFraTiltakskoordinator>()
-			if (endring.isNullOrEmpty()) {
-				ulestEndringRepository.insert(
-					deltakerId,
-					Oppdatering.NyDeltaker(
-						opprettetAvNavn = null,
-						opprettetAvEnhet = null,
-						opprettet = deltakerDto.innsoktDato,
-					),
-				)
-			} else {
-				endring.forEach {
-					lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(it.endringFraTiltakskoordinator, deltakerId)
-				}
+		if (!endring.isNullOrEmpty()) {
+			endring.forEach {
+				lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(it.endringFraTiltakskoordinator, deltakerId)
 			}
-			return
+		} else if (deltakerDto.historikk == null || vedtak.isNullOrEmpty()) {
+			ulestEndringRepository.insert(
+				deltakerId,
+				Oppdatering.NyDeltaker(
+					opprettetAvNavn = null,
+					opprettetAvEnhet = null,
+					opprettet = deltakerDto.innsoktDato,
+				),
+			)
 		} else {
 			vedtak.minBy { it.vedtak.opprettet }.vedtak.let {
 				ulestEndringRepository.insert(
