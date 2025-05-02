@@ -141,17 +141,17 @@ class KafkaConsumerService(
 				}
 			}
 			return
-		}
-
-		vedtak.minBy { it.vedtak.opprettet }.vedtak.let {
-			ulestEndringRepository.insert(
-				deltakerId,
-				Oppdatering.NyDeltaker(
-					opprettetAvNavn = navAnsattService.hentNavAnsatt(it.opprettetAv)?.navn,
-					opprettetAvEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(it.opprettetAvEnhet).navn,
-					opprettet = it.opprettet.toLocalDate(),
-				),
-			)
+		} else {
+			vedtak.minBy { it.vedtak.opprettet }.vedtak.let {
+				ulestEndringRepository.insert(
+					deltakerId,
+					Oppdatering.NyDeltaker(
+						opprettetAvNavn = navAnsattService.hentNavAnsatt(it.opprettetAv)?.navn,
+						opprettetAvEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(it.opprettetAvEnhet).navn,
+						opprettet = it.opprettet.toLocalDate(),
+					),
+				)
+			}
 		}
 	}
 
