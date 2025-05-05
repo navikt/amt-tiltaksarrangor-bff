@@ -22,6 +22,8 @@ data class UlestEndringResponse(
 	JsonSubTypes.Type(value = OppdateringResponse.NavBrukerEndringResponse::class, name = "NavBrukerEndring"),
 	JsonSubTypes.Type(value = OppdateringResponse.NavEndringResponse::class, name = "NavEndring"),
 	JsonSubTypes.Type(value = OppdateringResponse.NyDeltakerResponse::class, name = "NyDeltaker"),
+	JsonSubTypes.Type(value = OppdateringResponse.DeltMedArrangorResponse::class, name = "DeltMedArrangor"),
+	JsonSubTypes.Type(value = OppdateringResponse.TildeltPlassResponse::class, name = "TildeltPlass"),
 )
 sealed interface OppdateringResponse {
 	data class DeltakelsesEndringResponse(
@@ -51,6 +53,19 @@ sealed interface OppdateringResponse {
 		val opprettetAvNavn: String?,
 		val opprettetAvEnhet: String?,
 		val opprettet: LocalDate,
+	) : OppdateringResponse
+
+	data class DeltMedArrangorResponse(
+		val deltAvNavn: String?,
+		val deltAvEnhet: String?,
+		val delt: LocalDate,
+	) : OppdateringResponse
+
+	data class TildeltPlassResponse(
+		val tildeltPlassAvNavn: String?,
+		val tildeltPlassAvEnhet: String?,
+		val tildeltPlass: LocalDate,
+		val erNyDeltaker: Boolean,
 	) : OppdateringResponse
 }
 
@@ -102,6 +117,25 @@ fun List<UlestEndring>.toResponse(
 				opprettetAvNavn = it.oppdatering.opprettetAvNavn,
 				opprettetAvEnhet = it.oppdatering.opprettetAvEnhet,
 				opprettet = it.oppdatering.opprettet,
+			),
+		)
+		is Oppdatering.DeltMedArrangor -> UlestEndringResponse(
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.DeltMedArrangorResponse(
+				deltAvNavn = it.oppdatering.deltAvNavn,
+				deltAvEnhet = it.oppdatering.deltAvEnhet,
+				delt = it.oppdatering.delt,
+			),
+		)
+		is Oppdatering.TildeltPlass -> UlestEndringResponse(
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.TildeltPlassResponse(
+				tildeltPlassAvNavn = it.oppdatering.tildeltPlassAvNavn,
+				tildeltPlassAvEnhet = it.oppdatering.tildeltPlassAvEnhet,
+				tildeltPlass = it.oppdatering.tildeltPlass,
+				erNyDeltaker = it.oppdatering.erNyDeltaker,
 			),
 		)
 	}
