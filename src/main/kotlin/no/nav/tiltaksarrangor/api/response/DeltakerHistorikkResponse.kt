@@ -213,12 +213,13 @@ fun InnsokPaaFellesOppstart.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: M
 	utkastGodkjentAvNav,
 )
 
-fun EndringFraTiltakskoordinator.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) = EndringFraTiltakskoordinatorResponse(
-	endring,
-	ansatte[endretAv]!!.navn,
-	enheter[endretAvEnhet]!!.navn,
-	endret,
-)
+fun EndringFraTiltakskoordinator.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) =
+	EndringFraTiltakskoordinatorResponse(
+		endring,
+		ansatte[endretAv]!!.navn,
+		enheter[endretAvEnhet]!!.navn,
+		endret,
+	)
 
 private fun Forslag.getForslagResponseStatus(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>): ForslagHistorikkResponseStatus =
 	when (val status = status) {
