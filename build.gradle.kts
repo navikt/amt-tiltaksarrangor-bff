@@ -29,7 +29,7 @@ val mockkVersion = "1.14.0"
 val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
 val unleashVersion = "10.2.2"
 val ktlintVersion = "1.4.1"
-val amtLibVersion = "1.2025.05.05_12.58-d158d4b4e7cf"
+val amtLibVersion = "1.2025.05.06_11.03-f30289ddfa4a"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -39,6 +39,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-logging")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     implementation("org.springframework:spring-aspects")
 
@@ -78,7 +81,6 @@ dependencies {
     testImplementation("org.awaitility:awaitility")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("no.nav.amt.lib:testing:$amtLibVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {

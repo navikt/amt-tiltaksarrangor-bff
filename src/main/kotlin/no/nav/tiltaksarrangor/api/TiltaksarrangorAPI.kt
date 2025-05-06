@@ -41,7 +41,7 @@ class TiltaksarrangorAPI(
 
 	@GetMapping("/deltaker/{deltakerId}/historikk")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
-	fun getDeltakerhistorikk(
+	suspend fun getDeltakerhistorikk(
 		@PathVariable deltakerId: UUID,
 	): String {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()

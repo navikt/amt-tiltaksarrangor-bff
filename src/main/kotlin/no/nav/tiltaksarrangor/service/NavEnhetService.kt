@@ -36,9 +36,20 @@ class NavEnhetService(
 		return enhet
 	}
 
-	fun hentEnheterForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavEnhet> {
+	suspend fun hentEnheterForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavEnhet> {
 		val ider = historikk.flatMap { it.navEnheter() }.distinct()
-		return hentEnheter(ider)
+		val enheterFraDb = hentEnheter(ider)
+
+		return if (ider.size != enheterFraDb.size) {
+			enheterFraDb + hentManglendeEnheter(ider, enheterFraDb).associateBy { it.id }
+		} else {
+			enheterFraDb
+		}
+	}
+
+	private suspend fun hentManglendeEnheter(ider: List<UUID>, lagredeEnheter: Map<UUID, NavEnhet>): List<NavEnhet> {
+		val manglendeEnheter = ider.toSet() - lagredeEnheter.keys
+		return manglendeEnheter.map { fetchEnhet(it) }
 	}
 
 	fun hentEnheterForUlesteEndringer(ulesteEndringer: List<UlestEndring>): Map<UUID, NavEnhet> {
