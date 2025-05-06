@@ -98,7 +98,7 @@ class TiltaksarrangorService(
 		return ulesteEndringer.toResponse(ansatte, toTitleCase(arrangorNavn), enheter)
 	}
 
-	fun getDeltakerHistorikk(personIdent: String, deltakerId: UUID): List<DeltakerHistorikkResponse> {
+	suspend fun getDeltakerHistorikk(personIdent: String, deltakerId: UUID): List<DeltakerHistorikkResponse> {
 		val deltaker = getDeltaker(personIdent, deltakerId)
 		val historikk = deltaker.historikk.sortedByDescending { it.sistEndret }
 		if (historikk.isEmpty()) {

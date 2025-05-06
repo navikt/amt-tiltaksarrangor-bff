@@ -97,6 +97,7 @@ data class InnsokPaaFellesOppstartResponse(
 data class EndringFraTiltakskoordinatorResponse(
 	val endring: EndringFraTiltakskoordinator.Endring,
 	val endretAv: String,
+	val endretAvEnhet: String,
 	val endret: LocalDateTime,
 ) : DeltakerHistorikkResponse
 
@@ -137,7 +138,7 @@ fun List<DeltakerHistorikk>.toResponse(
 		is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.toResponse()
 		is DeltakerHistorikk.VurderingFraArrangor -> it.data.toResponse(arrangornavn)
 		is DeltakerHistorikk.InnsokPaaFellesOppstart -> it.data.toResponse(ansatte, enheter)
-		is DeltakerHistorikk.EndringFraTiltakskoordinator -> it.endringFraTiltakskoordinator.toResponse(ansatte)
+		is DeltakerHistorikk.EndringFraTiltakskoordinator -> it.endringFraTiltakskoordinator.toResponse(ansatte, enheter)
 	}
 }
 
@@ -212,11 +213,13 @@ fun InnsokPaaFellesOppstart.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: M
 	utkastGodkjentAvNav,
 )
 
-fun EndringFraTiltakskoordinator.toResponse(ansatte: Map<UUID, NavAnsatt>) = EndringFraTiltakskoordinatorResponse(
-	endring,
-	ansatte[endretAv]!!.navn,
-	endret,
-)
+fun EndringFraTiltakskoordinator.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) =
+	EndringFraTiltakskoordinatorResponse(
+		endring,
+		ansatte[endretAv]!!.navn,
+		enheter[endretAvEnhet]!!.navn,
+		endret,
+	)
 
 private fun Forslag.getForslagResponseStatus(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>): ForslagHistorikkResponseStatus =
 	when (val status = status) {
