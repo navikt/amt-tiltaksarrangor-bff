@@ -21,9 +21,11 @@ data class UlestEndring(
 		is Oppdatering.NavBrukerEndring,
 		is Oppdatering.NavEndring,
 		is Oppdatering.NyDeltaker,
-		is Oppdatering.DeltMedArrangor,
-		is Oppdatering.TildeltPlass,
+		is DeltMedArrangor,
+		is TildeltPlass,
+		is Oppdatering.Avslag,
 		-> false
+
 	}
 
 	fun erOppdateringFraNav(): Boolean = !erSvarFraNav() && !erNyDeltaker()
@@ -39,6 +41,7 @@ data class UlestEndring(
 	fun hentNavAnsattId(): UUID? = when (oppdatering) {
 		is Oppdatering.DeltakelsesEndring -> oppdatering.endring.endretAv
 		is Oppdatering.AvvistForslag -> oppdatering.forslag.getNavAnsattForEndring().id
+		is Oppdatering.Avslag,
 		is Oppdatering.DeltMedArrangor,
 		is Oppdatering.TildeltPlass,
 		is Oppdatering.NavBrukerEndring,
@@ -55,6 +58,7 @@ data class UlestEndring(
 		is Oppdatering.NyDeltaker,
 		is Oppdatering.DeltMedArrangor,
 		is Oppdatering.TildeltPlass,
+		is Oppdatering.Avslag,
 		-> null
 	}
 }
@@ -110,6 +114,13 @@ sealed interface Oppdatering {
 		val erNyDeltaker: Boolean,
 	) : Oppdatering
 
+	data class Avslag(
+		val endretAv: String?,
+		val endretAvEnhet: String?,
+		val aarsak: DeltakerStatusAarsak,
+		val begrunnelse: String?,
+	) : Oppdatering
+
 	val id get() = when (this) {
 		is DeltakelsesEndring -> endring.id
 		is AvvistForslag -> forslag.id
@@ -118,6 +129,7 @@ sealed interface Oppdatering {
 		is NyDeltaker,
 		is DeltMedArrangor,
 		is TildeltPlass,
+		is Avslag,
 		-> UUID.randomUUID()
 	}
 }

@@ -22,6 +22,7 @@ import no.nav.tiltaksarrangor.consumer.model.toArrangorDbo
 import no.nav.tiltaksarrangor.consumer.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.consumer.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -220,9 +221,11 @@ class KafkaConsumerService(
 				-> null
 			}
 		}
+
 		is DeltakerHistorikk.EndringFraTiltakskoordinator -> {
 			mapToTiltakskoordinatorOppdatering(historikk.endringFraTiltakskoordinator, false)
 		}
+
 		is DeltakerHistorikk.InnsokPaaFellesOppstart,
 		is DeltakerHistorikk.EndringFraArrangor,
 		is DeltakerHistorikk.ImportertFraArena,
@@ -232,19 +235,27 @@ class KafkaConsumerService(
 	}
 
 	private fun mapToTiltakskoordinatorOppdatering(endring: EndringFraTiltakskoordinator, erNyDeltaker: Boolean): Oppdatering? =
-		when (endring.endring) {
+		when (val e = endring.endring) {
 			is EndringFraTiltakskoordinator.DelMedArrangor -> Oppdatering.DeltMedArrangor(
-				deltAvNavn = navAnsattService.hentNavAnsatt(endring.endretAv)?.navn,
-				deltAvEnhet = null, // navEnhetService.hentOpprettEllerOppdaterNavEnhet(endring.endretAvEnhet).navn
+				deltAvNavn = navAnsattService.hentEllerOpprettNavAnsatt(endring.endretAv).navn,
+				deltAvEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(endring.endretAvEnhet).navn,
 				delt = endring.endret.toLocalDate(),
 			)
+
 			is EndringFraTiltakskoordinator.TildelPlass -> Oppdatering.TildeltPlass(
-				tildeltPlassAvNavn = navAnsattService.hentNavAnsatt(endring.endretAv)?.navn,
-				tildeltPlassAvEnhet = null, // navEnhetService.hentOpprettEllerOppdaterNavEnhet(endring.endretAvEnhet).navn
+				tildeltPlassAvNavn = navAnsattService.hentEllerOpprettNavAnsatt(endring.endretAv).navn,
+				tildeltPlassAvEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(endring.endretAvEnhet).navn,
 				tildeltPlass = endring.endret.toLocalDate(),
 				erNyDeltaker,
 			)
+
 			is EndringFraTiltakskoordinator.SettPaaVenteliste -> null
+			is EndringFraTiltakskoordinator.Avslag -> Oppdatering.Avslag(
+				endretAv = navAnsattService.hentEllerOpprettNavAnsatt(endring.endretAv).navn,
+				endretAvEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(endring.endretAvEnhet).navn,
+				aarsak = e.aarsak.toDeltakerStatusAarsak(),
+				begrunnelse = e.begrunnelse,
+			)
 		}
 
 	private fun leggTilNavAnsattOgEnhetHistorikk(deltakerDto: DeltakerDto) {
@@ -462,3 +473,8 @@ fun DeltakerlisteDto.skalLagres(): Boolean {
 	}
 	return false
 }
+
+fun EndringFraTiltakskoordinator.Avslag.Aarsak.toDeltakerStatusAarsak() = DeltakerStatusAarsak(
+	type = DeltakerStatusAarsak.Type.valueOf(this.type.name),
+	beskrivelse = this.beskrivelse,
+)
