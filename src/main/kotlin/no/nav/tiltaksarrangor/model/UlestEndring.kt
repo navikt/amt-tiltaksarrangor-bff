@@ -25,7 +25,6 @@ data class UlestEndring(
 		is TildeltPlass,
 		is Oppdatering.Avslag,
 		-> false
-
 	}
 
 	fun erOppdateringFraNav(): Boolean = !erSvarFraNav() && !erNyDeltaker()
