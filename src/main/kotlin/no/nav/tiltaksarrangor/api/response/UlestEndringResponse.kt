@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.UlestEndring
 import java.time.LocalDate
@@ -24,6 +25,7 @@ data class UlestEndringResponse(
 	JsonSubTypes.Type(value = OppdateringResponse.NyDeltakerResponse::class, name = "NyDeltaker"),
 	JsonSubTypes.Type(value = OppdateringResponse.DeltMedArrangorResponse::class, name = "DeltMedArrangor"),
 	JsonSubTypes.Type(value = OppdateringResponse.TildeltPlassResponse::class, name = "TildeltPlass"),
+	JsonSubTypes.Type(value = OppdateringResponse.AvslagResponse::class, name = "GittAvslag"),
 )
 sealed interface OppdateringResponse {
 	data class DeltakelsesEndringResponse(
@@ -66,6 +68,14 @@ sealed interface OppdateringResponse {
 		val tildeltPlassAvEnhet: String?,
 		val tildeltPlass: LocalDate,
 		val erNyDeltaker: Boolean,
+	) : OppdateringResponse
+
+	data class AvslagResponse(
+		val endretAv: String?,
+		val endretAvEnhet: String?,
+		val aarsak: DeltakerStatusAarsak,
+		val begrunnelse: String?,
+		val endret: LocalDate,
 	) : OppdateringResponse
 }
 
@@ -136,6 +146,18 @@ fun List<UlestEndring>.toResponse(
 				tildeltPlassAvEnhet = it.oppdatering.tildeltPlassAvEnhet,
 				tildeltPlass = it.oppdatering.tildeltPlass,
 				erNyDeltaker = it.oppdatering.erNyDeltaker,
+			),
+		)
+
+		is Oppdatering.Avslag -> UlestEndringResponse(
+			id = it.id,
+			deltakerId = it.deltakerId,
+			oppdatering = OppdateringResponse.AvslagResponse(
+				it.oppdatering.endretAv,
+				it.oppdatering.endretAvEnhet,
+				it.oppdatering.aarsak,
+				it.oppdatering.begrunnelse,
+				it.oppdatert,
 			),
 		)
 	}
