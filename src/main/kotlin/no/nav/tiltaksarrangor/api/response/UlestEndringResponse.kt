@@ -25,7 +25,7 @@ data class UlestEndringResponse(
 	JsonSubTypes.Type(value = OppdateringResponse.NyDeltakerResponse::class, name = "NyDeltaker"),
 	JsonSubTypes.Type(value = OppdateringResponse.DeltMedArrangorResponse::class, name = "DeltMedArrangor"),
 	JsonSubTypes.Type(value = OppdateringResponse.TildeltPlassResponse::class, name = "TildeltPlass"),
-	JsonSubTypes.Type(value = OppdateringResponse.AvslagResponse::class, name = "GittAvslag"),
+	JsonSubTypes.Type(value = OppdateringResponse.AvslagResponse::class, name = "Avslag"),
 )
 sealed interface OppdateringResponse {
 	data class DeltakelsesEndringResponse(
