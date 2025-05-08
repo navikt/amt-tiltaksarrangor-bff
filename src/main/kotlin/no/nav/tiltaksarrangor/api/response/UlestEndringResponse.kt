@@ -75,6 +75,7 @@ sealed interface OppdateringResponse {
 		val endretAvEnhet: String?,
 		val aarsak: DeltakerStatusAarsak,
 		val begrunnelse: String?,
+		val endret: LocalDate,
 	) : OppdateringResponse
 }
 
@@ -156,6 +157,7 @@ fun List<UlestEndring>.toResponse(
 				it.oppdatering.endretAvEnhet,
 				it.oppdatering.aarsak,
 				it.oppdatering.begrunnelse,
+				it.oppdatert,
 			),
 		)
 	}
