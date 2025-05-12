@@ -32,7 +32,7 @@ class ForslagService(
 	): Forslag {
 		val endring = when (request) {
 			is ForlengDeltakelseRequest -> Forslag.ForlengDeltakelse(request.sluttdato)
-			is AvsluttDeltakelseRequest -> Forslag.AvsluttDeltakelse(request.sluttdato, request.aarsak, request.harDeltatt)
+			is AvsluttDeltakelseRequest -> Forslag.AvsluttDeltakelse(request.sluttdato, request.aarsak, request.harDeltatt, request.harFullfort)
 			is IkkeAktuellRequest -> Forslag.IkkeAktuell(request.aarsak)
 			is DeltakelsesmengdeRequest -> Forslag.Deltakelsesmengde(request.deltakelsesprosent, request.dagerPerUke, request.gyldigFra)
 			is SluttdatoRequest -> Forslag.Sluttdato(request.sluttdato)
