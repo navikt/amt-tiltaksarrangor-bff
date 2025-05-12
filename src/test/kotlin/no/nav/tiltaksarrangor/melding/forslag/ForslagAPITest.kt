@@ -30,7 +30,7 @@ import java.util.UUID
 class ForslagAPITest : IntegrationTest() {
 	private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(42), "Forlengelse fordi...")
 	private val avsluttDeltakelseRequest =
-		AvsluttDeltakelseRequest(LocalDate.now().plusWeeks(1), EndringAarsak.FattJobb, "Avslutning fordi...", null)
+		AvsluttDeltakelseRequest(LocalDate.now().plusWeeks(1), EndringAarsak.FattJobb, "Avslutning fordi...", false, null)
 	private val ikkeAktuellRequest = IkkeAktuellRequest(EndringAarsak.FattJobb, "Ikke aktuell fordi...")
 	private val deltakelsesmengdeRequest = DeltakelsesmengdeRequest(42, 3, LocalDate.now(), "Deltakelsesmengde fordi...")
 	private val sluttdatoRequest = SluttdatoRequest(LocalDate.now().plusWeeks(42), "Endres fordi...")
