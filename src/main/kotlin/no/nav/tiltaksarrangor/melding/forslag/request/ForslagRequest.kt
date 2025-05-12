@@ -16,6 +16,7 @@ data class AvsluttDeltakelseRequest(
 	val sluttdato: LocalDate?,
 	val aarsak: EndringAarsak,
 	override val begrunnelse: String?,
+	val harFullfort: Boolean,
 	val harDeltatt: Boolean?,
 ) : ForslagRequest
 
