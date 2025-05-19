@@ -97,6 +97,7 @@ private fun tilDeltaker(
 				sluttDato = deltakerliste.sluttDato,
 				erKurs = deltakerliste.erKurs,
 				tiltakstype = deltakerliste.tiltakType,
+				oppstartstype = deltakerliste.oppstartstype,
 			),
 		fornavn = deltakerDbo.fornavn,
 		mellomnavn = deltakerDbo.mellomnavn,

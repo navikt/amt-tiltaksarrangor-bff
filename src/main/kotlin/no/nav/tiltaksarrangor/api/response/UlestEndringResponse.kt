@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.UlestEndring
@@ -83,13 +84,14 @@ fun List<UlestEndring>.toResponse(
 	ansatte: Map<UUID, NavAnsatt>,
 	arrangornavn: String,
 	enheter: Map<UUID, NavEnhet>,
+	oppstartstype: Oppstartstype,
 ): List<UlestEndringResponse> = this.map {
 	when (it.oppdatering) {
 		is Oppdatering.DeltakelsesEndring -> UlestEndringResponse(
 			id = it.id,
 			deltakerId = it.deltakerId,
 			oppdatering = OppdateringResponse.DeltakelsesEndringResponse(
-				endring = it.oppdatering.endring.toResponse(ansatte, enheter, arrangornavn),
+				endring = it.oppdatering.endring.toResponse(ansatte, enheter, arrangornavn, oppstartstype),
 			),
 		)
 		is Oppdatering.AvvistForslag -> UlestEndringResponse(

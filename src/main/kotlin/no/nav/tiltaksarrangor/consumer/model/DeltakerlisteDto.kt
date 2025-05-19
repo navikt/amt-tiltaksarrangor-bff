@@ -28,11 +28,6 @@ data class DeltakerlisteDto(
 		AVSLUTTET,
 	}
 
-	enum class Oppstartstype {
-		LOPENDE,
-		FELLES,
-	}
-
 	fun erKurs(): Boolean = if (oppstart != null) {
 		oppstart == Oppstartstype.FELLES
 	} else {
@@ -51,4 +46,9 @@ data class DeltakerlisteDto(
 		Status.AVSLUTTET -> DeltakerlisteStatus.AVSLUTTET
 		else -> throw IllegalStateException("Ukjent status: $status")
 	}
+}
+
+enum class Oppstartstype {
+	LOPENDE,
+	FELLES,
 }

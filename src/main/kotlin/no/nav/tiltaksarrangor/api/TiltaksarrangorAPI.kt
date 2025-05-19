@@ -45,7 +45,8 @@ class TiltaksarrangorAPI(
 		@PathVariable deltakerId: UUID,
 	): String {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()
-		return objectMapper.writePolymorphicListAsString(tiltaksarrangorService.getDeltakerHistorikk(personIdent, deltakerId))
+		val historikk = tiltaksarrangorService.getDeltakerHistorikk(personIdent, deltakerId)
+		return objectMapper.writePolymorphicListAsString(historikk)
 	}
 
 	@PostMapping("/deltaker/{deltakerId}/endring/{ulestEndringId}/marker-som-lest")

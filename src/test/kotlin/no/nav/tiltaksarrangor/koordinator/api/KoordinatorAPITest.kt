@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
@@ -73,6 +74,7 @@ class KoordinatorAPITest : IntegrationTest() {
 				startDato = LocalDate.of(2024, 1, 3),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -147,6 +149,7 @@ class KoordinatorAPITest : IntegrationTest() {
 				startDato = LocalDate.now(),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -242,6 +245,7 @@ class KoordinatorAPITest : IntegrationTest() {
 				startDato = LocalDate.now(),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -355,6 +359,7 @@ class KoordinatorAPITest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)

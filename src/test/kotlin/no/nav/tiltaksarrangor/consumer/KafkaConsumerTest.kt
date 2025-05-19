@@ -11,6 +11,7 @@ import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.consumer.model.NavnDto
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.consumer.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.consumer.model.VeilederDto
 import no.nav.tiltaksarrangor.consumer.model.toAnsattDbo
@@ -245,7 +246,7 @@ class KafkaConsumerTest : IntegrationTest() {
 				sluttDato = null,
 				status = DeltakerlisteDto.Status.GJENNOMFORES,
 				virksomhetsnummer = arrangorDto.organisasjonsnummer,
-				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				oppstart = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		testKafkaProducer
@@ -277,6 +278,7 @@ class KafkaConsumerTest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 5, 2),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
@@ -309,6 +311,7 @@ class KafkaConsumerTest : IntegrationTest() {
 				startDato = LocalDate.now().minusYears(2),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().minusYears(2),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
@@ -330,7 +333,7 @@ class KafkaConsumerTest : IntegrationTest() {
 				sluttDato = LocalDate.now().minusWeeks(4),
 				status = DeltakerlisteDto.Status.AVSLUTTET,
 				virksomhetsnummer = "888888888",
-				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				oppstart = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = deltakerlisteDbo.tilgjengeligForArrangorFraOgMedDato,
 			)
 		testKafkaProducer

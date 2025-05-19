@@ -16,6 +16,7 @@ import no.nav.amt.lib.models.deltaker.VurderingFraArrangorData
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -34,7 +35,7 @@ import java.util.UUID
 sealed interface DeltakerHistorikkResponse
 
 data class DeltakerEndringResponse(
-	val endring: DeltakerEndring.Endring,
+	val endring: DeltakerEndringEndringResponse,
 	val endretAv: String,
 	val endretAvEnhet: String,
 	val endret: LocalDateTime,
@@ -129,9 +130,10 @@ fun List<DeltakerHistorikk>.toResponse(
 	ansatte: Map<UUID, NavAnsatt>,
 	arrangornavn: String,
 	enheter: Map<UUID, NavEnhet>,
+	oppstartstype: Oppstartstype,
 ): List<DeltakerHistorikkResponse> = this.map {
 	when (it) {
-		is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter, arrangornavn)
+		is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter, arrangornavn, oppstartstype)
 		is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse(ansatte, enheter)
 		is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
 		is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
@@ -146,13 +148,47 @@ fun DeltakerEndring.toResponse(
 	ansatte: Map<UUID, NavAnsatt>,
 	enheter: Map<UUID, NavEnhet>,
 	arrangornavn: String,
+	deltakerlisteOppstartstype: Oppstartstype,
 ) = DeltakerEndringResponse(
-	endring = endring,
+	endring = endring.toResponse(deltakerlisteOppstartstype),
 	endretAv = ansatte[endretAv]!!.navn,
 	endretAvEnhet = enheter[endretAvEnhet]!!.navn,
 	endret = endret,
 	forslag = forslag?.toResponse(arrangornavn),
 )
+
+fun DeltakerEndring.Endring.toResponse(oppstartstype: Oppstartstype): DeltakerEndringEndringResponse = when (this) {
+	is DeltakerEndring.Endring.AvsluttDeltakelse -> DeltakerEndringEndringResponse.AvsluttDeltakelse(
+		aarsak = aarsak,
+		sluttdato = sluttdato,
+		begrunnelse = begrunnelse,
+		harFullfort = true,
+		oppstartstype = oppstartstype,
+	)
+
+	is DeltakerEndring.Endring.AvbrytDeltakelse -> DeltakerEndringEndringResponse.AvsluttDeltakelse(
+		aarsak = aarsak,
+		sluttdato = sluttdato,
+		begrunnelse = begrunnelse,
+		harFullfort = false,
+		oppstartstype = oppstartstype,
+	)
+	is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> DeltakerEndringEndringResponse.EndreBakgrunnsinformasjon(bakgrunnsinformasjon)
+	is DeltakerEndring.Endring.EndreDeltakelsesmengde -> DeltakerEndringEndringResponse.EndreDeltakelsesmengde(
+		deltakelsesprosent,
+		dagerPerUke,
+		gyldigFra,
+		begrunnelse,
+	)
+	is DeltakerEndring.Endring.EndreInnhold -> DeltakerEndringEndringResponse.EndreInnhold(ledetekst, innhold)
+	is DeltakerEndring.Endring.EndreSluttarsak -> DeltakerEndringEndringResponse.EndreSluttarsak(aarsak, begrunnelse)
+	is DeltakerEndring.Endring.EndreSluttdato -> DeltakerEndringEndringResponse.EndreSluttdato(sluttdato, begrunnelse)
+	is DeltakerEndring.Endring.EndreStartdato -> DeltakerEndringEndringResponse.EndreStartdato(startdato, sluttdato, begrunnelse)
+	is DeltakerEndring.Endring.FjernOppstartsdato -> DeltakerEndringEndringResponse.FjernOppstartsdato(begrunnelse)
+	is DeltakerEndring.Endring.ForlengDeltakelse -> DeltakerEndringEndringResponse.ForlengDeltakelse(sluttdato, begrunnelse)
+	is DeltakerEndring.Endring.IkkeAktuell -> DeltakerEndringEndringResponse.IkkeAktuell(aarsak, begrunnelse)
+	is DeltakerEndring.Endring.ReaktiverDeltakelse -> DeltakerEndringEndringResponse.ReaktiverDeltakelse(reaktivertDato, begrunnelse)
+}
 
 fun Vedtak.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) = VedtakResponse(
 	fattet = fattet,

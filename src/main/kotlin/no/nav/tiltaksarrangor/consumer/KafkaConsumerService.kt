@@ -375,6 +375,7 @@ class KafkaConsumerService(
 		startDato = deltakerlisteDto.startDato,
 		sluttDato = deltakerlisteDto.sluttDato,
 		erKurs = deltakerlisteDto.erKurs(),
+		oppstartstype = deltakerlisteDto.oppstart,
 		tilgjengeligForArrangorFraOgMedDato = deltakerlisteDto.tilgjengeligForArrangorFraOgMedDato,
 	)
 
@@ -422,26 +423,6 @@ class KafkaConsumerService(
 			}
 		}
 	}
-}
-
-private fun DeltakerDbo.hentPersonaliaOppdateringer(nyDeltaker: DeltakerDto): Oppdatering.NavBrukerEndring? {
-	val telefonnummer = if (this.telefonnummer ==
-		nyDeltaker.personalia.kontaktinformasjon.telefonnummer
-	) {
-		null
-	} else {
-		nyDeltaker.personalia.kontaktinformasjon.telefonnummer
-	}
-	val epost = if (this.epost == nyDeltaker.personalia.kontaktinformasjon.epost) null else nyDeltaker.personalia.kontaktinformasjon.epost
-
-	if (telefonnummer == null && epost == null) {
-		return null
-	}
-
-	return Oppdatering.NavBrukerEndring(
-		telefonnummer,
-		epost,
-	)
 }
 
 private val stottedeTiltak =

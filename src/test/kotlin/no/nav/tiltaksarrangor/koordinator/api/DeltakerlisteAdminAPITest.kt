@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -69,6 +70,7 @@ class DeltakerlisteAdminAPITest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		val deltakerliste2 =
@@ -82,6 +84,7 @@ class DeltakerlisteAdminAPITest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 5, 1),
 				sluttDato = LocalDate.of(2023, 6, 1),
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().minusYears(1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste1)
@@ -142,6 +145,7 @@ class DeltakerlisteAdminAPITest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -202,6 +206,7 @@ class DeltakerlisteAdminAPITest : IntegrationTest() {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
