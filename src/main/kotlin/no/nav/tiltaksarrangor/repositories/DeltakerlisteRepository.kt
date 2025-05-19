@@ -34,7 +34,7 @@ class DeltakerlisteRepository(
 				startDato = rs.getNullableLocalDate("start_dato"),
 				sluttDato = rs.getNullableLocalDate("slutt_dato"),
 				erKurs = rs.getBoolean("er_kurs"),
-				oppstartstype = Oppstartstype.valueOf(rs.getString("oppstartstype")),
+				oppstartstype = rs.getString("oppstartstype")?.let { Oppstartstype.valueOf(it) },
 				tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
 			)
 		}
@@ -53,7 +53,7 @@ class DeltakerlisteRepository(
 						startDato = rs.getNullableLocalDate("start_dato"),
 						sluttDato = rs.getNullableLocalDate("slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),
-						oppstartstype = Oppstartstype.valueOf(rs.getString("oppstartstype")),
+						oppstartstype = rs.getString("oppstartstype")?.let { Oppstartstype.valueOf(it) },
 						tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
 					),
 				arrangorDbo =
