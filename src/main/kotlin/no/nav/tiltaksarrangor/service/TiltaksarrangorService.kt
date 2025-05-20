@@ -8,7 +8,6 @@ import no.nav.tiltaksarrangor.api.response.DeltakerHistorikkResponse
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.api.response.toResponse
 import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.StatusType
@@ -94,16 +93,8 @@ class TiltaksarrangorService(
 				?: throw NoSuchElementException("Fant ikke deltakerliste med id ${medDeltakerlisteDbo.deltakerliste.id}")
 
 		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
-		val oppstartstype =
-			deltakerlisteMedArrangor.deltakerlisteDbo.oppstartstype
-				?: if (deltakerlisteMedArrangor.deltakerlisteDbo.erKurs) {
-					Oppstartstype.FELLES
-				} else {
-					Oppstartstype.LOPENDE
-				}
-		// TODO; midlertidig work around til databasen er populert
 		val arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn
-		return ulesteEndringer.toResponse(ansatte, toTitleCase(arrangorNavn), enheter, oppstartstype)
+		return ulesteEndringer.toResponse(ansatte, toTitleCase(arrangorNavn), enheter, deltakerlisteMedArrangor.deltakerlisteDbo.oppstartstype)
 	}
 
 	suspend fun getDeltakerHistorikk(personIdent: String, deltakerId: UUID): List<DeltakerHistorikkResponse> {
@@ -125,16 +116,9 @@ class TiltaksarrangorService(
 		val overordnetArrangor = deltakerlisteMedArrangor.arrangorDbo.overordnetArrangorId?.let { arrangorRepository.getArrangor(it) }
 
 		val arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn
-		val oppstartstype =
-			deltaker.deltakerliste.oppstartstype ?: if (deltaker.deltakerliste.erKurs) {
-				Oppstartstype.FELLES
-			} else {
-				Oppstartstype.LOPENDE
-			}
-		// TODO; midlertidig work around
 		return historikk
 			.filterNot { deltaker.deltakerliste.erKurs && it is DeltakerHistorikk.Vedtak }
-			.toResponse(ansatte, toTitleCase(arrangorNavn), enheter, oppstartstype)
+			.toResponse(ansatte, toTitleCase(arrangorNavn), enheter, deltaker.deltakerliste.oppstartstype)
 	}
 
 	fun registrerVurdering(

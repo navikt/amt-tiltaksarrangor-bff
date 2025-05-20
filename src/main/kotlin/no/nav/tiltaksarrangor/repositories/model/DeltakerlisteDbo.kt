@@ -15,7 +15,7 @@ data class DeltakerlisteDbo(
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
 	val erKurs: Boolean,
-	val oppstartstype: Oppstartstype?, // skal være midlertidig optional til relast
+	val oppstartstype: Oppstartstype,
 	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
 ) {
 	fun erTilgjengeligForArrangor(): Boolean = if (startDato != null) {
