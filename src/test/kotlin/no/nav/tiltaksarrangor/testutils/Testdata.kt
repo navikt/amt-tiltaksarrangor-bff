@@ -13,6 +13,7 @@ import no.nav.tiltaksarrangor.consumer.model.Kontaktadresse
 import no.nav.tiltaksarrangor.consumer.model.Matrikkeladresse
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.consumer.model.Vegadresse
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
@@ -43,6 +44,7 @@ fun getDeltakerliste(id: UUID = UUID.randomUUID(), arrangorId: UUID): Deltakerli
 	startDato = LocalDate.now().minusDays(1),
 	sluttDato = null,
 	erKurs = false,
+	oppstartstype = Oppstartstype.LOPENDE,
 	tilgjengeligForArrangorFraOgMedDato = null,
 )
 

@@ -10,6 +10,7 @@ import io.mockk.just
 import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -122,6 +123,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		val deltakerliste2 =
@@ -135,6 +137,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 5, 1),
 				sluttDato = LocalDate.of(2023, 6, 1),
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 4, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste1)
@@ -209,6 +212,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.now().plusMonths(1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -257,6 +261,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -281,6 +286,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -319,6 +325,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -362,6 +369,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.now().plusDays(10),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().plusDays(2),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -411,6 +419,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -435,6 +444,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -473,6 +483,7 @@ class DeltakerlisteAdminServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)

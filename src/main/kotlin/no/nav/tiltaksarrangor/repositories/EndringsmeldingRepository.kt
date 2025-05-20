@@ -5,6 +5,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.consumer.model.AdresseDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
@@ -111,6 +112,7 @@ class EndringsmeldingRepository(
 						sluttDato = rs.getNullableLocalDate("delakerliste_slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),
 						tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
+						oppstartstype = rs.getString("oppstartstype")?.let { Oppstartstype.valueOf(it) },
 					),
 			)
 		}
@@ -225,6 +227,7 @@ class EndringsmeldingRepository(
 					deltakerliste.start_dato as deltakerliste_start_dato,
 					deltakerliste.slutt_dato as delakerliste_slutt_dato,
 					er_kurs,
+					oppstartstype,
 					tilgjengelig_fom,
 					deltaker.modified_at as modified_at,
 					forste_vedtak_fattet,

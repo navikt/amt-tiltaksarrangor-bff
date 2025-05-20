@@ -25,6 +25,7 @@ import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.consumer.model.NavnDto
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
@@ -121,7 +122,7 @@ class KafkaConsumerServiceTest {
 				sluttDato = null,
 				status = DeltakerlisteDto.Status.GJENNOMFORES,
 				virksomhetsnummer = "88888888",
-				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				oppstart = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 
@@ -147,7 +148,7 @@ class KafkaConsumerServiceTest {
 				sluttDato = LocalDate.now().minusMonths(6),
 				status = DeltakerlisteDto.Status.AVSLUTTET,
 				virksomhetsnummer = "88888888",
-				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				oppstart = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 
@@ -174,7 +175,7 @@ class KafkaConsumerServiceTest {
 				sluttDato = LocalDate.now().minusWeeks(1),
 				status = DeltakerlisteDto.Status.AVSLUTTET,
 				virksomhetsnummer = "88888888",
-				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				oppstart = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 
@@ -200,7 +201,7 @@ class KafkaConsumerServiceTest {
 				sluttDato = null,
 				status = DeltakerlisteDto.Status.GJENNOMFORES,
 				virksomhetsnummer = "88888888",
-				oppstart = DeltakerlisteDto.Oppstartstype.LOPENDE,
+				oppstart = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 

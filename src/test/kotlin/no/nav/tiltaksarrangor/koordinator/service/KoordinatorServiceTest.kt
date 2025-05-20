@@ -14,6 +14,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
@@ -281,6 +282,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -335,6 +337,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -399,6 +402,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.now().plusDays(20),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().plusDays(7),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -874,6 +878,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		val deltaker =
@@ -947,6 +952,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2025, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
 			)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
@@ -1054,6 +1060,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2025, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
 			)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
@@ -1123,6 +1130,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2025, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
 			)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
@@ -1173,6 +1181,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1210,6 +1219,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1245,6 +1255,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1314,6 +1325,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1357,6 +1369,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1406,6 +1419,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1453,6 +1467,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1502,6 +1517,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1594,6 +1610,7 @@ class KoordinatorServiceTest {
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)

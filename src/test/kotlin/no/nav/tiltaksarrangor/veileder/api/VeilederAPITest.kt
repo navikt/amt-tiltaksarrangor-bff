@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.veileder.api
 import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
@@ -60,6 +61,7 @@ class VeilederAPITest : IntegrationTest() {
 				startDato = LocalDate.now(),
 				sluttDato = null,
 				erKurs = false,
+				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)

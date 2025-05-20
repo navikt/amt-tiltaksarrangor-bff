@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.repositories
 
+import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -33,6 +34,7 @@ class DeltakerlisteRepository(
 				startDato = rs.getNullableLocalDate("start_dato"),
 				sluttDato = rs.getNullableLocalDate("slutt_dato"),
 				erKurs = rs.getBoolean("er_kurs"),
+				oppstartstype = rs.getString("oppstartstype")?.let { Oppstartstype.valueOf(it) },
 				tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
 			)
 		}
@@ -51,6 +53,7 @@ class DeltakerlisteRepository(
 						startDato = rs.getNullableLocalDate("start_dato"),
 						sluttDato = rs.getNullableLocalDate("slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),
+						oppstartstype = rs.getString("oppstartstype")?.let { Oppstartstype.valueOf(it) },
 						tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
 					),
 				arrangorDbo =
@@ -66,7 +69,7 @@ class DeltakerlisteRepository(
 	fun insertOrUpdateDeltakerliste(deltakerlisteDbo: DeltakerlisteDbo) {
 		val sql =
 			"""
-			INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltak_navn, tiltak_type, start_dato, slutt_dato, er_kurs, tilgjengelig_fom)
+			INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltak_navn, tiltak_type, start_dato, slutt_dato, er_kurs, oppstartstype, tilgjengelig_fom)
 			VALUES (:id,
 					:navn,
 					:status,
@@ -76,6 +79,7 @@ class DeltakerlisteRepository(
 					:start_dato,
 					:slutt_dato,
 					:er_kurs,
+					:oppstartstype,
 					:tilgjengelig_fom)
 			ON CONFLICT (id) DO UPDATE SET
 					navn     				= :navn,
@@ -86,6 +90,7 @@ class DeltakerlisteRepository(
 					start_dato				= :start_dato,
 					slutt_dato				= :slutt_dato,
 					er_kurs					= :er_kurs,
+					oppstartstype			= :oppstartstype,
 					tilgjengelig_fom		= :tilgjengelig_fom
 			""".trimIndent()
 
@@ -101,6 +106,7 @@ class DeltakerlisteRepository(
 				"start_dato" to deltakerlisteDbo.startDato,
 				"slutt_dato" to deltakerlisteDbo.sluttDato,
 				"er_kurs" to deltakerlisteDbo.erKurs,
+				"oppstartstype" to deltakerlisteDbo.oppstartstype?.name,
 				"tilgjengelig_fom" to deltakerlisteDbo.tilgjengeligForArrangorFraOgMedDato,
 			),
 		)
@@ -149,6 +155,7 @@ class DeltakerlisteRepository(
 					start_dato,
 					slutt_dato,
 					er_kurs,
+					oppstartstype,
 					tilgjengelig_fom,
 					a.navn as arrangor_navn,
 					a.organisasjonsnummer,
@@ -176,6 +183,7 @@ class DeltakerlisteRepository(
 					start_dato,
 					slutt_dato,
 					er_kurs,
+					oppstartstype,
 					tilgjengelig_fom,
 					a.navn as arrangor_navn,
 					a.organisasjonsnummer,
