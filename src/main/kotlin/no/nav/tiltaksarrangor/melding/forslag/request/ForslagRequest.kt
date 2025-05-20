@@ -14,7 +14,7 @@ data class ForlengDeltakelseRequest(
 
 data class AvsluttDeltakelseRequest(
 	val sluttdato: LocalDate?,
-	val aarsak: EndringAarsak,
+	val aarsak: EndringAarsak?,
 	override val begrunnelse: String?,
 	val harFullfort: Boolean?,
 	val harDeltatt: Boolean?,
