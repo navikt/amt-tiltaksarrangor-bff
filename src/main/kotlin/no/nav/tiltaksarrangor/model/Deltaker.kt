@@ -49,7 +49,7 @@ data class Deltaker(
 		val startDato: LocalDate?,
 		val sluttDato: LocalDate?,
 		val erKurs: Boolean,
-		val oppstartstype: Oppstartstype?,
+		val oppstartstype: Oppstartstype,
 		val tiltakstype: String,
 	)
 }

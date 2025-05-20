@@ -124,7 +124,7 @@ class DeltakerRepository(
 						startDato = rs.getNullableLocalDate("deltakerliste_start_dato"),
 						sluttDato = rs.getNullableLocalDate("deltakerliste_slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),
-						oppstartstype = rs.getString("oppstartstype")?.let { Oppstartstype.valueOf(it) },
+						oppstartstype = Oppstartstype.valueOf(rs.getString("oppstartstype")),
 						tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
 					),
 			)
