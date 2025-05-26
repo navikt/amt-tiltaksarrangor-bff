@@ -34,7 +34,8 @@ class UlestEndringRepository(
 			 	:id,
 				:deltakerId,
 			 	:oppdatering)
-			on conflict (id) do nothing
+			on conflict (id) do update set
+				oppdatering = :oppdatering
 			returning *
 			""".trimIndent()
 		val params = sqlParameters(
