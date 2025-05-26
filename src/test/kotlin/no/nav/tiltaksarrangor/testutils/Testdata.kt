@@ -49,7 +49,7 @@ fun getDeltakerliste(id: UUID = UUID.randomUUID(), arrangorId: UUID): Deltakerli
 )
 
 fun getDeltaker(
-	deltakerId: UUID,
+	deltakerId: UUID = UUID.randomUUID(),
 	deltakerlisteId: UUID = UUID.randomUUID(),
 	adressebeskyttet: Boolean = false,
 	status: StatusType = StatusType.DELTAR,

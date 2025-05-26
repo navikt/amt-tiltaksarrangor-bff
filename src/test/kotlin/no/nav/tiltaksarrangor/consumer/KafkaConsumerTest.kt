@@ -1,5 +1,7 @@
 package no.nav.tiltaksarrangor.consumer
 
+import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
@@ -354,20 +356,44 @@ class KafkaConsumerTest : IntegrationTest() {
 
 	@Test
 	fun `listen - melding pa deltaker-topic - lagres i database`() {
+		val enhetId = UUID.randomUUID()
+		val ansattId = UUID.randomUUID()
 		with(DeltakerDtoCtx()) {
+			mockAmtPersonServer.addEnhetResponse(enhetId)
+			mockAmtPersonServer.addAnsattResponse(ansattId)
+			val avbrytDeltakelseEndring = DeltakerEndring.Endring.AvbrytDeltakelse(
+				DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.TRENGER_ANNEN_STOTTE, null),
+				sluttdato = LocalDate.now().minusWeeks(4),
+				begrunnelse = null,
+			)
+			val dto = deltakerDto.copy(
+				historikk = listOf(
+					DeltakerHistorikk.Endring(
+						endring = DeltakerEndring(
+							id = UUID.randomUUID(),
+							endring = avbrytDeltakelseEndring,
+							deltakerId = deltakerDto.id,
+							endretAv = ansattId,
+							endretAvEnhet = enhetId,
+							forslag = null,
+							endret = LocalDateTime.now(),
+						),
+					),
+				),
+			)
 			medVurderinger()
 			testKafkaProducer
 				.send(
 					ProducerRecord(
 						DELTAKER_TOPIC,
 						null,
-						deltakerDto.id.toString(),
-						JsonUtils.objectMapper.writeValueAsString(deltakerDto),
+						dto.id.toString(),
+						JsonUtils.objectMapper.writeValueAsString(dto),
 					),
 				).get()
 
 			Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-				deltakerRepository.getDeltaker(deltakerDto.id) != null
+				deltakerRepository.getDeltaker(dto.id) != null
 			}
 		}
 	}
