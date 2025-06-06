@@ -370,7 +370,7 @@ class KafkaConsumerService(
 		navn = deltakerlisteDto.navn,
 		status = deltakerlisteDto.toDeltakerlisteStatus(),
 		arrangorId = getArrangorId(deltakerlisteDto.virksomhetsnummer),
-		tiltakNavn = deltakerlisteDto.tiltakstype.navn,
+		tiltakNavn = getTiltakstypeNavn(deltakerlisteDto.tiltakstype),
 		tiltakType = deltakerlisteDto.tiltakstype.arenaKode,
 		startDato = deltakerlisteDto.startDato,
 		sluttDato = deltakerlisteDto.sluttDato,
@@ -378,6 +378,14 @@ class KafkaConsumerService(
 		oppstartstype = deltakerlisteDto.oppstart,
 		tilgjengeligForArrangorFraOgMedDato = deltakerlisteDto.tilgjengeligForArrangorFraOgMedDato,
 	)
+
+	private fun getTiltakstypeNavn(tiltakstype: DeltakerlisteDto.Tiltakstype): String {
+		if (tiltakstype.navn == "Jobbklubb") {
+			return "Jobbsøkerkurs"
+		} else {
+			return tiltakstype.navn
+		}
+	}
 
 	private fun getArrangorId(organisasjonsnummer: String): UUID {
 		val arrangorId = arrangorRepository.getArrangor(organisasjonsnummer)?.id
