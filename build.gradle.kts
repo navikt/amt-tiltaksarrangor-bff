@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     val kotlinVersion = "2.1.21"
 
-    id("org.springframework.boot") version "3.5.0"
+    id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "12.3.0"
     kotlin("jvm") version kotlinVersion
@@ -21,10 +21,10 @@ repositories {
 
 val logstashEncoderVersion = "8.1"
 val kafkaClientsVersion = "4.0.0"
-val tokenSupportVersion = "5.0.29"
+val tokenSupportVersion = "5.0.30"
 val okHttpVersion = "4.12.0"
 val kotestVersion = "5.9.1"
-val testcontainersVersion = "1.21.1"
+val testcontainersVersion = "1.21.2"
 val mockkVersion = "1.14.2"
 val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
 val unleashVersion = "11.0.0"
