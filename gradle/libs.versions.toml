@@ -1,0 +1,48 @@
+[versions]
+kotlin-version = "2.1.21"
+spring-boot-version = "3.5.2"
+spring-dependency-management-version = "1.1.7"
+
+kotest-version = "5.9.1"
+mockk-version = "1.14.2"
+ktlint-plugin-version = "12.3.0"
+
+nav-toke-support-version = "5.0.30"
+nav-common-version = "3.2024.10.25_13.44-9db48a0dbe67"
+nav-amt-lib-version = "1.2025.06.05_08.25-2338e0f39f58"
+
+logstash-logback-encoder-version = "8.1"
+kafka-clients-version = "4.0.0"
+okhttp-version = "4.12.0"
+testcontainers-version = "1.21.2"
+unleash-version = "11.0.0"
+
+[libraries]
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback-encoder-version" }
+nav-common-audit-log = { module = "no.nav.common:audit-log", version.ref = "nav-common-version" }
+nav-common-log = { module = "no.nav.common:log", version.ref = "nav-common-version" }
+kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients-version" }
+nav-token-validation-spring = { module = "no.nav.security:token-validation-spring", version.ref = "nav-toke-support-version" }
+nav-token-client-spring = { module = "no.nav.security:token-client-spring", version.ref = "nav-toke-support-version" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp-version" }
+unleash-client-java = { module = "io.getunleash:unleash-client-java", version.ref = "unleash-version" }
+nav-amt-lib-models = { module = "no.nav.amt.lib:models", version.ref = "nav-amt-lib-version" }
+nav-amt-lib-kafka = { module = "no.nav.amt.lib:kafka", version.ref = "nav-amt-lib-version" }
+
+# test
+nav-token-validation-spring-test = { module = "no.nav.security:token-validation-spring-test", version.ref = "nav-toke-support-version" }
+nav-amt-lib-testing = { module = "no.nav.amt.lib:testing", version.ref = "nav-amt-lib-version" }
+
+mockk = { module = "io.mockk:mockk-jvm", version.ref = "mockk-version" }
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core-jvm", version.ref = "kotest-version" }
+
+testcontainers-testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers-version" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers-version" }
+testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "testcontainers-version" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
+kotlin-plugin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin-version" }
+springframework-boot = { id = "org.springframework.boot", version.ref = "spring-boot-version" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management-version" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-plugin-version" }
