@@ -70,7 +70,12 @@ dependencies {
     testImplementation(libs.nav.amt.lib.testing)
 }
 
-// er denne nødvendig?
+// I Dockerfile, hvis
+// COPY /build/libs/amt-tiltaksarrangor-bff.jar app.jar
+// byttes ut med følgende to linjer
+// ARG JAR_FILE=build/libs/*.jar
+// COPY ${JAR_FILE} app.jar
+// kan tasks.getByName<BootJar> fjernes
 tasks.getByName<BootJar>("bootJar") {
     archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
 }
