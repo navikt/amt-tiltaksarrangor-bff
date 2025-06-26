@@ -89,6 +89,10 @@ ktlint {
     version = ktlintVersion
 }
 
+tasks.jar {
+    enabled = false
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
