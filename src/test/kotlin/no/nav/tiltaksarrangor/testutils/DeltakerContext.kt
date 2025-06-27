@@ -16,6 +16,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 open class DeltakerContext(
+	val template: NamedParameterJdbcTemplate,
 	var deltaker: DeltakerDbo = getDeltaker(UUID.randomUUID()),
 	val arrangor: ArrangorDbo = getArrangor(),
 	val deltakerliste: DeltakerlisteDbo = getDeltakerliste(deltaker.deltakerlisteId, arrangorId = arrangor.id),
@@ -30,8 +31,6 @@ open class DeltakerContext(
 		deltakerId = deltaker.id,
 	),
 ) {
-	private val dataSource = SingletonPostgresContainer.getDataSource()
-	private val template = NamedParameterJdbcTemplate(dataSource)
 	private val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val ansattRepository = AnsattRepository(template)

@@ -30,6 +30,7 @@ val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
 val unleashVersion = "11.0.0"
 val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.06.05_08.25-2338e0f39f58"
+val springmockkVersion = "4.0.2"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -70,6 +71,7 @@ dependencies {
     implementation("no.nav.amt.lib:models:$amtLibVersion")
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
 
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude("com.vaadin.external.google", "android-json")
     }
@@ -81,6 +83,7 @@ dependencies {
     testImplementation("org.awaitility:awaitility")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("no.nav.amt.lib:testing:$amtLibVersion")
+    testImplementation("com.ninja-squad:springmockk:$springmockkVersion")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
@@ -98,6 +101,11 @@ configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     version.set(ktlintVersion)
 }
 
-tasks.withType<Test> {
+tasks.test {
     useJUnitPlatform()
+
+    jvmArgs(
+        "-Xshare:off",
+        "-XX:+EnableDynamicAgentLoading",
+    )
 }

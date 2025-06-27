@@ -9,9 +9,7 @@ import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import no.nav.tiltaksarrangor.mock.MockAmtArrangorHttpServer
 import no.nav.tiltaksarrangor.mock.MockAmtPersonHttpServer
 import no.nav.tiltaksarrangor.mock.MockAmtTiltakHttpServer
-import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.utils.Issuer
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -19,30 +17,27 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
-import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.test.context.TestConstructor
 import org.testcontainers.kafka.KafkaContainer
 import org.testcontainers.utility.DockerImageName
 import java.time.Duration
 import java.util.UUID
 
-@ActiveProfiles("test")
-@ExtendWith(SpringExtension::class)
 @EnableMockOAuth2Server
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class IntegrationTest {
+@TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
+abstract class IntegrationTest : RepositoryTestBase() {
 	@Autowired
-	lateinit var mockOAuth2Server: MockOAuth2Server
+	protected lateinit var mockOAuth2Server: MockOAuth2Server
 
 	@LocalServerPort
 	private var port: Int = 0
@@ -55,19 +50,24 @@ class IntegrationTest {
 			.callTimeout(Duration.ofMinutes(5))
 			.build()
 
-	@AfterEach
-	fun cleanDatabase() {
-		DbTestDataUtils.cleanDatabase(postgresDataSource)
-	}
-
 	companion object {
 		val mockAmtTiltakServer = MockAmtTiltakHttpServer()
 		val mockAmtArrangorServer = MockAmtArrangorHttpServer()
 		val mockAmtPersonServer = MockAmtPersonHttpServer()
-		val postgresDataSource = SingletonPostgresContainer.getDataSource()
+
+		@ServiceConnection
+		@Suppress("unused")
+		private val kafkaContainer = KafkaContainer(DockerImageName.parse("apache/kafka"))
+			.apply {
+				// workaround for https://github.com/testcontainers/testcontainers-java/issues/9506
+				// withEnv("KAFKA_LISTENERS", "PLAINTEXT://:9092,BROKER://:9093,CONTROLLER://:9094")
+				start()
+				System.setProperty("KAFKA_BROKERS", bootstrapServers)
+			}
 
 		@JvmStatic
 		@DynamicPropertySource
+		@Suppress("unused")
 		fun registerProperties(registry: DynamicPropertyRegistry) {
 			mockAmtTiltakServer.start()
 			registry.add("amt-tiltak.url", mockAmtTiltakServer::serverUrl)
@@ -75,21 +75,6 @@ class IntegrationTest {
 			registry.add("amt-arrangor.url", mockAmtArrangorServer::serverUrl)
 			mockAmtPersonServer.start()
 			registry.add("amt-person.url", mockAmtPersonServer::serverUrl)
-
-			val container = SingletonPostgresContainer.getContainer()
-
-			KafkaContainer(DockerImageName.parse("apache/kafka"))
-				.withEnv("KAFKA_LISTENERS", "PLAINTEXT://:9092,BROKER://:9093,CONTROLLER://:9094")
-				// workaround for https://github.com/testcontainers/testcontainers-java/issues/9506
-				.apply {
-					start()
-					System.setProperty("KAFKA_BROKERS", bootstrapServers)
-				}
-
-			registry.add("spring.datasource.url") { container.jdbcUrl }
-			registry.add("spring.datasource.username") { container.username }
-			registry.add("spring.datasource.password") { container.password }
-			registry.add("spring.datasource.hikari.maximum-pool-size") { 3 }
 		}
 	}
 
@@ -159,7 +144,7 @@ class IntegrationTest {
 	}
 
 	fun testIkkeTilgangTilDeltakerliste(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
-		with(DeltakerContext()) {
+		with(DeltakerContext(template)) {
 			setKoordinatorDeltakerliste(UUID.randomUUID())
 
 			val response = requestFunction(deltaker.id, koordinator.personIdent)
@@ -169,7 +154,7 @@ class IntegrationTest {
 	}
 
 	fun testDeltakerAdressebeskyttet(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
-		with(DeltakerContext()) {
+		with(DeltakerContext(template)) {
 			setDeltakerAdressebeskyttet()
 
 			val response = requestFunction(deltaker.id, koordinator.personIdent)
@@ -179,7 +164,7 @@ class IntegrationTest {
 	}
 
 	fun testDeltakerSkjult(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
-		with(DeltakerContext()) {
+		with(DeltakerContext(template)) {
 			setDeltakerSkjult()
 
 			val response = requestFunction(deltaker.id, koordinator.personIdent)
@@ -193,7 +178,7 @@ class IntegrationTest {
 @Configuration
 class UnleashConfig {
 	@Bean
-	open fun unleashClient(): Unleash {
+	fun unleashClient(): Unleash {
 		val fakeUnleash = FakeUnleash()
 		fakeUnleash.enableAll()
 		return fakeUnleash

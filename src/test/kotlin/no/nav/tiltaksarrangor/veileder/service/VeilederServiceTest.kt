@@ -1,13 +1,14 @@
 package no.nav.tiltaksarrangor.veileder.service
 
+import com.ninjasquad.springmockk.MockkBean
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.clearMocks
 import io.mockk.every
-import io.mockk.mockk
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.testing.shouldBeCloseTo
+import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
@@ -26,9 +27,6 @@ import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
-import no.nav.tiltaksarrangor.service.AnsattService
-import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
@@ -38,26 +36,21 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-class VeilederServiceTest {
-	private val amtArrangorClient = mockk<AmtArrangorClient>()
-	private val dataSource = SingletonPostgresContainer.getDataSource()
-	private val template = NamedParameterJdbcTemplate(dataSource)
-	private val ansattRepository = AnsattRepository(template)
-	private val ansattService = AnsattService(amtArrangorClient, ansattRepository)
-	private val deltakerRepository = DeltakerRepository(template)
-	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
-	private val endringsmeldingRepository = EndringsmeldingRepository(template)
-	private val forslagRepository = ForslagRepository(template)
-	private val ulestEndringRepository = UlestEndringRepository(template)
-	private val unleashService = mockk<UnleashService>()
-	private val veilederService =
-		VeilederService(ansattService, deltakerRepository, forslagRepository, endringsmeldingRepository, ulestEndringRepository, unleashService)
-
+class VeilederServiceTest(
+	private val veilederService: VeilederService,
+	private val ansattRepository: AnsattRepository,
+	private val deltakerlisteRepository: DeltakerlisteRepository,
+	private val deltakerRepository: DeltakerRepository,
+	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val forslagRepository: ForslagRepository,
+	private val ulestEndringRepository: UlestEndringRepository,
+	@MockkBean(relaxed = true) private val amtArrangorClient: AmtArrangorClient,
+	@MockkBean(relaxed = true) private val unleashService: UnleashService,
+) : IntegrationTest() {
 	@BeforeEach
 	internal fun setup() {
 		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
@@ -65,7 +58,6 @@ class VeilederServiceTest {
 
 	@AfterEach
 	internal fun tearDown() {
-		DbTestDataUtils.cleanDatabase(dataSource)
 		clearMocks(amtArrangorClient, unleashService)
 	}
 
