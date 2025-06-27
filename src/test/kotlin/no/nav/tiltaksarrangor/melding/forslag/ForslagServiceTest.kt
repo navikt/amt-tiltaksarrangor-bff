@@ -4,26 +4,30 @@ import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.SingletonKafkaProvider
+import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class ForslagServiceTest {
-	private val dataSource = SingletonPostgresContainer.getDataSource()
-	private val template = NamedParameterJdbcTemplate(dataSource)
-	private val repository = ForslagRepository(template)
-	private val producer = MeldingProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
-	private val forslagService = ForslagService(repository, producer)
+class ForslagServiceTest(
+	private val repository: ForslagRepository,
+	private val forslagService: ForslagService,
+) : IntegrationTest() {
+	@TestConfiguration
+	class TestConfig {
+		@Bean
+		fun meldingProducer() = MeldingProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
+	}
 
 	@Test
 	fun `opprettForslag - forlengelse - produserer og returnerer nytt forslag`() {
-		with(ForslagCtx(forlengDeltakelseForslag())) {
+		with(ForslagCtx(template, forlengDeltakelseForslag())) {
 			val sluttdato = LocalDate.now().plusWeeks(42)
 			val begrunnelse = "Fordi..."
 			val request = ForlengDeltakelseRequest(sluttdato, begrunnelse)
@@ -43,7 +47,7 @@ class ForslagServiceTest {
 
 	@Test
 	fun `opprettForslag - forlengelse, ventende forlengese finnes - erstatter gammelt forslag og returnerer nytt forslag`() {
-		with(ForslagCtx(forlengDeltakelseForslag())) {
+		with(ForslagCtx(template, forlengDeltakelseForslag())) {
 			upsertForslag()
 
 			val sluttdato = LocalDate.now().plusWeeks(42)
@@ -68,7 +72,7 @@ class ForslagServiceTest {
 
 	@Test
 	fun `getAktiveForslag - filtrerer bort forslag uten riktig status`() {
-		with(ForslagCtx(forlengDeltakelseForslag())) {
+		with(ForslagCtx(template, forlengDeltakelseForslag())) {
 			upsertForslag()
 			medInaktiveForslag()
 
@@ -80,7 +84,7 @@ class ForslagServiceTest {
 
 	@Test
 	fun `tilbakekall - forslag er aktivt - sletter og produserer forslag med riktig status`() {
-		with(ForslagCtx(forlengDeltakelseForslag())) {
+		with(ForslagCtx(template, forlengDeltakelseForslag())) {
 			upsertForslag()
 
 			forslagService.tilbakekall(forslag.id, koordinator)
@@ -95,7 +99,7 @@ class ForslagServiceTest {
 
 	@Test
 	fun `tilbakekall - forslag er ikke aktivt - feiler`() {
-		with(ForslagCtx(forlengDeltakelseForslag())) {
+		with(ForslagCtx(template, forlengDeltakelseForslag())) {
 			setForslagGodkjent()
 			upsertForslag()
 

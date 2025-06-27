@@ -30,39 +30,28 @@ import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
-import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.awaitility.Awaitility
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-class KafkaConsumerTest : IntegrationTest() {
-	private val dataSource = SingletonPostgresContainer.getDataSource()
-	private val template = NamedParameterJdbcTemplate(dataSource)
-	private val arrangorRepository = ArrangorRepository(template)
-	private val ansattRepository = AnsattRepository(template)
-	private val deltakerRepository = DeltakerRepository(template)
-	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
-	private val endringsmeldingRepository = EndringsmeldingRepository(template)
-
-	@Autowired
-	lateinit var testKafkaProducer: KafkaProducer<String, String>
-
-	@Autowired
-	lateinit var testKafkaConsumer: Consumer<String, String>
-
+class KafkaConsumerTest(
+	private val arrangorRepository: ArrangorRepository,
+	private val ansattRepository: AnsattRepository,
+	private val deltakerRepository: DeltakerRepository,
+	private val deltakerlisteRepository: DeltakerlisteRepository,
+	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val testKafkaProducer: KafkaProducer<String, String>,
+	private val testKafkaConsumer: Consumer<String, String>,
+) : IntegrationTest() {
 	@BeforeEach
 	internal fun subscribe() {
 		testKafkaConsumer.subscribeHvisIkkeSubscribed(
@@ -72,11 +61,6 @@ class KafkaConsumerTest : IntegrationTest() {
 			DELTAKER_TOPIC,
 			ENDRINGSMELDING_TOPIC,
 		)
-	}
-
-	@AfterEach
-	internal fun tearDown() {
-		DbTestDataUtils.cleanDatabase(dataSource)
 	}
 
 	@Test

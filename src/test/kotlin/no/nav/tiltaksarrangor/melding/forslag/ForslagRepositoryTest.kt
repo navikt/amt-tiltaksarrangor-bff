@@ -2,22 +2,23 @@ package no.nav.tiltaksarrangor.melding.forslag
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.tiltaksarrangor.RepositoryTestBase
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import org.junit.jupiter.api.Test
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 import java.time.LocalDateTime
 import java.util.UUID
 
-class ForslagRepositoryTest {
-	private val dataSource = SingletonPostgresContainer.getDataSource()
-	private val template = NamedParameterJdbcTemplate(dataSource)
-	private val repository = ForslagRepository(template)
+@SpringBootTest(classes = [ForslagRepository::class])
+class ForslagRepositoryTest : RepositoryTestBase() {
+	@Autowired
+	private lateinit var repository: ForslagRepository
 
 	@Test
 	fun `upsert - nytt forslag - inserter`() {
-		with(ForslagCtx(forlengDeltakelseForslag())) {
-			val insertedForslag = repository.upsert(forslag!!)
+		with(ForslagCtx(template, forlengDeltakelseForslag())) {
+			val insertedForslag = repository.upsert(forslag)
 
 			insertedForslag.id shouldBe forslag.id
 			insertedForslag.deltakerId shouldBe forslag.deltakerId
@@ -30,8 +31,8 @@ class ForslagRepositoryTest {
 
 	@Test
 	fun `upsert - oppdatert forslag - oppdaterer`() {
-		with(ForslagCtx(forlengDeltakelseForslag())) {
-			repository.upsert(forslag!!)
+		with(ForslagCtx(template, forlengDeltakelseForslag())) {
+			repository.upsert(forslag)
 
 			val nyStatus = Forslag.Status.Godkjent(
 				godkjentAv = Forslag.NavAnsatt(UUID.randomUUID(), UUID.randomUUID()),
@@ -49,7 +50,7 @@ class ForslagRepositoryTest {
 
 	@Test
 	fun `delete - sletter forslag`() {
-		with(ForslagCtx(forlengDeltakelseForslag())) {
+		with(ForslagCtx(template, forlengDeltakelseForslag())) {
 			setForslagGodkjent()
 			upsertForslag()
 

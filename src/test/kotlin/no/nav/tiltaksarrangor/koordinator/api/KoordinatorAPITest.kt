@@ -29,23 +29,21 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-class KoordinatorAPITest : IntegrationTest() {
+class KoordinatorAPITest(
+	private val ansattRepository: AnsattRepository,
+	private val deltakerRepository: DeltakerRepository,
+	private val deltakerlisteRepository: DeltakerlisteRepository,
+	private val arrangorRepository: ArrangorRepository,
+) : IntegrationTest() {
 	private val mediaTypeJson = "application/json".toMediaType()
-	private val template = NamedParameterJdbcTemplate(postgresDataSource)
-	private val ansattRepository = AnsattRepository(template)
-	private val deltakerRepository = DeltakerRepository(template)
-	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
-	private val arrangorRepository = ArrangorRepository(template)
 
 	@AfterEach
 	internal fun tearDown() {
 		mockAmtArrangorServer.resetHttpServer()
-		cleanDatabase()
 	}
 
 	@Test

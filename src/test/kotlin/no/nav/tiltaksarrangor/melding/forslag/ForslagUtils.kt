@@ -17,7 +17,6 @@ import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getArrangor
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
@@ -32,6 +31,7 @@ import java.util.UUID
 import kotlin.reflect.KClass
 
 class ForslagCtx(
+	template: NamedParameterJdbcTemplate,
 	var forslag: Forslag,
 	arrangor: ArrangorDbo = getArrangor(),
 	deltakerliste: DeltakerlisteDbo = getDeltakerliste(arrangorId = arrangor.id),
@@ -42,6 +42,7 @@ class ForslagCtx(
 	),
 	deltaker: DeltakerDbo = getDeltaker(forslag.deltakerId, deltakerlisteId = deltakerliste.id),
 ) : DeltakerContext(
+		template,
 		arrangor = arrangor,
 		deltakerliste = deltakerliste,
 		koordinator = koordinator,
@@ -51,7 +52,6 @@ class ForslagCtx(
 
 	var navEnhet: NavEnhet? = null
 
-	private val template = NamedParameterJdbcTemplate(SingletonPostgresContainer.getDataSource())
 	private val navAnsattRepository = NavAnsattRepository(template)
 	private val forslagRepository = ForslagRepository(template)
 	private val navEnhetRepository = NavEnhetRepository(template)
