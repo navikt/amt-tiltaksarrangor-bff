@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     val kotlinVersion = "2.2.0"
@@ -87,10 +87,11 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
     this.archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "21"
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xjsr305=strict")
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
+        jvmTarget = JvmTarget.JVM_21
     }
 }
 
