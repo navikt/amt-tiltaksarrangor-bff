@@ -22,12 +22,12 @@ repositories {
 val logstashEncoderVersion = "8.1"
 val kafkaClientsVersion = "4.0.0"
 val tokenSupportVersion = "5.0.30"
-val okHttpVersion = "4.12.0"
+val okHttpVersion = "5.0.0"
 val kotestVersion = "5.9.1"
 val testcontainersVersion = "1.21.3"
 val mockkVersion = "1.14.4"
 val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
-val unleashVersion = "11.0.1"
+val unleashVersion = "11.0.2"
 val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.06.05_08.25-2338e0f39f58"
 
@@ -54,7 +54,9 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("no.nav.common:audit-log:$commonVersion")
-    implementation("no.nav.common:log:$commonVersion")
+    implementation("no.nav.common:log:$commonVersion") {
+        exclude("com.squareup.okhttp3", "okhttp")
+    }
 
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
@@ -81,6 +83,7 @@ dependencies {
     testImplementation("org.awaitility:awaitility")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("no.nav.amt.lib:testing:$amtLibVersion")
+    testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
