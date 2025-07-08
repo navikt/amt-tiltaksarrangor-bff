@@ -54,7 +54,9 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("no.nav.common:audit-log:$commonVersion")
-    implementation("no.nav.common:log:$commonVersion")
+    implementation("no.nav.common:log:$commonVersion") {
+        exclude("com.squareup.okhttp3", "okhttp")
+    }
 
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
@@ -81,6 +83,7 @@ dependencies {
     testImplementation("org.awaitility:awaitility")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("no.nav.amt.lib:testing:$amtLibVersion")
+    testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
