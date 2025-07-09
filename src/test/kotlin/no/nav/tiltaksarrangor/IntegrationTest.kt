@@ -8,7 +8,6 @@ import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import no.nav.tiltaksarrangor.mock.MockAmtArrangorHttpServer
 import no.nav.tiltaksarrangor.mock.MockAmtPersonHttpServer
-import no.nav.tiltaksarrangor.mock.MockAmtTiltakHttpServer
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
@@ -61,7 +60,6 @@ class IntegrationTest {
 	}
 
 	companion object {
-		val mockAmtTiltakServer = MockAmtTiltakHttpServer()
 		val mockAmtArrangorServer = MockAmtArrangorHttpServer()
 		val mockAmtPersonServer = MockAmtPersonHttpServer()
 		val postgresDataSource = SingletonPostgresContainer.getDataSource()
@@ -69,8 +67,6 @@ class IntegrationTest {
 		@JvmStatic
 		@DynamicPropertySource
 		fun registerProperties(registry: DynamicPropertyRegistry) {
-			mockAmtTiltakServer.start()
-			registry.add("amt-tiltak.url", mockAmtTiltakServer::serverUrl)
 			mockAmtArrangorServer.start()
 			registry.add("amt-arrangor.url", mockAmtArrangorServer::serverUrl)
 			mockAmtPersonServer.start()

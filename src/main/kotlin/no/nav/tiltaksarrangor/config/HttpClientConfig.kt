@@ -15,15 +15,6 @@ import java.util.concurrent.TimeUnit
 @Configuration
 class HttpClientConfig {
 	@Bean
-	fun amtTiltakHttpClient(
-		clientConfigurationProperties: ClientConfigurationProperties,
-		oAuth2AccessTokenService: OAuth2AccessTokenService,
-	): OkHttpClient {
-		val registrationName = "amt-tiltak-tokenx"
-		return buildClient(registrationName, clientConfigurationProperties, oAuth2AccessTokenService)
-	}
-
-	@Bean
 	fun amtArrangorHttpClient(
 		clientConfigurationProperties: ClientConfigurationProperties,
 		oAuth2AccessTokenService: OAuth2AccessTokenService,
@@ -48,6 +39,15 @@ class HttpClientConfig {
 		oAuth2AccessTokenService: OAuth2AccessTokenService,
 	): OkHttpClient {
 		val registrationName = "amt-person-aad"
+		return buildClient(registrationName, clientConfigurationProperties, oAuth2AccessTokenService)
+	}
+
+	@Bean
+	fun amtDeltakerHttpClient(
+		clientConfigurationProperties: ClientConfigurationProperties,
+		oAuth2AccessTokenService: OAuth2AccessTokenService,
+	): OkHttpClient {
+		val registrationName = "amt-deltaker-aad"
 		return buildClient(registrationName, clientConfigurationProperties, oAuth2AccessTokenService)
 	}
 

@@ -13,6 +13,7 @@ import no.nav.tiltaksarrangor.consumer.model.Kontaktadresse
 import no.nav.tiltaksarrangor.consumer.model.Matrikkeladresse
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
+import no.nav.tiltaksarrangor.consumer.model.Oppfolgingsperiode
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.consumer.model.Vegadresse
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
@@ -99,6 +100,13 @@ fun getDeltaker(
 	sistEndret = LocalDateTime.now(),
 	forsteVedtakFattet = LocalDate.now(),
 	erManueltDeltMedArrangor = false,
+	oppfolgingsperioder = listOf(
+		Oppfolgingsperiode(
+			id = UUID.randomUUID(),
+			startdato = LocalDateTime.now().minusMonths(1),
+			sluttdato = null,
+		),
+	),
 )
 
 fun getEndringsmelding(deltakerId: UUID): EndringsmeldingDbo = EndringsmeldingDbo(

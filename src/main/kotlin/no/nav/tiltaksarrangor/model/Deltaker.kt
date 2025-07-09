@@ -43,6 +43,7 @@ data class Deltaker(
 	val deltakelsesmengder: DeltakelsesmengderDto?,
 	val ulesteEndringer: List<UlestEndringResponse>,
 	val erManueltDeltMedArrangor: Boolean,
+	val erUnderOppfolging: Boolean,
 ) {
 	data class Deltakerliste(
 		val id: UUID,
