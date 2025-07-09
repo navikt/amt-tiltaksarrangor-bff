@@ -70,7 +70,8 @@ class DeltakerRepository(
 				sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 				forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
 				erManueltDeltMedArrangor = rs.getBoolean("er_manuelt_delt_med_arrangor"),
-				oppfolgingsperioder = rs.getString("oppfolgingsperioder")?.let { fromJsonString<List<Oppfolgingsperiode>>(it) } ?: emptyList(),
+				oppfolgingsperioder = rs.getString("oppfolgingsperioder")?.let { fromJsonString<List<Oppfolgingsperiode>>(it) }
+					?: emptyList(),
 			)
 		}
 
@@ -114,7 +115,8 @@ class DeltakerRepository(
 						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 						forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
 						erManueltDeltMedArrangor = rs.getBoolean("er_manuelt_delt_med_arrangor"),
-						oppfolgingsperioder = rs.getString("oppfolgingsperioder")?.let { fromJsonString<List<Oppfolgingsperiode>>(it) } ?: emptyList(),
+						oppfolgingsperioder = rs.getString("oppfolgingsperioder")?.let { fromJsonString<List<Oppfolgingsperiode>>(it) }
+							?: emptyList(),
 					),
 				deltakerliste =
 					DeltakerlisteDbo(
@@ -469,4 +471,16 @@ class DeltakerRepository(
 			sqlParameters("navveileder_id" to navveilederId),
 			deltakerRowMapper,
 		).filter { it.skalVises() }
+
+	fun getDeltakereUtenOppfolgingsperiode(): List<UUID> {
+		val rm = RowMapper { rs, _ ->
+			UUID.fromString(rs.getString("id"))
+		}
+		val sql =
+			"""
+			SELECT id FROM deltaker where oppfolgingsperioder IS NULL OR jsonb_array_length(oppfolgingsperioder) = 0
+			""".trimIndent()
+
+		return template.query(sql, rm)
+	}
 }

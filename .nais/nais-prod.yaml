@@ -63,6 +63,7 @@ spec:
         - application: amt-tiltak
         - application: amt-arrangor
         - application: amt-person-service
+        - application: amt-deltaker
       external:
         - host: amt-unleash-api.nav.cloud.nais.io
   leaderElection: true
@@ -77,6 +78,8 @@ spec:
       value: api://prod-gcp.amt.amt-arrangor/.default
     - name: AMT_PERSON_AAD_CLIENT_ID
       value: api://prod-gcp.amt.amt-person-service/.default
+    - name: AMT_DELTAKER_AAD_CLIENT_ID
+      value: api://prod-gcp.amt.amt-deltaker/.default
 
   observability:
     autoInstrumentation:
