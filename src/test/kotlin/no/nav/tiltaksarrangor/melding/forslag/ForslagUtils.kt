@@ -24,14 +24,14 @@ import no.nav.tiltaksarrangor.testutils.getKoordinator
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import no.nav.tiltaksarrangor.testutils.getNavEnhet
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.context.ApplicationContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.reflect.KClass
 
 class ForslagCtx(
-	template: NamedParameterJdbcTemplate,
+	applicationContext: ApplicationContext,
 	var forslag: Forslag,
 	arrangor: ArrangorDbo = getArrangor(),
 	deltakerliste: DeltakerlisteDbo = getDeltakerliste(arrangorId = arrangor.id),
@@ -42,7 +42,7 @@ class ForslagCtx(
 	),
 	deltaker: DeltakerDbo = getDeltaker(forslag.deltakerId, deltakerlisteId = deltakerliste.id),
 ) : DeltakerContext(
-		template,
+		applicationContext,
 		arrangor = arrangor,
 		deltakerliste = deltakerliste,
 		koordinator = koordinator,
@@ -52,9 +52,9 @@ class ForslagCtx(
 
 	var navEnhet: NavEnhet? = null
 
-	private val navAnsattRepository = NavAnsattRepository(template)
-	private val forslagRepository = ForslagRepository(template)
-	private val navEnhetRepository = NavEnhetRepository(template)
+	private val navAnsattRepository = getOrCreateBean { template -> NavAnsattRepository(template) }
+	private val forslagRepository = getOrCreateBean { template -> ForslagRepository(template) }
+	private val navEnhetRepository = getOrCreateBean { template -> NavEnhetRepository(template) }
 
 	init {
 		opprettNavAnsattForForslag()

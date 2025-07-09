@@ -34,7 +34,7 @@ class RyddejobbTest(
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltakerliste avsluttet for 42 dager siden - sletter deltakerliste og deltaker`() {
-		with(DeltakerContext(template)) {
+		with(DeltakerContext(applicationContext)) {
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(
 				deltakerliste.copy(
 					status = DeltakerlisteStatus.AVSLUTTET,
@@ -65,7 +65,7 @@ class RyddejobbTest(
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 42 dager siden - sletter deltaker`() {
-		with(DeltakerContext(template)) {
+		with(DeltakerContext(applicationContext)) {
 			medStatus(StatusType.HAR_SLUTTET, 42)
 			medEndringsmelding()
 
@@ -81,7 +81,7 @@ class RyddejobbTest(
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 38 dager siden - sletter ikke deltaker`() {
-		with(DeltakerContext(template)) {
+		with(DeltakerContext(applicationContext)) {
 			medStatus(StatusType.HAR_SLUTTET, 38)
 			medEndringsmelding()
 
@@ -94,7 +94,7 @@ class RyddejobbTest(
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - ingenting skal slettes - sletter ingenting`() {
-		with(DeltakerContext(template)) {
+		with(DeltakerContext(applicationContext)) {
 			ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
 			deltakerlisteRepository.getDeltakerliste(deltakerliste.id) shouldNotBe null

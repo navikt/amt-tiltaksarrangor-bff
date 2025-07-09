@@ -48,7 +48,7 @@ class EndringServiceTest(
 
 	@Test
 	fun `endreDeltaker - ny endring - returnerer oppdaterer deltaker og produserer melding`() {
-		with(DeltakerContext(template)) {
+		with(DeltakerContext(applicationContext)) {
 			setVenterPaOppstart()
 			val request = LeggTilOppstartsdatoRequest(
 				startdato = LocalDate.now().plusWeeks(7),
@@ -70,7 +70,7 @@ class EndringServiceTest(
 
 	@Test
 	fun `endreDeltaker - ny endring - oppdaterer og lagrer deltaker`() {
-		with(DeltakerContext(template)) {
+		with(DeltakerContext(applicationContext)) {
 			setVenterPaOppstart()
 			val request = LeggTilOppstartsdatoRequest(
 				startdato = LocalDate.now().plusWeeks(7),

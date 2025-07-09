@@ -17,7 +17,7 @@ class ForslagRepositoryTest : RepositoryTestBase() {
 
 	@Test
 	fun `upsert - nytt forslag - inserter`() {
-		with(ForslagCtx(template, forlengDeltakelseForslag())) {
+		with(ForslagCtx(applicationContext, forlengDeltakelseForslag())) {
 			val insertedForslag = repository.upsert(forslag)
 
 			insertedForslag.id shouldBe forslag.id
@@ -31,7 +31,7 @@ class ForslagRepositoryTest : RepositoryTestBase() {
 
 	@Test
 	fun `upsert - oppdatert forslag - oppdaterer`() {
-		with(ForslagCtx(template, forlengDeltakelseForslag())) {
+		with(ForslagCtx(applicationContext, forlengDeltakelseForslag())) {
 			repository.upsert(forslag)
 
 			val nyStatus = Forslag.Status.Godkjent(
@@ -50,7 +50,7 @@ class ForslagRepositoryTest : RepositoryTestBase() {
 
 	@Test
 	fun `delete - sletter forslag`() {
-		with(ForslagCtx(template, forlengDeltakelseForslag())) {
+		with(ForslagCtx(applicationContext, forlengDeltakelseForslag())) {
 			setForslagGodkjent()
 			upsertForslag()
 

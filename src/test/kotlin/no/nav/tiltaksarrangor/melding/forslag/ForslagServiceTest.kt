@@ -27,7 +27,7 @@ class ForslagServiceTest(
 
 	@Test
 	fun `opprettForslag - forlengelse - produserer og returnerer nytt forslag`() {
-		with(ForslagCtx(template, forlengDeltakelseForslag())) {
+		with(ForslagCtx(applicationContext, forlengDeltakelseForslag())) {
 			val sluttdato = LocalDate.now().plusWeeks(42)
 			val begrunnelse = "Fordi..."
 			val request = ForlengDeltakelseRequest(sluttdato, begrunnelse)
@@ -47,7 +47,7 @@ class ForslagServiceTest(
 
 	@Test
 	fun `opprettForslag - forlengelse, ventende forlengese finnes - erstatter gammelt forslag og returnerer nytt forslag`() {
-		with(ForslagCtx(template, forlengDeltakelseForslag())) {
+		with(ForslagCtx(applicationContext, forlengDeltakelseForslag())) {
 			upsertForslag()
 
 			val sluttdato = LocalDate.now().plusWeeks(42)
@@ -72,7 +72,7 @@ class ForslagServiceTest(
 
 	@Test
 	fun `getAktiveForslag - filtrerer bort forslag uten riktig status`() {
-		with(ForslagCtx(template, forlengDeltakelseForslag())) {
+		with(ForslagCtx(applicationContext, forlengDeltakelseForslag())) {
 			upsertForslag()
 			medInaktiveForslag()
 
@@ -84,7 +84,7 @@ class ForslagServiceTest(
 
 	@Test
 	fun `tilbakekall - forslag er aktivt - sletter og produserer forslag med riktig status`() {
-		with(ForslagCtx(template, forlengDeltakelseForslag())) {
+		with(ForslagCtx(applicationContext, forlengDeltakelseForslag())) {
 			upsertForslag()
 
 			forslagService.tilbakekall(forslag.id, koordinator)
@@ -99,7 +99,7 @@ class ForslagServiceTest(
 
 	@Test
 	fun `tilbakekall - forslag er ikke aktivt - feiler`() {
-		with(ForslagCtx(template, forlengDeltakelseForslag())) {
+		with(ForslagCtx(applicationContext, forlengDeltakelseForslag())) {
 			setForslagGodkjent()
 			upsertForslag()
 

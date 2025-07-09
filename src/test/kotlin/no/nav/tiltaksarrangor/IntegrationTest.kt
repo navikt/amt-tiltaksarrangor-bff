@@ -144,7 +144,7 @@ abstract class IntegrationTest : RepositoryTestBase() {
 	}
 
 	fun testIkkeTilgangTilDeltakerliste(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
-		with(DeltakerContext(template)) {
+		with(DeltakerContext(applicationContext)) {
 			setKoordinatorDeltakerliste(UUID.randomUUID())
 
 			val response = requestFunction(deltaker.id, koordinator.personIdent)
@@ -154,7 +154,7 @@ abstract class IntegrationTest : RepositoryTestBase() {
 	}
 
 	fun testDeltakerAdressebeskyttet(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
-		with(DeltakerContext(template)) {
+		with(DeltakerContext(applicationContext)) {
 			setDeltakerAdressebeskyttet()
 
 			val response = requestFunction(deltaker.id, koordinator.personIdent)
@@ -164,7 +164,7 @@ abstract class IntegrationTest : RepositoryTestBase() {
 	}
 
 	fun testDeltakerSkjult(requestFunction: (deltakerId: UUID, ansattPersonIdent: String) -> Response) {
-		with(DeltakerContext(template)) {
+		with(DeltakerContext(applicationContext)) {
 			setDeltakerSkjult()
 
 			val response = requestFunction(deltaker.id, koordinator.personIdent)
