@@ -1,7 +1,7 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    val kotlinVersion = "2.1.21"
+    val kotlinVersion = "2.2.0"
 
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
@@ -22,15 +22,14 @@ repositories {
 val logstashEncoderVersion = "8.1"
 val kafkaClientsVersion = "4.0.0"
 val tokenSupportVersion = "5.0.30"
-val okHttpVersion = "4.12.0"
+val okHttpVersion = "5.0.0"
 val kotestVersion = "5.9.1"
-val testcontainersVersion = "1.21.2"
-val mockkVersion = "1.14.2"
+val testcontainersVersion = "1.21.3"
+val mockkVersion = "1.14.4"
 val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
-val unleashVersion = "11.0.0"
+val unleashVersion = "11.0.2"
 val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.06.05_08.25-2338e0f39f58"
-val springmockkVersion = "4.0.2"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -55,7 +54,9 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("no.nav.common:audit-log:$commonVersion")
-    implementation("no.nav.common:log:$commonVersion")
+    implementation("no.nav.common:log:$commonVersion") {
+        exclude("com.squareup.okhttp3", "okhttp")
+    }
 
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
@@ -71,7 +72,6 @@ dependencies {
     implementation("no.nav.amt.lib:models:$amtLibVersion")
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
 
-    testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude("com.vaadin.external.google", "android-json")
     }
@@ -83,17 +83,17 @@ dependencies {
     testImplementation("org.awaitility:awaitility")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("no.nav.amt.lib:testing:$amtLibVersion")
-    testImplementation("com.ninja-squad:springmockk:$springmockkVersion")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     this.archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "21"
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xjsr305=strict")
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
+        jvmTarget = JvmTarget.JVM_21
     }
 }
 

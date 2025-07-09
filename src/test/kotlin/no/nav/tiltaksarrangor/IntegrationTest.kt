@@ -8,7 +8,6 @@ import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import no.nav.tiltaksarrangor.mock.MockAmtArrangorHttpServer
 import no.nav.tiltaksarrangor.mock.MockAmtPersonHttpServer
-import no.nav.tiltaksarrangor.mock.MockAmtTiltakHttpServer
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.utils.Issuer
 import okhttp3.MediaType.Companion.toMediaType
@@ -51,7 +50,6 @@ abstract class IntegrationTest : RepositoryTestBase() {
 			.build()
 
 	companion object {
-		val mockAmtTiltakServer = MockAmtTiltakHttpServer()
 		val mockAmtArrangorServer = MockAmtArrangorHttpServer()
 		val mockAmtPersonServer = MockAmtPersonHttpServer()
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.consumer.model.AdresseDto
+import no.nav.tiltaksarrangor.consumer.model.Oppfolgingsperiode
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
@@ -69,6 +70,8 @@ class DeltakerRepository(
 				sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 				forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
 				erManueltDeltMedArrangor = rs.getBoolean("er_manuelt_delt_med_arrangor"),
+				oppfolgingsperioder = rs.getString("oppfolgingsperioder")?.let { fromJsonString<List<Oppfolgingsperiode>>(it) }
+					?: emptyList(),
 			)
 		}
 
@@ -112,6 +115,8 @@ class DeltakerRepository(
 						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 						forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
 						erManueltDeltMedArrangor = rs.getBoolean("er_manuelt_delt_med_arrangor"),
+						oppfolgingsperioder = rs.getString("oppfolgingsperioder")?.let { fromJsonString<List<Oppfolgingsperiode>>(it) }
+							?: emptyList(),
 					),
 				deltakerliste =
 					DeltakerlisteDbo(
@@ -138,7 +143,7 @@ class DeltakerRepository(
 								 start_dato, slutt_dato,
 								 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
 								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
-								 innhold, kilde, historikk, modified_at, forste_vedtak_fattet, er_manuelt_delt_med_arrangor)
+								 innhold, kilde, historikk, modified_at, forste_vedtak_fattet, er_manuelt_delt_med_arrangor, oppfolgingsperioder)
 			VALUES (:id,
 					:deltakerliste_id,
 					:personident,
@@ -173,7 +178,8 @@ class DeltakerRepository(
 					:historikk,
 					:modified_at,
 					:forste_vedtak_fattet,
-					:er_manuelt_delt_med_arrangor
+					:er_manuelt_delt_med_arrangor,
+					:oppfolgingsperioder
 					)
 			ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
 										   personident           = :personident,
@@ -208,7 +214,8 @@ class DeltakerRepository(
 										   historikk             = :historikk,
 										   modified_at           = :modified_at,
 										   forste_vedtak_fattet  = :forste_vedtak_fattet,
-										   er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor
+										   er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor,
+										   oppfolgingsperioder = :oppfolgingsperioder
 
 			""".trimIndent()
 
@@ -250,6 +257,7 @@ class DeltakerRepository(
 				"modified_at" to deltakerDbo.sistEndret,
 				"forste_vedtak_fattet" to deltakerDbo.forsteVedtakFattet,
 				"er_manuelt_delt_med_arrangor" to deltakerDbo.erManueltDeltMedArrangor,
+				"oppfolgingsperioder" to toPGObject(deltakerDbo.oppfolgingsperioder),
 			),
 		)
 	}
@@ -337,7 +345,8 @@ class DeltakerRepository(
 				tilgjengelig_fom,
 				deltaker.modified_at as modified_at,
 				forste_vedtak_fattet,
-				er_manuelt_delt_med_arrangor
+				er_manuelt_delt_med_arrangor,
+				oppfolgingsperioder
 		FROM deltaker
 				 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 		WHERE deltaker.id IN (:ids);
@@ -393,7 +402,8 @@ class DeltakerRepository(
 					tilgjengelig_fom,
 				    deltaker.modified_at as modified_at,
 					forste_vedtak_fattet,
-					er_manuelt_delt_med_arrangor
+					er_manuelt_delt_med_arrangor,
+					oppfolgingsperioder
 			FROM deltaker
 					 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
 			WHERE deltaker.id = :id;
@@ -461,4 +471,16 @@ class DeltakerRepository(
 			sqlParameters("navveileder_id" to navveilederId),
 			deltakerRowMapper,
 		).filter { it.skalVises() }
+
+	fun getDeltakereUtenOppfolgingsperiode(): List<UUID> {
+		val rm = RowMapper { rs, _ ->
+			UUID.fromString(rs.getString("id"))
+		}
+		val sql =
+			"""
+			SELECT id FROM deltaker where oppfolgingsperioder IS NULL OR jsonb_array_length(oppfolgingsperioder) = 0
+			""".trimIndent()
+
+		return template.query(sql, rm)
+	}
 }

@@ -48,7 +48,6 @@ class TiltaksarrangorAPITest(
 
 	@AfterEach
 	internal fun tearDown() {
-		mockAmtTiltakServer.resetHttpServer()
 		mockAmtArrangorServer.resetHttpServer()
 	}
 
@@ -217,7 +216,7 @@ class TiltaksarrangorAPITest(
 				objectMapper.writeValueAsString(
 					gyldigFra,
 				)
-			},"gyldigTil":null},"adressebeskyttet":false,"kilde":"ARENA","historikk":[],"deltakelsesmengder":{"nesteDeltakelsesmengde":null,"sisteDeltakelsesmengde":null},"ulesteEndringer":[],"erManueltDeltMedArrangor":false}
+			},"gyldigTil":null},"adressebeskyttet":false,"kilde":"ARENA","historikk":[],"deltakelsesmengder":{"nesteDeltakelsesmengde":null,"sisteDeltakelsesmengde":null},"ulesteEndringer":[],"erManueltDeltMedArrangor":false,"erUnderOppfolging":true}
 			""".trimIndent().format()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
@@ -463,20 +462,6 @@ class TiltaksarrangorAPITest(
 					),
 				deltakerlister = emptyList(),
 				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
-			),
-		)
-		mockAmtTiltakServer.addRegistrerVurderingResponse(
-			deltakerId,
-			listOf(
-				opprinneligVurdering.copy(opprettet = LocalDateTime.now()),
-				Vurdering(
-					id = UUID.randomUUID(),
-					deltakerId = deltakerId,
-					vurderingstype = requestBody.vurderingstype,
-					begrunnelse = requestBody.begrunnelse,
-					opprettetAvArrangorAnsattId = UUID.randomUUID(),
-					opprettet = LocalDateTime.now(),
-				),
 			),
 		)
 

@@ -4,6 +4,7 @@ import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.consumer.model.AdresseDto
+import no.nav.tiltaksarrangor.consumer.model.Oppfolgingsperiode
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Kilde
 import no.nav.tiltaksarrangor.model.StatusType
@@ -47,6 +48,7 @@ data class DeltakerDbo(
 	val sistEndret: LocalDateTime,
 	val forsteVedtakFattet: LocalDate?,
 	val erManueltDeltMedArrangor: Boolean,
+	val oppfolgingsperioder: List<Oppfolgingsperiode> = emptyList(),
 ) {
 	fun erSkjult(): Boolean = skjultDato != null
 
