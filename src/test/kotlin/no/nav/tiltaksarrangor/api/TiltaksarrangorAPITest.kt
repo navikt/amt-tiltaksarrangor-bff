@@ -49,7 +49,6 @@ class TiltaksarrangorAPITest : IntegrationTest() {
 
 	@AfterEach
 	internal fun tearDown() {
-		mockAmtTiltakServer.resetHttpServer()
 		mockAmtArrangorServer.resetHttpServer()
 		cleanDatabase()
 	}
@@ -465,20 +464,6 @@ class TiltaksarrangorAPITest : IntegrationTest() {
 					),
 				deltakerlister = emptyList(),
 				veilederDeltakere = listOf(VeilederDeltakerDbo(deltakerId, Veiledertype.VEILEDER)),
-			),
-		)
-		mockAmtTiltakServer.addRegistrerVurderingResponse(
-			deltakerId,
-			listOf(
-				opprinneligVurdering.copy(opprettet = LocalDateTime.now()),
-				Vurdering(
-					id = UUID.randomUUID(),
-					deltakerId = deltakerId,
-					vurderingstype = requestBody.vurderingstype,
-					begrunnelse = requestBody.begrunnelse,
-					opprettetAvArrangorAnsattId = UUID.randomUUID(),
-					opprettet = LocalDateTime.now(),
-				),
 			),
 		)
 

@@ -12,7 +12,6 @@ import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.OppdateringResponse
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
-import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.consumer.model.AdresseDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.Bostedsadresse
@@ -64,7 +63,6 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class TiltaksarrangorServiceTest {
-	private val amtTiltakClient = mockk<AmtTiltakClient>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val metricsService = mockk<MetricsService>(relaxed = true)
 	private val auditLoggerService = mockk<AuditLoggerService>(relaxed = true)
@@ -88,7 +86,6 @@ class TiltaksarrangorServiceTest {
 	private val arrangorRepository = ArrangorRepository(template)
 	private val tiltaksarrangorService =
 		TiltaksarrangorService(
-			amtTiltakClient,
 			ansattService,
 			metricsService,
 			deltakerRepository,
@@ -107,7 +104,7 @@ class TiltaksarrangorServiceTest {
 	@AfterEach
 	internal fun tearDown() {
 		DbTestDataUtils.cleanDatabase(dataSource)
-		clearMocks(auditLoggerService, amtTiltakClient)
+		clearMocks(auditLoggerService)
 	}
 
 	@BeforeEach
@@ -771,20 +768,6 @@ class TiltaksarrangorServiceTest {
 				opprettetAvArrangorAnsattId = UUID.randomUUID(),
 				opprettet = LocalDateTime.now().minusWeeks(1),
 			)
-		val andreVurdering =
-			Vurdering(
-				id = UUID.randomUUID(),
-				deltakerId = deltakerId,
-				vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
-				begrunnelse = null,
-				opprettetAvArrangorAnsattId = ansattId,
-				opprettet = LocalDateTime.now(),
-			)
-		coEvery { amtTiltakClient.registrerVurdering(any(), any()) } returns
-			listOf(
-				forsteVurdering,
-				andreVurdering,
-			)
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
@@ -911,20 +894,6 @@ class TiltaksarrangorServiceTest {
 				begrunnelse = "Mangler grunnkurs",
 				opprettetAvArrangorAnsattId = UUID.randomUUID(),
 				opprettet = LocalDateTime.now().minusWeeks(1),
-			)
-		val andreVurdering =
-			Vurdering(
-				id = UUID.randomUUID(),
-				deltakerId = deltakerId,
-				vurderingstype = Vurderingstype.OPPFYLLER_KRAVENE,
-				begrunnelse = null,
-				opprettetAvArrangorAnsattId = ansattId,
-				opprettet = LocalDateTime.now(),
-			)
-		coEvery { amtTiltakClient.registrerVurdering(any(), any()) } returns
-			listOf(
-				forsteVurdering,
-				andreVurdering,
 			)
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()

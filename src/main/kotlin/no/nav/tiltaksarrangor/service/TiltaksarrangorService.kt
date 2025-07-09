@@ -7,7 +7,6 @@ import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.DeltakerHistorikkResponse
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.api.response.toResponse
-import no.nav.tiltaksarrangor.client.amttiltak.AmtTiltakClient
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.model.StatusType
@@ -28,7 +27,6 @@ import java.util.UUID
 
 @Component
 class TiltaksarrangorService(
-	private val amtTiltakClient: AmtTiltakClient,
 	private val ansattService: AnsattService,
 	private val metricsService: MetricsService,
 	private val deltakerRepository: DeltakerRepository,
@@ -156,9 +154,6 @@ class TiltaksarrangorService(
 			begrunnelse = request.begrunnelse,
 		)
 
-		if (!unleashService.erKometMasterForTiltakstype(deltakerMedDeltakerliste.deltakerliste.tiltakType)) {
-			amtTiltakClient.registrerVurdering(deltakerId, vurdering.toRegistrerVurderingRequest())
-		}
 		meldingProducer.produce(vurdering)
 
 		val opprinneligeVurderinger = deltakerMedDeltakerliste.deltaker.vurderingerFraArrangor ?: emptyList()
@@ -188,13 +183,6 @@ class TiltaksarrangorService(
 	}
 
 	private fun kanSkjules(deltakerDbo: DeltakerDbo): Boolean = deltakerDbo.status in STATUSER_SOM_KAN_SKJULES
-
-	private fun Vurdering.toRegistrerVurderingRequest() = no.nav.tiltaksarrangor.client.amttiltak.request.RegistrerVurderingRequest(
-		id = id,
-		opprettet = opprettet,
-		vurderingstype = vurderingstype,
-		begrunnelse = begrunnelse,
-	)
 
 	fun markerEndringSomLest(
 		personIdent: String,
