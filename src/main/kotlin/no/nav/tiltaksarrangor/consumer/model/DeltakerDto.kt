@@ -32,7 +32,19 @@ data class DeltakerDto(
 	val sistEndret: LocalDateTime,
 	val forsteVedtakFattet: LocalDate?,
 	val erManueltDeltMedArrangor: Boolean = false,
+	val oppfolgingsperioder: List<Oppfolgingsperiode> = emptyList(),
 )
+
+data class Oppfolgingsperiode(
+	val id: UUID,
+	val startdato: LocalDateTime,
+	val sluttdato: LocalDateTime?,
+) {
+	fun erAktiv(): Boolean {
+		val now = LocalDate.now()
+		return !(now.isBefore(startdato.toLocalDate()) || (sluttdato != null && !now.isBefore(sluttdato.toLocalDate())))
+	}
+}
 
 fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 	val oppdatertStatus = status.type.toStatusType(deltarPaKurs)
@@ -87,6 +99,7 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 		sistEndret = sistEndret,
 		forsteVedtakFattet = forsteVedtakFattet,
 		erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+		oppfolgingsperioder = oppfolgingsperioder,
 	)
 }
 

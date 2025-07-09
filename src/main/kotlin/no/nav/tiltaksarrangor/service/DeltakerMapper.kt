@@ -159,6 +159,7 @@ private fun tilDeltaker(
 		},
 		ulesteEndringer = ulesteEndringer,
 		erManueltDeltMedArrangor = deltakerDbo.erManueltDeltMedArrangor,
+		erUnderOppfolging = deltakerDbo.oppfolgingsperioder.any { it.erAktiv() },
 	)
 
 	return if (adressebeskyttet && !ansattErVeileder) {

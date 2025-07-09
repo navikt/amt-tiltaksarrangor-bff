@@ -219,7 +219,7 @@ class TiltaksarrangorAPITest : IntegrationTest() {
 				objectMapper.writeValueAsString(
 					gyldigFra,
 				)
-			},"gyldigTil":null},"adressebeskyttet":false,"kilde":"ARENA","historikk":[],"deltakelsesmengder":{"nesteDeltakelsesmengde":null,"sisteDeltakelsesmengde":null},"ulesteEndringer":[],"erManueltDeltMedArrangor":false}
+			},"gyldigTil":null},"adressebeskyttet":false,"kilde":"ARENA","historikk":[],"deltakelsesmengder":{"nesteDeltakelsesmengde":null,"sisteDeltakelsesmengde":null},"ulesteEndringer":[],"erManueltDeltMedArrangor":false,"erUnderOppfolging":true}
 			""".trimIndent().format()
 		response.code shouldBe 200
 		response.body?.string() shouldBe expectedJson
