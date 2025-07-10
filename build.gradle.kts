@@ -89,10 +89,6 @@ dependencies {
     testImplementation("com.ninja-squad:springmockk:$springmockkVersion")
 }
 
-tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
-    this.archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
-}
-
 kotlin {
     compilerOptions {
         freeCompilerArgs.add("-Xjsr305=strict")
@@ -101,8 +97,12 @@ kotlin {
     }
 }
 
-configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    version.set(ktlintVersion)
+ktlint {
+    version = ktlintVersion
+}
+
+tasks.jar {
+    enabled = false
 }
 
 tasks.test {
