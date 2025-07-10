@@ -26,6 +26,7 @@ data class Deltaker(
 	val svarFraNav: Boolean,
 	val oppdateringFraNav: Boolean,
 	val nyDeltaker: Boolean,
+	val erUnderOppfolgling: Boolean,
 ) {
 	data class Deltakerliste(
 		val id: UUID,

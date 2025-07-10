@@ -66,6 +66,8 @@ data class DeltakerDbo(
 		val dato = LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES)
 		return sluttdato.isAfter(dato)
 	}
+
+	val erUnderOppfolging: Boolean get() = oppfolgingsperioder.any { it.erAktiv() }
 }
 
 val STATUSER_SOM_KAN_SKJULES =
