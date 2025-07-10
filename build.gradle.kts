@@ -5,7 +5,7 @@ plugins {
 
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
-    id("org.jlleitschuh.gradle.ktlint") version "12.3.0"
+    id("org.jlleitschuh.gradle.ktlint") version "13.0.0"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 }
@@ -22,7 +22,7 @@ repositories {
 val logstashEncoderVersion = "8.1"
 val kafkaClientsVersion = "4.0.0"
 val tokenSupportVersion = "5.0.30"
-val okHttpVersion = "5.0.0"
+val okHttpVersion = "5.1.0"
 val kotestVersion = "5.9.1"
 val testcontainersVersion = "1.21.3"
 val mockkVersion = "1.14.4"
@@ -30,6 +30,7 @@ val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
 val unleashVersion = "11.0.2"
 val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.06.05_08.25-2338e0f39f58"
+val springmockkVersion = "4.0.2"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -72,6 +73,7 @@ dependencies {
     implementation("no.nav.amt.lib:models:$amtLibVersion")
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
 
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude("com.vaadin.external.google", "android-json")
     }
@@ -83,6 +85,8 @@ dependencies {
     testImplementation("org.awaitility:awaitility")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("no.nav.amt.lib:testing:$amtLibVersion")
+    testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
+    testImplementation("com.ninja-squad:springmockk:$springmockkVersion")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {

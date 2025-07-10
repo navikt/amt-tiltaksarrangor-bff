@@ -67,8 +67,6 @@ abstract class IntegrationTest : RepositoryTestBase() {
 		@DynamicPropertySource
 		@Suppress("unused")
 		fun registerProperties(registry: DynamicPropertyRegistry) {
-			mockAmtTiltakServer.start()
-			registry.add("amt-tiltak.url", mockAmtTiltakServer::serverUrl)
 			mockAmtArrangorServer.start()
 			registry.add("amt-arrangor.url", mockAmtArrangorServer::serverUrl)
 			mockAmtPersonServer.start()
