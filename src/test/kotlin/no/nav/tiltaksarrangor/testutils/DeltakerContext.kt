@@ -11,11 +11,16 @@ import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
+import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.loggerFor
+import org.springframework.beans.factory.getBean
+import org.springframework.beans.factory.getBeansOfType
+import org.springframework.context.ApplicationContext
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDateTime
 import java.util.UUID
 
 open class DeltakerContext(
+	val applicationContext: ApplicationContext,
 	var deltaker: DeltakerDbo = getDeltaker(UUID.randomUUID()),
 	val arrangor: ArrangorDbo = getArrangor(),
 	val deltakerliste: DeltakerlisteDbo = getDeltakerliste(deltaker.deltakerlisteId, arrangorId = arrangor.id),
@@ -30,13 +35,20 @@ open class DeltakerContext(
 		deltakerId = deltaker.id,
 	),
 ) {
-	private val dataSource = SingletonPostgresContainer.getDataSource()
-	private val template = NamedParameterJdbcTemplate(dataSource)
-	private val deltakerRepository = DeltakerRepository(template)
-	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
-	private val ansattRepository = AnsattRepository(template)
-	private val arrangorRepository = ArrangorRepository(template)
-	private val endringsmeldingRepository = EndringsmeldingRepository(template)
+	val log = loggerFor<DeltakerContext>()
+
+	protected inline fun <reified T : Any> getOrCreateBean(creator: (NamedParameterJdbcTemplate) -> T): T =
+		applicationContext.getBeansOfType<T>().values.firstOrNull()?.apply {
+			log.debug("Found bean of type {}", T::class.simpleName)
+		} ?: creator(applicationContext.getBean<NamedParameterJdbcTemplate>()).apply {
+			log.debug("No beans of type {} found, created new instance", T::class.simpleName)
+		}
+
+	private val deltakerRepository = getOrCreateBean { template -> DeltakerRepository(template) }
+	private val deltakerlisteRepository = getOrCreateBean { template -> DeltakerlisteRepository(template, deltakerRepository) }
+	private val ansattRepository = getOrCreateBean { template -> AnsattRepository(template) }
+	private val arrangorRepository = getOrCreateBean { template -> ArrangorRepository(template) }
+	private val endringsmeldingRepository = getOrCreateBean { template -> EndringsmeldingRepository(template) }
 
 	init {
 		arrangorRepository.insertOrUpdateArrangor(arrangor)

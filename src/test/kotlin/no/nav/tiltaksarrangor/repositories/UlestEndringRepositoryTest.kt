@@ -1,17 +1,20 @@
 package no.nav.tiltaksarrangor.repositories
 
 import io.kotest.matchers.shouldBe
+import no.nav.tiltaksarrangor.RepositoryTestBase
 import no.nav.tiltaksarrangor.model.Oppdatering
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import org.junit.jupiter.api.Test
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 
-class UlestEndringRepositoryTest {
-	private val dataSource = SingletonPostgresContainer.getDataSource()
-	private val template = NamedParameterJdbcTemplate(dataSource)
-	private val ulestEndringRepository = UlestEndringRepository(template)
-	private val deltakerRepository = DeltakerRepository(template)
+@SpringBootTest(classes = [UlestEndringRepository::class, DeltakerRepository::class])
+class UlestEndringRepositoryTest : RepositoryTestBase() {
+	@Autowired
+	private lateinit var ulestEndringRepository: UlestEndringRepository
+
+	@Autowired
+	private lateinit var deltakerRepository: DeltakerRepository
 
 	@Test
 	fun `insert - ny ulest endring`() {

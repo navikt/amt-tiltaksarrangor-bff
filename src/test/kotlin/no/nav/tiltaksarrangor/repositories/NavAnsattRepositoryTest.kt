@@ -1,15 +1,16 @@
 package no.nav.tiltaksarrangor.repositories
 
 import io.kotest.matchers.shouldBe
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.RepositoryTestBase
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import org.junit.jupiter.api.Test
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 
-class NavAnsattRepositoryTest {
-	private val dataSource = SingletonPostgresContainer.getDataSource()
-	private val template = NamedParameterJdbcTemplate(dataSource)
-	private val repository = NavAnsattRepository(template)
+@SpringBootTest(classes = [NavAnsattRepository::class])
+class NavAnsattRepositoryTest : RepositoryTestBase() {
+	@Autowired
+	private lateinit var repository: NavAnsattRepository
 
 	@Test
 	fun `upsert - ny ansatt - inserter`() {
