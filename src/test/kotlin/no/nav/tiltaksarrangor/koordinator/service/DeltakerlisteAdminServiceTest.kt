@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.koordinator.service
 
-import com.ninjasquad.springmockk.MockkBean
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.Runs
@@ -8,7 +7,7 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
-import no.nav.tiltaksarrangor.IntegrationTest
+import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
@@ -16,29 +15,40 @@ import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
+import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
+import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
+import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.util.UUID
 
-class DeltakerlisteAdminServiceTest(
-	private val ansattRepository: AnsattRepository,
-	private val deltakerlisteRepository: DeltakerlisteRepository,
-	private val arrangorRepository: ArrangorRepository,
-	private val deltakerlisteAdminService: DeltakerlisteAdminService,
-	@MockkBean private val amtArrangorClient: AmtArrangorClient,
-	@Suppress("unused") @MockkBean(relaxed = true) private val metricsService: MetricsService,
-) : IntegrationTest() {
+class DeltakerlisteAdminServiceTest {
+	private val amtArrangorClient = mockk<AmtArrangorClient>()
+	private val metricsService = mockk<MetricsService>(relaxed = true)
+	private val dataSource = SingletonPostgresContainer.getDataSource()
+	private val template = NamedParameterJdbcTemplate(dataSource)
+	private val ansattRepository = AnsattRepository(template)
+	private val ansattService = AnsattService(amtArrangorClient, ansattRepository)
+	private val deltakerRepository = DeltakerRepository(template)
+	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
+	private val arrangorRepository = ArrangorRepository(template)
+	private val deltakerlisteAdminService =
+		DeltakerlisteAdminService(ansattService, deltakerlisteRepository, arrangorRepository, metricsService)
+
 	@AfterEach
 	internal fun tearDown() {
+		DbTestDataUtils.cleanDatabase(dataSource)
 		clearMocks(amtArrangorClient)
 	}
 

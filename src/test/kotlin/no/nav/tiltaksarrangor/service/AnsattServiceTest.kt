@@ -1,11 +1,10 @@
 package no.nav.tiltaksarrangor.service
 
-import com.ninjasquad.springmockk.MockkBean
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.clearMocks
 import io.mockk.coEvery
-import no.nav.tiltaksarrangor.IntegrationTest
+import io.mockk.mockk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
@@ -18,23 +17,29 @@ import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
+import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
+import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDateTime
 import java.util.UUID
 
-class AnsattServiceTest(
-	private val ansattRepository: AnsattRepository,
-	private val deltakerRepository: DeltakerRepository,
-	private val ansattService: AnsattService,
-	@MockkBean private val amtArrangorClient: AmtArrangorClient,
-) : IntegrationTest() {
+class AnsattServiceTest {
+	private val amtArrangorClient = mockk<AmtArrangorClient>()
+	private val dataSource = SingletonPostgresContainer.getDataSource()
+	private val template = NamedParameterJdbcTemplate(dataSource)
+	private val ansattRepository = AnsattRepository(template)
+	private val deltakerRepository = DeltakerRepository(template)
+	private val ansattService = AnsattService(amtArrangorClient, ansattRepository)
+
 	@AfterEach
 	internal fun tearDown() {
+		DbTestDataUtils.cleanDatabase(dataSource)
 		clearMocks(amtArrangorClient)
 	}
 

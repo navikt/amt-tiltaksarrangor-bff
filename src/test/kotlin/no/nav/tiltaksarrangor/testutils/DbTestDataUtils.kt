@@ -2,8 +2,6 @@ package no.nav.tiltaksarrangor.testutils
 
 import io.kotest.matchers.date.shouldBeWithin
 import io.kotest.matchers.shouldNotBe
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import java.time.Duration
@@ -15,8 +13,6 @@ object DbTestDataUtils {
 	private const val SCHEMA = "public"
 
 	private const val FLYWAY_SCHEMA_HISTORY_TABLE_NAME = "flyway_schema_history"
-
-	inline fun <reified T : Any> loggerFor(): Logger = LoggerFactory.getLogger(T::class.java)
 
 	infix fun ZonedDateTime.shouldBeCloseTo(expected: ZonedDateTime?) {
 		expected shouldNotBe null
