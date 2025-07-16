@@ -382,6 +382,9 @@ class KafkaConsumerTest : IntegrationTest() {
 				),
 			)
 			medVurderinger()
+
+			mockAmtPersonServer.addKontaktinformasjonResponse(dto.personalia.personident)
+
 			testKafkaProducer
 				.send(
 					ProducerRecord(

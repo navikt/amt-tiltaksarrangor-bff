@@ -14,8 +14,8 @@ import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
+import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.consumer.model.DeltakerDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerKontaktinformasjonDto
 import no.nav.tiltaksarrangor.consumer.model.DeltakerNavVeilederDto
 import no.nav.tiltaksarrangor.consumer.model.DeltakerPersonaliaDto
 import no.nav.tiltaksarrangor.consumer.model.DeltakerStatus
@@ -24,6 +24,7 @@ import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
+import no.nav.tiltaksarrangor.consumer.model.Kontaktinformasjon
 import no.nav.tiltaksarrangor.consumer.model.NavnDto
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
@@ -61,6 +62,7 @@ class KafkaConsumerServiceTest {
 	private val navEnhetService = mockk<NavEnhetService>(relaxUnitFun = true)
 	private val forslagService = mockk<ForslagService>(relaxUnitFun = true)
 	private val ulestEndringRepository = mockk<UlestEndringRepository>()
+	private val amtPersonClient = mockk<AmtPersonClient>()
 	private val kafkaConsumerService =
 		KafkaConsumerService(
 			arrangorRepository,
@@ -73,6 +75,7 @@ class KafkaConsumerServiceTest {
 			navEnhetService,
 			navAnsattService,
 			ulestEndringRepository,
+			amtPersonClient,
 		)
 
 	private val arrangor =
@@ -103,6 +106,8 @@ class KafkaConsumerServiceTest {
 		every { arrangorRepository.insertOrUpdateArrangor(any()) } just Runs
 		every { ulestEndringRepository.insert(any(), any()) } returns mockk()
 		coEvery { amtArrangorClient.getArrangor("88888888") } returns arrangor
+		coEvery { amtPersonClient.hentOppdaterKontaktinfo(any<String>()) } returns
+			Result.failure(RuntimeException("Oppdatert kontaktinformasjon ikke nødvendig for test"))
 	}
 
 	@Test
@@ -217,6 +222,18 @@ class KafkaConsumerServiceTest {
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
+			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+		}
+	}
+
+	@Test
+	internal fun `lagreDeltaker - ny deltaker - henter kontaktinfo`(): Unit = runBlocking {
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.VENTER_PA_OPPSTART)
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+
+			verify(exactly = 1) { amtPersonClient.hentOppdaterKontaktinfo(any<String>()) }
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 		}
 	}
@@ -412,7 +429,7 @@ class KafkaConsumerServiceTest {
 					personalia = DeltakerPersonaliaDto(
 						personident = lagretDeltaker.personident,
 						navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
-						kontaktinformasjon = DeltakerKontaktinformasjonDto(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
+						kontaktinformasjon = Kontaktinformasjon(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
 						skjermet = lagretDeltaker.erSkjermet,
 						adresse = lagretDeltaker.adresse,
 						adressebeskyttelse = null,
@@ -455,7 +472,7 @@ class KafkaConsumerServiceTest {
 				personalia = DeltakerPersonaliaDto(
 					personident = lagretDeltaker.personident,
 					navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
-					kontaktinformasjon = DeltakerKontaktinformasjonDto(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
+					kontaktinformasjon = Kontaktinformasjon(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
 					skjermet = lagretDeltaker.erSkjermet,
 					adresse = lagretDeltaker.adresse,
 					adressebeskyttelse = null,
@@ -502,7 +519,7 @@ class KafkaConsumerServiceTest {
 				personalia = DeltakerPersonaliaDto(
 					personident = lagretDeltaker.personident,
 					navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
-					kontaktinformasjon = DeltakerKontaktinformasjonDto(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
+					kontaktinformasjon = Kontaktinformasjon(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
 					skjermet = lagretDeltaker.erSkjermet,
 					adresse = lagretDeltaker.adresse,
 					adressebeskyttelse = null,
@@ -541,7 +558,7 @@ class KafkaConsumerServiceTest {
 				personalia = DeltakerPersonaliaDto(
 					personident = lagretDeltaker.personident,
 					navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
-					kontaktinformasjon = DeltakerKontaktinformasjonDto(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
+					kontaktinformasjon = Kontaktinformasjon(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
 					skjermet = lagretDeltaker.erSkjermet,
 					adresse = lagretDeltaker.adresse,
 					adressebeskyttelse = null,
@@ -684,7 +701,7 @@ class DeltakerDtoCtx {
 			DeltakerPersonaliaDto(
 				personident = "10987654321",
 				navn = NavnDto("Fornavn", null, "Etternavn"),
-				kontaktinformasjon = DeltakerKontaktinformasjonDto("98989898", "epost@nav.no"),
+				kontaktinformasjon = Kontaktinformasjon("98989898", "epost@nav.no"),
 				skjermet = false,
 				adresse = getAdresse(),
 				adressebeskyttelse = null,

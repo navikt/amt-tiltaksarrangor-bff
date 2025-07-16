@@ -8,6 +8,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
+import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
@@ -53,6 +54,7 @@ class KafkaConsumerService(
 	private val navEnhetService: NavEnhetService,
 	private val navAnsattService: NavAnsattService,
 	private val ulestEndringRepository: UlestEndringRepository,
+	private val amtPersonClient: AmtPersonClient,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -104,7 +106,15 @@ class KafkaConsumerService(
 			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
 
 			if (lagretDeltaker == null) {
-				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
+				val oppdatertKontaktinformasjon = amtPersonClient
+					.hentOppdaterKontaktinfo(deltakerDto.personalia.personident)
+					.getOrDefault(deltakerDto.personalia.kontaktinformasjon)
+
+				deltakerRepository.insertOrUpdateDeltaker(
+					deltakerDto
+						.copy(personalia = deltakerDto.personalia.copy(kontaktinformasjon = oppdatertKontaktinformasjon))
+						.toDeltakerDbo(null),
+				)
 				lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
 			} else {
 				lagreUlesteMeldinger(deltakerId, deltakerDto, lagretDeltaker)
