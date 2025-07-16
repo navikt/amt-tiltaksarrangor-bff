@@ -17,16 +17,24 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.getAdresse
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-class VeilederAPITest(
-	private val ansattRepository: AnsattRepository,
-	private val deltakerRepository: DeltakerRepository,
-	private val deltakerlisteRepository: DeltakerlisteRepository,
-) : IntegrationTest() {
+class VeilederAPITest : IntegrationTest() {
+	private val template = NamedParameterJdbcTemplate(postgresDataSource)
+	private val ansattRepository = AnsattRepository(template)
+	private val deltakerRepository = DeltakerRepository(template)
+	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
+
+	@AfterEach
+	internal fun tearDown() {
+		cleanDatabase()
+	}
+
 	@Test
 	fun `getMineDeltakere - ikke autentisert - returnerer 401`() {
 		val response =

@@ -8,21 +8,34 @@ import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
+import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.util.UUID
 
-class DeltakerlisteAdminAPITest(
-	private val ansattRepository: AnsattRepository,
-	private val arrangorRepository: ArrangorRepository,
-	private val deltakerlisteRepository: DeltakerlisteRepository,
-) : IntegrationTest() {
+class DeltakerlisteAdminAPITest : IntegrationTest() {
+	private val template = NamedParameterJdbcTemplate(postgresDataSource)
+	private val ansattRepository = AnsattRepository(template)
+	private val arrangorRepository = ArrangorRepository(template)
+	private val deltakerRepository = DeltakerRepository(template)
+	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
+
+	@AfterEach
+	internal fun tearDown() {
+		cleanDatabase()
+	}
+
 	@Test
 	fun `getAlleDeltakerlister - ikke autentisert - returnerer 401`() {
 		val response =
@@ -224,4 +237,9 @@ class DeltakerlisteAdminAPITest(
 		val ansattFraDb = ansattRepository.getAnsatt(ansattId)
 		ansattFraDb?.deltakerlister?.size shouldBe 0
 	}
+}
+
+private fun emptyRequest(): RequestBody {
+	val mediaTypeHtml = "text/html".toMediaType()
+	return "".toRequestBody(mediaTypeHtml)
 }

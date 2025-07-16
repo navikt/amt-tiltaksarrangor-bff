@@ -176,7 +176,7 @@ class ForslagAPITest : IntegrationTest() {
 
 	@Test
 	fun `tilbakekall - aktivt forslag - skal returnere 200`() {
-		with(ForslagCtx(applicationContext, forlengDeltakelseForslag())) {
+		with(ForslagCtx(forlengDeltakelseForslag())) {
 			upsertForslag()
 			val response = sendTilbakekallRequest(forslag.id, deltaker.id, koordinator.personIdent)
 
@@ -187,7 +187,7 @@ class ForslagAPITest : IntegrationTest() {
 	}
 
 	private fun testOpprettetForslag(request: ForslagRequest, block: (endring: Forslag.Endring) -> Unit) {
-		with(DeltakerContext(applicationContext)) {
+		with(DeltakerContext()) {
 			val response = request.send(deltaker.id, koordinator.personIdent)
 			response.code shouldBe 200
 

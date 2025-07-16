@@ -69,7 +69,7 @@ class EndringAPITest : IntegrationTest() {
 	}
 
 	private fun testOpprettetEndring(request: LeggTilOppstartsdatoRequest, block: (deltaker: Deltaker) -> Unit) {
-		with(DeltakerContext(applicationContext)) {
+		with(DeltakerContext()) {
 			setVenterPaOppstart()
 			val response = request.send(deltaker.id, koordinator.personIdent)
 			response.code shouldBe 200
