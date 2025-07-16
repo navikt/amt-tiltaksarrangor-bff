@@ -64,11 +64,11 @@ class AmtPersonClient(
 		}
 	}
 
-	fun hentOppdaterKontaktinfo(personident: String): Result<Kontaktinformasjon> = hentOppdaterKontaktinfo(setOf(personident)).mapCatching {
+	fun hentOppdatertKontaktinfo(personident: String): Result<Kontaktinformasjon> = hentOppdatertKontaktinfo(setOf(personident)).mapCatching {
 		it[personident] ?: throw NoSuchElementException("Klarte ikke hente kontaktinformasjon for person med ident")
 	}
 
-	fun hentOppdaterKontaktinfo(personidenter: Set<String>): Result<KontakinformasjonForPersoner> {
+	fun hentOppdatertKontaktinfo(personidenter: Set<String>): Result<KontakinformasjonForPersoner> {
 		val request =
 			Request
 				.Builder()

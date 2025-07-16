@@ -57,7 +57,7 @@ fun getDeltaker(
 ): DeltakerDbo = DeltakerDbo(
 	id = deltakerId,
 	deltakerlisteId = deltakerlisteId,
-	personident = UUID.randomUUID().toString(),
+	personident = (10_00_00_00000..99_99_99_99999).random().toString(),
 	fornavn = "Fornavn",
 	mellomnavn = null,
 	etternavn = "Etternavn",

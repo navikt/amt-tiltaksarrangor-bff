@@ -106,7 +106,7 @@ class KafkaConsumerServiceTest {
 		every { arrangorRepository.insertOrUpdateArrangor(any()) } just Runs
 		every { ulestEndringRepository.insert(any(), any()) } returns mockk()
 		coEvery { amtArrangorClient.getArrangor("88888888") } returns arrangor
-		coEvery { amtPersonClient.hentOppdaterKontaktinfo(any<String>()) } returns
+		coEvery { amtPersonClient.hentOppdatertKontaktinfo(any<String>()) } returns
 			Result.failure(RuntimeException("Oppdatert kontaktinformasjon ikke nødvendig for test"))
 	}
 
@@ -233,7 +233,7 @@ class KafkaConsumerServiceTest {
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
-			verify(exactly = 1) { amtPersonClient.hentOppdaterKontaktinfo(any<String>()) }
+			verify(exactly = 1) { amtPersonClient.hentOppdatertKontaktinfo(any<String>()) }
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 		}
 	}

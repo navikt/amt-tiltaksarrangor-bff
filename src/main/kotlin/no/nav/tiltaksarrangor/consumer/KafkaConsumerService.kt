@@ -107,7 +107,7 @@ class KafkaConsumerService(
 
 			if (lagretDeltaker == null) {
 				val oppdatertKontaktinformasjon = amtPersonClient
-					.hentOppdaterKontaktinfo(deltakerDto.personalia.personident)
+					.hentOppdatertKontaktinfo(deltakerDto.personalia.personident)
 					.getOrDefault(deltakerDto.personalia.kontaktinformasjon)
 
 				deltakerRepository.insertOrUpdateDeltaker(

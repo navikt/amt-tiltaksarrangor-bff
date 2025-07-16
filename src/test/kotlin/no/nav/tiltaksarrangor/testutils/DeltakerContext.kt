@@ -32,7 +32,7 @@ open class DeltakerContext(
 ) {
 	private val dataSource = SingletonPostgresContainer.getDataSource()
 	private val template = NamedParameterJdbcTemplate(dataSource)
-	private val deltakerRepository = DeltakerRepository(template)
+	val deltakerRepository = DeltakerRepository(template)
 	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
 	private val ansattRepository = AnsattRepository(template)
 	private val arrangorRepository = ArrangorRepository(template)
@@ -56,6 +56,11 @@ open class DeltakerContext(
 
 	fun setDeltakerSkjult() {
 		deltakerRepository.insertOrUpdateDeltaker(deltaker.copy(skjultDato = LocalDateTime.now(), skjultAvAnsattId = koordinator.id))
+	}
+
+	fun medPersonident(ident: String) {
+		deltaker = deltaker.copy(personident = ident)
+		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 	}
 
 	fun medStatus(status: StatusType, gyldigFraDagerSiden: Long = 1L) {
