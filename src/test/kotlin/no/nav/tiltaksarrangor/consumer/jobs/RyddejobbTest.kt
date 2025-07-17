@@ -1,9 +1,9 @@
 package no.nav.tiltaksarrangor.consumer.jobs
 
+import com.ninjasquad.springmockk.MockkBean
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
-import io.mockk.mockk
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.jobs.leaderelection.LeaderElection
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
@@ -12,40 +12,29 @@ import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.testutils.DbTestDataUtils
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.util.UUID
 
-class RyddejobbTest : IntegrationTest() {
-	private val dataSource = SingletonPostgresContainer.getDataSource()
-	private val template = NamedParameterJdbcTemplate(dataSource)
-	private val deltakerRepository = DeltakerRepository(template)
-	private val deltakerlisteRepository = DeltakerlisteRepository(template, deltakerRepository)
-	private val ansattRepository = AnsattRepository(template)
-	private val endringsmeldingRepository = EndringsmeldingRepository(template)
-	private val leaderElection = mockk<LeaderElection>()
-	private val ryddejobb = Ryddejobb(leaderElection, deltakerlisteRepository, deltakerRepository)
-
+class RyddejobbTest(
+	private val deltakerRepository: DeltakerRepository,
+	private val deltakerlisteRepository: DeltakerlisteRepository,
+	private val ansattRepository: AnsattRepository,
+	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val ryddejobb: Ryddejobb,
+	@MockkBean private val leaderElection: LeaderElection,
+) : IntegrationTest() {
 	@BeforeEach
 	internal fun setUp() {
 		every { leaderElection.isLeader() } returns true
 	}
 
-	@AfterEach
-	internal fun tearDown() {
-		DbTestDataUtils.cleanDatabase(dataSource)
-	}
-
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltakerliste avsluttet for 42 dager siden - sletter deltakerliste og deltaker`() {
-		with(DeltakerContext()) {
+		with(DeltakerContext(applicationContext)) {
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(
 				deltakerliste.copy(
 					status = DeltakerlisteStatus.AVSLUTTET,
@@ -76,7 +65,7 @@ class RyddejobbTest : IntegrationTest() {
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 42 dager siden - sletter deltaker`() {
-		with(DeltakerContext()) {
+		with(DeltakerContext(applicationContext)) {
 			medStatus(StatusType.HAR_SLUTTET, 42)
 			medEndringsmelding()
 
@@ -92,7 +81,7 @@ class RyddejobbTest : IntegrationTest() {
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 38 dager siden - sletter ikke deltaker`() {
-		with(DeltakerContext()) {
+		with(DeltakerContext(applicationContext)) {
 			medStatus(StatusType.HAR_SLUTTET, 38)
 			medEndringsmelding()
 
@@ -105,7 +94,7 @@ class RyddejobbTest : IntegrationTest() {
 
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - ingenting skal slettes - sletter ingenting`() {
-		with(DeltakerContext()) {
+		with(DeltakerContext(applicationContext)) {
 			ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
 
 			deltakerlisteRepository.getDeltakerliste(deltakerliste.id) shouldNotBe null

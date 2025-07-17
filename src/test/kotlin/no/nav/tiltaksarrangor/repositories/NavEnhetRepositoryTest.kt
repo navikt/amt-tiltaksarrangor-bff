@@ -1,13 +1,16 @@
 package no.nav.tiltaksarrangor.repositories
 
 import io.kotest.matchers.shouldBe
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
+import no.nav.tiltaksarrangor.RepositoryTestBase
 import no.nav.tiltaksarrangor.testutils.getNavEnhet
 import org.junit.jupiter.api.Test
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 
-class NavEnhetRepositoryTest {
-	private val repository = NavEnhetRepository(NamedParameterJdbcTemplate(SingletonPostgresContainer.getDataSource()))
+@SpringBootTest(classes = [NavEnhetRepository::class])
+class NavEnhetRepositoryTest : RepositoryTestBase() {
+	@Autowired
+	private lateinit var repository: NavEnhetRepository
 
 	@Test
 	fun `upsert - ny enhet - inserter`() {

@@ -17,7 +17,6 @@ import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
-import no.nav.tiltaksarrangor.testutils.SingletonPostgresContainer
 import no.nav.tiltaksarrangor.testutils.getArrangor
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
@@ -25,13 +24,14 @@ import no.nav.tiltaksarrangor.testutils.getKoordinator
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import no.nav.tiltaksarrangor.testutils.getNavEnhet
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.context.ApplicationContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.reflect.KClass
 
 class ForslagCtx(
+	applicationContext: ApplicationContext,
 	var forslag: Forslag,
 	arrangor: ArrangorDbo = getArrangor(),
 	deltakerliste: DeltakerlisteDbo = getDeltakerliste(arrangorId = arrangor.id),
@@ -42,6 +42,7 @@ class ForslagCtx(
 	),
 	deltaker: DeltakerDbo = getDeltaker(forslag.deltakerId, deltakerlisteId = deltakerliste.id),
 ) : DeltakerContext(
+		applicationContext,
 		arrangor = arrangor,
 		deltakerliste = deltakerliste,
 		koordinator = koordinator,
@@ -51,10 +52,9 @@ class ForslagCtx(
 
 	var navEnhet: NavEnhet? = null
 
-	private val template = NamedParameterJdbcTemplate(SingletonPostgresContainer.getDataSource())
-	private val navAnsattRepository = NavAnsattRepository(template)
-	private val forslagRepository = ForslagRepository(template)
-	private val navEnhetRepository = NavEnhetRepository(template)
+	private val navAnsattRepository = getOrCreateBean { template -> NavAnsattRepository(template) }
+	private val forslagRepository = getOrCreateBean { template -> ForslagRepository(template) }
+	private val navEnhetRepository = getOrCreateBean { template -> NavEnhetRepository(template) }
 
 	init {
 		opprettNavAnsattForForslag()
