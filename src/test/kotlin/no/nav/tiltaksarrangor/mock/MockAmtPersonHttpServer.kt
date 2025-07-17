@@ -2,8 +2,10 @@ package no.nav.tiltaksarrangor.mock
 
 import no.nav.tiltaksarrangor.client.amtperson.NavAnsattResponse
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
+import no.nav.tiltaksarrangor.consumer.model.Kontaktinformasjon
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.RecordedRequest
 import java.util.UUID
 
 class MockAmtPersonHttpServer : MockHttpServer(name = "amt-person-server") {
@@ -34,6 +36,30 @@ class MockAmtPersonHttpServer : MockHttpServer(name = "amt-person-server") {
 			MockResponse()
 				.setResponseCode(200)
 				.setBody(JsonUtils.objectMapper.writeValueAsString(ansattResponse)),
+		)
+	}
+
+	fun addKontaktinformasjonResponse(
+		personident: String,
+		epost: String = "foo@bar.baz",
+		telefonnnummer: String = "12345678",
+	) {
+		val kontaktinformasjon = mapOf(
+			personident to Kontaktinformasjon(
+				epost = epost,
+				telefonnummer = telefonnnummer,
+			),
+		)
+
+		val requestPredicate = { req: RecordedRequest ->
+			req.path == "/api/nav-bruker/kontaktinformasjon" &&
+				req.method == "POST" &&
+				req.getBodyAsString() == JsonUtils.objectMapper.writeValueAsString(setOf(personident))
+		}
+
+		addResponseHandler(
+			requestPredicate,
+			MockResponse().setResponseCode(200).setBody(JsonUtils.objectMapper.writeValueAsString(kontaktinformasjon)),
 		)
 	}
 }

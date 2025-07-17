@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.consumer.model
 
-data class DeltakerKontaktinformasjonDto(
+data class Kontaktinformasjon(
 	val telefonnummer: String?,
 	val epost: String?,
 )

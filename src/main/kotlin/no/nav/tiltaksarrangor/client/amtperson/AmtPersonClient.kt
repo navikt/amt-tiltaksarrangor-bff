@@ -1,10 +1,13 @@
 package no.nav.tiltaksarrangor.client.amtperson
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.tiltaksarrangor.consumer.model.Kontaktinformasjon
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -60,6 +63,31 @@ class AmtPersonClient(
 			return objectMapper.readValue(body.string())
 		}
 	}
+
+	fun hentOppdatertKontaktinfo(personident: String): Result<Kontaktinformasjon> = hentOppdatertKontaktinfo(setOf(personident)).mapCatching {
+		it[personident] ?: throw NoSuchElementException("Klarte ikke hente kontaktinformasjon for person med ident")
+	}
+
+	fun hentOppdatertKontaktinfo(personidenter: Set<String>): Result<KontakinformasjonForPersoner> {
+		val request =
+			Request
+				.Builder()
+				.url("$url/api/nav-bruker/kontaktinformasjon")
+				.post(objectMapper.writeValueAsString(personidenter).toRequestBody("application/json".toMediaType()))
+				.build()
+
+		amtPersonAADHttpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				val feilmelding = "Kunne ikke hente kontakinformasjon fra amt-person-service."
+				log.error(
+					feilmelding +
+						" Status=${response.code} error=${response.body.string()}",
+				)
+				return Result.failure(RuntimeException(feilmelding))
+			}
+			return runCatching { objectMapper.readValue(response.body.string()) }
+		}
+	}
 }
 
 data class NavAnsattResponse(
@@ -81,3 +109,5 @@ data class NavEnhetDto(
 		navn = navn,
 	)
 }
+
+typealias KontakinformasjonForPersoner = Map<String, Kontaktinformasjon>
