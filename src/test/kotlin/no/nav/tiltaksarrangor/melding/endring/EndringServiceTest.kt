@@ -17,7 +17,6 @@ import no.nav.tiltaksarrangor.kafka.stringStringConsumer
 import no.nav.tiltaksarrangor.melding.MELDING_TOPIC
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.endring.request.LeggTilOppstartsdatoRequest
-import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.unleash.UnleashService
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
@@ -30,7 +29,6 @@ import java.util.UUID
 import kotlin.reflect.KClass
 
 class EndringServiceTest(
-	private val deltakerRepository: DeltakerRepository,
 	private val endringService: EndringService,
 	@MockkBean private val unleashService: UnleashService,
 	@MockkBean @Suppress("unused") private val amtArrangorClient: AmtArrangorClient,
@@ -97,7 +95,7 @@ fun <T : EndringFraArrangor.Endring> assertProducedEndring(deltakerId: UUID, end
 		cache[UUID.fromString(k)] = objectMapper.readValue(v)
 	}
 
-	consumer.run()
+	consumer.start()
 
 	AsyncUtils.eventually {
 		val endring = cache.firstNotNullOf {
