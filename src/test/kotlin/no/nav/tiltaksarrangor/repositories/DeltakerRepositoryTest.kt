@@ -3,7 +3,6 @@ package no.nav.tiltaksarrangor.repositories
 import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.RepositoryTestBase
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
-import no.nav.tiltaksarrangor.testutils.getNavEnhet
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
