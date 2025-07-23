@@ -15,6 +15,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
+import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
 import no.nav.tiltaksarrangor.consumer.model.DeltakerDto
 import no.nav.tiltaksarrangor.consumer.model.DeltakerNavVeilederDto
 import no.nav.tiltaksarrangor.consumer.model.DeltakerPersonaliaDto
@@ -25,6 +26,7 @@ import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.consumer.model.Kontaktinformasjon
+import no.nav.tiltaksarrangor.consumer.model.NavEnhet
 import no.nav.tiltaksarrangor.consumer.model.NavnDto
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
@@ -690,6 +692,31 @@ class KafkaConsumerServiceTest {
 		kafkaConsumerService.handleMelding(forslag.id, forslag)
 
 		verify(exactly = 1) { forslagService.delete(forslag.id) }
+	}
+
+	@Test
+	internal fun `lagreNavEnhet - enhet har nytt navn - oppdaterer deltakere og lagrer`() {
+		val id = UUID.randomUUID()
+		val gammeltNavn = "NAV Bærum"
+		val nyttNavn = "NAV Asker"
+		val opprinneligEnhet = NavEnhet(
+			id = id,
+			enhetsnummer = "1234",
+			navn = gammeltNavn,
+		)
+		val nyEnhet = NavEnhetDto(
+			id = id,
+			enhetId = "1234",
+			navn = nyttNavn,
+		)
+
+		every { navEnhetService.hentEnhet(id) } returns opprinneligEnhet
+		every { deltakerRepository.oppdaterEnhetsnavnForDeltakere(gammeltNavn, nyttNavn) } just Runs
+
+		kafkaConsumerService.lagreNavEnhet(id, nyEnhet)
+
+		verify(exactly = 1) { navEnhetService.upsert(match { it.navn == nyttNavn }) }
+		verify(exactly = 1) { deltakerRepository.oppdaterEnhetsnavnForDeltakere(gammeltNavn, nyttNavn) }
 	}
 }
 

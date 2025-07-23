@@ -14,6 +14,7 @@ const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforing
 const val DELTAKER_TOPIC = "amt.deltaker-v2"
 const val ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
 const val NAV_ANSATT_TOPIC = "amt.nav-ansatt-personalia-v1"
+const val NAV_ENHET_TOPIC = "amt.nav-enhet-v1"
 
 @Component
 class KafkaConsumer(
@@ -28,6 +29,7 @@ class KafkaConsumer(
 			ENDRINGSMELDING_TOPIC,
 			NAV_ANSATT_TOPIC,
 			MELDING_TOPIC,
+			NAV_ENHET_TOPIC,
 		],
 		properties = ["auto.offset.reset = earliest"],
 		containerFactory = "kafkaListenerContainerFactory",
@@ -41,6 +43,7 @@ class KafkaConsumer(
 			ENDRINGSMELDING_TOPIC -> kafkaConsumerService.lagreEndringsmelding(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			NAV_ANSATT_TOPIC -> kafkaConsumerService.lagreNavAnsatt(UUID.fromString(cr.key()), fromJsonString(cr.value()))
 			MELDING_TOPIC -> kafkaConsumerService.handleMelding(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
+			NAV_ENHET_TOPIC -> kafkaConsumerService.lagreNavEnhet(UUID.fromString(cr.key()), fromJsonString(cr.value()))
 			else -> throw IllegalStateException("Mottok melding på ukjent topic: ${cr.topic()}")
 		}
 		acknowledgment.acknowledge()

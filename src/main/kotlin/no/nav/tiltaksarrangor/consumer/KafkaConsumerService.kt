@@ -9,6 +9,7 @@ import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
+import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
 import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
@@ -17,6 +18,7 @@ import no.nav.tiltaksarrangor.consumer.model.DeltakerStatus
 import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
+import no.nav.tiltaksarrangor.consumer.model.NavEnhet
 import no.nav.tiltaksarrangor.consumer.model.SKJULES_ALLTID_STATUSER
 import no.nav.tiltaksarrangor.consumer.model.toAnsattDbo
 import no.nav.tiltaksarrangor.consumer.model.toArrangorDbo
@@ -38,6 +40,7 @@ import no.nav.tiltaksarrangor.service.NavAnsattService
 import no.nav.tiltaksarrangor.service.NavEnhetService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -441,7 +444,28 @@ class KafkaConsumerService(
 			}
 		}
 	}
+
+	@Transactional
+	fun lagreNavEnhet(id: UUID, enhet: NavEnhetDto) {
+		val opprinneligEnhet = navEnhetService.hentEnhet(id)
+		if (opprinneligEnhet != null && opprinneligEnhet.navn != enhet.navn) {
+			deltakerRepository.oppdaterEnhetsnavnForDeltakere(
+				opprinneligEnhetsnavn = opprinneligEnhet.navn,
+				nyttEnhetsnavn = enhet.navn,
+			)
+			log.info("Oppdaterer enhetsnavn for deltakere fra ${opprinneligEnhet.navn} til ${enhet.navn}")
+		}
+
+		navEnhetService.upsert(enhet.toModel())
+		log.info("Lagret nav-enhet med id $id")
+	}
 }
+
+private fun NavEnhetDto.toModel() = NavEnhet(
+	id = id,
+	enhetsnummer = enhetId,
+	navn = navn,
+)
 
 private val stottedeTiltak =
 	setOf(
