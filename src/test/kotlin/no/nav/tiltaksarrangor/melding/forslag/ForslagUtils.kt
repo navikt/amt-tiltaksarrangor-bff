@@ -148,7 +148,7 @@ fun <T : Forslag.Endring> assertProducedForslag(forslagId: UUID, endringstype: K
 		cache[UUID.fromString(k)] = objectMapper.readValue(v)
 	}
 
-	consumer.run()
+	consumer.start()
 
 	AsyncUtils.eventually {
 		val cachedForslag = cache[forslagId]!! as Forslag
@@ -166,7 +166,7 @@ fun getProducedForslag(id: UUID): Forslag {
 		cache[UUID.fromString(k)] = objectMapper.readValue(v)
 	}
 
-	consumer.run()
+	consumer.start()
 
 	AsyncUtils.eventually {
 		cache[id] shouldNotBe null
