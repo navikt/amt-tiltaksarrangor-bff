@@ -483,4 +483,16 @@ class DeltakerRepository(
 
 		return template.query(sql, rm)
 	}
+
+	fun oppdaterEnhetsnavnForDeltakere(opprinneligEnhetsnavn: String, nyttEnhetsnavn: String) {
+		val sql =
+			"""
+			update deltaker
+			set navkontor = :nyttEnhetsnavn
+			where navkontor = :opprinneligEnhetsnavn
+			""".trimIndent()
+
+		val params = sqlParameters("nyttEnhetsnavn" to nyttEnhetsnavn, "opprinneligEnhetsnavn" to opprinneligEnhetsnavn)
+		template.update(sql, params)
+	}
 }
