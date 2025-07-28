@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     val kotlinVersion = "2.2.0"
 
-    id("org.springframework.boot") version "3.5.3"
+    id("org.springframework.boot") version "3.5.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "13.0.0"
     kotlin("jvm") version kotlinVersion
@@ -21,7 +21,7 @@ repositories {
 
 val logstashEncoderVersion = "8.1"
 val kafkaClientsVersion = "4.0.0"
-val tokenSupportVersion = "5.0.30"
+val tokenSupportVersion = "5.0.33"
 val okHttpVersion = "5.1.0"
 val kotestVersion = "5.9.1"
 val testcontainersVersion = "1.21.3"
