@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 
 @ControllerAdvice
 class GlobalExceptionHandler(
-	@Value("\${rest.include-stacktrace: false}") private val includeStacktrace: Boolean,
+	@Value($$"${rest.include-stacktrace}") private val includeStacktrace: Boolean,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
