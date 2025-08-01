@@ -4,6 +4,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.EndreAvslutningRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.FjernOppstartsdatoRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
@@ -39,6 +40,7 @@ class ForslagService(
 			is SluttarsakRequest -> Forslag.Sluttarsak(request.aarsak)
 			is StartdatoRequest -> Forslag.Startdato(request.startdato, request.sluttdato)
 			is FjernOppstartsdatoRequest -> Forslag.FjernOppstartsdato
+			is EndreAvslutningRequest -> Forslag.EndreAvslutning(request.aarsak, request.harDeltatt, request.harFullfort)
 		}
 
 		val forslag = Forslag(
