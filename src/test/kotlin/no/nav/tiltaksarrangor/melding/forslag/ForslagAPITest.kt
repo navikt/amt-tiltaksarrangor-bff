@@ -7,6 +7,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.EndreAvslutningRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.FjernOppstartsdatoRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
@@ -214,6 +215,7 @@ class ForslagAPITest : IntegrationTest() {
 			is SluttarsakRequest -> "sluttarsak"
 			is StartdatoRequest -> "startdato"
 			is FjernOppstartsdatoRequest -> "fjern-oppstartsdato"
+			is EndreAvslutningRequest -> "endre-avslutning"
 		}
 
 		return sendRequest(
