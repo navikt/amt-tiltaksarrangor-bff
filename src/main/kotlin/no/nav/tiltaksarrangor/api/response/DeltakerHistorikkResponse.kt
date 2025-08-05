@@ -166,6 +166,12 @@ fun DeltakerEndring.Endring.toResponse(oppstartstype: Oppstartstype): DeltakerEn
 		oppstartstype = oppstartstype,
 	)
 
+	is DeltakerEndring.Endring.EndreAvslutning -> DeltakerEndringEndringResponse.EndreAvslutning(
+		aarsak = aarsak,
+		begrunnelse = begrunnelse,
+		harFullfort = true,
+	)
+
 	is DeltakerEndring.Endring.AvbrytDeltakelse -> DeltakerEndringEndringResponse.AvsluttDeltakelse(
 		aarsak = aarsak,
 		sluttdato = sluttdato,
