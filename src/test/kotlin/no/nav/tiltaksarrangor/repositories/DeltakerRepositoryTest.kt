@@ -4,14 +4,12 @@ import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.RepositoryTestBase
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest(classes = [DeltakerRepository::class])
-class DeltakerRepositoryTest : RepositoryTestBase() {
-	@Autowired
-	private lateinit var repository: DeltakerRepository
-
+class DeltakerRepositoryTest(
+	private val repository: DeltakerRepository,
+) : RepositoryTestBase() {
 	@Test
 	fun `oppdaterEnhetsnavnForDeltakere - nytt enhetsnavn - oppdaterer`() {
 		with(DeltakerContext(applicationContext)) {

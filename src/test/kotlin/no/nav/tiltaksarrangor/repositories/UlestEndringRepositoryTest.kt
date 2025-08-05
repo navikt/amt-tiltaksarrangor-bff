@@ -5,17 +5,13 @@ import no.nav.tiltaksarrangor.RepositoryTestBase
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest(classes = [UlestEndringRepository::class, DeltakerRepository::class])
-class UlestEndringRepositoryTest : RepositoryTestBase() {
-	@Autowired
-	private lateinit var ulestEndringRepository: UlestEndringRepository
-
-	@Autowired
-	private lateinit var deltakerRepository: DeltakerRepository
-
+class UlestEndringRepositoryTest(
+	private val ulestEndringRepository: UlestEndringRepository,
+	private val deltakerRepository: DeltakerRepository,
+) : RepositoryTestBase() {
 	@Test
 	fun `insert - ny ulest endring`() {
 		val deltaker = getDeltaker()
