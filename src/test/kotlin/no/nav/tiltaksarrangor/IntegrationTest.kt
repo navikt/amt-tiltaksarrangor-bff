@@ -25,7 +25,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
-import org.springframework.test.context.TestConstructor
 import org.testcontainers.kafka.KafkaContainer
 import org.testcontainers.utility.DockerImageName
 import java.time.Duration
@@ -33,7 +32,6 @@ import java.util.UUID
 
 @EnableMockOAuth2Server
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 abstract class IntegrationTest : RepositoryTestBase() {
 	@Autowired
 	protected lateinit var mockOAuth2Server: MockOAuth2Server
@@ -43,11 +41,7 @@ abstract class IntegrationTest : RepositoryTestBase() {
 
 	fun serverUrl() = "http://localhost:$port"
 
-	val client =
-		OkHttpClient
-			.Builder()
-			.callTimeout(Duration.ofMinutes(5))
-			.build()
+	val client = OkHttpClient.Builder().callTimeout(Duration.ofMinutes(5)).build()
 
 	companion object {
 		val mockAmtArrangorServer = MockAmtArrangorHttpServer()
@@ -55,13 +49,12 @@ abstract class IntegrationTest : RepositoryTestBase() {
 
 		@ServiceConnection
 		@Suppress("unused")
-		val kafkacontainer = KafkaContainer(DockerImageName.parse("apache/kafka"))
-			.apply {
-				// workaround for https://github.com/testcontainers/testcontainers-java/issues/9506
-				withEnv("KAFKA_LISTENERS", "PLAINTEXT://:9092,BROKER://:9093,CONTROLLER://:9094")
-				start()
-				System.setProperty("KAFKA_BROKERS", bootstrapServers)
-			}
+		val kafkacontainer = KafkaContainer(DockerImageName.parse("apache/kafka")).apply {
+			// workaround for https://github.com/testcontainers/testcontainers-java/issues/9506
+			withEnv("KAFKA_LISTENERS", "PLAINTEXT://:9092,BROKER://:9093,CONTROLLER://:9094")
+			start()
+			System.setProperty("KAFKA_BROKERS", bootstrapServers)
+		}
 
 		@JvmStatic
 		@DynamicPropertySource
@@ -80,11 +73,7 @@ abstract class IntegrationTest : RepositoryTestBase() {
 		body: RequestBody? = null,
 		headers: Map<String, String> = emptyMap(),
 	): Response {
-		val reqBuilder =
-			Request
-				.Builder()
-				.url("${serverUrl()}$path")
-				.method(method, body)
+		val reqBuilder = Request.Builder().url("${serverUrl()}$path").method(method, body)
 
 		headers.forEach {
 			reqBuilder.addHeader(it.key, it.value)
@@ -98,13 +87,12 @@ abstract class IntegrationTest : RepositoryTestBase() {
 		audience: String = "amt-tiltaksarrangor-bff-client-id",
 		issuerId: String = Issuer.TOKEN_X,
 		clientId: String = "amt-tiltaksarrangor-flate",
-		claims: Map<String, Any> =
-			mapOf(
-				"acr" to "Level4",
-				"idp" to "idporten",
-				"client_id" to clientId,
-				"pid" to fnr,
-			),
+		claims: Map<String, Any> = mapOf(
+			"acr" to "Level4",
+			"idp" to "idporten",
+			"client_id" to clientId,
+			"pid" to fnr,
+		),
 	): String = mockOAuth2Server
 		.issueToken(
 			issuerId,
