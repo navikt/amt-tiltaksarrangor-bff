@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestConstructor
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.utility.DockerImageName
 import javax.sql.DataSource
 
@@ -41,7 +41,7 @@ abstract class RepositoryTestBase {
 				.asCompatibleSubstituteFor("postgres"),
 		).apply {
 			addEnv("TZ", "Europe/Oslo")
-			waitingFor(HostPortWaitStrategy())
+			waitingFor(Wait.forListeningPort())
 		}
 	}
 }
