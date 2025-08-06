@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest(classes = [DeltakerKontaktinfoRepository::class])
 class DeltakerKontaktinfoRepositoryTest(
-	private val repository: DeltakerKontaktinfoRepository,
+	private val deltakerKontaktinfoRepository: DeltakerKontaktinfoRepository,
 ) : RepositoryTestBase() {
 	val kontaktinfo = Kontaktinformasjon(
 		epost = "ny@epost",
@@ -20,7 +20,7 @@ class DeltakerKontaktinfoRepositoryTest(
 	@Test
 	fun `oppdaterKontaktinfo - en deltaker - oppdaterer`() {
 		with(DeltakerContext(applicationContext)) {
-			repository.oppdaterKontaktinformasjon(mapOf(deltaker.personident to kontaktinfo))
+			deltakerKontaktinfoRepository.oppdaterKontaktinformasjon(mapOf(deltaker.personident to kontaktinfo))
 
 			assertKontaktinfoOppdatert(this, kontaktinfo)
 		}
@@ -30,7 +30,7 @@ class DeltakerKontaktinfoRepositoryTest(
 	fun `oppdaterKontaktinfo - flere deltakere - oppdaterer`() {
 		val deltakerCtx1 = DeltakerContext(applicationContext)
 		val deltakerCtx2 = DeltakerContext(applicationContext)
-		repository.oppdaterKontaktinformasjon(
+		deltakerKontaktinfoRepository.oppdaterKontaktinformasjon(
 			mapOf(
 				deltakerCtx1.deltaker.personident to kontaktinfo,
 				deltakerCtx2.deltaker.personident to kontaktinfo,
@@ -48,7 +48,7 @@ class DeltakerKontaktinfoRepositoryTest(
 		) {
 			(0..23).forEach { time ->
 				medPersonident(time.toString())
-				repository
+				deltakerKontaktinfoRepository
 					.getPersonerForOppdatering(time)
 					.shouldNotBeNull()
 					.shouldBe(listOf(deltaker.personident))
