@@ -20,6 +20,13 @@ data class AvsluttDeltakelseRequest(
 	val harDeltatt: Boolean?,
 ) : ForslagRequest
 
+data class EndreAvslutningRequest(
+	val aarsak: EndringAarsak?,
+	override val begrunnelse: String?,
+	val harFullfort: Boolean?,
+	val harDeltatt: Boolean?,
+) : ForslagRequest
+
 data class IkkeAktuellRequest(
 	val aarsak: EndringAarsak,
 	override val begrunnelse: String?,

@@ -4,6 +4,7 @@ import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.tiltaksarrangor.melding.MeldingTilgangskontrollService
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
+import no.nav.tiltaksarrangor.melding.forslag.request.EndreAvslutningRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.FjernOppstartsdatoRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForslagRequest
@@ -37,6 +38,13 @@ class ForslagAPI(
 	fun avslutt(
 		@PathVariable deltakerId: UUID,
 		@RequestBody request: AvsluttDeltakelseRequest,
+	): AktivtForslagResponse = opprettForslag(deltakerId, request)
+
+	@PostMapping("/endre-avslutning")
+	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
+	fun avslutt(
+		@PathVariable deltakerId: UUID,
+		@RequestBody request: EndreAvslutningRequest,
 	): AktivtForslagResponse = opprettForslag(deltakerId, request)
 
 	@PostMapping("/ikke-aktuell")

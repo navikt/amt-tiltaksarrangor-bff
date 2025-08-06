@@ -53,6 +53,12 @@ sealed class DeltakerEndringEndringResponse {
 		val oppstartstype: Oppstartstype,
 	) : DeltakerEndringEndringResponse()
 
+	data class EndreAvslutning(
+		val aarsak: Aarsak?,
+		val begrunnelse: String?,
+		val harFullfort: Boolean,
+	) : DeltakerEndringEndringResponse()
+
 	data class EndreSluttarsak(
 		val aarsak: Aarsak,
 		val begrunnelse: String?,
