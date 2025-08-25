@@ -30,7 +30,7 @@ val commonVersion = "3.2025.08.18_11.44-04fe318bd185"
 val unleashVersion = "11.1.0"
 val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.08.18_13.02-cc27ffcc0290"
-val shedlockVersion = "6.9.2"
+val shedlockVersion = "6.10.0"
 val springmockkVersion = "4.0.2"
 
 dependencies {
