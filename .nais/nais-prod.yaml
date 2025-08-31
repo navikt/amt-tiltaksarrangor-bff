@@ -37,7 +37,7 @@ spec:
     failureThreshold: 30
     periodSeconds: 5
   replicas:
-    min: 1
+    min: 2
     max: 3
     scalingStrategy:
       cpu:
