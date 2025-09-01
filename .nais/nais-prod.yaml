@@ -36,11 +36,11 @@ spec:
     max: 3
     scalingStrategy:
       cpu:
-        thresholdPercentage: 500
+        thresholdPercentage: 200
   resources:
     requests:
-      cpu: 20m
-      memory: 512Mi
+      cpu: 100m
+      memory: 700Mi
     limits:
       memory: 2048Mi
   kafka:
