@@ -27,10 +27,11 @@ spec:
     path: /internal/prometheus
   readiness:
     path: /internal/health/readiness
-    initialDelay: 30
+    initialDelay: 60
   liveness:
     path: /internal/health/liveness
-    initialDelay: 30
+    initialDelay: 60
+    timeout: 3
   replicas:
     min: 2
     max: 3
