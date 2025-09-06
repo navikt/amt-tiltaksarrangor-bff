@@ -33,14 +33,14 @@ spec:
     initialDelay: 60
     timeout: 3
   replicas:
-    min: 0
-    max: 0
+    min: 2
+    max: 3
     scalingStrategy:
       cpu:
         thresholdPercentage: 200
   resources:
     requests:
-      cpu: 100m
+      cpu: 50m
       memory: 700Mi
     limits:
       memory: 2048Mi
