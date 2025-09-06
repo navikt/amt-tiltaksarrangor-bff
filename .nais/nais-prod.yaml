@@ -10,7 +10,7 @@ spec:
   gcp:
     sqlInstances:
       - name: amt-tiltaksarrangor-bff
-        type: POSTGRES_14
+        type: POSTGRES_15
         tier: db-custom-2-5120
         databases:
           - name: amt-tiltaksarrangor-bff
