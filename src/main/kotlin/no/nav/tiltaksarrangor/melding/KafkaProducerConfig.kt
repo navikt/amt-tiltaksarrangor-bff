@@ -14,8 +14,5 @@ class KafkaProducerConfig {
 	fun kafkaConfig(): KafkaConfig = KafkaConfigImpl()
 
 	@Bean(destroyMethod = "close")
-	fun producer(kafkaConfig: KafkaConfig) = Producer<String, String>(
-		kafkaConfig = kafkaConfig,
-		addShutdownHook = false,
-	)
+	fun producer(kafkaConfig: KafkaConfig) = Producer<String, String>(kafkaConfig)
 }
