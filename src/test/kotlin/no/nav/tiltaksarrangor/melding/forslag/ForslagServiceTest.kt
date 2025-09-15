@@ -1,17 +1,18 @@
 package no.nav.tiltaksarrangor.melding.forslag
 
 import io.kotest.matchers.shouldBe
+import no.nav.amt.lib.kafka.config.KafkaConfig
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.SingletonKafkaProvider
 import no.nav.tiltaksarrangor.IntegrationTest
-import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Primary
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -22,7 +23,8 @@ class ForslagServiceTest(
 	@TestConfiguration
 	class TestConfig {
 		@Bean
-		fun meldingProducer() = MeldingProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
+		@Primary
+		fun localKafkaConfig(): KafkaConfig = LocalKafkaConfig(SingletonKafkaProvider.getHost())
 	}
 
 	@Test
