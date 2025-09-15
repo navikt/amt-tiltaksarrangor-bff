@@ -14,14 +14,13 @@ class UnleashService(
 		"ARBRRHDAG",
 		"DIGIOPPARB",
 		"VASV",
-	)
-
-	// her kan vi legge inn de neste tiltakstypene vi skal ta over
-	private val tiltakstyperKometKanskjeErMasterFor = listOf(
 		"JOBBK",
 		"GRUPPEAMO",
 		"GRUFAGYRKE",
 	)
+
+	// her kan vi legge inn de neste tiltakstypene vi skal ta over
+	private val tiltakstyperKometKanskjeErMasterFor = emptyList<String>()
 
 	fun erKometMasterForTiltakstype(tiltakstype: String): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFor ||
 		(unleash.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
