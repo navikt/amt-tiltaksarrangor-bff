@@ -11,7 +11,7 @@ import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import no.nav.tiltaksarrangor.utils.sqlParameters
-import org.springframework.dao.PessimisticLockingFailureException
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.retry.annotation.Backoff
@@ -161,7 +161,7 @@ class AnsattRepository(
 	}
 
 	@Retryable(
-		include = [PessimisticLockingFailureException::class],
+		retryFor = [DuplicateKeyException::class],
 		backoff = Backoff(delay = 250L, multiplier = 2.0, random = true),
 	)
 	@Transactional
