@@ -22,7 +22,8 @@ class DeltakerKontaktinfoRepository(
 		val sql =
 			"""
 			UPDATE deltaker
-			SET epost = :epost,
+			SET
+				epost = :epost,
 				telefonnummer = :telefonnummer
 			WHERE personident = :personident
 			""".trimIndent()
