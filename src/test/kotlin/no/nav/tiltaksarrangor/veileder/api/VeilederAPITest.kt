@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.veileder.api
 
 import io.kotest.matchers.shouldBe
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
@@ -49,7 +50,7 @@ class VeilederAPITest(
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltakNavn = "Arbeidsforberedende trening",
-				tiltakType = "ARBFORB",
+				tiltakType = ArenaKode.ARBFORB,
 				startDato = LocalDate.now(),
 				sluttDato = null,
 				erKurs = false,

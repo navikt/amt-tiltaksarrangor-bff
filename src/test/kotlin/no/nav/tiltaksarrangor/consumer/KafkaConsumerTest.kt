@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.consumer
 
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
@@ -226,6 +227,7 @@ class KafkaConsumerTest(
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = "DIGIOPPARB",
+						tiltakskode = "DIGITALT_OPPFOLGINGSTILTAK",
 					),
 				navn = "Gjennomføring av tiltak",
 				startDato = LocalDate.of(2023, 5, 2),
@@ -260,7 +262,7 @@ class KafkaConsumerTest(
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = UUID.randomUUID(),
 				tiltakNavn = "Det flotte tiltaket",
-				tiltakType = "DIGIOPPARB",
+				tiltakType = ArenaKode.DIGIOPPARB,
 				startDato = LocalDate.of(2023, 5, 2),
 				sluttDato = null,
 				erKurs = false,
@@ -293,7 +295,7 @@ class KafkaConsumerTest(
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = UUID.randomUUID(),
 				tiltakNavn = "Avsluttet tiltak",
-				tiltakType = "DIGIOPPARB",
+				tiltakType = ArenaKode.DIGIOPPARB,
 				startDato = LocalDate.now().minusYears(2),
 				sluttDato = null,
 				erKurs = false,
@@ -312,7 +314,8 @@ class KafkaConsumerTest(
 					DeltakerlisteDto.Tiltakstype(
 						id = UUID.randomUUID(),
 						navn = deltakerlisteDbo.tiltakNavn,
-						arenaKode = deltakerlisteDbo.tiltakType,
+						arenaKode = deltakerlisteDbo.tiltakType.name,
+						tiltakskode = deltakerlisteDbo.tiltakType.toTiltaksKode().toString(),
 					),
 				navn = deltakerlisteDbo.navn,
 				startDato = deltakerlisteDbo.startDato!!,

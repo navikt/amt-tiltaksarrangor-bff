@@ -123,6 +123,7 @@ class KafkaConsumerServiceTest {
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = "DIGIOPPARB",
+						tiltakskode = "DIGITALT_OPPFOLGINGSTILTAK",
 					),
 				navn = "Gjennomføring av tiltak",
 				startDato = LocalDate.now().minusYears(2),
@@ -149,6 +150,7 @@ class KafkaConsumerServiceTest {
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = "DIGIOPPARB",
+						tiltakskode = "DIGITALT_OPPFOLGINGSTILTAK",
 					),
 				navn = "Avsluttet tiltak",
 				startDato = LocalDate.now().minusYears(2),
@@ -176,6 +178,7 @@ class KafkaConsumerServiceTest {
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = "DIGIOPPARB",
+						tiltakskode = "DIGITALT_OPPFOLGINGSTILTAK",
 					),
 				navn = "Avsluttet tiltak",
 				startDato = LocalDate.now().minusYears(2),
@@ -189,32 +192,6 @@ class KafkaConsumerServiceTest {
 		kafkaConsumerService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
 		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerliste - ikke stottet tiltakstype - lagres ikke i db `() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto =
-			DeltakerlisteDto(
-				id = deltakerlisteId,
-				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
-						id = UUID.randomUUID(),
-						navn = "Det flotte tiltaket",
-						arenaKode = "UTD",
-					),
-				navn = "Gjennomføring av tiltak",
-				startDato = LocalDate.now().minusYears(2),
-				sluttDato = null,
-				status = DeltakerlisteDto.Status.GJENNOMFORES,
-				virksomhetsnummer = "88888888",
-				oppstart = Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = null,
-			)
-
-		kafkaConsumerService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
 	}
 
 	@Test

@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.koordinator.api
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
@@ -53,7 +54,7 @@ class DeltakerlisteAdminAPITest(
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltakNavn = "Navn på tiltak",
-				tiltakType = "ARBFORB",
+				tiltakType = ArenaKode.ARBFORB,
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
@@ -67,7 +68,7 @@ class DeltakerlisteAdminAPITest(
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltakNavn = "Annet tiltak",
-				tiltakType = "INDOPPFAG",
+				tiltakType = ArenaKode.INDOPPFAG,
 				startDato = LocalDate.of(2023, 5, 1),
 				sluttDato = LocalDate.of(2023, 6, 1),
 				erKurs = false,
@@ -128,7 +129,7 @@ class DeltakerlisteAdminAPITest(
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltakNavn = "Navn på tiltak",
-				tiltakType = "ARBFORB",
+				tiltakType = ArenaKode.ARBFORB,
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
@@ -189,7 +190,7 @@ class DeltakerlisteAdminAPITest(
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltakNavn = "Navn på tiltak",
-				tiltakType = "ARBFORB",
+				tiltakType = ArenaKode.ARBFORB,
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,

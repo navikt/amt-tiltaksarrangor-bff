@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.repositories
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.consumer.model.AdresseDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
@@ -107,7 +108,7 @@ class EndringsmeldingRepository(
 						status = DeltakerlisteStatus.valueOf(rs.getString("deltakerliste_status")),
 						arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 						tiltakNavn = rs.getString("tiltak_navn"),
-						tiltakType = rs.getString("tiltak_type"),
+						tiltakType = rs.getString("tiltak_type").let { ArenaKode.valueOf(it) },
 						startDato = rs.getNullableLocalDate("deltakerliste_start_dato"),
 						sluttDato = rs.getNullableLocalDate("delakerliste_slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),

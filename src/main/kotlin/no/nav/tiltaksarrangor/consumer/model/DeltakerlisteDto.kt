@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.consumer.model
 
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import java.time.LocalDate
 import java.util.UUID
@@ -18,8 +19,11 @@ data class DeltakerlisteDto(
 	data class Tiltakstype(
 		val id: UUID,
 		val navn: String,
-		val arenaKode: String,
-	)
+		val arenaKode: String, // String tar høyde for andre tiltakstyper enn det vi støtter
+		val tiltakskode: String,
+	) {
+		fun erStottet() = this.tiltakskode in Tiltakskode.entries.toTypedArray().map { it.name }
+	}
 
 	enum class Status {
 		GJENNOMFORES,

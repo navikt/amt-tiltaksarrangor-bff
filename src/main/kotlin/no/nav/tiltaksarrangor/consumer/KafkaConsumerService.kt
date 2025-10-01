@@ -5,6 +5,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
@@ -384,7 +385,7 @@ class KafkaConsumerService(
 		status = deltakerlisteDto.toDeltakerlisteStatus(),
 		arrangorId = getArrangorId(deltakerlisteDto.virksomhetsnummer),
 		tiltakNavn = getTiltakstypeNavn(deltakerlisteDto.tiltakstype),
-		tiltakType = deltakerlisteDto.tiltakstype.arenaKode,
+		tiltakType = ArenaKode.valueOf(deltakerlisteDto.tiltakstype.arenaKode),
 		startDato = deltakerlisteDto.startDato,
 		sluttDato = deltakerlisteDto.sluttDato,
 		erKurs = deltakerlisteDto.erKurs(),
@@ -467,23 +468,9 @@ private fun NavEnhetDto.toModel() = NavEnhet(
 	navn = navn,
 )
 
-private val stottedeTiltak =
-	setOf(
-		"INDOPPFAG",
-		"ARBFORB",
-		"AVKLARAG",
-		"VASV",
-		"ARBRRHDAG",
-		"DIGIOPPARB",
-		"JOBBK",
-		"GRUPPEAMO",
-		"GRUFAGYRKE",
-	)
-
 fun DeltakerlisteDto.skalLagres(): Boolean {
-	if (!stottedeTiltak.contains(tiltakstype.arenaKode)) {
-		return false
-	}
+	if (!tiltakstype.erStottet()) return false
+
 	if (status == DeltakerlisteDto.Status.GJENNOMFORES) {
 		return true
 	} else if (status == DeltakerlisteDto.Status.AVSLUTTET &&
