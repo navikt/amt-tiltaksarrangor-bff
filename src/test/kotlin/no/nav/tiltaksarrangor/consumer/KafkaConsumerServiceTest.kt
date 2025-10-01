@@ -195,6 +195,33 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
+	internal fun `lagreDeltakerliste - ikke stottet tiltakstype - lagres ikke i db `() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto =
+			DeltakerlisteDto(
+				id = deltakerlisteId,
+				tiltakstype =
+					DeltakerlisteDto.Tiltakstype(
+						id = UUID.randomUUID(),
+						navn = "Det flotte tiltaket",
+						arenaKode = "KODE_FINNES_IKKE",
+						tiltakskode = "KODE_FINNES_IKKE",
+					),
+				navn = "Gjennomføring av tiltak",
+				startDato = LocalDate.now().minusYears(2),
+				sluttDato = null,
+				status = DeltakerlisteDto.Status.GJENNOMFORES,
+				virksomhetsnummer = "88888888",
+				oppstart = Oppstartstype.LOPENDE,
+				tilgjengeligForArrangorFraOgMedDato = null,
+			)
+
+		kafkaConsumerService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
+
+		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
+	}
+
+	@Test
 	internal fun `lagreDeltaker - status DELTAR - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.DELTAR)
