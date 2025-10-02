@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.model
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
@@ -26,7 +27,7 @@ data class Deltaker(
 	val dagerPerUke: Float?,
 	val soktInnPa: String,
 	val soktInnDato: LocalDateTime,
-	val tiltakskode: String,
+	val tiltakskode: ArenaKode,
 	val bestillingTekst: String?,
 	val innhold: Deltakelsesinnhold?,
 	val fjernesDato: LocalDateTime?,
@@ -51,7 +52,7 @@ data class Deltaker(
 		val sluttDato: LocalDate?,
 		val erKurs: Boolean,
 		val oppstartstype: Oppstartstype,
-		val tiltakstype: String,
+		val tiltakstype: ArenaKode,
 	)
 }
 

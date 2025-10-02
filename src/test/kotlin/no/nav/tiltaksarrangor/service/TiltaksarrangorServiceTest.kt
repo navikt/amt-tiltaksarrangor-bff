@@ -8,6 +8,7 @@ import io.mockk.every
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.OppdateringResponse
@@ -949,7 +950,7 @@ class TiltaksarrangorServiceTest(
 	@Test
 	fun `getAdresse - deltaker har adresse, tiltakstype jobbklubb - returnerer null`() {
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "JOBBK")
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = ArenaKode.JOBBK)
 		val deltakerId = UUID.randomUUID()
 		val deltaker = getDeltaker(deltakerId, deltakerliste.id)
 
@@ -961,7 +962,7 @@ class TiltaksarrangorServiceTest(
 	@Test
 	fun `getAdresse - deltaker har kontaktadresse, bostedsadresse og oppholdsadresse, tiltakstype AFT - returnerer kontaktadresse`() {
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "ARBFORB")
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = ArenaKode.ARBFORB)
 		val deltakerId = UUID.randomUUID()
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
@@ -1023,7 +1024,7 @@ class TiltaksarrangorServiceTest(
 	@Test
 	fun `getAdresse - deltaker har bostedsadresse og oppholdsadresse, tiltakstype AFT - returnerer oppholdsadresse`() {
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "ARBFORB")
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = ArenaKode.ARBFORB)
 		val deltakerId = UUID.randomUUID()
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
@@ -1075,7 +1076,7 @@ class TiltaksarrangorServiceTest(
 	@Test
 	fun `getAdresse - deltaker har bare bostedsadresse, tiltakstype AFT - returnerer bostedsadresse`() {
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = "ARBFORB")
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = ArenaKode.ARBFORB)
 		val deltakerId = UUID.randomUUID()
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(

@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.melding.endring
 
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import java.time.Duration
@@ -62,21 +63,21 @@ private fun validerVarighet(
 val HELLIGDAGER: Duration = weeks(1)
 
 private fun maxVarighet(deltakerliste: DeltakerlisteDbo): Duration? = when (deltakerliste.tiltakType) {
-	"GRUPPEAMO",
-	"GRUFAGYRKE",
+	ArenaKode.GRUPPEAMO,
+	ArenaKode.GRUFAGYRKE,
 	-> years(3)
 
-	"DIGIOPPARB" -> weeks(8) + HELLIGDAGER
-	"ARBFORB" -> years(2)
+	ArenaKode.DIGIOPPARB -> weeks(8) + HELLIGDAGER
+	ArenaKode.ARBFORB -> years(2)
 
-	"AVKLARAG",
-	"ARBRRHDAG",
+	ArenaKode.AVKLARAG,
+	ArenaKode.ARBRRHDAG,
 	-> weeks(12)
 
-	"INDOPPFAG" -> years(1)
+	ArenaKode.INDOPPFAG -> years(1)
 
-	"VASV",
-	"JOBBK",
+	ArenaKode.VASV,
+	ArenaKode.JOBBK,
 	-> null
 
 	else -> throw NotImplementedError("maxVarighet for tiltakstype: ${deltakerliste.tiltakType} er ikke implementert")

@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.repositories
 
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
@@ -30,7 +31,7 @@ class DeltakerlisteRepository(
 				status = DeltakerlisteStatus.valueOf(rs.getString("status")),
 				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 				tiltakNavn = rs.getString("tiltak_navn"),
-				tiltakType = rs.getString("tiltak_type"),
+				tiltakType = rs.getString("tiltak_type").let { ArenaKode.valueOf(it) },
 				startDato = rs.getNullableLocalDate("start_dato"),
 				sluttDato = rs.getNullableLocalDate("slutt_dato"),
 				erKurs = rs.getBoolean("er_kurs"),
@@ -49,7 +50,7 @@ class DeltakerlisteRepository(
 						status = DeltakerlisteStatus.valueOf(rs.getString("status")),
 						arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 						tiltakNavn = rs.getString("tiltak_navn"),
-						tiltakType = rs.getString("tiltak_type"),
+						tiltakType = rs.getString("tiltak_type").let { ArenaKode.valueOf(it) },
 						startDato = rs.getNullableLocalDate("start_dato"),
 						sluttDato = rs.getNullableLocalDate("slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),
@@ -102,11 +103,11 @@ class DeltakerlisteRepository(
 				"status" to deltakerlisteDbo.status.name,
 				"arrangor_id" to deltakerlisteDbo.arrangorId,
 				"tiltak_navn" to deltakerlisteDbo.tiltakNavn,
-				"tiltak_type" to deltakerlisteDbo.tiltakType,
+				"tiltak_type" to deltakerlisteDbo.tiltakType.name,
 				"start_dato" to deltakerlisteDbo.startDato,
 				"slutt_dato" to deltakerlisteDbo.sluttDato,
 				"er_kurs" to deltakerlisteDbo.erKurs,
-				"oppstartstype" to deltakerlisteDbo.oppstartstype?.name,
+				"oppstartstype" to deltakerlisteDbo.oppstartstype.name,
 				"tilgjengelig_fom" to deltakerlisteDbo.tilgjengeligForArrangorFraOgMedDato,
 			),
 		)
