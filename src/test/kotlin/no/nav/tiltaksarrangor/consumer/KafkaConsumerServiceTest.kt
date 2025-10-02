@@ -12,6 +12,7 @@ import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
@@ -224,6 +225,33 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
+	internal fun `lagreDeltakerliste - enkeltplass tiltak - lagres i db `() {
+		val deltakerlisteId = UUID.randomUUID()
+		val deltakerlisteDto =
+			DeltakerlisteDto(
+				id = deltakerlisteId,
+				tiltakstype =
+					DeltakerlisteDto.Tiltakstype(
+						id = UUID.randomUUID(),
+						navn = "Det flotte tiltaket",
+						arenaKode = ArenaKode.ENKELAMO.name,
+						tiltakskode = ArenaKode.ENKELAMO.toTiltaksKode().toString(),
+					),
+				navn = "Gjennomføring av tiltak",
+				startDato = LocalDate.now().minusYears(2),
+				sluttDato = null,
+				status = DeltakerlisteDto.Status.GJENNOMFORES,
+				virksomhetsnummer = "88888888",
+				oppstart = Oppstartstype.LOPENDE,
+				tilgjengeligForArrangorFraOgMedDato = null,
+			)
+
+		kafkaConsumerService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
+
+		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
+	}
+
+	@Test
 	internal fun `lagreDeltaker - status DELTAR - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.DELTAR)
@@ -231,6 +259,18 @@ class KafkaConsumerServiceTest {
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+		}
+	}
+
+	@Test
+	internal fun `lagreDeltaker - enkeltplass type - lagres ikke i db `(): Unit = runBlocking {
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.DELTAR)
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			every { deltakerlisteRepository.getDeltakerliste(any()) } returns getDeltakerliste(arrangor.id).copy(tiltakType = ArenaKode.ENKELAMO)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+
+			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 		}
 	}
 
