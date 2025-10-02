@@ -107,7 +107,8 @@ class KafkaConsumerService(
 		}
 		val lagretDeltaker = deltakerRepository.getDeltaker(deltakerId)
 		val gjennomforing = deltakerlisteRepository.getDeltakerliste(deltakerDto.deltakerlisteId)
-		val erEnkeltplass = gjennomforing?.tiltakType?.toTiltaksKode()?.erEnkeltplass() == true
+			?: throw IllegalStateException("Fant ikke deltakerliste for deltaker $deltakerId")
+		val erEnkeltplass = gjennomforing.tiltakType.toTiltaksKode().erEnkeltplass()
 		if (deltakerDto.skalLagres(lagretDeltaker, erEnkeltplass)) {
 			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
 

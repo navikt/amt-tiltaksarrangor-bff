@@ -32,6 +32,7 @@ import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.getDeltaker
+import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -346,6 +347,7 @@ class KafkaConsumerTest(
 		val enhetId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
 		with(DeltakerDtoCtx()) {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.deltakerlisteId, UUID.randomUUID()))
 			mockAmtPersonServer.addEnhetResponse(enhetId)
 			mockAmtPersonServer.addAnsattResponse(ansattId)
 			val avbrytDeltakelseEndring = DeltakerEndring.Endring.AvbrytDeltakelse(
@@ -411,6 +413,8 @@ class KafkaConsumerTest(
 	@Test
 	fun `listen - avsluttet deltaker-melding pa deltaker-topic og deltaker finnes i db - sletter deltaker fra db`() {
 		with(DeltakerDtoCtx()) {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.deltakerlisteId, UUID.randomUUID()))
+
 			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 
 			medStatus(DeltakerStatus.HAR_SLUTTET, 50)
