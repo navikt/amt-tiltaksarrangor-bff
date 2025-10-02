@@ -106,7 +106,9 @@ class KafkaConsumerService(
 			return
 		}
 		val lagretDeltaker = deltakerRepository.getDeltaker(deltakerId)
-		if (deltakerDto.skalLagres(lagretDeltaker)) {
+		val gjennomforing = deltakerlisteRepository.getDeltakerliste(deltakerDto.deltakerlisteId)
+		val erEnkeltplass = gjennomforing?.tiltakType?.toTiltaksKode()?.erEnkeltplass() == true
+		if (deltakerDto.skalLagres(lagretDeltaker, erEnkeltplass)) {
 			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
 
 			if (lagretDeltaker == null) {
@@ -362,8 +364,10 @@ class KafkaConsumerService(
 		}
 	}
 
-	private fun DeltakerDto.skalLagres(lagretDeltaker: DeltakerDbo?): Boolean {
-		if (status.type in SKJULES_ALLTID_STATUSER) {
+	private fun DeltakerDto.skalLagres(lagretDeltaker: DeltakerDbo?, erEnkeltplass: Boolean): Boolean {
+		if (erEnkeltplass) {
+			return false
+		} else if (status.type in SKJULES_ALLTID_STATUSER) {
 			return false
 		} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs && lagretDeltaker == null) {
 			return false
