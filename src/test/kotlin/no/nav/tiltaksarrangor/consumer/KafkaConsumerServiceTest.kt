@@ -45,6 +45,7 @@ import no.nav.tiltaksarrangor.service.NavAnsattService
 import no.nav.tiltaksarrangor.service.NavEnhetService
 import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
+import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import no.nav.tiltaksarrangor.testutils.getVurderinger
 import org.junit.jupiter.api.BeforeEach
@@ -99,6 +100,7 @@ class KafkaConsumerServiceTest {
 			amtArrangorClient,
 		)
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
+		every { deltakerlisteRepository.getDeltakerliste(any()) } returns getDeltakerliste(arrangor.id)
 		every { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(any()) } returns 1
 		every { deltakerRepository.insertOrUpdateDeltaker(any()) } just Runs
 		every { deltakerRepository.deleteDeltaker(any()) } returns 1
