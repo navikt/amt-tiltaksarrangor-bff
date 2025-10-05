@@ -16,7 +16,7 @@ spec:
           - name: amt-tiltaksarrangor-bff
             envVarPrefix: DB
         diskAutoresize: true
-        highAvailability: true
+        highAvailability: false
         insights:
           enabled: true
   port: 8080
