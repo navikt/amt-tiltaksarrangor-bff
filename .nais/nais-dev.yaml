@@ -15,7 +15,7 @@ spec:
         databases:
           - name: amt-tiltaksarrangor-bff
             envVarPrefix: DB
-        diskAutoresize: true
+        diskAutoresize: false
         highAvailability: false
         insights:
           enabled: true
