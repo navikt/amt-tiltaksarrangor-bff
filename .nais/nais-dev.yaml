@@ -9,7 +9,7 @@ spec:
   image: {{image}}
   gcp:
     sqlInstances:
-      - name: amt-tiltaksarrangor-bff
+      - name: amt-tiltaksarrangor-bff-1
         type: POSTGRES_17
         tier: db-f1-micro
         databases:
