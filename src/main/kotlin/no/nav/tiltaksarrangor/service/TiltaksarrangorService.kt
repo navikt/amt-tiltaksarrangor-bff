@@ -18,7 +18,6 @@ import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
-import no.nav.tiltaksarrangor.unleash.UnleashService
 import no.nav.tiltaksarrangor.utils.toTitleCase
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -39,7 +38,6 @@ class TiltaksarrangorService(
 	private val arrangorRepository: ArrangorRepository,
 	private val meldingProducer: MeldingProducer,
 	private val ulestEndringRepository: UlestEndringRepository,
-	private val unleashService: UnleashService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -65,7 +63,7 @@ class TiltaksarrangorService(
 
 		tilgangskontrollService.verifiserTilgangTilDeltaker(ansatt, deltakerMedDeltakerliste)
 
-		val ulesteEndringerResponse = getUlesteEndringer(personIdent, deltakerMedDeltakerliste)
+		val ulesteEndringerResponse = getUlesteEndringer(deltakerMedDeltakerliste)
 
 		return deltakerMapper.map(
 			deltakerMedDeltakerliste.deltaker,
@@ -75,7 +73,7 @@ class TiltaksarrangorService(
 		)
 	}
 
-	fun getUlesteEndringer(personIdent: String, medDeltakerlisteDbo: DeltakerMedDeltakerlisteDbo): List<UlestEndringResponse> {
+	fun getUlesteEndringer(medDeltakerlisteDbo: DeltakerMedDeltakerlisteDbo): List<UlestEndringResponse> {
 		val ulesteEndringer = ulestEndringRepository.getMany(medDeltakerlisteDbo.deltaker.id)
 		if (ulesteEndringer.isEmpty()) {
 			return emptyList()
