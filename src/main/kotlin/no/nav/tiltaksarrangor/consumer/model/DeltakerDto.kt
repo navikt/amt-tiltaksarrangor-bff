@@ -1,53 +1,14 @@
 package no.nav.tiltaksarrangor.consumer.model
 
-import no.nav.amt.lib.models.arrangor.melding.Vurdering
-import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
-import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
-import no.nav.tiltaksarrangor.model.Kilde
+import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
 
-data class DeltakerDto(
-	val id: UUID,
-	val deltakerlisteId: UUID,
-	val personalia: DeltakerPersonaliaDto,
-	val status: DeltakerStatusDto,
-	val dagerPerUke: Float?,
-	val prosentStilling: Double?,
-	val oppstartsdato: LocalDate?,
-	val sluttdato: LocalDate?,
-	val innsoktDato: LocalDate,
-	val bestillingTekst: String?,
-	val navKontor: String?,
-	val navVeileder: DeltakerNavVeilederDto?,
-	val deltarPaKurs: Boolean,
-	val vurderingerFraArrangor: List<Vurdering>?,
-	val innhold: Deltakelsesinnhold?,
-	val kilde: Kilde?,
-	val historikk: List<DeltakerHistorikk>?,
-	val sistEndret: LocalDateTime,
-	val forsteVedtakFattet: LocalDate?,
-	val erManueltDeltMedArrangor: Boolean = false,
-	val oppfolgingsperioder: List<Oppfolgingsperiode> = emptyList(),
-)
-
-data class Oppfolgingsperiode(
-	val id: UUID,
-	val startdato: LocalDateTime,
-	val sluttdato: LocalDateTime?,
-) {
-	fun erAktiv(): Boolean {
-		val now = LocalDate.now()
-		return !(now.isBefore(startdato.toLocalDate()) || (sluttdato != null && !now.isBefore(sluttdato.toLocalDate())))
-	}
-}
-
-fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
-	val oppdatertStatus = status.type.toStatusType(deltarPaKurs)
+fun DeltakerKafkaPayload.toDeltakerDbo(lagretDeltaker: DeltakerDbo? = null): DeltakerDbo {
+	val oppdatertStatus = status.type
 
 	val skalFortsattSkjules = lagretDeltaker?.erSkjult() == true && oppdatertStatus in STATUSER_SOM_KAN_SKJULES
 
@@ -61,11 +22,11 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 		telefonnummer = personalia.kontaktinformasjon.telefonnummer,
 		epost = personalia.kontaktinformasjon.epost,
 		erSkjermet = personalia.skjermet,
-		adresse = personalia.adresse,
+		adresse = personalia.adresse?.let { AdresseDbo.fromModel(it) },
 		status = oppdatertStatus,
 		statusOpprettetDato = status.opprettetDato,
 		statusGyldigFraDato = status.gyldigFra,
-		statusAarsak = status.aarsak?.let { DeltakerStatusAarsak(it, status.aarsaksbeskrivelse) },
+		statusAarsak = status.aarsak?.let { DeltakerStatusAarsakDbo(it, status.aarsaksbeskrivelse) },
 		dagerPerUke = dagerPerUke,
 		prosentStilling = prosentStilling,
 		startdato = oppstartsdato,
@@ -78,16 +39,16 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 		navVeilederId = navVeileder?.id,
 		navVeilederNavn = navVeileder?.navn,
 		navVeilederEpost = navVeileder?.epost,
-		navVeilederTelefon = navVeileder?.telefonnummer,
+		navVeilederTelefon = navVeileder?.telefon,
 		skjultAvAnsattId =
 			if (skalFortsattSkjules) {
-				lagretDeltaker?.skjultAvAnsattId
+				lagretDeltaker.skjultAvAnsattId
 			} else {
 				null
 			},
 		skjultDato =
 			if (skalFortsattSkjules) {
-				lagretDeltaker?.skjultDato
+				lagretDeltaker.skjultDato
 			} else {
 				null
 			},
@@ -96,7 +57,7 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 		innhold = innhold,
 		kilde = kilde,
 		historikk = historikk ?: emptyList(),
-		sistEndret = sistEndret,
+		sistEndret = sistEndret ?: LocalDateTime.now(),
 		forsteVedtakFattet = forsteVedtakFattet,
 		erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 		oppfolgingsperioder = oppfolgingsperioder,
@@ -105,17 +66,17 @@ fun DeltakerDto.toDeltakerDbo(lagretDeltaker: DeltakerDbo?): DeltakerDbo {
 
 val SKJULES_ALLTID_STATUSER =
 	listOf(
-		DeltakerStatus.VENTELISTE,
-		DeltakerStatus.PABEGYNT_REGISTRERING,
-		DeltakerStatus.FEILREGISTRERT,
-		DeltakerStatus.UTKAST_TIL_PAMELDING,
-		DeltakerStatus.AVBRUTT_UTKAST,
+		DeltakerStatus.Type.VENTELISTE,
+		DeltakerStatus.Type.PABEGYNT_REGISTRERING,
+		DeltakerStatus.Type.FEILREGISTRERT,
+		DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
+		DeltakerStatus.Type.AVBRUTT_UTKAST,
 	)
 
 val AVSLUTTENDE_STATUSER =
 	listOf(
-		DeltakerStatus.HAR_SLUTTET,
-		DeltakerStatus.IKKE_AKTUELL,
-		DeltakerStatus.AVBRUTT,
-		DeltakerStatus.FULLFORT,
+		DeltakerStatus.Type.HAR_SLUTTET,
+		DeltakerStatus.Type.IKKE_AKTUELL,
+		DeltakerStatus.Type.AVBRUTT,
+		DeltakerStatus.Type.FULLFORT,
 	)

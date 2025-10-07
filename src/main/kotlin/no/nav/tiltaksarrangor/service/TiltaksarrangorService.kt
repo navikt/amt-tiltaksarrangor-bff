@@ -3,13 +3,13 @@ package no.nav.tiltaksarrangor.service
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.DeltakerHistorikkResponse
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.api.response.toResponse
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.model.Deltaker
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -132,8 +132,8 @@ class TiltaksarrangorService(
 		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)
 
 		if (!(
-				deltakerMedDeltakerliste.deltaker.status == StatusType.VURDERES ||
-					deltakerMedDeltakerliste.deltaker.status == StatusType.SOKT_INN
+				deltakerMedDeltakerliste.deltaker.status == DeltakerStatus.Type.VURDERES ||
+					deltakerMedDeltakerliste.deltaker.status == DeltakerStatus.Type.SOKT_INN
 			)
 		) {
 			throw IllegalStateException(

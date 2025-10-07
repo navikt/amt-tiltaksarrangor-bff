@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.testutils
 
-import no.nav.tiltaksarrangor.model.StatusType
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -75,7 +75,7 @@ open class DeltakerContext(
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 	}
 
-	fun medStatus(status: StatusType, gyldigFraDagerSiden: Long = 1L) {
+	fun medStatus(status: DeltakerStatus.Type, gyldigFraDagerSiden: Long = 1L) {
 		deltaker = deltaker.copy(
 			status = status,
 			statusGyldigFraDato = LocalDateTime.now().minusDays(gyldigFraDagerSiden),
@@ -96,7 +96,7 @@ open class DeltakerContext(
 		deltaker = deltaker.copy(
 			startdato = null,
 			sluttdato = null,
-			status = StatusType.VENTER_PA_OPPSTART,
+			status = DeltakerStatus.Type.VENTER_PA_OPPSTART,
 		)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 	}

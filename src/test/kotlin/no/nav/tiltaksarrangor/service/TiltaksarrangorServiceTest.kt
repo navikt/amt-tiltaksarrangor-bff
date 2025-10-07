@@ -8,27 +8,27 @@ import io.mockk.every
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.OppdateringResponse
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
-import no.nav.tiltaksarrangor.consumer.model.AdresseDto
+import no.nav.tiltaksarrangor.consumer.model.AdresseDbo
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
-import no.nav.tiltaksarrangor.consumer.model.Bostedsadresse
+import no.nav.tiltaksarrangor.consumer.model.BostedsadresseDbo
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
-import no.nav.tiltaksarrangor.consumer.model.Kontaktadresse
-import no.nav.tiltaksarrangor.consumer.model.Matrikkeladresse
-import no.nav.tiltaksarrangor.consumer.model.Oppholdsadresse
-import no.nav.tiltaksarrangor.consumer.model.Postboksadresse
-import no.nav.tiltaksarrangor.consumer.model.Vegadresse
+import no.nav.tiltaksarrangor.consumer.model.KontaktadresseDbo
+import no.nav.tiltaksarrangor.consumer.model.MatrikkeladresseDbo
+import no.nav.tiltaksarrangor.consumer.model.OppholdsadresseDbo
+import no.nav.tiltaksarrangor.consumer.model.PostboksadresseDbo
+import no.nav.tiltaksarrangor.consumer.model.VegadresseDbo
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.Adressetype
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Oppdatering
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.SkjultDeltakerException
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
@@ -627,7 +627,7 @@ class TiltaksarrangorServiceTest(
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
-		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.IKKE_AKTUELL)
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = DeltakerStatus.Type.IKKE_AKTUELL)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		val ansattId = UUID.randomUUID()
 		ansattRepository.insertOrUpdateAnsatt(
@@ -660,7 +660,7 @@ class TiltaksarrangorServiceTest(
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
-		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.VENTER_PA_OPPSTART)
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = DeltakerStatus.Type.VENTER_PA_OPPSTART)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		val ansattId = UUID.randomUUID()
 		ansattRepository.insertOrUpdateAnsatt(
@@ -695,7 +695,7 @@ class TiltaksarrangorServiceTest(
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
-		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.VURDERES))
+		deltakerRepository.insertOrUpdateDeltaker(getDeltaker(deltakerId, deltakerliste.id).copy(status = DeltakerStatus.Type.VURDERES))
 		ansattRepository.insertOrUpdateAnsatt(
 			AnsattDbo(
 				id = UUID.randomUUID(),
@@ -740,7 +740,7 @@ class TiltaksarrangorServiceTest(
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
-				status = StatusType.VURDERES,
+				status = DeltakerStatus.Type.VURDERES,
 				vurderingerFraArrangor = listOf(forsteVurdering),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
@@ -779,7 +779,10 @@ class TiltaksarrangorServiceTest(
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
-		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.VENTER_PA_OPPSTART, vurderingerFraArrangor = null)
+		val deltaker = getDeltaker(
+			deltakerId,
+			deltakerliste.id,
+		).copy(status = DeltakerStatus.Type.VENTER_PA_OPPSTART, vurderingerFraArrangor = null)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		val ansattId = UUID.randomUUID()
 		ansattRepository.insertOrUpdateAnsatt(
@@ -817,7 +820,7 @@ class TiltaksarrangorServiceTest(
 		val deltakerliste = getDeltakerliste(arrangorId)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
-		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = StatusType.VURDERES, vurderingerFraArrangor = null)
+		val deltaker = getDeltaker(deltakerId, deltakerliste.id).copy(status = DeltakerStatus.Type.VURDERES, vurderingerFraArrangor = null)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 		val ansattId = UUID.randomUUID()
 		ansattRepository.insertOrUpdateAnsatt(
@@ -867,7 +870,7 @@ class TiltaksarrangorServiceTest(
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id, adressebeskyttet = true).copy(
-				status = StatusType.VURDERES,
+				status = DeltakerStatus.Type.VURDERES,
 				vurderingerFraArrangor = listOf(forsteVurdering),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
@@ -918,7 +921,7 @@ class TiltaksarrangorServiceTest(
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id, adressebeskyttet = true).copy(
-				status = StatusType.VURDERES,
+				status = DeltakerStatus.Type.VURDERES,
 				vurderingerFraArrangor = listOf(forsteVurdering),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
@@ -967,23 +970,23 @@ class TiltaksarrangorServiceTest(
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
 				adresse =
-					AdresseDto(
+					AdresseDbo(
 						bostedsadresse =
-							Bostedsadresse(
+							BostedsadresseDbo(
 								coAdressenavn = "C/O Gutterommet",
 								vegadresse = null,
 								matrikkeladresse =
-									Matrikkeladresse(
+									MatrikkeladresseDbo(
 										tilleggsnavn = "Gården",
 										postnummer = "0484",
 										poststed = "OSLO",
 									),
 							),
 						oppholdsadresse =
-							Oppholdsadresse(
+							OppholdsadresseDbo(
 								coAdressenavn = null,
 								vegadresse =
-									Vegadresse(
+									VegadresseDbo(
 										husnummer = "1",
 										husbokstav = "B",
 										adressenavn = "Veien",
@@ -992,18 +995,18 @@ class TiltaksarrangorServiceTest(
 										poststed = "MOSS",
 									),
 								matrikkeladresse =
-									Matrikkeladresse(
+									MatrikkeladresseDbo(
 										tilleggsnavn = "Fortet",
 										postnummer = "0101",
 										poststed = "ANDEBY",
 									),
 							),
 						kontaktadresse =
-							Kontaktadresse(
+							KontaktadresseDbo(
 								coAdressenavn = null,
 								vegadresse = null,
 								postboksadresse =
-									Postboksadresse(
+									PostboksadresseDbo(
 										postboks = "45451",
 										postnummer = "3312",
 										poststed = "VESTØYA",
@@ -1029,23 +1032,23 @@ class TiltaksarrangorServiceTest(
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
 				adresse =
-					AdresseDto(
+					AdresseDbo(
 						bostedsadresse =
-							Bostedsadresse(
+							BostedsadresseDbo(
 								coAdressenavn = "C/O Gutterommet",
 								vegadresse = null,
 								matrikkeladresse =
-									Matrikkeladresse(
+									MatrikkeladresseDbo(
 										tilleggsnavn = "Gården",
 										postnummer = "0484",
 										poststed = "OSLO",
 									),
 							),
 						oppholdsadresse =
-							Oppholdsadresse(
+							OppholdsadresseDbo(
 								coAdressenavn = "C/O Pappa",
 								vegadresse =
-									Vegadresse(
+									VegadresseDbo(
 										husnummer = "1",
 										husbokstav = "B",
 										adressenavn = "Veien",
@@ -1054,7 +1057,7 @@ class TiltaksarrangorServiceTest(
 										poststed = "MOSS",
 									),
 								matrikkeladresse =
-									Matrikkeladresse(
+									MatrikkeladresseDbo(
 										tilleggsnavn = "Fortet",
 										postnummer = "0101",
 										poststed = "ANDEBY",
@@ -1081,13 +1084,13 @@ class TiltaksarrangorServiceTest(
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
 				adresse =
-					AdresseDto(
+					AdresseDbo(
 						bostedsadresse =
-							Bostedsadresse(
+							BostedsadresseDbo(
 								coAdressenavn = "C/O Gutterommet",
 								vegadresse = null,
 								matrikkeladresse =
-									Matrikkeladresse(
+									MatrikkeladresseDbo(
 										tilleggsnavn = "Gården",
 										postnummer = "0484",
 										poststed = "OSLO",

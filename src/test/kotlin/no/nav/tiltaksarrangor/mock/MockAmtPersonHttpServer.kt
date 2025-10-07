@@ -1,8 +1,8 @@
 package no.nav.tiltaksarrangor.mock
 
+import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
 import no.nav.tiltaksarrangor.client.amtperson.NavAnsattResponse
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
-import no.nav.tiltaksarrangor.consumer.model.Kontaktinformasjon
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest

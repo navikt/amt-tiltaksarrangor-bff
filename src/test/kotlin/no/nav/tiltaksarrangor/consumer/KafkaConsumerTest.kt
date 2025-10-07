@@ -2,13 +2,13 @@ package no.nav.tiltaksarrangor.consumer
 
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerStatus
 import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
@@ -417,7 +417,7 @@ class KafkaConsumerTest(
 
 			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 
-			medStatus(DeltakerStatus.HAR_SLUTTET, 50)
+			medStatus(DeltakerStatus.Type.HAR_SLUTTET, 50)
 
 			testKafkaProducer
 				.send(

@@ -3,14 +3,14 @@ package no.nav.tiltaksarrangor.repositories
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
-import no.nav.tiltaksarrangor.consumer.model.AdresseDto
-import no.nav.tiltaksarrangor.consumer.model.Oppfolgingsperiode
+import no.nav.amt.lib.models.person.Oppfolgingsperiode
+import no.nav.tiltaksarrangor.consumer.model.AdresseDbo
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDbo
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
-import no.nav.tiltaksarrangor.model.Kilde
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -45,12 +45,12 @@ class DeltakerRepository(
 				telefonnummer = rs.getString("telefonnummer"),
 				epost = rs.getString("epost"),
 				erSkjermet = rs.getBoolean("er_skjermet"),
-				adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
+				adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDbo>(it) },
 				vurderingerFraArrangor = rs.getString("vurderinger")?.let { objectMapper.readValue(it) },
-				status = StatusType.valueOf(rs.getString("status")),
+				status = DeltakerStatus.Type.valueOf(rs.getString("status")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-				statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsak>(it) },
+				statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakDbo>(it) },
 				dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 				prosentStilling = rs.getNullableDouble("prosent_stilling"),
 				startdato = rs.getNullableLocalDate("start_dato"),
@@ -90,12 +90,12 @@ class DeltakerRepository(
 						telefonnummer = rs.getString("telefonnummer"),
 						epost = rs.getString("epost"),
 						erSkjermet = rs.getBoolean("er_skjermet"),
-						adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDto>(it) },
+						adresse = rs.getString("adresse")?.let { fromJsonString<AdresseDbo>(it) },
 						vurderingerFraArrangor = rs.getString("vurderinger")?.let { objectMapper.readValue(it) },
-						status = StatusType.valueOf(rs.getString("deltakerstatus")),
+						status = DeltakerStatus.Type.valueOf(rs.getString("deltakerstatus")),
 						statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 						statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-						statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsak>(it) },
+						statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakDbo>(it) },
 						dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 						prosentStilling = rs.getNullableDouble("prosent_stilling"),
 						startdato = rs.getNullableLocalDate("deltaker_start_dato"),

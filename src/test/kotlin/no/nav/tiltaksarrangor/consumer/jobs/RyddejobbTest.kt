@@ -4,12 +4,11 @@ import com.ninjasquad.springmockk.MockkBean
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.jobs.leaderelection.LeaderElection
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
-import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
@@ -20,7 +19,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 class RyddejobbTest(
-	private val deltakerRepository: DeltakerRepository,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val ansattRepository: AnsattRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
@@ -66,7 +64,7 @@ class RyddejobbTest(
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 42 dager siden - sletter deltaker`() {
 		with(DeltakerContext(applicationContext)) {
-			medStatus(StatusType.HAR_SLUTTET, 42)
+			medStatus(DeltakerStatus.Type.HAR_SLUTTET, 42)
 			medEndringsmelding()
 
 			ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()
@@ -82,7 +80,7 @@ class RyddejobbTest(
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltaker har sluttet for 38 dager siden - sletter ikke deltaker`() {
 		with(DeltakerContext(applicationContext)) {
-			medStatus(StatusType.HAR_SLUTTET, 38)
+			medStatus(DeltakerStatus.Type.HAR_SLUTTET, 38)
 			medEndringsmelding()
 
 			ryddejobb.slettUtdaterteDeltakerlisterOgDeltakere()

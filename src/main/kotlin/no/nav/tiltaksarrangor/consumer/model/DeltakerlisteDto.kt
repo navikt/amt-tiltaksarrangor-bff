@@ -23,6 +23,7 @@ data class DeltakerlisteDto(
 		val tiltakskode: String,
 	) {
 		fun erStottet() = this.tiltakskode in Tiltakskode.entries
+			.filterNot { it.erEnkeltplass() }
 			.toTypedArray()
 			.map { it.name }
 	}

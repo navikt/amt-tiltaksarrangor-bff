@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.model
 
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
@@ -20,7 +21,7 @@ data class Deltaker(
 	val fodselsnummer: String,
 	val telefonnummer: String?,
 	val epost: String?,
-	val status: DeltakerStatus,
+	val status: DeltakerStatusInternalModel,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
 	val deltakelseProsent: Int?,
@@ -68,11 +69,6 @@ enum class Adressetype {
 	KONTAKTADRESSE,
 	OPPHOLDSADRESSE,
 	BOSTEDSADRESSE,
-}
-
-enum class Kilde {
-	KOMET,
-	ARENA,
 }
 
 data class DeltakelsesmengderDto(

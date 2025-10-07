@@ -3,11 +3,11 @@ package no.nav.tiltaksarrangor.repositories.model
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
-import no.nav.tiltaksarrangor.consumer.model.AdresseDto
-import no.nav.tiltaksarrangor.consumer.model.Oppfolgingsperiode
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
-import no.nav.tiltaksarrangor.model.Kilde
-import no.nav.tiltaksarrangor.model.StatusType
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.person.Oppfolgingsperiode
+import no.nav.tiltaksarrangor.consumer.model.AdresseDbo
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDbo
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -22,11 +22,11 @@ data class DeltakerDbo(
 	val telefonnummer: String?,
 	val epost: String?,
 	val erSkjermet: Boolean,
-	val adresse: AdresseDto?,
-	val status: StatusType,
+	val adresse: AdresseDbo?,
+	val status: DeltakerStatus.Type,
 	val statusOpprettetDato: LocalDateTime,
 	val statusGyldigFraDato: LocalDateTime,
-	val statusAarsak: DeltakerStatusAarsak?,
+	val statusAarsak: DeltakerStatusAarsakDbo?,
 	val dagerPerUke: Float?,
 	val prosentStilling: Double?,
 	val startdato: LocalDate?,
@@ -72,10 +72,10 @@ data class DeltakerDbo(
 
 val STATUSER_SOM_KAN_SKJULES =
 	listOf(
-		StatusType.IKKE_AKTUELL,
-		StatusType.HAR_SLUTTET,
-		StatusType.FULLFORT,
-		StatusType.AVBRUTT,
+		DeltakerStatus.Type.IKKE_AKTUELL,
+		DeltakerStatus.Type.HAR_SLUTTET,
+		DeltakerStatus.Type.FULLFORT,
+		DeltakerStatus.Type.AVBRUTT,
 	)
 
 const val DAGER_AVSLUTTET_DELTAKER_VISES = 40L

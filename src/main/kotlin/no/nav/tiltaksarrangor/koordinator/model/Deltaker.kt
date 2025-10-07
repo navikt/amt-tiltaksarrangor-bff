@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.koordinator.model
 
 import no.nav.tiltaksarrangor.model.AktivEndring
-import no.nav.tiltaksarrangor.model.DeltakerStatus
+import no.nav.tiltaksarrangor.model.DeltakerStatusInternalModel
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veileder
 import no.nav.tiltaksarrangor.model.Vurdering
@@ -18,7 +18,7 @@ data class Deltaker(
 	val soktInnDato: LocalDateTime,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
-	val status: DeltakerStatus,
+	val status: DeltakerStatusInternalModel,
 	val veiledere: List<Veileder>,
 	val navKontor: String?,
 	val aktiveEndringsmeldinger: List<Endringsmelding>,

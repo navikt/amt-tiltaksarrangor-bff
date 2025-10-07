@@ -11,7 +11,7 @@ import no.nav.tiltaksarrangor.koordinator.model.MineDeltakerlister
 import no.nav.tiltaksarrangor.koordinator.model.TilgjengeligVeileder
 import no.nav.tiltaksarrangor.koordinator.model.VeilederFor
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
-import no.nav.tiltaksarrangor.model.DeltakerStatus
+import no.nav.tiltaksarrangor.model.DeltakerStatusInternalModel
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.UlestEndring
 import no.nav.tiltaksarrangor.model.Veileder
@@ -277,7 +277,7 @@ class KoordinatorService(
 			startDato = it.startdato,
 			sluttDato = it.sluttdato,
 			status =
-				DeltakerStatus(
+				DeltakerStatusInternalModel(
 					type = it.status,
 					endretDato = it.statusGyldigFraDato,
 					aarsak = it.statusAarsak,

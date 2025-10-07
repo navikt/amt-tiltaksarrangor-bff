@@ -12,30 +12,32 @@ import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.Deltakerliste
+import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
+import no.nav.amt.lib.models.deltaker.Navn
+import no.nav.amt.lib.models.deltaker.Personalia
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltak
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.models.person.NavAnsatt
+import no.nav.amt.lib.models.person.address.Adressebeskyttelse
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerNavVeilederDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerPersonaliaDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerStatus
-import no.nav.tiltaksarrangor.consumer.model.DeltakerStatusDto
 import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
-import no.nav.tiltaksarrangor.consumer.model.Kontaktinformasjon
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
-import no.nav.tiltaksarrangor.consumer.model.NavnDto
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
+import no.nav.tiltaksarrangor.consumer.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
 import no.nav.tiltaksarrangor.model.Endringsmelding
-import no.nav.tiltaksarrangor.model.Kilde
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -225,7 +227,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltakerliste - enkeltplass tiltak - lagres i db `() {
+	internal fun `lagreDeltakerliste - enkeltplass tiltak - lagres ikke i db `() {
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto =
 			DeltakerlisteDto(
@@ -248,13 +250,13 @@ class KafkaConsumerServiceTest {
 
 		kafkaConsumerService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
 
-		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
+		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
 	}
 
 	@Test
 	internal fun `lagreDeltaker - status DELTAR - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.DELTAR)
+			medStatus(DeltakerStatus.Type.DELTAR)
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
@@ -265,9 +267,9 @@ class KafkaConsumerServiceTest {
 	@Test
 	internal fun `lagreDeltaker - enkeltplass type - lagres ikke i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.DELTAR)
+			medStatus(DeltakerStatus.Type.DELTAR)
+			medDeltakerlisteType(Tiltakskode.AMO)
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			every { deltakerlisteRepository.getDeltakerliste(any()) } returns getDeltakerliste(arrangor.id).copy(tiltakType = ArenaKode.ENKELAMO)
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
 			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
@@ -277,7 +279,7 @@ class KafkaConsumerServiceTest {
 	@Test
 	internal fun `lagreDeltaker - ny deltaker - henter kontaktinfo`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.VENTER_PA_OPPSTART)
+			medStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART)
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
@@ -289,7 +291,7 @@ class KafkaConsumerServiceTest {
 	@Test
 	internal fun `lagreDeltaker - status FEILREGISTRERT - lagres ikke i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.FEILREGISTRERT)
+			medStatus(DeltakerStatus.Type.FEILREGISTRERT)
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
@@ -302,7 +304,7 @@ class KafkaConsumerServiceTest {
 	internal fun `lagreDeltaker - status SOKT_INN - lagres hvis er delt med arrangor`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medErManueltDeltMedArrangor()
-			medStatus(DeltakerStatus.SOKT_INN)
+			medStatus(DeltakerStatus.Type.SOKT_INN)
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
@@ -313,7 +315,7 @@ class KafkaConsumerServiceTest {
 	@Test
 	internal fun `lagreDeltaker - status SOKT_INN - lagres ikke hvis ikke er delt med arrangor`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.SOKT_INN)
+			medStatus(DeltakerStatus.Type.SOKT_INN)
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
@@ -325,7 +327,7 @@ class KafkaConsumerServiceTest {
 	@Test
 	internal fun `lagreDeltaker - status HAR_SLUTTET for mer enn 40 dager siden - lagres ikke i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.HAR_SLUTTET, 41)
+			medStatus(DeltakerStatus.Type.HAR_SLUTTET, 41)
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
@@ -336,7 +338,7 @@ class KafkaConsumerServiceTest {
 	@Test
 	internal fun `lagreDeltaker - status HAR_SLUTTET for mindre enn 40 dager siden - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.HAR_SLUTTET, 39)
+			medStatus(DeltakerStatus.Type.HAR_SLUTTET, 39)
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
@@ -349,7 +351,7 @@ class KafkaConsumerServiceTest {
 		runBlocking {
 			with(DeltakerDtoCtx()) {
 				every { deltakerRepository.getDeltaker(any()) } returns null
-				medStatus(DeltakerStatus.IKKE_AKTUELL)
+				medStatus(DeltakerStatus.Type.IKKE_AKTUELL)
 				medDeltarPaKurs()
 				kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
@@ -361,7 +363,7 @@ class KafkaConsumerServiceTest {
 	@Test
 	internal fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes i db fra for - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.IKKE_AKTUELL)
+			medStatus(DeltakerStatus.Type.IKKE_AKTUELL)
 			medDeltarPaKurs()
 			every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerDto.id)
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
@@ -375,7 +377,7 @@ class KafkaConsumerServiceTest {
 	internal fun `lagreDeltaker - status IKKE_AKTUELL for mer enn 40 dager siden, deltar pa kurs, finnes i db - lagres ikke i db `(): Unit =
 		runBlocking {
 			with(DeltakerDtoCtx()) {
-				medStatus(DeltakerStatus.IKKE_AKTUELL, 42)
+				medStatus(DeltakerStatus.Type.IKKE_AKTUELL, 42)
 				medDeltarPaKurs()
 				every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerDto.id)
 
@@ -390,7 +392,7 @@ class KafkaConsumerServiceTest {
 	internal fun `lagreDeltaker - status HAR_SLUTTET mindre enn 40 dager siden, sluttdato mer enn 40 dager - lagres ikke i db `(): Unit =
 		runBlocking {
 			with(DeltakerDtoCtx()) {
-				medStatus(DeltakerStatus.HAR_SLUTTET, gyldigFraDagerSiden = 39)
+				medStatus(DeltakerStatus.Type.HAR_SLUTTET, gyldigFraDagerSiden = 39)
 				medSluttdato(dagerSiden = 41)
 				every { deltakerRepository.getDeltaker(any()) } returns null
 				kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
@@ -414,11 +416,11 @@ class KafkaConsumerServiceTest {
 	@Test
 	internal fun `lagreDeltaker - skjult, ny status DELTAR - fjerner skjuling i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.DELTAR)
+			medStatus(DeltakerStatus.Type.DELTAR)
 
 			val opprinneligDeltaker =
 				getDeltaker(deltakerDto.id).copy(
-					status = StatusType.HAR_SLUTTET,
+					status = DeltakerStatus.Type.HAR_SLUTTET,
 					skjultDato = LocalDateTime.now(),
 					skjultAvAnsattId = UUID.randomUUID(),
 				)
@@ -433,13 +435,13 @@ class KafkaConsumerServiceTest {
 	@Test
 	internal fun `lagreDeltaker - skjult, samme status - beholder skjuling i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			medStatus(DeltakerStatus.HAR_SLUTTET)
+			medStatus(DeltakerStatus.Type.HAR_SLUTTET)
 
 			val skjultDato = LocalDateTime.now().minusDays(2)
 			val skjultAvAnsattId = UUID.randomUUID()
 			val opprinneligDeltaker =
 				getDeltaker(deltakerDto.id).copy(
-					status = StatusType.HAR_SLUTTET,
+					status = DeltakerStatus.Type.HAR_SLUTTET,
 					skjultDato = skjultDato,
 					skjultAvAnsattId = skjultAvAnsattId,
 				)
@@ -461,7 +463,7 @@ class KafkaConsumerServiceTest {
 	internal fun `lagreDeltaker - historikk inneholder svar på forslag som ikke finnes i db - lagrer ulest endring i db `(): Unit =
 		runBlocking {
 			with(DeltakerDtoCtx()) {
-				val lagretDeltaker = getDeltaker(deltakerDto.id)
+				val lagretDeltaker = deltakerDto.toDeltakerDbo()
 				val forslag = forlengDeltakelseForslag(
 					status = Forslag.Status.Avvist(
 						Forslag.NavAnsatt(
@@ -474,21 +476,6 @@ class KafkaConsumerServiceTest {
 				)
 				val nyDeltaker = deltakerDto.copy(
 					historikk = listOf(DeltakerHistorikk.Forslag(forslag)),
-					personalia = DeltakerPersonaliaDto(
-						personident = lagretDeltaker.personident,
-						navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
-						kontaktinformasjon = Kontaktinformasjon(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
-						skjermet = lagretDeltaker.erSkjermet,
-						adresse = lagretDeltaker.adresse,
-						adressebeskyttelse = null,
-					),
-					navVeileder = DeltakerNavVeilederDto(
-						lagretDeltaker.navVeilederId!!,
-						lagretDeltaker.navVeilederNavn!!,
-						lagretDeltaker.navVeilederEpost,
-						lagretDeltaker.navVeilederTelefon,
-					),
-					navKontor = lagretDeltaker.navKontor,
 				)
 				every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 				every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
@@ -502,7 +489,7 @@ class KafkaConsumerServiceTest {
 	@Test
 	internal fun `lagreDeltaker - historikk inneholder endring fra arrangør - lagrer ikke i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
-			val lagretDeltaker = getDeltaker(deltakerDto.id)
+			val lagretDeltaker = deltakerDto.toDeltakerDbo()
 			val endringFraArrangor = DeltakerHistorikk.EndringFraArrangor(
 				EndringFraArrangor(
 					id = UUID.randomUUID(),
@@ -517,21 +504,6 @@ class KafkaConsumerServiceTest {
 			)
 			val nyDeltaker = deltakerDto.copy(
 				historikk = listOf(endringFraArrangor),
-				personalia = DeltakerPersonaliaDto(
-					personident = lagretDeltaker.personident,
-					navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
-					kontaktinformasjon = Kontaktinformasjon(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
-					skjermet = lagretDeltaker.erSkjermet,
-					adresse = lagretDeltaker.adresse,
-					adressebeskyttelse = null,
-				),
-				navVeileder = DeltakerNavVeilederDto(
-					lagretDeltaker.navVeilederId!!,
-					lagretDeltaker.navVeilederNavn!!,
-					lagretDeltaker.navVeilederEpost,
-					lagretDeltaker.navVeilederTelefon,
-				),
-				navKontor = lagretDeltaker.navKontor,
 			)
 			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
@@ -557,29 +529,12 @@ class KafkaConsumerServiceTest {
 		)
 
 		with(DeltakerDtoCtx()) {
-			val lagretDeltaker = getDeltaker(deltakerDto.id).copy(
-				historikk = listOf(
-					forslag,
-				),
-			)
+			val lagretDeltaker = deltakerDto
+				.toDeltakerDbo()
+				.copy(historikk = listOf(forslag))
 
 			val nyDeltaker = deltakerDto.copy(
-				personalia = DeltakerPersonaliaDto(
-					personident = lagretDeltaker.personident,
-					navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
-					kontaktinformasjon = Kontaktinformasjon(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
-					skjermet = lagretDeltaker.erSkjermet,
-					adresse = lagretDeltaker.adresse,
-					adressebeskyttelse = null,
-				),
 				historikk = listOf(forslag),
-				navVeileder = DeltakerNavVeilederDto(
-					lagretDeltaker.navVeilederId!!,
-					lagretDeltaker.navVeilederNavn!!,
-					lagretDeltaker.navVeilederEpost,
-					lagretDeltaker.navVeilederTelefon,
-				),
-				navKontor = lagretDeltaker.navKontor,
 			)
 			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
@@ -603,19 +558,13 @@ class KafkaConsumerServiceTest {
 			)
 
 			val nyDeltaker = deltakerDto.copy(
-				personalia = DeltakerPersonaliaDto(
-					personident = lagretDeltaker.personident,
-					navn = NavnDto(lagretDeltaker.fornavn, lagretDeltaker.mellomnavn, lagretDeltaker.etternavn),
-					kontaktinformasjon = Kontaktinformasjon(lagretDeltaker.telefonnummer, lagretDeltaker.epost),
-					skjermet = lagretDeltaker.erSkjermet,
-					adresse = lagretDeltaker.adresse,
-					adressebeskyttelse = null,
-				),
-				navVeileder = DeltakerNavVeilederDto(
-					UUID.randomUUID(),
-					"Ny Veilederesen",
-					lagretDeltaker.navVeilederEpost,
-					lagretDeltaker.navVeilederTelefon,
+				navVeileder = NavAnsatt(
+					id = UUID.randomUUID(),
+					navIdent = "X999999",
+					navn = "Ny Veilederesen",
+					epost = lagretDeltaker.navVeilederEpost,
+					telefon = lagretDeltaker.navVeilederTelefon,
+					navEnhetId = null,
 				),
 				navKontor = "nytt kontor",
 			)
@@ -767,21 +716,24 @@ class KafkaConsumerServiceTest {
 }
 
 class DeltakerDtoCtx {
-	var deltakerDto = DeltakerDto(
-		id = UUID.randomUUID(),
+	var deltakerlisteId = UUID.randomUUID()
+	var deltakerDto = DeltakerKafkaPayload(
+		id = deltakerlisteId,
 		deltakerlisteId = UUID.randomUUID(),
 		personalia =
-			DeltakerPersonaliaDto(
+			Personalia(
+				personId = UUID.randomUUID(),
 				personident = "10987654321",
-				navn = NavnDto("Fornavn", null, "Etternavn"),
+				navn = Navn("Fornavn", null, "Etternavn"),
 				kontaktinformasjon = Kontaktinformasjon("98989898", "epost@nav.no"),
 				skjermet = false,
 				adresse = getAdresse(),
 				adressebeskyttelse = null,
 			),
 		status =
-			DeltakerStatusDto(
-				type = DeltakerStatus.DELTAR,
+			no.nav.amt.lib.models.deltaker.DeltakerStatusDto(
+				id = UUID.randomUUID(),
+				type = DeltakerStatus.Type.DELTAR,
 				gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
 				opprettetDato = LocalDateTime.now().minusWeeks(1),
 				aarsak = null,
@@ -794,7 +746,14 @@ class DeltakerDtoCtx {
 		innsoktDato = LocalDate.now().minusMonths(2),
 		bestillingTekst = "Bestilling",
 		navKontor = "NAV Oslo",
-		navVeileder = DeltakerNavVeilederDto(UUID.randomUUID(), "Per Veileder", null, null),
+		navVeileder = NavAnsatt(
+			id = UUID.randomUUID(),
+			navn = "Per Veileder",
+			navIdent = "P123456",
+			epost = null,
+			telefon = null,
+			navEnhetId = null,
+		),
 		deltarPaKurs = false,
 		vurderingerFraArrangor = null,
 		innhold = Deltakelsesinnhold(
@@ -812,7 +771,34 @@ class DeltakerDtoCtx {
 		historikk = null, // vedtak?
 		sistEndret = LocalDateTime.now(),
 		forsteVedtakFattet = LocalDate.now().minusMonths(2),
+		deltakerliste = Deltakerliste(
+			id = deltakerlisteId,
+			navn = "Tiltak hos Arrangør",
+			tiltak = Tiltak(
+				navn = "Tralala",
+				arenaKode = ArenaKode.VASV,
+				tiltakskode = Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+			),
+			startdato = null,
+			sluttdato = null,
+			oppstartstype = no.nav.amt.lib.models.deltakerliste.Oppstartstype.LOPENDE,
+		),
+		erManueltDeltMedArrangor = false,
+		sisteEndring = null,
+		oppfolgingsperioder = emptyList(),
+		sistEndretAv = null,
+		sistEndretAvEnhet = null,
 	)
+
+	fun medDeltakerlisteType(tiltakskode: Tiltakskode) {
+		deltakerDto = deltakerDto.copy(
+			deltakerliste = deltakerDto.deltakerliste.copy(
+				tiltak = deltakerDto.deltakerliste.tiltak.copy(
+					tiltakskode = tiltakskode,
+				),
+			),
+		)
+	}
 
 	fun medSluttdato(dagerSiden: Long) {
 		deltakerDto = deltakerDto.copy(
@@ -822,7 +808,7 @@ class DeltakerDtoCtx {
 
 	fun medAdressebeskyttelse() {
 		deltakerDto = deltakerDto.copy(
-			personalia = deltakerDto.personalia.copy(adressebeskyttelse = "STRENGT_FORTROLIG"),
+			personalia = deltakerDto.personalia.copy(adressebeskyttelse = Adressebeskyttelse.STRENGT_FORTROLIG),
 		)
 	}
 
@@ -831,13 +817,14 @@ class DeltakerDtoCtx {
 	}
 
 	fun medStatus(
-		type: DeltakerStatus,
+		type: DeltakerStatus.Type,
 		gyldigFraDagerSiden: Long = 1L,
-		aarsak: DeltakerStatusAarsak.Type? = null,
+		aarsak: DeltakerStatus.Aarsak.Type? = null,
 		aarsakbeskrivelse: String? = null,
 	) {
 		deltakerDto = deltakerDto.copy(
-			status = DeltakerStatusDto(
+			status = no.nav.amt.lib.models.deltaker.DeltakerStatusDto(
+				id = UUID.randomUUID(),
 				type = type,
 				gyldigFra = LocalDate.now().minusDays(gyldigFraDagerSiden).atStartOfDay(),
 				opprettetDato = LocalDateTime.now().minusDays(gyldigFraDagerSiden),

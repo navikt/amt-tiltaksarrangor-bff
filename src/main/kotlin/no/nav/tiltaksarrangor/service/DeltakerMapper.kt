@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.service
 
+import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
@@ -9,8 +10,7 @@ import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.tilAktivtForslagResponse
 import no.nav.tiltaksarrangor.model.DeltakelsesmengderDto
 import no.nav.tiltaksarrangor.model.Deltaker
-import no.nav.tiltaksarrangor.model.DeltakerStatus
-import no.nav.tiltaksarrangor.model.Kilde
+import no.nav.tiltaksarrangor.model.DeltakerStatusInternalModel
 import no.nav.tiltaksarrangor.model.NavInformasjon
 import no.nav.tiltaksarrangor.model.NavVeileder
 import no.nav.tiltaksarrangor.model.Veileder
@@ -107,7 +107,7 @@ private fun tilDeltaker(
 		telefonnummer = deltakerDbo.telefonnummer,
 		epost = deltakerDbo.epost,
 		status =
-			DeltakerStatus(
+			DeltakerStatusInternalModel(
 				type = deltakerDbo.status,
 				endretDato = deltakerDbo.statusOpprettetDato,
 				aarsak = deltakerDbo.statusAarsak,

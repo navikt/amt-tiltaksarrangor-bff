@@ -2,8 +2,8 @@ package no.nav.tiltaksarrangor.repositories
 
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
 import no.nav.tiltaksarrangor.RepositoryTestBase
-import no.nav.tiltaksarrangor.consumer.model.Kontaktinformasjon
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
