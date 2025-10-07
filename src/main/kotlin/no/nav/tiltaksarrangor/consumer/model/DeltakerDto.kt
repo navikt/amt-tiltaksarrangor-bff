@@ -2,7 +2,7 @@ package no.nav.tiltaksarrangor.consumer.model
 
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDbo
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDboDto
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
 import java.time.LocalDateTime
@@ -26,7 +26,7 @@ fun DeltakerKafkaPayload.toDeltakerDbo(lagretDeltaker: DeltakerDbo? = null): Del
 		status = oppdatertStatus,
 		statusOpprettetDato = status.opprettetDato,
 		statusGyldigFraDato = status.gyldigFra,
-		statusAarsak = status.aarsak?.let { DeltakerStatusAarsakDbo(it, status.aarsaksbeskrivelse) },
+		statusAarsak = status.aarsak?.let { DeltakerStatusAarsakDboDto(it, status.aarsaksbeskrivelse) },
 		dagerPerUke = dagerPerUke,
 		prosentStilling = prosentStilling,
 		startdato = oppstartsdato,

@@ -26,7 +26,7 @@ import no.nav.tiltaksarrangor.consumer.model.toArrangorDbo
 import no.nav.tiltaksarrangor.consumer.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.consumer.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDbo
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDboDto
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -489,7 +489,7 @@ fun DeltakerlisteDto.skalLagres(): Boolean {
 	return false
 }
 
-fun EndringFraTiltakskoordinator.Avslag.Aarsak.toDeltakerStatusAarsak() = DeltakerStatusAarsakDbo(
+fun EndringFraTiltakskoordinator.Avslag.Aarsak.toDeltakerStatusAarsak() = DeltakerStatusAarsakDboDto(
 	type = DeltakerStatus.Aarsak.Type.valueOf(this.type.name),
 	beskrivelse = this.beskrivelse,
 )

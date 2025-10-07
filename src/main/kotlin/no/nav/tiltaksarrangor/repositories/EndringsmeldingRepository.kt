@@ -9,7 +9,7 @@ import no.nav.tiltaksarrangor.consumer.model.AdresseDbo
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDbo
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDboDto
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
@@ -79,7 +79,7 @@ class EndringsmeldingRepository(
 						status = DeltakerStatus.Type.valueOf(rs.getString("deltakerstatus")),
 						statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 						statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-						statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakDbo>(it) },
+						statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakDboDto>(it) },
 						dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 						prosentStilling = rs.getNullableDouble("prosent_stilling"),
 						startdato = rs.getNullableLocalDate("deltaker_start_dato"),

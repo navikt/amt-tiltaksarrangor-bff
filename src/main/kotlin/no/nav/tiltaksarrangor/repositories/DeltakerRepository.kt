@@ -9,7 +9,7 @@ import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.person.Oppfolgingsperiode
 import no.nav.tiltaksarrangor.consumer.model.AdresseDbo
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDbo
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDboDto
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
@@ -50,7 +50,7 @@ class DeltakerRepository(
 				status = DeltakerStatus.Type.valueOf(rs.getString("status")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-				statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakDbo>(it) },
+				statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakDboDto>(it) },
 				dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 				prosentStilling = rs.getNullableDouble("prosent_stilling"),
 				startdato = rs.getNullableLocalDate("start_dato"),
@@ -95,7 +95,7 @@ class DeltakerRepository(
 						status = DeltakerStatus.Type.valueOf(rs.getString("deltakerstatus")),
 						statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 						statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-						statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakDbo>(it) },
+						statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakDboDto>(it) },
 						dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 						prosentStilling = rs.getNullableDouble("prosent_stilling"),
 						startdato = rs.getNullableLocalDate("deltaker_start_dato"),

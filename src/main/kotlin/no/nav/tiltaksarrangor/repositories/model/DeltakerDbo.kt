@@ -7,7 +7,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.person.Oppfolgingsperiode
 import no.nav.tiltaksarrangor.consumer.model.AdresseDbo
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDbo
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDboDto
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -26,7 +26,7 @@ data class DeltakerDbo(
 	val status: DeltakerStatus.Type,
 	val statusOpprettetDato: LocalDateTime,
 	val statusGyldigFraDato: LocalDateTime,
-	val statusAarsak: DeltakerStatusAarsakDbo?,
+	val statusAarsak: DeltakerStatusAarsakDboDto?,
 	val dagerPerUke: Float?,
 	val prosentStilling: Double?,
 	val startdato: LocalDate?,

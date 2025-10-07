@@ -12,7 +12,7 @@ import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDbo
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDboDto
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -553,7 +553,7 @@ class TiltaksarrangorAPITest(
 				Innhold.AvsluttDeltakelseInnhold(
 					sluttdato = LocalDate.of(2023, 3, 30),
 					aarsak =
-						DeltakerStatusAarsakDbo(
+						DeltakerStatusAarsakDboDto(
 							type = DeltakerStatus.Aarsak.Type.SYK,
 							beskrivelse = "har blitt syk",
 						),
