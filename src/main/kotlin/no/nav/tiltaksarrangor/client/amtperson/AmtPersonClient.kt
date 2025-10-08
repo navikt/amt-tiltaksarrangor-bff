@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.client.amtperson
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.tiltaksarrangor.consumer.model.Kontaktinformasjon
+import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
 import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType

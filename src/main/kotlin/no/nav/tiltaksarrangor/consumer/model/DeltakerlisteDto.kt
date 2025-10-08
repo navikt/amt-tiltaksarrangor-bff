@@ -22,7 +22,10 @@ data class DeltakerlisteDto(
 		val arenaKode: String, // String tar høyde for andre tiltakstyper enn det vi støtter
 		val tiltakskode: String,
 	) {
-		fun erStottet() = this.tiltakskode in Tiltakskode.entries.toTypedArray().map { it.name }
+		fun erStottet() = this.tiltakskode in Tiltakskode.entries
+			.filterNot { it.erEnkeltplass() }
+			.toTypedArray()
+			.map { it.name }
 	}
 
 	enum class Status {

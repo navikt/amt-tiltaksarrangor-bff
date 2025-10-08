@@ -5,6 +5,8 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
@@ -14,8 +16,6 @@ import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
 import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerStatus
 import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
@@ -26,7 +26,7 @@ import no.nav.tiltaksarrangor.consumer.model.toArrangorDbo
 import no.nav.tiltaksarrangor.consumer.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.consumer.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakJsonDboDto
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -99,31 +99,31 @@ class KafkaConsumerService(
 		}
 	}
 
-	fun lagreDeltaker(deltakerId: UUID, deltakerDto: DeltakerDto?) {
-		if (deltakerDto == null) {
+	fun lagreDeltaker(deltakerId: UUID, deltakerPayload: DeltakerKafkaPayload?) {
+		if (deltakerPayload == null) {
 			deltakerRepository.deleteDeltaker(deltakerId)
 			log.info("Slettet tombstonet deltaker med id $deltakerId")
 			return
 		}
 		val lagretDeltaker = deltakerRepository.getDeltaker(deltakerId)
-		if (deltakerDto.skalLagres(lagretDeltaker)) {
-			leggTilNavAnsattOgEnhetHistorikk(deltakerDto)
+		if (deltakerPayload.skalLagres(lagretDeltaker)) {
+			leggTilNavAnsattOgEnhetHistorikk(deltakerPayload)
 
 			if (lagretDeltaker == null) {
 				val oppdatertKontaktinformasjon = amtPersonClient
-					.hentOppdatertKontaktinfo(deltakerDto.personalia.personident)
-					.getOrDefault(deltakerDto.personalia.kontaktinformasjon)
+					.hentOppdatertKontaktinfo(deltakerPayload.personalia.personident)
+					.getOrDefault(deltakerPayload.personalia.kontaktinformasjon)
 
 				deltakerRepository.insertOrUpdateDeltaker(
-					deltakerDto
-						.copy(personalia = deltakerDto.personalia.copy(kontaktinformasjon = oppdatertKontaktinformasjon))
+					deltakerPayload
+						.copy(personalia = deltakerPayload.personalia.copy(kontaktinformasjon = oppdatertKontaktinformasjon))
 						.toDeltakerDbo(null),
 				)
-				lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
+				lagreNyDeltakerUlestEndring(deltakerPayload, deltakerId)
 			} else {
-				lagreUlesteMeldinger(deltakerId, deltakerDto, lagretDeltaker)
+				lagreUlesteMeldinger(deltakerId, deltakerPayload, lagretDeltaker)
 
-				deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(lagretDeltaker))
+				deltakerRepository.insertOrUpdateDeltaker(deltakerPayload.toDeltakerDbo(lagretDeltaker))
 			}
 			log.info("Lagret deltaker med id $deltakerId")
 		} else {
@@ -136,21 +136,21 @@ class KafkaConsumerService(
 		}
 	}
 
-	private fun lagreNyDeltakerUlestEndring(deltakerDto: DeltakerDto, deltakerId: UUID) {
-		val vedtak = deltakerDto.historikk?.filterIsInstance<DeltakerHistorikk.Vedtak>()
-		val endring = deltakerDto.historikk?.filterIsInstance<DeltakerHistorikk.EndringFraTiltakskoordinator>()
+	private fun lagreNyDeltakerUlestEndring(deltakerPayload: DeltakerKafkaPayload, deltakerId: UUID) {
+		val vedtak = deltakerPayload.historikk?.filterIsInstance<DeltakerHistorikk.Vedtak>()
+		val endring = deltakerPayload.historikk?.filterIsInstance<DeltakerHistorikk.EndringFraTiltakskoordinator>()
 
 		if (!endring.isNullOrEmpty()) {
 			endring.forEach {
 				lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(it.endringFraTiltakskoordinator, deltakerId)
 			}
-		} else if (deltakerDto.historikk == null || vedtak.isNullOrEmpty()) {
+		} else if (deltakerPayload.historikk == null || vedtak.isNullOrEmpty()) {
 			ulestEndringRepository.insert(
 				deltakerId,
 				Oppdatering.NyDeltaker(
 					opprettetAvNavn = null,
 					opprettetAvEnhet = null,
-					opprettet = deltakerDto.innsoktDato,
+					opprettet = deltakerPayload.innsoktDato,
 				),
 			)
 		} else {
@@ -180,31 +180,31 @@ class KafkaConsumerService(
 
 	private fun lagreUlesteMeldinger(
 		deltakerId: UUID,
-		deltakerDto: DeltakerDto,
+		deltakerPayload: DeltakerKafkaPayload,
 		lagretDeltaker: DeltakerDbo,
 	) {
-		if (deltakerDto.navVeileder?.id != lagretDeltaker.navVeilederId) {
+		if (deltakerPayload.navVeileder?.id != lagretDeltaker.navVeilederId) {
 			ulestEndringRepository.insert(
 				deltakerId,
 				Oppdatering.NavEndring(
 					nyNavVeileder = true,
-					navVeilederNavn = deltakerDto.navVeileder?.navn,
-					navVeilederEpost = deltakerDto.navVeileder?.epost,
-					navVeilederTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
-					navEnhet = deltakerDto.navKontor,
+					navVeilederNavn = deltakerPayload.navVeileder?.navn,
+					navVeilederEpost = deltakerPayload.navVeileder?.epost,
+					navVeilederTelefonnummer = deltakerPayload.navVeileder?.telefon,
+					navEnhet = deltakerPayload.navKontor,
 				),
 			)
-		} else if (deltakerDto.navKontor != lagretDeltaker.navKontor) {
+		} else if (deltakerPayload.navKontor != lagretDeltaker.navKontor) {
 			lagreOppdateringNavEndring(
 				deltaker = lagretDeltaker,
-				nyttNavn = deltakerDto.navVeileder?.navn,
-				nyEpost = deltakerDto.navVeileder?.epost,
-				nyttTelefonnummer = deltakerDto.navVeileder?.telefonnummer,
-				nyNavEnhet = deltakerDto.navKontor,
+				nyttNavn = deltakerPayload.navVeileder?.navn,
+				nyEpost = deltakerPayload.navVeileder?.epost,
+				nyttTelefonnummer = deltakerPayload.navVeileder?.telefon,
+				nyNavEnhet = deltakerPayload.navKontor,
 			)
 		}
 
-		val ulesteEndringerFraHistorikk = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerDto)
+		val ulesteEndringerFraHistorikk = hentUlesteEndringerFraHistorikk(lagretDeltaker, deltakerPayload)
 		ulesteEndringerFraHistorikk.forEach {
 			ulestEndringRepository.insert(
 				deltakerId,
@@ -213,15 +213,12 @@ class KafkaConsumerService(
 		}
 	}
 
-	private fun hentUlesteEndringerFraHistorikk(lagretDeltaker: DeltakerDbo, nyDeltaker: DeltakerDto): List<Oppdatering> {
-		if (nyDeltaker.historikk.isNullOrEmpty()) {
-			return emptyList()
-		}
-
-		return nyDeltaker.historikk
-			.minus(lagretDeltaker.historikk.toSet())
-			.mapNotNull { toDeltakerOppdatering(it) }
-	}
+	private fun hentUlesteEndringerFraHistorikk(lagretDeltaker: DeltakerDbo, nyDeltaker: DeltakerKafkaPayload): List<Oppdatering> =
+		nyDeltaker.historikk
+			?.toSet()
+			?.minus(lagretDeltaker.historikk.toSet())
+			?.mapNotNull { toDeltakerOppdatering(it) }
+			?: emptyList()
 
 	private fun toDeltakerOppdatering(historikk: DeltakerHistorikk): Oppdatering? = when (historikk) {
 		is DeltakerHistorikk.Endring -> Oppdatering.DeltakelsesEndring(historikk.endring)
@@ -272,20 +269,26 @@ class KafkaConsumerService(
 			)
 		}
 
-	private fun leggTilNavAnsattOgEnhetHistorikk(deltakerDto: DeltakerDto) {
-		if (deltakerDto.historikk.isNullOrEmpty()) {
+	private fun leggTilNavAnsattOgEnhetHistorikk(deltakerPayload: DeltakerKafkaPayload) {
+		if (deltakerPayload.historikk.isNullOrEmpty()) {
 			return
 		}
-		lagreEnheterForHistorikk(deltakerDto.historikk)
-		lagreAnsatteForHistorikk(deltakerDto.historikk)
+		lagreEnheterForHistorikk(deltakerPayload.historikk)
+		lagreAnsatteForHistorikk(deltakerPayload.historikk)
 	}
 
-	fun lagreEnheterForHistorikk(historikk: List<DeltakerHistorikk>) {
-		historikk.flatMap { it.navEnheter() }.distinct().forEach { id -> navEnhetService.hentOpprettEllerOppdaterNavEnhet(id) }
+	fun lagreEnheterForHistorikk(historikk: List<DeltakerHistorikk>?) {
+		historikk
+			?.flatMap { it.navEnheter() }
+			?.distinct()
+			?.forEach { id -> navEnhetService.hentOpprettEllerOppdaterNavEnhet(id) }
 	}
 
-	fun lagreAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) {
-		historikk.flatMap { it.navAnsatte() }.distinct().forEach { id -> navAnsattService.hentEllerOpprettNavAnsatt(id) }
+	fun lagreAnsatteForHistorikk(historikk: List<DeltakerHistorikk>?) {
+		historikk
+			?.flatMap { it.navAnsatte() }
+			?.distinct()
+			?.forEach { id -> navAnsattService.hentEllerOpprettNavAnsatt(id) }
 	}
 
 	fun lagreNavAnsatt(id: UUID, navAnsatt: NavAnsatt) {
@@ -362,22 +365,24 @@ class KafkaConsumerService(
 		}
 	}
 
-	private fun DeltakerDto.skalLagres(lagretDeltaker: DeltakerDbo?): Boolean {
-		if (status.type in SKJULES_ALLTID_STATUSER) {
+	private fun DeltakerKafkaPayload.skalLagres(lagretDeltaker: DeltakerDbo?): Boolean {
+		if (deltakerliste.tiltak.tiltakskode.erEnkeltplass()) {
 			return false
-		} else if (status.type == DeltakerStatus.IKKE_AKTUELL && deltarPaKurs && lagretDeltaker == null) {
+		} else if (status.type in SKJULES_ALLTID_STATUSER) {
+			return false
+		} else if (status.type == DeltakerStatus.Type.IKKE_AKTUELL && deltarPaKurs && lagretDeltaker == null) {
 			return false
 		} else if (status.type in AVSLUTTENDE_STATUSER) {
 			return harNyligSluttet()
-		} else if (status.type == DeltakerStatus.SOKT_INN) {
+		} else if (status.type == DeltakerStatus.Type.SOKT_INN) {
 			return erManueltDeltMedArrangor
 		}
 		return true
 	}
 
-	private fun DeltakerDto.harNyligSluttet(): Boolean =
+	private fun DeltakerKafkaPayload.harNyligSluttet(): Boolean =
 		!LocalDateTime.now().isAfter(status.gyldigFra.plusDays(DAGER_AVSLUTTET_DELTAKER_VISES)) &&
-			(sluttdato == null || sluttdato.isAfter(LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES)))
+			(sluttdato == null || sluttdato!!.isAfter(LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES)))
 
 	private fun toDeltakerlisteDbo(deltakerlisteDto: DeltakerlisteDto): DeltakerlisteDbo = DeltakerlisteDbo(
 		id = deltakerlisteDto.id,
@@ -484,7 +489,7 @@ fun DeltakerlisteDto.skalLagres(): Boolean {
 	return false
 }
 
-fun EndringFraTiltakskoordinator.Avslag.Aarsak.toDeltakerStatusAarsak() = DeltakerStatusAarsak(
-	type = DeltakerStatusAarsak.Type.valueOf(this.type.name),
+fun EndringFraTiltakskoordinator.Avslag.Aarsak.toDeltakerStatusAarsak() = DeltakerStatusAarsakJsonDboDto(
+	type = DeltakerStatus.Aarsak.Type.valueOf(this.type.name),
 	beskrivelse = this.beskrivelse,
 )

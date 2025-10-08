@@ -3,13 +3,13 @@ package no.nav.tiltaksarrangor.service
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.DeltakerHistorikkResponse
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.api.response.toResponse
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.model.Deltaker
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -18,7 +18,6 @@ import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
-import no.nav.tiltaksarrangor.unleash.UnleashService
 import no.nav.tiltaksarrangor.utils.toTitleCase
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -39,7 +38,6 @@ class TiltaksarrangorService(
 	private val arrangorRepository: ArrangorRepository,
 	private val meldingProducer: MeldingProducer,
 	private val ulestEndringRepository: UlestEndringRepository,
-	private val unleashService: UnleashService,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -65,7 +63,7 @@ class TiltaksarrangorService(
 
 		tilgangskontrollService.verifiserTilgangTilDeltaker(ansatt, deltakerMedDeltakerliste)
 
-		val ulesteEndringerResponse = getUlesteEndringer(personIdent, deltakerMedDeltakerliste)
+		val ulesteEndringerResponse = getUlesteEndringer(deltakerMedDeltakerliste)
 
 		return deltakerMapper.map(
 			deltakerMedDeltakerliste.deltaker,
@@ -75,7 +73,7 @@ class TiltaksarrangorService(
 		)
 	}
 
-	fun getUlesteEndringer(personIdent: String, medDeltakerlisteDbo: DeltakerMedDeltakerlisteDbo): List<UlestEndringResponse> {
+	fun getUlesteEndringer(medDeltakerlisteDbo: DeltakerMedDeltakerlisteDbo): List<UlestEndringResponse> {
 		val ulesteEndringer = ulestEndringRepository.getMany(medDeltakerlisteDbo.deltaker.id)
 		if (ulesteEndringer.isEmpty()) {
 			return emptyList()
@@ -132,8 +130,8 @@ class TiltaksarrangorService(
 		tilgangskontrollService.verifiserTilgangTilDeltakerOgMeldinger(ansatt, deltakerMedDeltakerliste)
 
 		if (!(
-				deltakerMedDeltakerliste.deltaker.status == StatusType.VURDERES ||
-					deltakerMedDeltakerliste.deltaker.status == StatusType.SOKT_INN
+				deltakerMedDeltakerliste.deltaker.status == DeltakerStatus.Type.VURDERES ||
+					deltakerMedDeltakerliste.deltaker.status == DeltakerStatus.Type.SOKT_INN
 			)
 		) {
 			throw IllegalStateException(

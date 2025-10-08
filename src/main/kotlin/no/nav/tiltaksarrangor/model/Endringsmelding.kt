@@ -10,8 +10,6 @@ data class Endringsmelding(
 	val status: Status,
 	val sendt: LocalDate,
 ) {
-	fun erAktiv(): Boolean = status == Status.AKTIV
-
 	enum class Type {
 		LEGG_TIL_OPPSTARTSDATO,
 		ENDRE_OPPSTARTSDATO,
@@ -51,11 +49,11 @@ data class Endringsmelding(
 
 		data class AvsluttDeltakelseInnhold(
 			val sluttdato: LocalDate,
-			val aarsak: DeltakerStatusAarsak,
+			val aarsak: DeltakerStatusAarsakJsonDboDto,
 		) : Innhold()
 
 		data class DeltakerIkkeAktuellInnhold(
-			val aarsak: DeltakerStatusAarsak,
+			val aarsak: DeltakerStatusAarsakJsonDboDto,
 		) : Innhold()
 
 		data class EndreSluttdatoInnhold(
@@ -63,7 +61,7 @@ data class Endringsmelding(
 		) : Innhold()
 
 		data class EndreSluttaarsakInnhold(
-			val aarsak: DeltakerStatusAarsak,
+			val aarsak: DeltakerStatusAarsakJsonDboDto,
 		) : Innhold()
 	}
 }

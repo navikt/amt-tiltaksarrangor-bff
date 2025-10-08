@@ -6,14 +6,14 @@ import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakJsonDboDto
 import no.nav.tiltaksarrangor.model.Endringsmelding
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -156,7 +156,7 @@ class TiltaksarrangorAPITest(
 				personident = "10987654321",
 				telefonnummer = "90909090",
 				epost = "mail@test.no",
-				status = StatusType.DELTAR,
+				status = DeltakerStatus.Type.DELTAR,
 				statusOpprettetDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
 				startdato = LocalDate.of(2023, 2, 1),
 				dagerPerUke = 2.5f,
@@ -258,7 +258,7 @@ class TiltaksarrangorAPITest(
 				personident = "10987654321",
 				telefonnummer = "90909090",
 				epost = "mail@test.no",
-				status = StatusType.DELTAR,
+				status = DeltakerStatus.Type.DELTAR,
 				statusOpprettetDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
 				startdato = LocalDate.of(2023, 2, 1),
 				dagerPerUke = 2.5f,
@@ -331,7 +331,7 @@ class TiltaksarrangorAPITest(
 				personident = "10987654321",
 				telefonnummer = "90909090",
 				epost = "mail@test.no",
-				status = StatusType.DELTAR,
+				status = DeltakerStatus.Type.DELTAR,
 				statusOpprettetDato = LocalDate.of(2023, 1, 1).atStartOfDay(),
 				startdato = LocalDate.of(2023, 2, 1),
 				dagerPerUke = 2.5f,
@@ -444,7 +444,7 @@ class TiltaksarrangorAPITest(
 			getDeltaker(deltakerId, deltakerliste.id)
 				.copy(
 					personident = "10987654321",
-					status = StatusType.VURDERES,
+					status = DeltakerStatus.Type.VURDERES,
 					statusOpprettetDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
 				).copy(vurderingerFraArrangor = listOf(opprinneligVurdering))
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
@@ -511,7 +511,7 @@ class TiltaksarrangorAPITest(
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
 				personident = "10987654321",
-				status = StatusType.HAR_SLUTTET,
+				status = DeltakerStatus.Type.HAR_SLUTTET,
 				statusOpprettetDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
@@ -553,8 +553,8 @@ class TiltaksarrangorAPITest(
 				Innhold.AvsluttDeltakelseInnhold(
 					sluttdato = LocalDate.of(2023, 3, 30),
 					aarsak =
-						DeltakerStatusAarsak(
-							type = DeltakerStatusAarsak.Type.SYK,
+						DeltakerStatusAarsakJsonDboDto(
+							type = DeltakerStatus.Aarsak.Type.SYK,
 							beskrivelse = "har blitt syk",
 						),
 				),

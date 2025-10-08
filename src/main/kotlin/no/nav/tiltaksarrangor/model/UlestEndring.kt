@@ -116,7 +116,7 @@ sealed interface Oppdatering {
 	data class Avslag(
 		val endretAv: String?,
 		val endretAvEnhet: String?,
-		val aarsak: DeltakerStatusAarsak,
+		val aarsak: DeltakerStatusAarsakJsonDboDto,
 		val begrunnelse: String?,
 	) : Oppdatering
 

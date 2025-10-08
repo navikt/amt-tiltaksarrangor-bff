@@ -2,13 +2,13 @@ package no.nav.tiltaksarrangor.consumer
 
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerStatus
 import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
@@ -32,6 +32,7 @@ import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.getDeltaker
+import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.utils.JsonUtils
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -346,6 +347,7 @@ class KafkaConsumerTest(
 		val enhetId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
 		with(DeltakerDtoCtx()) {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.deltakerlisteId, UUID.randomUUID()))
 			mockAmtPersonServer.addEnhetResponse(enhetId)
 			mockAmtPersonServer.addAnsattResponse(ansattId)
 			val avbrytDeltakelseEndring = DeltakerEndring.Endring.AvbrytDeltakelse(
@@ -411,9 +413,11 @@ class KafkaConsumerTest(
 	@Test
 	fun `listen - avsluttet deltaker-melding pa deltaker-topic og deltaker finnes i db - sletter deltaker fra db`() {
 		with(DeltakerDtoCtx()) {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.deltakerlisteId, UUID.randomUUID()))
+
 			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 
-			medStatus(DeltakerStatus.HAR_SLUTTET, 50)
+			medStatus(DeltakerStatus.Type.HAR_SLUTTET, 50)
 
 			testKafkaProducer
 				.send(

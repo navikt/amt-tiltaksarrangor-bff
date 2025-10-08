@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.consumer.model
 
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsak
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakJsonDboDto
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import java.time.LocalDate
 
@@ -19,11 +19,11 @@ sealed class Innhold {
 
 	data class AvsluttDeltakelseInnhold(
 		val sluttdato: LocalDate,
-		val aarsak: DeltakerStatusAarsak,
+		val aarsak: DeltakerStatusAarsakJsonDboDto,
 	) : Innhold()
 
 	data class DeltakerIkkeAktuellInnhold(
-		val aarsak: DeltakerStatusAarsak,
+		val aarsak: DeltakerStatusAarsakJsonDboDto,
 	) : Innhold()
 
 	data class EndreDeltakelseProsentInnhold(
@@ -37,7 +37,7 @@ sealed class Innhold {
 	) : Innhold()
 
 	data class EndreSluttaarsakInnhold(
-		val aarsak: DeltakerStatusAarsak,
+		val aarsak: DeltakerStatusAarsakJsonDboDto,
 	) : Innhold()
 }
 

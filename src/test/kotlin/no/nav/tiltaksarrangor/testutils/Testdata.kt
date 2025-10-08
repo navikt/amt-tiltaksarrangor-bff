@@ -4,23 +4,24 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
-import no.nav.tiltaksarrangor.consumer.model.AdresseDto
+import no.nav.amt.lib.models.person.Oppfolgingsperiode
+import no.nav.amt.lib.models.person.address.Adresse
+import no.nav.amt.lib.models.person.address.Bostedsadresse
+import no.nav.amt.lib.models.person.address.Kontaktadresse
+import no.nav.amt.lib.models.person.address.Matrikkeladresse
+import no.nav.amt.lib.models.person.address.Vegadresse
+import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
-import no.nav.tiltaksarrangor.consumer.model.Bostedsadresse
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
-import no.nav.tiltaksarrangor.consumer.model.Kontaktadresse
-import no.nav.tiltaksarrangor.consumer.model.Matrikkeladresse
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
-import no.nav.tiltaksarrangor.consumer.model.Oppfolgingsperiode
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.consumer.model.Vegadresse
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
-import no.nav.tiltaksarrangor.model.Kilde
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
@@ -54,7 +55,7 @@ fun getDeltaker(
 	deltakerId: UUID = UUID.randomUUID(),
 	deltakerlisteId: UUID = UUID.randomUUID(),
 	adressebeskyttet: Boolean = false,
-	status: StatusType = StatusType.DELTAR,
+	status: DeltakerStatus.Type = DeltakerStatus.Type.DELTAR,
 ): DeltakerDbo = DeltakerDbo(
 	id = deltakerId,
 	deltakerlisteId = deltakerlisteId,
@@ -65,7 +66,7 @@ fun getDeltaker(
 	telefonnummer = null,
 	epost = null,
 	erSkjermet = false,
-	adresse = getAdresse(),
+	adresse = AdresseJsonDbo.fromModel(getAdresse()),
 	vurderingerFraArrangor = getVurderinger(deltakerId),
 	status = status,
 	statusOpprettetDato = LocalDateTime.now(),
@@ -131,7 +132,7 @@ fun getForslag(deltakerId: UUID): Forslag = Forslag(
 	status = Forslag.Status.VenterPaSvar,
 )
 
-fun getAdresse(): AdresseDto = AdresseDto(
+fun getAdresse(): Adresse = Adresse(
 	bostedsadresse =
 		Bostedsadresse(
 			coAdressenavn = "C/O Gutterommet",

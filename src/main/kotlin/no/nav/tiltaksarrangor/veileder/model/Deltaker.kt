@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.veileder.model
 
 import no.nav.tiltaksarrangor.model.AktivEndring
-import no.nav.tiltaksarrangor.model.DeltakerStatus
+import no.nav.tiltaksarrangor.model.DeltakerStatusInternalModel
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
 import java.time.LocalDate
@@ -16,7 +16,7 @@ data class Deltaker(
 	val fodselsnummer: String,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
-	val status: DeltakerStatus,
+	val status: DeltakerStatusInternalModel,
 	val deltakerliste: Deltakerliste,
 	val veiledertype: Veiledertype,
 	val aktiveEndringsmeldinger: List<Endringsmelding>,

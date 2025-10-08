@@ -2,15 +2,16 @@ package no.nav.tiltaksarrangor.koordinator.api
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
+import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
-import no.nav.tiltaksarrangor.model.Kilde
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -397,8 +398,8 @@ class KoordinatorAPITest(
 				telefonnummer = null,
 				epost = null,
 				erSkjermet = false,
-				adresse = getAdresse(),
-				status = StatusType.DELTAR,
+				adresse = AdresseJsonDbo.fromModel(getAdresse()),
+				status = DeltakerStatus.Type.DELTAR,
 				statusOpprettetDato = LocalDateTime.now(),
 				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
 				statusAarsak = null,

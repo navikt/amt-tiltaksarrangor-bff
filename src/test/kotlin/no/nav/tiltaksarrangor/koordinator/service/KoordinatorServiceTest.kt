@@ -11,6 +11,7 @@ import io.mockk.every
 import io.mockk.just
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
@@ -25,7 +26,6 @@ import no.nav.tiltaksarrangor.model.AktivEndring
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Oppdatering
-import no.nav.tiltaksarrangor.model.StatusType
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.model.exceptions.ValidationException
@@ -489,7 +489,7 @@ class KoordinatorServiceTest(
 		koordinatorsDeltakerliste.koordinatorer.size shouldBe 2
 		koordinatorsDeltakerliste.deltakere.size shouldBe 1
 		val koordinatorsDeltaker = koordinatorsDeltakerliste.deltakere.find { it.id == deltaker.id }
-		koordinatorsDeltaker?.status?.type shouldBe StatusType.DELTAR
+		koordinatorsDeltaker?.status?.type shouldBe DeltakerStatus.Type.DELTAR
 		koordinatorsDeltaker?.veiledere?.size shouldBe 1
 		koordinatorsDeltaker?.veiledere?.find {
 			it.fornavn == "Fornavn3" && it.etternavn == "Etternavn3" && it.veiledertype == Veiledertype.VEILEDER
@@ -548,7 +548,7 @@ class KoordinatorServiceTest(
 		koordinatorsDeltakerliste.id shouldBe deltakerliste.id
 		koordinatorsDeltakerliste.deltakere.size shouldBe 1
 		val koordinatorsDeltaker = koordinatorsDeltakerliste.deltakere.find { it.id == deltaker.id }
-		koordinatorsDeltaker?.status?.type shouldBe StatusType.DELTAR
+		koordinatorsDeltaker?.status?.type shouldBe DeltakerStatus.Type.DELTAR
 		koordinatorsDeltaker?.aktiveEndringsmeldinger?.size shouldBe 0
 		koordinatorsDeltaker?.adressebeskyttet shouldBe false
 		koordinatorsDeltaker?.erVeilederForDeltaker shouldBe false
@@ -636,7 +636,7 @@ class KoordinatorServiceTest(
 		koordinatorsDeltakerliste.koordinatorer.size shouldBe 2
 		koordinatorsDeltakerliste.deltakere.size shouldBe 1
 		val koordinatorsDeltaker = koordinatorsDeltakerliste.deltakere.find { it.id == deltaker.id }
-		koordinatorsDeltaker?.status?.type shouldBe StatusType.DELTAR
+		koordinatorsDeltaker?.status?.type shouldBe DeltakerStatus.Type.DELTAR
 		koordinatorsDeltaker?.veiledere?.size shouldBe 1
 		koordinatorsDeltaker?.veiledere?.find {
 			it.fornavn == "Fornavn3" && it.etternavn == "Etternavn3" && it.veiledertype == Veiledertype.VEILEDER
@@ -728,7 +728,7 @@ class KoordinatorServiceTest(
 		koordinatorsDeltakerliste.koordinatorer.size shouldBe 2
 		koordinatorsDeltakerliste.deltakere.size shouldBe 1
 		val koordinatorsDeltaker = koordinatorsDeltakerliste.deltakere.find { it.id == deltaker.id }
-		koordinatorsDeltaker?.status?.type shouldBe StatusType.DELTAR
+		koordinatorsDeltaker?.status?.type shouldBe DeltakerStatus.Type.DELTAR
 		koordinatorsDeltaker?.veiledere?.size shouldBe 2
 		koordinatorsDeltaker?.veiledere?.find {
 			it.fornavn == "Fornavn3" && it.etternavn == "Etternavn3" && it.veiledertype == Veiledertype.VEILEDER
@@ -818,7 +818,7 @@ class KoordinatorServiceTest(
 		koordinatorsDeltaker?.fodselsnummer shouldBe ""
 		koordinatorsDeltaker?.fornavn shouldBe ""
 		koordinatorsDeltaker?.etternavn shouldBe ""
-		koordinatorsDeltaker?.status?.type shouldBe StatusType.DELTAR
+		koordinatorsDeltaker?.status?.type shouldBe DeltakerStatus.Type.DELTAR
 		koordinatorsDeltaker?.veiledere?.size shouldBe 1
 		koordinatorsDeltaker?.veiledere?.find {
 			it.fornavn == "Fornavn3" && it.etternavn == "Etternavn3" && it.veiledertype == Veiledertype.VEILEDER
