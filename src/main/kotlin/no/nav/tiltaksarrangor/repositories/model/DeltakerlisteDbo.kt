@@ -19,7 +19,6 @@ data class DeltakerlisteDbo(
 	val oppstartstype: Oppstartstype,
 	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
 ) {
-
 	fun erTilgjengeligForArrangor(): Boolean = if (startDato != null) {
 		if (tilgjengeligForArrangorFraOgMedDato != null) {
 			!tilgjengeligForArrangorFraOgMedDato.isAfter(LocalDate.now())
