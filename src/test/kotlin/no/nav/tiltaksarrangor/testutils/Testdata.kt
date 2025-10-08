@@ -13,7 +13,7 @@ import no.nav.amt.lib.models.person.address.Bostedsadresse
 import no.nav.amt.lib.models.person.address.Kontaktadresse
 import no.nav.amt.lib.models.person.address.Matrikkeladresse
 import no.nav.amt.lib.models.person.address.Vegadresse
-import no.nav.tiltaksarrangor.consumer.model.AdresseDbo
+import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
@@ -66,7 +66,7 @@ fun getDeltaker(
 	telefonnummer = null,
 	epost = null,
 	erSkjermet = false,
-	adresse = AdresseDbo.fromModel(getAdresse()),
+	adresse = AdresseJsonDbo.fromModel(getAdresse()),
 	vurderingerFraArrangor = getVurderinger(deltakerId),
 	status = status,
 	statusOpprettetDato = LocalDateTime.now(),

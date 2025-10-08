@@ -2,7 +2,7 @@ package no.nav.tiltaksarrangor.consumer.model
 
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakDboDto
+import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakJsonDboDto
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.STATUSER_SOM_KAN_SKJULES
 import java.time.LocalDateTime
@@ -14,7 +14,7 @@ fun DeltakerKafkaPayload.toDeltakerDbo(lagretDeltaker: DeltakerDbo? = null): Del
 
 	return DeltakerDbo(
 		id = id,
-		deltakerlisteId = deltakerlisteId,
+		deltakerlisteId = deltakerliste.id,
 		personident = personalia.personident,
 		fornavn = personalia.navn.fornavn,
 		mellomnavn = personalia.navn.mellomnavn,
@@ -22,11 +22,11 @@ fun DeltakerKafkaPayload.toDeltakerDbo(lagretDeltaker: DeltakerDbo? = null): Del
 		telefonnummer = personalia.kontaktinformasjon.telefonnummer,
 		epost = personalia.kontaktinformasjon.epost,
 		erSkjermet = personalia.skjermet,
-		adresse = personalia.adresse?.let { AdresseDbo.fromModel(it) },
+		adresse = personalia.adresse?.let { AdresseJsonDbo.fromModel(it) },
 		status = oppdatertStatus,
 		statusOpprettetDato = status.opprettetDato,
 		statusGyldigFraDato = status.gyldigFra,
-		statusAarsak = status.aarsak?.let { DeltakerStatusAarsakDboDto(it, status.aarsaksbeskrivelse) },
+		statusAarsak = status.aarsak?.let { DeltakerStatusAarsakJsonDboDto(it, status.aarsaksbeskrivelse) },
 		dagerPerUke = dagerPerUke,
 		prosentStilling = prosentStilling,
 		startdato = oppstartsdato,

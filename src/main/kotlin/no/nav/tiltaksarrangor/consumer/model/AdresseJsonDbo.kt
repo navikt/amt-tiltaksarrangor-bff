@@ -8,10 +8,10 @@ import org.postgresql.util.PGobject
 
 // Alt dette er duplikater fra lib men iom at dette brukes til å lagre json i databasen så beholder jeg datastrukturene
 // for å unngå farlige situasjoner om modellen endres i lib uten å ta høyde for json formatet
-data class AdresseDbo(
-	val bostedsadresse: BostedsadresseDbo?,
-	val oppholdsadresse: OppholdsadresseDbo?,
-	val kontaktadresse: KontaktadresseDbo?,
+data class AdresseJsonDbo(
+	val bostedsadresse: BostedsadresseJsonDbo?,
+	val oppholdsadresse: OppholdsadresseJsonDbo?,
+	val kontaktadresse: KontaktadresseJsonDbo?,
 ) {
 	fun toPGObject() = PGobject().also {
 		it.type = "json"
@@ -19,18 +19,18 @@ data class AdresseDbo(
 	}
 
 	companion object {
-		fun fromModel(adresse: no.nav.amt.lib.models.person.address.Adresse) = AdresseDbo(
-			bostedsadresse = adresse.bostedsadresse?.let { BostedsadresseDbo.fromModel(bostedsadresse = it) },
-			oppholdsadresse = adresse.oppholdsadresse?.let { OppholdsadresseDbo.fromModel(oppholdsadresse = it) },
-			kontaktadresse = adresse.kontaktadresse?.let { KontaktadresseDbo.fromModel(kontakadresse = it) },
+		fun fromModel(adresse: no.nav.amt.lib.models.person.address.Adresse) = AdresseJsonDbo(
+			bostedsadresse = adresse.bostedsadresse?.let { BostedsadresseJsonDbo.fromModel(bostedsadresse = it) },
+			oppholdsadresse = adresse.oppholdsadresse?.let { OppholdsadresseJsonDbo.fromModel(oppholdsadresse = it) },
+			kontaktadresse = adresse.kontaktadresse?.let { KontaktadresseJsonDbo.fromModel(kontakadresse = it) },
 		)
 	}
 }
 
-data class BostedsadresseDbo(
+data class BostedsadresseJsonDbo(
 	val coAdressenavn: String?,
-	val vegadresse: VegadresseDbo?,
-	val matrikkeladresse: MatrikkeladresseDbo?,
+	val vegadresse: VegadresseJsonDbo?,
+	val matrikkeladresse: MatrikkeladresseJsonDbo?,
 ) {
 	fun toAdresse(): Adresse {
 		if (vegadresse != null) {
@@ -55,18 +55,18 @@ data class BostedsadresseDbo(
 	}
 
 	companion object {
-		fun fromModel(bostedsadresse: no.nav.amt.lib.models.person.address.Bostedsadresse) = BostedsadresseDbo(
+		fun fromModel(bostedsadresse: no.nav.amt.lib.models.person.address.Bostedsadresse) = BostedsadresseJsonDbo(
 			coAdressenavn = bostedsadresse.coAdressenavn,
-			vegadresse = bostedsadresse.vegadresse?.let { VegadresseDbo.fromModel(it) },
-			matrikkeladresse = bostedsadresse.matrikkeladresse?.let { MatrikkeladresseDbo.fromModel(it) },
+			vegadresse = bostedsadresse.vegadresse?.let { VegadresseJsonDbo.fromModel(it) },
+			matrikkeladresse = bostedsadresse.matrikkeladresse?.let { MatrikkeladresseJsonDbo.fromModel(it) },
 		)
 	}
 }
 
-data class OppholdsadresseDbo(
+data class OppholdsadresseJsonDbo(
 	val coAdressenavn: String?,
-	val vegadresse: VegadresseDbo?,
-	val matrikkeladresse: MatrikkeladresseDbo?,
+	val vegadresse: VegadresseJsonDbo?,
+	val matrikkeladresse: MatrikkeladresseJsonDbo?,
 ) {
 	fun toAdresse(): Adresse {
 		if (vegadresse != null) {
@@ -91,10 +91,10 @@ data class OppholdsadresseDbo(
 	}
 
 	companion object {
-		fun fromModel(oppholdsadresse: Oppholdsadresse) = OppholdsadresseDbo(
+		fun fromModel(oppholdsadresse: Oppholdsadresse) = OppholdsadresseJsonDbo(
 			coAdressenavn = oppholdsadresse.coAdressenavn,
 			vegadresse = oppholdsadresse.vegadresse?.let {
-				VegadresseDbo(
+				VegadresseJsonDbo(
 					it.husnummer,
 					it.husbokstav,
 					it.adressenavn,
@@ -103,15 +103,15 @@ data class OppholdsadresseDbo(
 					it.poststed,
 				)
 			},
-			matrikkeladresse = oppholdsadresse.matrikkeladresse?.let { MatrikkeladresseDbo(it.tilleggsnavn, it.postnummer, it.poststed) },
+			matrikkeladresse = oppholdsadresse.matrikkeladresse?.let { MatrikkeladresseJsonDbo(it.tilleggsnavn, it.postnummer, it.poststed) },
 		)
 	}
 }
 
-data class KontaktadresseDbo(
+data class KontaktadresseJsonDbo(
 	val coAdressenavn: String?,
-	val vegadresse: VegadresseDbo?,
-	val postboksadresse: PostboksadresseDbo?,
+	val vegadresse: VegadresseJsonDbo?,
+	val postboksadresse: PostboksadresseJsonDbo?,
 ) {
 	fun toAdresse(): Adresse {
 		if (vegadresse != null) {
@@ -136,15 +136,15 @@ data class KontaktadresseDbo(
 	}
 
 	companion object {
-		fun fromModel(kontakadresse: no.nav.amt.lib.models.person.address.Kontaktadresse) = KontaktadresseDbo(
+		fun fromModel(kontakadresse: no.nav.amt.lib.models.person.address.Kontaktadresse) = KontaktadresseJsonDbo(
 			coAdressenavn = kontakadresse.coAdressenavn,
-			vegadresse = kontakadresse.vegadresse?.let { VegadresseDbo.fromModel(it) },
-			postboksadresse = kontakadresse.postboksadresse?.let { PostboksadresseDbo.fromModel(it) },
+			vegadresse = kontakadresse.vegadresse?.let { VegadresseJsonDbo.fromModel(it) },
+			postboksadresse = kontakadresse.postboksadresse?.let { PostboksadresseJsonDbo.fromModel(it) },
 		)
 	}
 }
 
-data class VegadresseDbo(
+data class VegadresseJsonDbo(
 	val husnummer: String?,
 	val husbokstav: String?,
 	val adressenavn: String?,
@@ -161,7 +161,7 @@ data class VegadresseDbo(
 	}
 
 	companion object {
-		fun fromModel(vegadresse: no.nav.amt.lib.models.person.address.Vegadresse) = VegadresseDbo(
+		fun fromModel(vegadresse: no.nav.amt.lib.models.person.address.Vegadresse) = VegadresseJsonDbo(
 			husnummer = vegadresse.husnummer,
 			husbokstav = vegadresse.husbokstav,
 			adressenavn = vegadresse.adressenavn,
@@ -172,13 +172,13 @@ data class VegadresseDbo(
 	}
 }
 
-data class MatrikkeladresseDbo(
+data class MatrikkeladresseJsonDbo(
 	val tilleggsnavn: String?,
 	val postnummer: String,
 	val poststed: String,
 ) {
 	companion object {
-		fun fromModel(matrikkeladresse: no.nav.amt.lib.models.person.address.Matrikkeladresse) = MatrikkeladresseDbo(
+		fun fromModel(matrikkeladresse: no.nav.amt.lib.models.person.address.Matrikkeladresse) = MatrikkeladresseJsonDbo(
 			tilleggsnavn = matrikkeladresse.tilleggsnavn,
 			postnummer = matrikkeladresse.postnummer,
 			poststed = matrikkeladresse.poststed,
@@ -186,7 +186,7 @@ data class MatrikkeladresseDbo(
 	}
 }
 
-data class PostboksadresseDbo(
+data class PostboksadresseJsonDbo(
 	val postboks: String,
 	val postnummer: String,
 	val poststed: String,
@@ -199,7 +199,7 @@ data class PostboksadresseDbo(
 	}
 
 	companion object {
-		fun fromModel(postboksadresse: no.nav.amt.lib.models.person.address.Postboksadresse) = PostboksadresseDbo(
+		fun fromModel(postboksadresse: no.nav.amt.lib.models.person.address.Postboksadresse) = PostboksadresseJsonDbo(
 			postboks = postboksadresse.postboks,
 			postnummer = postboksadresse.postnummer,
 			poststed = postboksadresse.poststed,

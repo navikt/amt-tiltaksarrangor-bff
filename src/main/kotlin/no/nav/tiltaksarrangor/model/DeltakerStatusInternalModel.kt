@@ -8,5 +8,5 @@ import java.time.LocalDateTime
 data class DeltakerStatusInternalModel(
 	val type: DeltakerStatus.Type,
 	val endretDato: LocalDateTime,
-	val aarsak: DeltakerStatusAarsakDboDto?,
+	val aarsak: DeltakerStatusAarsakJsonDboDto?,
 )

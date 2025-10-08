@@ -14,16 +14,16 @@ import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.OppdateringResponse
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
-import no.nav.tiltaksarrangor.consumer.model.AdresseDbo
+import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
-import no.nav.tiltaksarrangor.consumer.model.BostedsadresseDbo
+import no.nav.tiltaksarrangor.consumer.model.BostedsadresseJsonDbo
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
-import no.nav.tiltaksarrangor.consumer.model.KontaktadresseDbo
-import no.nav.tiltaksarrangor.consumer.model.MatrikkeladresseDbo
-import no.nav.tiltaksarrangor.consumer.model.OppholdsadresseDbo
-import no.nav.tiltaksarrangor.consumer.model.PostboksadresseDbo
-import no.nav.tiltaksarrangor.consumer.model.VegadresseDbo
+import no.nav.tiltaksarrangor.consumer.model.KontaktadresseJsonDbo
+import no.nav.tiltaksarrangor.consumer.model.MatrikkeladresseJsonDbo
+import no.nav.tiltaksarrangor.consumer.model.OppholdsadresseJsonDbo
+import no.nav.tiltaksarrangor.consumer.model.PostboksadresseJsonDbo
+import no.nav.tiltaksarrangor.consumer.model.VegadresseJsonDbo
 import no.nav.tiltaksarrangor.melding.MeldingProducer
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.Adressetype
@@ -970,23 +970,23 @@ class TiltaksarrangorServiceTest(
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
 				adresse =
-					AdresseDbo(
+					AdresseJsonDbo(
 						bostedsadresse =
-							BostedsadresseDbo(
+							BostedsadresseJsonDbo(
 								coAdressenavn = "C/O Gutterommet",
 								vegadresse = null,
 								matrikkeladresse =
-									MatrikkeladresseDbo(
+									MatrikkeladresseJsonDbo(
 										tilleggsnavn = "Gården",
 										postnummer = "0484",
 										poststed = "OSLO",
 									),
 							),
 						oppholdsadresse =
-							OppholdsadresseDbo(
+							OppholdsadresseJsonDbo(
 								coAdressenavn = null,
 								vegadresse =
-									VegadresseDbo(
+									VegadresseJsonDbo(
 										husnummer = "1",
 										husbokstav = "B",
 										adressenavn = "Veien",
@@ -995,18 +995,18 @@ class TiltaksarrangorServiceTest(
 										poststed = "MOSS",
 									),
 								matrikkeladresse =
-									MatrikkeladresseDbo(
+									MatrikkeladresseJsonDbo(
 										tilleggsnavn = "Fortet",
 										postnummer = "0101",
 										poststed = "ANDEBY",
 									),
 							),
 						kontaktadresse =
-							KontaktadresseDbo(
+							KontaktadresseJsonDbo(
 								coAdressenavn = null,
 								vegadresse = null,
 								postboksadresse =
-									PostboksadresseDbo(
+									PostboksadresseJsonDbo(
 										postboks = "45451",
 										postnummer = "3312",
 										poststed = "VESTØYA",
@@ -1032,23 +1032,23 @@ class TiltaksarrangorServiceTest(
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
 				adresse =
-					AdresseDbo(
+					AdresseJsonDbo(
 						bostedsadresse =
-							BostedsadresseDbo(
+							BostedsadresseJsonDbo(
 								coAdressenavn = "C/O Gutterommet",
 								vegadresse = null,
 								matrikkeladresse =
-									MatrikkeladresseDbo(
+									MatrikkeladresseJsonDbo(
 										tilleggsnavn = "Gården",
 										postnummer = "0484",
 										poststed = "OSLO",
 									),
 							),
 						oppholdsadresse =
-							OppholdsadresseDbo(
+							OppholdsadresseJsonDbo(
 								coAdressenavn = "C/O Pappa",
 								vegadresse =
-									VegadresseDbo(
+									VegadresseJsonDbo(
 										husnummer = "1",
 										husbokstav = "B",
 										adressenavn = "Veien",
@@ -1057,7 +1057,7 @@ class TiltaksarrangorServiceTest(
 										poststed = "MOSS",
 									),
 								matrikkeladresse =
-									MatrikkeladresseDbo(
+									MatrikkeladresseJsonDbo(
 										tilleggsnavn = "Fortet",
 										postnummer = "0101",
 										poststed = "ANDEBY",
@@ -1084,13 +1084,13 @@ class TiltaksarrangorServiceTest(
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
 				adresse =
-					AdresseDbo(
+					AdresseJsonDbo(
 						bostedsadresse =
-							BostedsadresseDbo(
+							BostedsadresseJsonDbo(
 								coAdressenavn = "C/O Gutterommet",
 								vegadresse = null,
 								matrikkeladresse =
-									MatrikkeladresseDbo(
+									MatrikkeladresseJsonDbo(
 										tilleggsnavn = "Gården",
 										postnummer = "0484",
 										poststed = "OSLO",

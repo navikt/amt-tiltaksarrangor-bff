@@ -6,7 +6,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
-import no.nav.tiltaksarrangor.consumer.model.AdresseDbo
+import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
@@ -398,7 +398,7 @@ class KoordinatorAPITest(
 				telefonnummer = null,
 				epost = null,
 				erSkjermet = false,
-				adresse = AdresseDbo.fromModel(getAdresse()),
+				adresse = AdresseJsonDbo.fromModel(getAdresse()),
 				status = DeltakerStatus.Type.DELTAR,
 				statusOpprettetDato = LocalDateTime.now(),
 				statusGyldigFraDato = LocalDate.of(2023, 2, 1).atStartOfDay(),
