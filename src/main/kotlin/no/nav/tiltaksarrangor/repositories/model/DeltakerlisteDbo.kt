@@ -19,15 +19,15 @@ data class DeltakerlisteDbo(
 	val oppstartstype: Oppstartstype,
 	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
 ) {
-	fun erTilgjengeligForArrangor(): Boolean {
-		if (startDato != null) {
-			return if (tilgjengeligForArrangorFraOgMedDato != null) {
-				!tilgjengeligForArrangorFraOgMedDato.isAfter(LocalDate.now())
-			} else {
-				!startDato.isAfter(LocalDate.now().plusDays(14))
-			}
+
+	fun erTilgjengeligForArrangor(): Boolean = if (startDato != null) {
+		if (tilgjengeligForArrangorFraOgMedDato != null) {
+			!tilgjengeligForArrangorFraOgMedDato.isAfter(LocalDate.now())
+		} else {
+			!startDato.isAfter(LocalDate.now().plusDays(14))
 		}
-		return false
+	} else {
+		false
 	}
 
 	fun skalViseAdresseForDeltaker(): Boolean = tiltakstyperMedAdresse.contains(tiltakType)
