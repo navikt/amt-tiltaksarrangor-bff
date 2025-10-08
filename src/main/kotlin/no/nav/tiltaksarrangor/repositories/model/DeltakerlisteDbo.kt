@@ -20,13 +20,11 @@ data class DeltakerlisteDbo(
 	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
 ) {
 	fun erTilgjengeligForArrangor(): Boolean {
-		if (tiltakType.toTiltaksKode().erEnkeltplass()) {
-			return false
-		} else if (startDato != null) {
-			if (tilgjengeligForArrangorFraOgMedDato != null) {
-				return !tilgjengeligForArrangorFraOgMedDato.isAfter(LocalDate.now())
+		if (startDato != null) {
+			return if (tilgjengeligForArrangorFraOgMedDato != null) {
+				!tilgjengeligForArrangorFraOgMedDato.isAfter(LocalDate.now())
 			} else {
-				return !startDato.isAfter(LocalDate.now().plusDays(14))
+				!startDato.isAfter(LocalDate.now().plusDays(14))
 			}
 		}
 		return false
