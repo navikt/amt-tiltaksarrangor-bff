@@ -24,4 +24,4 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Run tests
-        run: ./gradlew check --no-build-cache --no-daemon --info
+        run: ./gradlew check --no-daemon --info
