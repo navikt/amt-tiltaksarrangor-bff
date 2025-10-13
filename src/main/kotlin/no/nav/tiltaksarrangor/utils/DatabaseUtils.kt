@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.utils
 
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
+import no.nav.amt.lib.utils.objectMapper
 import org.postgresql.util.PGobject
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import java.sql.ResultSet
@@ -17,12 +17,6 @@ fun ResultSet.getNullableUUID(columnLabel: String): UUID? = this
 fun ResultSet.getNullableLocalDate(columnLabel: String): LocalDate? = this.getDate(columnLabel)?.toLocalDate()
 
 fun ResultSet.getNullableLocalDateTime(columnLabel: String): LocalDateTime? = this.getTimestamp(columnLabel)?.toLocalDateTime()
-
-fun ResultSet.getNullableInt(columnLabel: String): Int? {
-	val value = this.getInt(columnLabel)
-	if (this.wasNull()) return null
-	return value
-}
 
 fun ResultSet.getNullableFloat(columnLabel: String): Float? {
 	val value = this.getFloat(columnLabel)

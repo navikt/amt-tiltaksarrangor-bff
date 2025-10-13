@@ -1,11 +1,11 @@
 package no.nav.tiltaksarrangor.client.amtarrangor
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.OppdaterVeiledereForDeltakerRequest
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
-import no.nav.tiltaksarrangor.utils.JsonUtils
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -17,7 +17,7 @@ import java.util.UUID
 
 @Component
 class AmtArrangorClient(
-	@Value("\${amt-arrangor.url}") private val amtArrangorUrl: String,
+	@Value($$"${amt-arrangor.url}") private val amtArrangorUrl: String,
 	private val amtArrangorHttpClient: OkHttpClient,
 	private val amtArrangorAADHttpClient: OkHttpClient,
 ) {
@@ -44,9 +44,9 @@ class AmtArrangorClient(
 					}
 				}
 			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
+			val body = response.body.string()
 
-			return JsonUtils.fromJsonString<AnsattDto>(body)
+			return objectMapper.readValue<AnsattDto>(body)
 		}
 	}
 
@@ -144,8 +144,8 @@ class AmtArrangorClient(
 				log.error("Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. Status=${response.code}")
 				throw RuntimeException("Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. Status=${response.code}")
 			}
-			val body = response.body?.string() ?: throw RuntimeException("Tom responsbody")
-			return JsonUtils.fromJsonString<ArrangorMedOverordnetArrangor>(body)
+			val body = response.body.string()
+			return objectMapper.readValue<ArrangorMedOverordnetArrangor>(body)
 		}
 	}
 }

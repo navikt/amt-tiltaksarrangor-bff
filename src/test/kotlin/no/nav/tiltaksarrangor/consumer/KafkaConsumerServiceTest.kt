@@ -14,11 +14,13 @@ import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.DeltakerStatusDto
 import no.nav.amt.lib.models.deltaker.Deltakerliste
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
 import no.nav.amt.lib.models.deltaker.Navn
 import no.nav.amt.lib.models.deltaker.Personalia
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
@@ -28,12 +30,10 @@ import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.consumer.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
@@ -73,10 +73,8 @@ class KafkaConsumerServiceTest {
 		KafkaConsumerService(
 			arrangorRepository,
 			ansattRepository,
-			deltakerlisteRepository,
 			deltakerRepository,
 			endringsmeldingRepository,
-			amtArrangorClient,
 			forslagService,
 			navEnhetService,
 			navAnsattService,
@@ -118,142 +116,6 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltakerliste - status GJENNOMFORES - lagres i db `() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto =
-			DeltakerlisteDto(
-				id = deltakerlisteId,
-				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
-						id = UUID.randomUUID(),
-						navn = "Det flotte tiltaket",
-						arenaKode = "DIGIOPPARB",
-						tiltakskode = "DIGITALT_OPPFOLGINGSTILTAK",
-					),
-				navn = "Gjennomføring av tiltak",
-				startDato = LocalDate.now().minusYears(2),
-				sluttDato = null,
-				status = DeltakerlisteDto.Status.GJENNOMFORES,
-				virksomhetsnummer = "88888888",
-				oppstart = Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = null,
-			)
-
-		kafkaConsumerService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerliste - status AVSLUTTET for 6 mnd siden - lagres ikke`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto =
-			DeltakerlisteDto(
-				id = deltakerlisteId,
-				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
-						id = UUID.randomUUID(),
-						navn = "Det flotte tiltaket",
-						arenaKode = "DIGIOPPARB",
-						tiltakskode = "DIGITALT_OPPFOLGINGSTILTAK",
-					),
-				navn = "Avsluttet tiltak",
-				startDato = LocalDate.now().minusYears(2),
-				sluttDato = LocalDate.now().minusMonths(6),
-				status = DeltakerlisteDto.Status.AVSLUTTET,
-				virksomhetsnummer = "88888888",
-				oppstart = Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = null,
-			)
-
-		kafkaConsumerService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-		verify(exactly = 1) { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerliste - status AVSLUTTET for 1 uke siden - lagres i db`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto =
-			DeltakerlisteDto(
-				id = deltakerlisteId,
-				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
-						id = UUID.randomUUID(),
-						navn = "Det flotte tiltaket",
-						arenaKode = "DIGIOPPARB",
-						tiltakskode = "DIGITALT_OPPFOLGINGSTILTAK",
-					),
-				navn = "Avsluttet tiltak",
-				startDato = LocalDate.now().minusYears(2),
-				sluttDato = LocalDate.now().minusWeeks(1),
-				status = DeltakerlisteDto.Status.AVSLUTTET,
-				virksomhetsnummer = "88888888",
-				oppstart = Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = null,
-			)
-
-		kafkaConsumerService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerliste - ikke stottet tiltakstype - lagres ikke i db `() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto =
-			DeltakerlisteDto(
-				id = deltakerlisteId,
-				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
-						id = UUID.randomUUID(),
-						navn = "Det flotte tiltaket",
-						arenaKode = "KODE_FINNES_IKKE",
-						tiltakskode = "KODE_FINNES_IKKE",
-					),
-				navn = "Gjennomføring av tiltak",
-				startDato = LocalDate.now().minusYears(2),
-				sluttDato = null,
-				status = DeltakerlisteDto.Status.GJENNOMFORES,
-				virksomhetsnummer = "88888888",
-				oppstart = Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = null,
-			)
-
-		kafkaConsumerService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-	}
-
-	@Test
-	internal fun `lagreDeltakerliste - enkeltplass tiltak - lagres ikke i db `() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto =
-			DeltakerlisteDto(
-				id = deltakerlisteId,
-				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
-						id = UUID.randomUUID(),
-						navn = "Det flotte tiltaket",
-						arenaKode = ArenaKode.ENKELAMO.name,
-						tiltakskode = ArenaKode.ENKELAMO.toTiltaksKode().toString(),
-					),
-				navn = "Gjennomføring av tiltak",
-				startDato = LocalDate.now().minusYears(2),
-				sluttDato = null,
-				status = DeltakerlisteDto.Status.GJENNOMFORES,
-				virksomhetsnummer = "88888888",
-				oppstart = Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = null,
-			)
-
-		kafkaConsumerService.lagreDeltakerliste(deltakerlisteId, deltakerlisteDto)
-
-		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
-	}
-
-	@Test
 	internal fun `lagreDeltaker - status DELTAR - lagres i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.DELTAR)
@@ -268,7 +130,7 @@ class KafkaConsumerServiceTest {
 	internal fun `lagreDeltaker - enkeltplass type - lagres ikke i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.DELTAR)
-			medDeltakerlisteType(Tiltakskode.AMO)
+			medDeltakerlisteType(Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING)
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
 
@@ -460,7 +322,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - historikk inneholder svar på forslag som ikke finnes i db - lagrer ulest endring i db `(): Unit =
+	internal fun `lagreDeltaker - historikk inneholder svar pa forslag som ikke finnes i db - lagrer ulest endring i db `(): Unit =
 		runBlocking {
 			with(DeltakerDtoCtx()) {
 				val lagretDeltaker = deltakerDto.toDeltakerDbo()
@@ -487,7 +349,7 @@ class KafkaConsumerServiceTest {
 		}
 
 	@Test
-	internal fun `lagreDeltaker - historikk inneholder endring fra arrangør - lagrer ikke i db `(): Unit = runBlocking {
+	internal fun `lagreDeltaker - historikk inneholder endring fra arrangor - lagrer ikke i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			val lagretDeltaker = deltakerDto.toDeltakerDbo()
 			val endringFraArrangor = DeltakerHistorikk.EndringFraArrangor(
@@ -515,7 +377,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - historikk inneholder svar på forslag som  finnes i db - lagrer ikke endring i db `(): Unit = runBlocking {
+	internal fun `lagreDeltaker - historikk inneholder svar pa forslag som  finnes i db - lagrer ikke endring i db `(): Unit = runBlocking {
 		val forslag = DeltakerHistorikk.Forslag(
 			forlengDeltakelseForslag(
 				status = Forslag.Status.Godkjent(
@@ -632,7 +494,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `handleForslag - forslaget er aktivt - gjør ingenting`() {
+	internal fun `handleForslag - forslaget er aktivt - gjor ingenting`() {
 		val forslag = forlengDeltakelseForslag()
 
 		kafkaConsumerService.handleMelding(forslag.id, forslag)
@@ -641,7 +503,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `handleForslag - forslaget er tilbakekalt - gjør ingenting`() {
+	internal fun `handleForslag - forslaget er tilbakekalt - gjor ingenting`() {
 		val forslag = forlengDeltakelseForslag(
 			status = Forslag.Status.Tilbakekalt(
 				UUID.randomUUID(),
@@ -716,7 +578,7 @@ class KafkaConsumerServiceTest {
 }
 
 class DeltakerDtoCtx {
-	var deltakerlisteId = UUID.randomUUID()
+	var deltakerlisteId: UUID = UUID.randomUUID()
 	var deltakerDto = DeltakerKafkaPayload(
 		id = deltakerlisteId,
 		deltakerlisteId = UUID.randomUUID(),
@@ -731,7 +593,7 @@ class DeltakerDtoCtx {
 				adressebeskyttelse = null,
 			),
 		status =
-			no.nav.amt.lib.models.deltaker.DeltakerStatusDto(
+			DeltakerStatusDto(
 				id = UUID.randomUUID(),
 				type = DeltakerStatus.Type.DELTAR,
 				gyldigFra = LocalDate.now().minusWeeks(1).atStartOfDay(),
@@ -781,7 +643,7 @@ class DeltakerDtoCtx {
 			),
 			startdato = null,
 			sluttdato = null,
-			oppstartstype = no.nav.amt.lib.models.deltakerliste.Oppstartstype.LOPENDE,
+			oppstartstype = Oppstartstype.LOPENDE,
 		),
 		erManueltDeltMedArrangor = false,
 		sisteEndring = null,
@@ -823,7 +685,7 @@ class DeltakerDtoCtx {
 		aarsakbeskrivelse: String? = null,
 	) {
 		deltakerDto = deltakerDto.copy(
-			status = no.nav.amt.lib.models.deltaker.DeltakerStatusDto(
+			status = DeltakerStatusDto(
 				id = UUID.randomUUID(),
 				type = type,
 				gyldigFra = LocalDate.now().minusDays(gyldigFraDagerSiden).atStartOfDay(),

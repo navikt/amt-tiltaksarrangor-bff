@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.models.arrangor.melding.EndringAarsak
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
@@ -17,7 +18,6 @@ import no.nav.tiltaksarrangor.melding.forslag.request.SluttdatoRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.StartdatoRequest
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -192,7 +192,7 @@ class ForslagAPITest : IntegrationTest() {
 			val response = request.send(deltaker.id, koordinator.personIdent)
 			response.code shouldBe 200
 
-			val aktivtForslag = objectMapper.readValue<AktivtForslagResponse>(response.body!!.string())
+			val aktivtForslag = objectMapper.readValue<AktivtForslagResponse>(response.body.string())
 			aktivtForslag.status shouldBe ForslagResponse.Status.VenterPaSvar
 			aktivtForslag.begrunnelse shouldBe request.begrunnelse
 			aktivtForslag.opprettet shouldBeCloseTo LocalDateTime.now()

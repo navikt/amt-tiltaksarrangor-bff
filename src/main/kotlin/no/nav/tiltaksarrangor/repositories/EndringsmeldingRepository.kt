@@ -1,23 +1,19 @@
 package no.nav.tiltaksarrangor.repositories
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
-import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakJsonDboDto
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingMedDeltakerOgDeltakerliste
-import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import no.nav.tiltaksarrangor.utils.getNullableDouble
 import no.nav.tiltaksarrangor.utils.getNullableFloat
 import no.nav.tiltaksarrangor.utils.getNullableLocalDate
@@ -74,12 +70,12 @@ class EndringsmeldingRepository(
 						telefonnummer = rs.getString("telefonnummer"),
 						epost = rs.getString("epost"),
 						erSkjermet = rs.getBoolean("er_skjermet"),
-						adresse = rs.getString("adresse")?.let { fromJsonString<AdresseJsonDbo>(it) },
+						adresse = rs.getString("adresse")?.let { objectMapper.readValue(it) },
 						vurderingerFraArrangor = rs.getString("vurderinger")?.let { objectMapper.readValue(it) },
 						status = DeltakerStatus.Type.valueOf(rs.getString("deltakerstatus")),
 						statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 						statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-						statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakJsonDboDto>(it) },
+						statusAarsak = rs.getString("aarsak")?.let { objectMapper.readValue(it) },
 						dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 						prosentStilling = rs.getNullableDouble("prosent_stilling"),
 						startdato = rs.getNullableLocalDate("deltaker_start_dato"),
@@ -94,9 +90,9 @@ class EndringsmeldingRepository(
 						skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 						skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
 						adressebeskyttet = rs.getBoolean("adressebeskyttet"),
-						innhold = rs.getString("deltaker.innhold")?.let { fromJsonString(it) },
+						innhold = rs.getString("deltaker.innhold")?.let { objectMapper.readValue(it) },
 						kilde = rs.getString("kilde")?.let { Kilde.valueOf(it) },
-						historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
+						historikk = objectMapper.readValue(rs.getString("historikk")),
 						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 						forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
 						erManueltDeltMedArrangor = rs.getBoolean("er_manuelt_delt_med_arrangor"),
@@ -264,30 +260,16 @@ class EndringsmeldingRepository(
 			log.error("Kan ikke lese endringsmelding med type $type som mangler innhold")
 			throw IllegalStateException("Endringsmelding med type $type må ha innhold")
 		}
+
 		return when (type) {
-			EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO ->
-				fromJsonString<Innhold.LeggTilOppstartsdatoInnhold>(innholdJson)
-
-			EndringsmeldingType.ENDRE_OPPSTARTSDATO ->
-				fromJsonString<Innhold.EndreOppstartsdatoInnhold>(innholdJson)
-
-			EndringsmeldingType.FORLENG_DELTAKELSE ->
-				fromJsonString<Innhold.ForlengDeltakelseInnhold>(innholdJson)
-
-			EndringsmeldingType.AVSLUTT_DELTAKELSE ->
-				fromJsonString<Innhold.AvsluttDeltakelseInnhold>(innholdJson)
-
-			EndringsmeldingType.DELTAKER_IKKE_AKTUELL ->
-				fromJsonString<Innhold.DeltakerIkkeAktuellInnhold>(innholdJson)
-
-			EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT ->
-				fromJsonString<Innhold.EndreDeltakelseProsentInnhold>(innholdJson)
-
-			EndringsmeldingType.ENDRE_SLUTTDATO ->
-				fromJsonString<Innhold.EndreSluttdatoInnhold>(innholdJson)
-
-			EndringsmeldingType.ENDRE_SLUTTAARSAK ->
-				fromJsonString<Innhold.EndreSluttaarsakInnhold>(innholdJson)
+			EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO -> objectMapper.readValue<Innhold.LeggTilOppstartsdatoInnhold>(innholdJson)
+			EndringsmeldingType.ENDRE_OPPSTARTSDATO -> objectMapper.readValue<Innhold.EndreOppstartsdatoInnhold>(innholdJson)
+			EndringsmeldingType.FORLENG_DELTAKELSE -> objectMapper.readValue<Innhold.ForlengDeltakelseInnhold>(innholdJson)
+			EndringsmeldingType.AVSLUTT_DELTAKELSE -> objectMapper.readValue<Innhold.AvsluttDeltakelseInnhold>(innholdJson)
+			EndringsmeldingType.DELTAKER_IKKE_AKTUELL -> objectMapper.readValue<Innhold.DeltakerIkkeAktuellInnhold>(innholdJson)
+			EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT -> objectMapper.readValue<Innhold.EndreDeltakelseProsentInnhold>(innholdJson)
+			EndringsmeldingType.ENDRE_SLUTTDATO -> objectMapper.readValue<Innhold.EndreSluttdatoInnhold>(innholdJson)
+			EndringsmeldingType.ENDRE_SLUTTAARSAK -> objectMapper.readValue<Innhold.EndreSluttaarsakInnhold>(innholdJson)
 		}
 	}
 }
