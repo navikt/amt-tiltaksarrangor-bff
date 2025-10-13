@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.melding.forslag
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.models.arrangor.melding.EndringAarsak
 import no.nav.amt.lib.models.arrangor.melding.Forslag
@@ -193,9 +194,12 @@ class ForslagAPITest : IntegrationTest() {
 			response.code shouldBe 200
 
 			val aktivtForslag = objectMapper.readValue<AktivtForslagResponse>(response.body.string())
-			aktivtForslag.status shouldBe ForslagResponse.Status.VenterPaSvar
-			aktivtForslag.begrunnelse shouldBe request.begrunnelse
-			aktivtForslag.opprettet shouldBeCloseTo LocalDateTime.now()
+
+			assertSoftly(aktivtForslag) {
+				status shouldBe ForslagResponse.Status.VenterPaSvar
+				begrunnelse shouldBe request.begrunnelse
+				opprettet shouldBeCloseTo LocalDateTime.now()
+			}
 
 			block(aktivtForslag.endring)
 		}

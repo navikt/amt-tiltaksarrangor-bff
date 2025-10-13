@@ -36,9 +36,8 @@ class AmtPersonClient(
 				)
 				error("Kunne ikke hente NAV-enhet fra amt-person-service")
 			}
-			val body = response.body
 
-			return objectMapper.readValue<NavEnhetDto>(body.string()).toNavEnhet()
+			return objectMapper.readValue<NavEnhetDto>(response.body.string()).toNavEnhet()
 		}
 	}
 
@@ -58,9 +57,8 @@ class AmtPersonClient(
 				)
 				error("Kunne ikke hente NAV-ansatt fra amt-person-service")
 			}
-			val body = response.body
 
-			return objectMapper.readValue(body.string())
+			return objectMapper.readValue(response.body.string())
 		}
 	}
 
@@ -85,7 +83,8 @@ class AmtPersonClient(
 				)
 				return Result.failure(RuntimeException(feilmelding))
 			}
-			return runCatching { objectMapper.readValue(response.body.string()) }
+
+			return objectMapper.readValue(response.body.string())
 		}
 	}
 }

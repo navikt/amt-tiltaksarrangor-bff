@@ -44,9 +44,8 @@ class AmtArrangorClient(
 					}
 				}
 			}
-			val body = response.body.string()
 
-			return objectMapper.readValue<AnsattDto>(body)
+			return objectMapper.readValue(response.body.string())
 		}
 	}
 
@@ -144,8 +143,8 @@ class AmtArrangorClient(
 				log.error("Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. Status=${response.code}")
 				throw RuntimeException("Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. Status=${response.code}")
 			}
-			val body = response.body.string()
-			return objectMapper.readValue<ArrangorMedOverordnetArrangor>(body)
+
+			return objectMapper.readValue(response.body.string())
 		}
 	}
 }
