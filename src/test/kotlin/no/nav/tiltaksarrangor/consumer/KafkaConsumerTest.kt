@@ -4,12 +4,13 @@ import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
+import no.nav.tiltaksarrangor.consumer.model.DeltakerlistePayload
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
@@ -33,7 +34,6 @@ import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
-import no.nav.tiltaksarrangor.utils.JsonUtils
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -59,7 +59,7 @@ class KafkaConsumerTest(
 		testKafkaConsumer.subscribeHvisIkkeSubscribed(
 			ARRANGOR_TOPIC,
 			ARRANGOR_ANSATT_TOPIC,
-			DELTAKERLISTE_TOPIC,
+			DELTAKERLISTE_V1_TOPIC,
 			DELTAKER_TOPIC,
 			ENDRINGSMELDING_TOPIC,
 		)
@@ -81,7 +81,7 @@ class KafkaConsumerTest(
 					ARRANGOR_TOPIC,
 					null,
 					arrangorId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(arrangorDto),
+					objectMapper.writeValueAsString(arrangorDto),
 				),
 			).get()
 
@@ -150,7 +150,7 @@ class KafkaConsumerTest(
 					ARRANGOR_ANSATT_TOPIC,
 					null,
 					ansattId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(ansattDto),
+					objectMapper.writeValueAsString(ansattDto),
 				),
 			).get()
 
@@ -221,10 +221,10 @@ class KafkaConsumerTest(
 		arrangorRepository.insertOrUpdateArrangor(arrangorDto.toArrangorDbo())
 		val deltakerlisteId = UUID.randomUUID()
 		val deltakerlisteDto =
-			DeltakerlisteDto(
+			DeltakerlistePayload(
 				id = deltakerlisteId,
 				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
+					DeltakerlistePayload.Tiltakstype(
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = "DIGIOPPARB",
@@ -233,7 +233,7 @@ class KafkaConsumerTest(
 				navn = "Gjennomføring av tiltak",
 				startDato = LocalDate.of(2023, 5, 2),
 				sluttDato = null,
-				status = DeltakerlisteDto.Status.GJENNOMFORES,
+				status = DeltakerlistePayload.Status.GJENNOMFORES,
 				virksomhetsnummer = arrangorDto.organisasjonsnummer,
 				oppstart = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
@@ -241,10 +241,10 @@ class KafkaConsumerTest(
 		testKafkaProducer
 			.send(
 				ProducerRecord(
-					DELTAKERLISTE_TOPIC,
+					DELTAKERLISTE_V1_TOPIC,
 					null,
 					deltakerlisteId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(deltakerlisteDto),
+					objectMapper.writeValueAsString(deltakerlisteDto),
 				),
 			).get()
 
@@ -274,7 +274,7 @@ class KafkaConsumerTest(
 		testKafkaProducer
 			.send(
 				ProducerRecord(
-					DELTAKERLISTE_TOPIC,
+					DELTAKERLISTE_V1_TOPIC,
 					null,
 					deltakerlisteId.toString(),
 					null,
@@ -309,10 +309,10 @@ class KafkaConsumerTest(
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
 
 		val avsluttetDeltakerlisteDto =
-			DeltakerlisteDto(
+			DeltakerlistePayload(
 				id = deltakerlisteDbo.id,
 				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
+					DeltakerlistePayload.Tiltakstype(
 						id = UUID.randomUUID(),
 						navn = deltakerlisteDbo.tiltakNavn,
 						arenaKode = deltakerlisteDbo.tiltakType.name,
@@ -321,7 +321,7 @@ class KafkaConsumerTest(
 				navn = deltakerlisteDbo.navn,
 				startDato = deltakerlisteDbo.startDato!!,
 				sluttDato = LocalDate.now().minusWeeks(4),
-				status = DeltakerlisteDto.Status.AVSLUTTET,
+				status = DeltakerlistePayload.Status.AVSLUTTET,
 				virksomhetsnummer = "888888888",
 				oppstart = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = deltakerlisteDbo.tilgjengeligForArrangorFraOgMedDato,
@@ -329,10 +329,10 @@ class KafkaConsumerTest(
 		testKafkaProducer
 			.send(
 				ProducerRecord(
-					DELTAKERLISTE_TOPIC,
+					DELTAKERLISTE_V1_TOPIC,
 					null,
 					deltakerlisteId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerlisteDto),
+					objectMapper.writeValueAsString(avsluttetDeltakerlisteDto),
 				),
 			).get()
 
@@ -380,7 +380,7 @@ class KafkaConsumerTest(
 						DELTAKER_TOPIC,
 						null,
 						dto.id.toString(),
-						JsonUtils.objectMapper.writeValueAsString(dto),
+						objectMapper.writeValueAsString(dto),
 					),
 				).get()
 
@@ -425,7 +425,7 @@ class KafkaConsumerTest(
 						DELTAKER_TOPIC,
 						null,
 						deltakerDto.id.toString(),
-						JsonUtils.objectMapper.writeValueAsString(deltakerDto),
+						objectMapper.writeValueAsString(deltakerDto),
 					),
 				).get()
 
@@ -456,7 +456,7 @@ class KafkaConsumerTest(
 					ENDRINGSMELDING_TOPIC,
 					null,
 					endringsmeldingId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(endringsmeldingDto),
+					objectMapper.writeValueAsString(endringsmeldingDto),
 				),
 			).get()
 
@@ -530,7 +530,7 @@ class KafkaConsumerTest(
 					ENDRINGSMELDING_TOPIC,
 					null,
 					endringsmeldingId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(utfortEndringsmeldingDto),
+					objectMapper.writeValueAsString(utfortEndringsmeldingDto),
 				),
 			).get()
 

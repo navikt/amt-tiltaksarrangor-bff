@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.amt.lib.testing.AsyncUtils
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
 import no.nav.tiltaksarrangor.kafka.stringStringConsumer
@@ -23,7 +24,6 @@ import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getKoordinator
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import no.nav.tiltaksarrangor.testutils.getNavEnhet
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import org.springframework.context.ApplicationContext
 import java.time.LocalDate
 import java.time.LocalDateTime
