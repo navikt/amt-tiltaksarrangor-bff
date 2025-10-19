@@ -17,6 +17,7 @@ spec:
             envVarPrefix: DB
         diskAutoresize: true
         highAvailability: false
+        pointInTimeRecovery: true
         insights:
           enabled: true
   port: 8080
