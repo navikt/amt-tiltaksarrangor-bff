@@ -7,6 +7,7 @@ import io.mockk.clearMocks
 import io.mockk.every
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
@@ -31,7 +32,7 @@ import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
 import no.nav.tiltaksarrangor.testutils.getForslag
-import no.nav.tiltaksarrangor.unleash.UnleashService
+import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -49,16 +50,16 @@ class VeilederServiceTest(
 	private val forslagRepository: ForslagRepository,
 	private val ulestEndringRepository: UlestEndringRepository,
 	@MockkBean(relaxed = true) private val amtArrangorClient: AmtArrangorClient,
-	@MockkBean(relaxed = true) private val unleashService: UnleashService,
+	@MockkBean(relaxed = true) private val unleashToggle: UnleashToggle,
 ) : IntegrationTest() {
 	@BeforeEach
 	internal fun setup() {
-		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns false
 	}
 
 	@AfterEach
 	internal fun tearDown() {
-		clearMocks(amtArrangorClient, unleashService)
+		clearMocks(amtArrangorClient, unleashToggle)
 	}
 
 	@Test
@@ -172,7 +173,7 @@ class VeilederServiceTest(
 
 	@Test
 	fun `getMineDeltakere - ansatt er veileder for deltaker, komet er master - returnerer deltaker uten endringsmeldinger`() {
-		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns true
 		val personIdent = "12345678910"
 		val ansattId = UUID.randomUUID()
 		val arrangorId = UUID.randomUUID()

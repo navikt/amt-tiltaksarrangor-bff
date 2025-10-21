@@ -1,9 +1,9 @@
 package no.nav.tiltaksarrangor.mock
 
 import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtperson.NavAnsattResponse
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
-import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import java.util.UUID
@@ -19,7 +19,7 @@ class MockAmtPersonHttpServer : MockHttpServer(name = "amt-person-server") {
 			path = "/api/nav-enhet/$id",
 			MockResponse()
 				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(enhetResponse)),
+				.setBody(objectMapper.writeValueAsString(enhetResponse)),
 		)
 	}
 
@@ -35,7 +35,7 @@ class MockAmtPersonHttpServer : MockHttpServer(name = "amt-person-server") {
 			path = "/api/nav-ansatt/$id",
 			MockResponse()
 				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(ansattResponse)),
+				.setBody(objectMapper.writeValueAsString(ansattResponse)),
 		)
 	}
 
@@ -54,12 +54,12 @@ class MockAmtPersonHttpServer : MockHttpServer(name = "amt-person-server") {
 		val requestPredicate = { req: RecordedRequest ->
 			req.path == "/api/nav-bruker/kontaktinformasjon" &&
 				req.method == "POST" &&
-				req.getBodyAsString() == JsonUtils.objectMapper.writeValueAsString(setOf(personident))
+				req.getBodyAsString() == objectMapper.writeValueAsString(setOf(personident))
 		}
 
 		addResponseHandler(
 			requestPredicate,
-			MockResponse().setResponseCode(200).setBody(JsonUtils.objectMapper.writeValueAsString(kontaktinformasjon)),
+			MockResponse().setResponseCode(200).setBody(objectMapper.writeValueAsString(kontaktinformasjon)),
 		)
 	}
 }
