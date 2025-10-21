@@ -8,7 +8,9 @@ import org.springframework.stereotype.Component
 class UnleashToggle(
 	private val unleashClient: Unleash,
 ) {
-	fun erKometMasterForTiltakstype(tiltakskode: Tiltakskode): Boolean = tiltakstyperKometErMasterFor.any { it == tiltakskode }
+	fun erKometMasterForTiltakstype(tiltakskode: String): Boolean = tiltakstyperKometErMasterFor.any { it.name == tiltakskode }
+
+	fun erKometMasterForTiltakstype(tiltakskode: Tiltakskode): Boolean = erKometMasterForTiltakstype(tiltakskode.name)
 
 	fun getFeaturetoggles(features: List<String>): Map<String, Boolean> = features.associateWith { unleashClient.isEnabled(it) }
 

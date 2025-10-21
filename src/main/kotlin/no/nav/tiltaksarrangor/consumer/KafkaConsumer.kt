@@ -2,26 +2,20 @@ package no.nav.tiltaksarrangor.consumer
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.utils.objectMapper
+import no.nav.tiltaksarrangor.consumer.model.TiltakstypePayload
 import no.nav.tiltaksarrangor.melding.MELDING_TOPIC
+import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 import java.util.UUID
 
-const val ARRANGOR_TOPIC = "amt.arrangor-v1"
-const val ARRANGOR_ANSATT_TOPIC = "amt.arrangor-ansatt-v1"
-const val DELTAKERLISTE_V1_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
-const val DELTAKERLISTE_V2_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v2"
-const val DELTAKER_TOPIC = "amt.deltaker-v2"
-const val ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
-const val NAV_ANSATT_TOPIC = "amt.nav-ansatt-personalia-v1"
-const val NAV_ENHET_TOPIC = "amt.nav-enhet-v1"
-
 @Component
 class KafkaConsumer(
 	private val kafkaConsumerService: KafkaConsumerService,
-	private val deltakerlisteHandler: KafkaConsumerDeltakerlisteHandler,
+	private val deltakerlisteHandler: DeltakerlisteHandler,
+	private val tiltakstypeRepository: TiltakstypeRepository,
 ) {
 	@KafkaListener(
 		topics = [
@@ -29,6 +23,7 @@ class KafkaConsumer(
 			ARRANGOR_ANSATT_TOPIC,
 			DELTAKERLISTE_V1_TOPIC, // fjernes etter migrering til v2
 			DELTAKERLISTE_V2_TOPIC,
+			TILTAKSTYPE_TOPIC,
 			DELTAKER_TOPIC,
 			ENDRINGSMELDING_TOPIC,
 			NAV_ANSATT_TOPIC,
@@ -52,14 +47,21 @@ class KafkaConsumer(
 
 			// fjernes etter migrering til v2
 			DELTAKERLISTE_V1_TOPIC -> deltakerlisteHandler.lagreDeltakerliste(
-				UUID.fromString(consumerRecord.key()),
-				consumerRecord.value(),
+				topic = DELTAKERLISTE_V1_TOPIC,
+				deltakerlisteId = UUID.fromString(consumerRecord.key()),
+				value = consumerRecord.value(),
 			)
 
 			DELTAKERLISTE_V2_TOPIC -> deltakerlisteHandler.lagreDeltakerliste(
-				UUID.fromString(consumerRecord.key()),
-				consumerRecord.value(),
+				topic = DELTAKERLISTE_V1_TOPIC,
+				deltakerlisteId = UUID.fromString(consumerRecord.key()),
+				value = consumerRecord.value(),
 			)
+
+			TILTAKSTYPE_TOPIC ->
+				objectMapper
+					.readValue<TiltakstypePayload>(consumerRecord.value())
+					.let { tiltakstypeRepository.upsert(it.toModel()) }
 
 			DELTAKER_TOPIC -> kafkaConsumerService.lagreDeltaker(
 				UUID.fromString(consumerRecord.key()),
@@ -90,5 +92,17 @@ class KafkaConsumer(
 		}
 
 		acknowledgment.acknowledge()
+	}
+
+	companion object {
+		const val ARRANGOR_TOPIC = "amt.arrangor-v1"
+		const val ARRANGOR_ANSATT_TOPIC = "amt.arrangor-ansatt-v1"
+		const val DELTAKERLISTE_V1_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
+		const val DELTAKERLISTE_V2_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v2"
+		const val TILTAKSTYPE_TOPIC = "team-mulighetsrommet.siste-tiltakstyper-v3"
+		const val DELTAKER_TOPIC = "amt.deltaker-v2"
+		const val ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
+		const val NAV_ANSATT_TOPIC = "amt.nav-ansatt-personalia-v1"
+		const val NAV_ENHET_TOPIC = "amt.nav-enhet-v1"
 	}
 }

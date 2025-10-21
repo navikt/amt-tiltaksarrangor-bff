@@ -83,6 +83,7 @@ dependencies {
         exclude("com.vaadin.external.google", "android-json")
     }
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")

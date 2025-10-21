@@ -10,6 +10,7 @@ import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.AsyncUtils
 import no.nav.amt.lib.testing.SingletonKafkaProvider
 import no.nav.amt.lib.utils.objectMapper
@@ -43,7 +44,7 @@ class EndringServiceTest(
 
 	@BeforeEach
 	internal fun setup() {
-		every { unleashToggle.erKometMasterForTiltakstype(any()) } returns false
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns false
 	}
 
 	@Test

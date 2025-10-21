@@ -13,6 +13,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
@@ -72,7 +73,7 @@ class KoordinatorServiceTest(
 ) : IntegrationTest() {
 	@BeforeEach
 	internal fun setup() {
-		every { unleashToggle.erKometMasterForTiltakstype(any()) } returns false
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns false
 	}
 
 	@AfterEach
@@ -504,7 +505,7 @@ class KoordinatorServiceTest(
 
 	@Test
 	fun `getDeltakerliste - har tilgang, lagt til deltakerliste, komet er master - returnerer deltakerliste med deltakere uten endringsmld`() {
-		every { unleashToggle.erKometMasterForTiltakstype(any()) } returns true
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns true
 		val personIdent = "12345678910"
 		val overordnetArrangorId = UUID.randomUUID()
 		arrangorRepository.insertOrUpdateArrangor(
@@ -557,7 +558,7 @@ class KoordinatorServiceTest(
 
 	@Test
 	fun `getDeltakerliste - har tilgang, lagt til deltakerliste - returnerer deltakerliste med deltakere inkl veiledere og aktiv endring`() {
-		every { unleashToggle.erKometMasterForTiltakstype(any()) } returns true
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns true
 		val personIdent = "12345678910"
 		val overordnetArrangorId = UUID.randomUUID()
 		arrangorRepository.insertOrUpdateArrangor(

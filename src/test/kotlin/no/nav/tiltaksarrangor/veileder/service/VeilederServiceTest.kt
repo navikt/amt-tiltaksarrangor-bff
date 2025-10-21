@@ -7,6 +7,7 @@ import io.mockk.clearMocks
 import io.mockk.every
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
@@ -53,7 +54,7 @@ class VeilederServiceTest(
 ) : IntegrationTest() {
 	@BeforeEach
 	internal fun setup() {
-		every { unleashToggle.erKometMasterForTiltakstype(any()) } returns false
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns false
 	}
 
 	@AfterEach
@@ -172,7 +173,7 @@ class VeilederServiceTest(
 
 	@Test
 	fun `getMineDeltakere - ansatt er veileder for deltaker, komet er master - returnerer deltaker uten endringsmeldinger`() {
-		every { unleashToggle.erKometMasterForTiltakstype(any()) } returns true
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns true
 		val personIdent = "12345678910"
 		val ansattId = UUID.randomUUID()
 		val arrangorId = UUID.randomUUID()

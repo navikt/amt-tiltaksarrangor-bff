@@ -1,8 +1,6 @@
 package no.nav.tiltaksarrangor.consumer.model
 
-import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonProperty
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import com.fasterxml.jackson.annotation.JsonIgnore
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -20,25 +18,20 @@ data class DeltakerlistePayload(
 	val oppstart: Oppstartstype,
 	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
 	val virksomhetsnummer: String? = null, // finnes kun for v1
-	val arrangor: ArrangorDto? = null, // finnes kun for v2
+	val arrangor: Arrangor? = null, // finnes kun for v2
 ) {
+	@get:JsonIgnore
+	val organisasjonsnummer: String
+		get() = setOfNotNull(arrangor?.organisasjonsnummer, virksomhetsnummer)
+			.firstOrNull()
+			?: throw IllegalStateException("Virksomhetsnummer mangler")
+
 	data class Tiltakstype(
 		val id: UUID,
-		val navn: String,
-		// i v1: arenaKode
-		// i v2: arenakode
-		@field:JsonProperty("arenaKode")
-		@field:JsonAlias("arenakode")
-		val arenaKode: String, // String tar høyde for andre tiltakstyper enn det vi støtter
 		val tiltakskode: String,
-	) {
-		fun erStottet() = this.tiltakskode in Tiltakskode.entries
-			.filterNot { it.erEnkeltplass() }
-			.toTypedArray()
-			.map { it.name }
-	}
+	)
 
-	data class ArrangorDto(
+	data class Arrangor(
 		val organisasjonsnummer: String,
 	)
 
@@ -57,13 +50,13 @@ data class DeltakerlistePayload(
 		else -> throw IllegalStateException("Ukjent status: $status")
 	}
 
-	fun toDeltakerlisteDbo(arrangorId: UUID): DeltakerlisteDbo = DeltakerlisteDbo(
+	fun toDeltakerlisteDbo(arrangorId: UUID, navnTiltakstype: String): DeltakerlisteDbo = DeltakerlisteDbo(
 		id = this.id,
 		navn = this.navn,
 		status = this.toDeltakerlisteStatus(),
 		arrangorId = arrangorId,
-		tiltakNavn = getTiltakstypeNavn(this.tiltakstype),
-		tiltakType = ArenaKode.valueOf(this.tiltakstype.arenaKode),
+		tiltakNavn = mapTiltakstypeNavn(navnTiltakstype),
+		tiltakType = Tiltakskode.valueOf(this.tiltakstype.tiltakskode).toArenaKode(),
 		startDato = this.startDato,
 		sluttDato = this.sluttDato,
 		erKurs = this.erKurs(),
@@ -71,41 +64,26 @@ data class DeltakerlistePayload(
 		tilgjengeligForArrangorFraOgMedDato = this.tilgjengeligForArrangorFraOgMedDato,
 	)
 
-	fun skalLagres(): Boolean {
-		if (!tiltakstype.erStottet()) return false
+	fun skalLagres(): Boolean = when (status) {
+		Status.GJENNOMFORES -> true
 
-		return when (status) {
-			Status.GJENNOMFORES -> true
+		Status.AVSLUTTET if sluttDato != null &&
+			LocalDate
+				.now()
+				.isBefore(sluttDato.plusDays(15))
+		-> true
 
-			Status.AVSLUTTET if sluttDato != null &&
-				LocalDate
-					.now()
-					.isBefore(sluttDato.plusDays(15))
-			-> true
-
-			else -> false
-		}
+		else -> false
 	}
-
-	val organisasjonsnummer: String
-		get() = when (
-			type in setOf(
-				ENKELTPLASS_V2_TYPE,
-				GRUPPE_V2_TYPE,
-			)
-		) {
-			true -> arrangor?.organisasjonsnummer
-			false -> virksomhetsnummer
-		} ?: throw IllegalStateException("Virksomhetsnummer mangler")
 
 	companion object {
 		const val ENKELTPLASS_V2_TYPE = "TiltaksgjennomforingV2.Enkeltplass"
 		const val GRUPPE_V2_TYPE = "TiltaksgjennomforingV2.Gruppe"
 
-		private fun getTiltakstypeNavn(tiltakstype: Tiltakstype): String = if (tiltakstype.navn == "Jobbklubb") {
+		private fun mapTiltakstypeNavn(tiltakstypeNavn: String): String = if (tiltakstypeNavn == "Jobbklubb") {
 			"Jobbsøkerkurs"
 		} else {
-			tiltakstype.navn
+			tiltakstypeNavn
 		}
 	}
 }
