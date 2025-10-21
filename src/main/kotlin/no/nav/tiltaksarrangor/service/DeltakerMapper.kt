@@ -21,7 +21,7 @@ import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
-import no.nav.tiltaksarrangor.unleash.UnleashService
+import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.springframework.stereotype.Service
 
 val tiltakMedDeltakelsesmengder = setOf(ArenaKode.ARBFORB, ArenaKode.VASV)
@@ -31,7 +31,7 @@ class DeltakerMapper(
 	private val ansattService: AnsattService,
 	private val forslagService: ForslagService,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
-	private val unleashService: UnleashService,
+	private val unleashToggle: UnleashToggle,
 ) {
 	fun map(
 		deltaker: DeltakerDbo,
@@ -47,8 +47,8 @@ class DeltakerMapper(
 
 		val aktiveForslag = forslagService.getAktiveForslag(deltaker.id).map { it.tilAktivtForslagResponse() }
 
-		val endringsmeldinger = if (unleashService.erKometMasterForTiltakstype(
-				deltakerliste.tiltakType,
+		val endringsmeldinger = if (unleashToggle.erKometMasterForTiltakstype(
+				deltakerliste.tiltakType.toTiltaksKode(),
 			) ||
 			(deltaker.adressebeskyttet && !ansattErVeileder)
 		) {

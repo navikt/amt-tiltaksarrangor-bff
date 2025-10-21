@@ -49,7 +49,7 @@ import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import no.nav.tiltaksarrangor.testutils.getNavEnhet
-import no.nav.tiltaksarrangor.unleash.UnleashService
+import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -70,12 +70,12 @@ class TiltaksarrangorServiceTest(
 	@MockkBean(relaxed = true) @Suppress("unused") private val auditLoggerService: AuditLoggerService,
 	@MockkBean(relaxUnitFun = true) private val navAnsattService: NavAnsattService,
 	@MockkBean(relaxUnitFun = true) private val navEnhetService: NavEnhetService,
-	@MockkBean private val unleashService: UnleashService,
+	@MockkBean private val unleashToggle: UnleashToggle,
 	@MockkBean(relaxUnitFun = true) @Suppress("unused") private val meldingProducer: MeldingProducer,
 ) : IntegrationTest() {
 	@BeforeEach
 	internal fun setup() {
-		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
+		every { unleashToggle.erKometMasterForTiltakstype(any()) } returns false
 	}
 
 	@Test
@@ -327,7 +327,7 @@ class TiltaksarrangorServiceTest(
 
 	@Test
 	fun `getDeltaker - deltaker har endringsmeldinger og ansatt har tilgang, komet er master - returnerer deltaker`() {
-		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		every { unleashToggle.erKometMasterForTiltakstype(any()) } returns true
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
 		val deltakerliste = getDeltakerliste(arrangorId)
@@ -394,7 +394,7 @@ class TiltaksarrangorServiceTest(
 
 	@Test
 	fun `getDeltaker - deltaker har uleste forslag og ansatt har tilgang, komet er master - returnerer deltaker`() {
-		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		every { unleashToggle.erKometMasterForTiltakstype(any()) } returns true
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
 		arrangorRepository.insertOrUpdateArrangor(getArrangor(arrangorId))

@@ -19,7 +19,7 @@ import no.nav.tiltaksarrangor.kafka.stringStringConsumer
 import no.nav.tiltaksarrangor.melding.MELDING_TOPIC
 import no.nav.tiltaksarrangor.melding.endring.request.LeggTilOppstartsdatoRequest
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
-import no.nav.tiltaksarrangor.unleash.UnleashService
+import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.TestConfiguration
@@ -31,7 +31,7 @@ import kotlin.reflect.KClass
 
 class EndringServiceTest(
 	private val endringService: EndringService,
-	@MockkBean private val unleashService: UnleashService,
+	@MockkBean private val unleashToggle: UnleashToggle,
 	@MockkBean @Suppress("unused") private val amtArrangorClient: AmtArrangorClient,
 ) : IntegrationTest() {
 	@TestConfiguration
@@ -43,7 +43,7 @@ class EndringServiceTest(
 
 	@BeforeEach
 	internal fun setup() {
-		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
+		every { unleashToggle.erKometMasterForTiltakstype(any()) } returns false
 	}
 
 	@Test

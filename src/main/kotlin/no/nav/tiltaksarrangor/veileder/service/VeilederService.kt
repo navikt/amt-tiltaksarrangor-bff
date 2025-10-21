@@ -16,7 +16,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
-import no.nav.tiltaksarrangor.unleash.UnleashService
+import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import no.nav.tiltaksarrangor.veileder.model.Deltaker
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -28,7 +28,7 @@ class VeilederService(
 	private val forslagRepository: ForslagRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val ulestEndringRepository: UlestEndringRepository,
-	private val unleashService: UnleashService,
+	private val unleashToggle: UnleashToggle,
 ) {
 	fun getMineDeltakere(personIdent: String): List<Deltaker> {
 		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")
@@ -63,9 +63,10 @@ class VeilederService(
 		endringsmeldinger: List<EndringsmeldingDbo>,
 		aktiveForslag: List<Forslag>,
 		ulesteEndringer: List<UlestEndring>,
-	): List<Deltaker> = deltakere.map { it ->
-		val erKometMasterForTiltakstype = unleashService.erKometMasterForTiltakstype(it.deltakerliste.tiltakType)
+	): List<Deltaker> = deltakere.map {
+		val erKometMasterForTiltakstype = unleashToggle.erKometMasterForTiltakstype(it.deltakerliste.tiltakType.toTiltaksKode())
 		val adressebeskyttet = it.deltaker.adressebeskyttet
+
 		Deltaker(
 			id = it.deltaker.id,
 			deltakerliste =
