@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Profile
 class UnleashConfig {
 	@Bean
 	fun unleashClient(
-		@Value("\${app.env.unleashUrl}") unleashUrl: String,
-		@Value("\${app.env.unleashApiToken}") unleashApiToken: String,
+		@Value($$"${app.env.unleashUrl}") unleashUrl: String,
+		@Value($$"${app.env.unleashApiToken}") unleashApiToken: String,
 	): DefaultUnleash {
 		val appName = "amt-tiltaksarrangor-bff"
 		val config =

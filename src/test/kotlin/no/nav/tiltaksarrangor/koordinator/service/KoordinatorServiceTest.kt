@@ -13,6 +13,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
@@ -47,7 +48,7 @@ import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
 import no.nav.tiltaksarrangor.testutils.getForslag
-import no.nav.tiltaksarrangor.unleash.UnleashService
+import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -68,11 +69,11 @@ class KoordinatorServiceTest(
 	private val koordinatorService: KoordinatorService,
 	@MockkBean private val amtArrangorClient: AmtArrangorClient,
 	@Suppress("unused") @MockkBean(relaxed = true) private val metricsService: MetricsService,
-	@MockkBean private val unleashService: UnleashService,
+	@MockkBean private val unleashToggle: UnleashToggle,
 ) : IntegrationTest() {
 	@BeforeEach
 	internal fun setup() {
-		every { unleashService.erKometMasterForTiltakstype(any()) } returns false
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns false
 	}
 
 	@AfterEach
@@ -504,7 +505,7 @@ class KoordinatorServiceTest(
 
 	@Test
 	fun `getDeltakerliste - har tilgang, lagt til deltakerliste, komet er master - returnerer deltakerliste med deltakere uten endringsmld`() {
-		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns true
 		val personIdent = "12345678910"
 		val overordnetArrangorId = UUID.randomUUID()
 		arrangorRepository.insertOrUpdateArrangor(
@@ -557,7 +558,7 @@ class KoordinatorServiceTest(
 
 	@Test
 	fun `getDeltakerliste - har tilgang, lagt til deltakerliste - returnerer deltakerliste med deltakere inkl veiledere og aktiv endring`() {
-		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns true
 		val personIdent = "12345678910"
 		val overordnetArrangorId = UUID.randomUUID()
 		arrangorRepository.insertOrUpdateArrangor(

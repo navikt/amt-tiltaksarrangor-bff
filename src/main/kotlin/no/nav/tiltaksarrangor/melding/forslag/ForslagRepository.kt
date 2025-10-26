@@ -2,7 +2,7 @@ package no.nav.tiltaksarrangor.melding.forslag
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.postgresql.util.PGobject
 import org.springframework.jdbc.core.RowMapper

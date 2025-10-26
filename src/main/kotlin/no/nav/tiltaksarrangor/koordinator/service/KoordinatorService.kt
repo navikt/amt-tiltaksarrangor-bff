@@ -35,7 +35,7 @@ import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
 import no.nav.tiltaksarrangor.service.getGjeldendeVurdering
-import no.nav.tiltaksarrangor.unleash.UnleashService
+import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -50,7 +50,7 @@ class KoordinatorService(
 	private val metricsService: MetricsService,
 	private val forslagRepository: ForslagRepository,
 	private val ulestEndringRepository: UlestEndringRepository,
-	private val unleashService: UnleashService,
+	private val unleashToggle: UnleashToggle,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -203,7 +203,8 @@ class KoordinatorService(
 		val aktiveForslag = forslagRepository.getAktiveForslagForDeltakere(deltakere.map { it.id })
 		val ulesteEndringer = ulestEndringRepository.getUlesteForslagForDeltakere(deltakere.map { it.id })
 
-		val erKometMasterForTiltakstype = unleashService.erKometMasterForTiltakstype(deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType)
+		val erKometMasterForTiltakstype =
+			unleashToggle.erKometMasterForTiltakstype(deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType.toTiltaksKode())
 
 		return Deltakerliste(
 			id = deltakerlisteMedArrangor.deltakerlisteDbo.id,
@@ -264,7 +265,7 @@ class KoordinatorService(
 		aktiveForslag: List<Forslag>,
 		erKometMasterForTiltakstype: Boolean,
 		ulesteEndringer: List<UlestEndring>,
-	): List<Deltaker> = deltakere.map { it ->
+	): List<Deltaker> = deltakere.map {
 		val adressebeskyttet = it.adressebeskyttet
 		val veiledereForDeltaker = getVeiledereForDeltaker(it.id, veiledere)
 		Deltaker(

@@ -1,20 +1,35 @@
 package no.nav.tiltaksarrangor.consumer
 
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.IntegrationTest
+import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
+import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.arrangorInTest
+import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlisteIdInTest
+import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlistePayloadInTest
+import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlisteV2PayloadInTest
+import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.tiltakstypePayloadInTest
+import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.ARRANGOR_ANSATT_TOPIC
+import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.ARRANGOR_TOPIC
+import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.DELTAKERLISTE_V1_TOPIC
+import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.DELTAKERLISTE_V2_TOPIC
+import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.DELTAKER_TOPIC
+import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.ENDRINGSMELDING_TOPIC
+import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.TILTAKSTYPE_TOPIC
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
+import no.nav.tiltaksarrangor.consumer.model.DeltakerlistePayload
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.consumer.model.NavnDto
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.consumer.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.consumer.model.VeilederDto
 import no.nav.tiltaksarrangor.consumer.model.toAnsattDbo
@@ -22,7 +37,6 @@ import no.nav.tiltaksarrangor.consumer.model.toArrangorDbo
 import no.nav.tiltaksarrangor.consumer.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.consumer.model.toEndringsmeldingDbo
 import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -30,15 +44,15 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
-import no.nav.tiltaksarrangor.utils.JsonUtils
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.awaitility.Awaitility
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -51,6 +65,7 @@ class KafkaConsumerTest(
 	private val deltakerRepository: DeltakerRepository,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
+	private val tiltakstypeRepository: TiltakstypeRepository,
 	private val testKafkaProducer: KafkaProducer<String, String>,
 	private val testKafkaConsumer: Consumer<String, String>,
 ) : IntegrationTest() {
@@ -59,10 +74,189 @@ class KafkaConsumerTest(
 		testKafkaConsumer.subscribeHvisIkkeSubscribed(
 			ARRANGOR_TOPIC,
 			ARRANGOR_ANSATT_TOPIC,
-			DELTAKERLISTE_TOPIC,
+			DELTAKERLISTE_V1_TOPIC,
+			DELTAKERLISTE_V2_TOPIC,
+			TILTAKSTYPE_TOPIC,
 			DELTAKER_TOPIC,
 			ENDRINGSMELDING_TOPIC,
 		)
+	}
+
+	@Test
+	fun `skal lagre tiltakstype i database`() {
+		testKafkaProducer
+			.send(
+				ProducerRecord(
+					TILTAKSTYPE_TOPIC,
+					null,
+					tiltakstypePayloadInTest.id.toString(),
+					objectMapper.writeValueAsString(tiltakstypePayloadInTest),
+				),
+			).get()
+
+		await().untilAsserted {
+			tiltakstypeRepository.getById(tiltakstypePayloadInTest.id) shouldNotBe null
+		}
+	}
+
+	@Nested
+	inner class ListenDeltakerlisteV1 {
+		@Test
+		fun `skal lagre deltakerliste i database`() {
+			tiltakstypeRepository.upsert(tiltakstypePayloadInTest.toModel())
+			arrangorRepository.insertOrUpdateArrangor(arrangorInTest.toArrangorDbo())
+
+			testKafkaProducer
+				.send(
+					ProducerRecord(
+						DELTAKERLISTE_V1_TOPIC,
+						null,
+						deltakerlisteIdInTest.toString(),
+						objectMapper.writeValueAsString(deltakerlistePayloadInTest),
+					),
+				).get()
+
+			await().untilAsserted {
+				deltakerlisteRepository.getDeltakerliste(deltakerlisteIdInTest) shouldNotBe null
+			}
+		}
+
+		@Test
+		fun `skal slette deltakerliste i database`() {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(
+				deltakerlistePayloadInTest.toDeltakerlisteDbo(
+					arrangorId = arrangorInTest.id,
+					navnTiltakstype = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING.name,
+				),
+			)
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteIdInTest) shouldNotBe null
+
+			testKafkaProducer
+				.send(
+					ProducerRecord(
+						DELTAKERLISTE_V1_TOPIC,
+						null,
+						deltakerlisteIdInTest.toString(),
+						null,
+					),
+				).get()
+
+			await().untilAsserted {
+				deltakerlisteRepository.getDeltakerliste(deltakerlisteIdInTest) shouldBe null
+			}
+		}
+
+		@Test
+		fun `skal slette deltakerliste og deltaker i database`() {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(
+				deltakerlistePayloadInTest.toDeltakerlisteDbo(
+					arrangorId = arrangorInTest.id,
+					navnTiltakstype = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING.name,
+				),
+			)
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteIdInTest) shouldNotBe null
+
+			val deltaker = getDeltaker(deltakerId = UUID.randomUUID(), deltakerlisteId = deltakerlisteIdInTest)
+			deltakerRepository.insertOrUpdateDeltaker(deltaker)
+			deltakerRepository.getDeltaker(deltaker.id) shouldNotBe null
+
+			val avsluttetDeltakerlisteDto = deltakerlistePayloadInTest.copy(status = DeltakerlistePayload.Status.AVSLUTTET)
+
+			testKafkaProducer
+				.send(
+					ProducerRecord(
+						DELTAKERLISTE_V1_TOPIC,
+						null,
+						deltakerlisteIdInTest.toString(),
+						objectMapper.writeValueAsString(avsluttetDeltakerlisteDto),
+					),
+				).get()
+
+			await().untilAsserted {
+				deltakerlisteRepository.getDeltakerliste(deltakerlisteIdInTest) shouldBe null
+				deltakerRepository.getDeltaker(deltaker.id) shouldBe null
+			}
+		}
+	}
+
+	@Nested
+	inner class ListenDeltakerlisteV2 {
+		@Test
+		fun `skal lagre deltakerliste i database`() {
+			tiltakstypeRepository.upsert(tiltakstypePayloadInTest.toModel())
+			arrangorRepository.insertOrUpdateArrangor(arrangorInTest.toArrangorDbo())
+
+			testKafkaProducer
+				.send(
+					ProducerRecord(
+						DELTAKERLISTE_V2_TOPIC,
+						null,
+						deltakerlisteIdInTest.toString(),
+						objectMapper.writeValueAsString(deltakerlisteV2PayloadInTest),
+					),
+				).get()
+
+			await().untilAsserted {
+				deltakerlisteRepository.getDeltakerliste(deltakerlisteIdInTest) shouldNotBe null
+			}
+		}
+
+		@Test
+		fun `skal slette deltakerliste i database`() {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(
+				deltakerlistePayloadInTest.toDeltakerlisteDbo(
+					arrangorId = arrangorInTest.id,
+					navnTiltakstype = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING.name,
+				),
+			)
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteIdInTest) shouldNotBe null
+
+			testKafkaProducer
+				.send(
+					ProducerRecord(
+						DELTAKERLISTE_V1_TOPIC,
+						null,
+						deltakerlisteIdInTest.toString(),
+						null,
+					),
+				).get()
+
+			await().untilAsserted {
+				deltakerlisteRepository.getDeltakerliste(deltakerlisteIdInTest) shouldBe null
+			}
+		}
+
+		@Test
+		fun `skal slette deltakerliste og deltaker i database`() {
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(
+				deltakerlistePayloadInTest.toDeltakerlisteDbo(
+					arrangorId = arrangorInTest.id,
+					navnTiltakstype = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING.name,
+				),
+			)
+			deltakerlisteRepository.getDeltakerliste(deltakerlisteIdInTest) shouldNotBe null
+
+			val deltaker = getDeltaker(deltakerId = UUID.randomUUID(), deltakerlisteId = deltakerlisteIdInTest)
+			deltakerRepository.insertOrUpdateDeltaker(deltaker)
+			deltakerRepository.getDeltaker(deltaker.id) shouldNotBe null
+
+			val avsluttetDeltakerlisteDto = deltakerlistePayloadInTest.copy(status = DeltakerlistePayload.Status.AVSLUTTET)
+
+			testKafkaProducer
+				.send(
+					ProducerRecord(
+						DELTAKERLISTE_V1_TOPIC,
+						null,
+						deltakerlisteIdInTest.toString(),
+						objectMapper.writeValueAsString(avsluttetDeltakerlisteDto),
+					),
+				).get()
+
+			await().untilAsserted {
+				deltakerlisteRepository.getDeltakerliste(deltakerlisteIdInTest) shouldBe null
+				deltakerRepository.getDeltaker(deltaker.id) shouldBe null
+			}
+		}
 	}
 
 	@Test
@@ -75,17 +269,18 @@ class KafkaConsumerTest(
 				organisasjonsnummer = "88888888",
 				overordnetArrangorId = UUID.randomUUID(),
 			)
+
 		testKafkaProducer
 			.send(
 				ProducerRecord(
 					ARRANGOR_TOPIC,
 					null,
 					arrangorId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(arrangorDto),
+					objectMapper.writeValueAsString(arrangorDto),
 				),
 			).get()
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+		await().atMost(5, TimeUnit.SECONDS).until {
 			arrangorRepository.getArrangor(arrangorId) != null
 		}
 	}
@@ -111,7 +306,7 @@ class KafkaConsumerTest(
 				),
 			).get()
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+		await().atMost(5, TimeUnit.SECONDS).until {
 			arrangorRepository.getArrangor(arrangorId) == null
 		}
 	}
@@ -150,11 +345,11 @@ class KafkaConsumerTest(
 					ARRANGOR_ANSATT_TOPIC,
 					null,
 					ansattId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(ansattDto),
+					objectMapper.writeValueAsString(ansattDto),
 				),
 			).get()
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+		await().atMost(5, TimeUnit.SECONDS).until {
 			ansattRepository.getAnsatt(ansattId) != null &&
 				ansattRepository.getAnsattRolleListe(ansattId).size == 2 &&
 				ansattRepository.getKoordinatorDeltakerlisteDboListe(ansattId).size == 1 &&
@@ -201,144 +396,11 @@ class KafkaConsumerTest(
 				),
 			).get()
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+		await().atMost(5, TimeUnit.SECONDS).until {
 			ansattRepository.getAnsattRolleListe(ansattId).isEmpty() &&
 				ansattRepository.getKoordinatorDeltakerlisteDboListe(ansattId).isEmpty() &&
 				ansattRepository.getVeilederDeltakerDboListe(ansattId).isEmpty() &&
 				ansattRepository.getAnsatt(ansattId) == null
-		}
-	}
-
-	@Test
-	fun `listen - melding pa deltakerliste-topic - lagres i database`() {
-		val arrangorDto =
-			ArrangorDto(
-				id = UUID.randomUUID(),
-				navn = "Arrangør AS",
-				organisasjonsnummer = "77777777",
-				overordnetArrangorId = null,
-			)
-		arrangorRepository.insertOrUpdateArrangor(arrangorDto.toArrangorDbo())
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDto =
-			DeltakerlisteDto(
-				id = deltakerlisteId,
-				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
-						id = UUID.randomUUID(),
-						navn = "Det flotte tiltaket",
-						arenaKode = "DIGIOPPARB",
-						tiltakskode = "DIGITALT_OPPFOLGINGSTILTAK",
-					),
-				navn = "Gjennomføring av tiltak",
-				startDato = LocalDate.of(2023, 5, 2),
-				sluttDato = null,
-				status = DeltakerlisteDto.Status.GJENNOMFORES,
-				virksomhetsnummer = arrangorDto.organisasjonsnummer,
-				oppstart = Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = null,
-			)
-		testKafkaProducer
-			.send(
-				ProducerRecord(
-					DELTAKERLISTE_TOPIC,
-					null,
-					deltakerlisteId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(deltakerlisteDto),
-				),
-			).get()
-
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) != null
-		}
-	}
-
-	@Test
-	fun `listen - tombstonemelding pa deltakerliste-topic - slettes i database`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDbo =
-			DeltakerlisteDbo(
-				id = deltakerlisteId,
-				navn = "Gjennomføring av tiltak",
-				status = DeltakerlisteStatus.GJENNOMFORES,
-				arrangorId = UUID.randomUUID(),
-				tiltakNavn = "Det flotte tiltaket",
-				tiltakType = ArenaKode.DIGIOPPARB,
-				startDato = LocalDate.of(2023, 5, 2),
-				sluttDato = null,
-				erKurs = false,
-				oppstartstype = Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = null,
-			)
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
-		testKafkaProducer
-			.send(
-				ProducerRecord(
-					DELTAKERLISTE_TOPIC,
-					null,
-					deltakerlisteId.toString(),
-					null,
-				),
-			).get()
-
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) == null
-		}
-	}
-
-	@Test
-	fun `listen - avsluttet deltakerliste-melding pa deltakerliste-topic, deltakerliste finnes - sletter deltakerliste og deltaker fra db`() {
-		val deltakerlisteId = UUID.randomUUID()
-		val deltakerlisteDbo =
-			DeltakerlisteDbo(
-				id = deltakerlisteId,
-				navn = "Gjennomføring av tiltak",
-				status = DeltakerlisteStatus.GJENNOMFORES,
-				arrangorId = UUID.randomUUID(),
-				tiltakNavn = "Avsluttet tiltak",
-				tiltakType = ArenaKode.DIGIOPPARB,
-				startDato = LocalDate.now().minusYears(2),
-				sluttDato = null,
-				erKurs = false,
-				oppstartstype = Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().minusYears(2),
-			)
-		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerlisteDbo)
-
-		val deltaker = getDeltaker(UUID.randomUUID(), deltakerlisteId)
-		deltakerRepository.insertOrUpdateDeltaker(deltaker)
-
-		val avsluttetDeltakerlisteDto =
-			DeltakerlisteDto(
-				id = deltakerlisteDbo.id,
-				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
-						id = UUID.randomUUID(),
-						navn = deltakerlisteDbo.tiltakNavn,
-						arenaKode = deltakerlisteDbo.tiltakType.name,
-						tiltakskode = deltakerlisteDbo.tiltakType.toTiltaksKode().toString(),
-					),
-				navn = deltakerlisteDbo.navn,
-				startDato = deltakerlisteDbo.startDato!!,
-				sluttDato = LocalDate.now().minusWeeks(4),
-				status = DeltakerlisteDto.Status.AVSLUTTET,
-				virksomhetsnummer = "888888888",
-				oppstart = Oppstartstype.LOPENDE,
-				tilgjengeligForArrangorFraOgMedDato = deltakerlisteDbo.tilgjengeligForArrangorFraOgMedDato,
-			)
-		testKafkaProducer
-			.send(
-				ProducerRecord(
-					DELTAKERLISTE_TOPIC,
-					null,
-					deltakerlisteId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerlisteDto),
-				),
-			).get()
-
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			deltakerlisteRepository.getDeltakerliste(deltakerlisteId) == null &&
-				deltakerRepository.getDeltaker(deltaker.id) == null
 		}
 	}
 
@@ -380,11 +442,11 @@ class KafkaConsumerTest(
 						DELTAKER_TOPIC,
 						null,
 						dto.id.toString(),
-						JsonUtils.objectMapper.writeValueAsString(dto),
+						objectMapper.writeValueAsString(dto),
 					),
 				).get()
 
-			Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			await().atMost(5, TimeUnit.SECONDS).until {
 				deltakerRepository.getDeltaker(dto.id) != null
 			}
 		}
@@ -405,7 +467,7 @@ class KafkaConsumerTest(
 				),
 			).get()
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+		await().atMost(5, TimeUnit.SECONDS).until {
 			deltakerRepository.getDeltaker(deltaker.id) == null
 		}
 	}
@@ -425,11 +487,11 @@ class KafkaConsumerTest(
 						DELTAKER_TOPIC,
 						null,
 						deltakerDto.id.toString(),
-						JsonUtils.objectMapper.writeValueAsString(deltakerDto),
+						objectMapper.writeValueAsString(deltakerDto),
 					),
 				).get()
 
-			Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+			await().atMost(5, TimeUnit.SECONDS).until {
 				deltakerRepository.getDeltaker(deltakerDto.id) == null
 			}
 		}
@@ -456,11 +518,11 @@ class KafkaConsumerTest(
 					ENDRINGSMELDING_TOPIC,
 					null,
 					endringsmeldingId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(endringsmeldingDto),
+					objectMapper.writeValueAsString(endringsmeldingDto),
 				),
 			).get()
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+		await().atMost(5, TimeUnit.SECONDS).until {
 			endringsmeldingRepository.getEndringsmelding(endringsmeldingId) != null
 		}
 	}
@@ -491,7 +553,7 @@ class KafkaConsumerTest(
 				),
 			).get()
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+		await().atMost(5, TimeUnit.SECONDS).until {
 			endringsmeldingRepository.getEndringsmelding(endringsmeldingId) == null
 		}
 	}
@@ -530,11 +592,11 @@ class KafkaConsumerTest(
 					ENDRINGSMELDING_TOPIC,
 					null,
 					endringsmeldingId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(utfortEndringsmeldingDto),
+					objectMapper.writeValueAsString(utfortEndringsmeldingDto),
 				),
 			).get()
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
+		await().atMost(5, TimeUnit.SECONDS).until {
 			endringsmeldingRepository.getEndringsmelding(endringsmeldingId)?.status == Endringsmelding.Status.UTFORT
 		}
 	}
