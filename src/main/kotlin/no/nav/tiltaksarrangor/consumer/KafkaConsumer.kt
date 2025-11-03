@@ -39,7 +39,7 @@ class KafkaConsumer(
 			ARRANGOR_TOPIC -> kafkaConsumerService.lagreArrangor(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			ARRANGOR_ANSATT_TOPIC -> kafkaConsumerService.lagreAnsatt(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			DELTAKERLISTE_TOPIC -> kafkaConsumerService.lagreDeltakerliste(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
-			DELTAKER_TOPIC -> kafkaConsumerService.lagreDeltaker(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
+			DELTAKER_TOPIC -> kafkaConsumerService.lagreDeltaker(UUID.fromString(cr.key()), cr.value())
 			ENDRINGSMELDING_TOPIC -> kafkaConsumerService.lagreEndringsmelding(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })
 			NAV_ANSATT_TOPIC -> kafkaConsumerService.lagreNavAnsatt(UUID.fromString(cr.key()), fromJsonString(cr.value()))
 			MELDING_TOPIC -> kafkaConsumerService.handleMelding(UUID.fromString(cr.key()), cr.value()?.let { fromJsonString(it) })

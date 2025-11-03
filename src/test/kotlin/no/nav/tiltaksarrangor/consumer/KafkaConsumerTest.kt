@@ -33,7 +33,7 @@ import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
-import no.nav.tiltaksarrangor.utils.JsonUtils
+import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -81,7 +81,7 @@ class KafkaConsumerTest(
 					ARRANGOR_TOPIC,
 					null,
 					arrangorId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(arrangorDto),
+					objectMapper.writeValueAsString(arrangorDto),
 				),
 			).get()
 
@@ -150,7 +150,7 @@ class KafkaConsumerTest(
 					ARRANGOR_ANSATT_TOPIC,
 					null,
 					ansattId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(ansattDto),
+					objectMapper.writeValueAsString(ansattDto),
 				),
 			).get()
 
@@ -244,7 +244,7 @@ class KafkaConsumerTest(
 					DELTAKERLISTE_TOPIC,
 					null,
 					deltakerlisteId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(deltakerlisteDto),
+					objectMapper.writeValueAsString(deltakerlisteDto),
 				),
 			).get()
 
@@ -332,7 +332,7 @@ class KafkaConsumerTest(
 					DELTAKERLISTE_TOPIC,
 					null,
 					deltakerlisteId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(avsluttetDeltakerlisteDto),
+					objectMapper.writeValueAsString(avsluttetDeltakerlisteDto),
 				),
 			).get()
 
@@ -380,7 +380,7 @@ class KafkaConsumerTest(
 						DELTAKER_TOPIC,
 						null,
 						dto.id.toString(),
-						JsonUtils.objectMapper.writeValueAsString(dto),
+						objectMapper.writeValueAsString(dto),
 					),
 				).get()
 
@@ -425,7 +425,7 @@ class KafkaConsumerTest(
 						DELTAKER_TOPIC,
 						null,
 						deltakerDto.id.toString(),
-						JsonUtils.objectMapper.writeValueAsString(deltakerDto),
+						objectMapper.writeValueAsString(deltakerDto),
 					),
 				).get()
 
@@ -456,7 +456,7 @@ class KafkaConsumerTest(
 					ENDRINGSMELDING_TOPIC,
 					null,
 					endringsmeldingId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(endringsmeldingDto),
+					objectMapper.writeValueAsString(endringsmeldingDto),
 				),
 			).get()
 
@@ -530,7 +530,7 @@ class KafkaConsumerTest(
 					ENDRINGSMELDING_TOPIC,
 					null,
 					endringsmeldingId.toString(),
-					JsonUtils.objectMapper.writeValueAsString(utfortEndringsmeldingDto),
+					objectMapper.writeValueAsString(utfortEndringsmeldingDto),
 				),
 			).get()
 
