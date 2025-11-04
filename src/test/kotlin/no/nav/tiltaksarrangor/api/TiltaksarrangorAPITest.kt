@@ -12,6 +12,7 @@ import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
+import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakJsonDboDto
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
@@ -20,6 +21,7 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
@@ -43,6 +45,7 @@ class TiltaksarrangorAPITest(
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val arrangorRepository: ArrangorRepository,
+	private val navAnsattRepository: NavAnsattRepository,
 ) : IntegrationTest() {
 	private val mediaTypeJson = "application/json".toMediaType()
 
@@ -75,7 +78,7 @@ class TiltaksarrangorAPITest(
 			)
 
 		response.code shouldBe 200
-		response.body?.string() shouldBe "[\"KOORDINATOR\",\"VEILEDER\"]"
+		response.body.string() shouldBe "[\"KOORDINATOR\",\"VEILEDER\"]"
 	}
 
 	@Test
@@ -148,6 +151,18 @@ class TiltaksarrangorAPITest(
 				id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
 				startDato = LocalDate.of(2023, 2, 1),
 			)
+
+		val navVeilederId = UUID.randomUUID()
+		navAnsattRepository.upsert(
+			NavAnsatt(
+				id = navVeilederId,
+				navident = "~navident~",
+				navn = "~navAnsattNavn~",
+				epost = "~navAnsattEpost~",
+				telefon = "~navAnsattTelefon~",
+			),
+		)
+
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")
 		val gyldigFra = LocalDateTime.now()
@@ -163,10 +178,10 @@ class TiltaksarrangorAPITest(
 				innsoktDato = LocalDate.of(2023, 1, 15),
 				bestillingstekst = "Tror deltakeren vil ha nytte av dette",
 				navKontor = "Nav Oslo",
-				navVeilederId = UUID.randomUUID(),
-				navVeilederNavn = "Veileder Veiledersen",
-				navVeilederTelefon = "56565656",
-				navVeilederEpost = "epost@nav.no",
+				navVeilederId = navVeilederId,
+				navVeilederNavn = "N/A",
+				navVeilederTelefon = "N/A",
+				navVeilederEpost = "N/A",
 				vurderingerFraArrangor = getVurderinger(deltakerId, gyldigFra),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
@@ -210,16 +225,17 @@ class TiltaksarrangorAPITest(
 				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
+		// "navn":"~navAnsattNavn~","epost":"~navAnsattEpost~","telefon":"~navAnsattTelefon~"
 		val expectedJson =
 			"""
-				{"id":"977350f2-d6a5-49bb-a3a0-773f25f863d9","deltakerliste":{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","startDato":"2023-02-01","sluttDato":null,"erKurs":false,"oppstartstype":"LOPENDE","tiltakstype":"ARBFORB"},"fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","telefonnummer":"90909090","epost":"mail@test.no","status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00","aarsak":null},"startDato":"2023-02-01","sluttDato":null,"deltakelseProsent":null,"dagerPerUke":2.5,"soktInnPa":"Gjennomføring 1","soktInnDato":"2023-01-15T00:00:00","tiltakskode":"ARBFORB","bestillingTekst":"Tror deltakeren vil ha nytte av dette","innhold":{"ledetekst":"Innholdsledetekst...","innhold":[{"tekst":"tekst","innholdskode":"kode","valgt":true,"beskrivelse":"beskrivelse"}]},"fjernesDato":null,"navInformasjon":{"navkontor":"Nav Oslo","navVeileder":{"navn":"Veileder Veiledersen","epost":"epost@nav.no","telefon":"56565656"}},"veiledere":[{"ansattId":"2d5fc2f7-a9e6-4830-a987-4ff135a70c10","deltakerId":"977350f2-d6a5-49bb-a3a0-773f25f863d9","veiledertype":"VEILEDER","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn"},{"ansattId":"7c43b43b-43be-4d4b-8057-d907c5f1e5c5","deltakerId":"977350f2-d6a5-49bb-a3a0-773f25f863d9","veiledertype":"MEDVEILEDER","fornavn":"Per","mellomnavn":null,"etternavn":"Person"}],"aktiveForslag":[],"aktiveEndringsmeldinger":[],"historiskeEndringsmeldinger":[],"adresse":{"adressetype":"KONTAKTADRESSE","postnummer":"1234","poststed":"MOSS","tilleggsnavn":null,"adressenavn":"Gate 1"},"gjeldendeVurderingFraArrangor":{"vurderingstype":"OPPFYLLER_IKKE_KRAVENE","begrunnelse":"Mangler førerkort","gyldigFra":${
+				{"id":"977350f2-d6a5-49bb-a3a0-773f25f863d9","deltakerliste":{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","startDato":"2023-02-01","sluttDato":null,"erKurs":false,"oppstartstype":"LOPENDE","tiltakstype":"ARBFORB"},"fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","telefonnummer":"90909090","epost":"mail@test.no","status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00","aarsak":null},"startDato":"2023-02-01","sluttDato":null,"deltakelseProsent":null,"dagerPerUke":2.5,"soktInnPa":"Gjennomføring 1","soktInnDato":"2023-01-15T00:00:00","tiltakskode":"ARBFORB","bestillingTekst":"Tror deltakeren vil ha nytte av dette","innhold":{"ledetekst":"Innholdsledetekst...","innhold":[{"tekst":"tekst","innholdskode":"kode","valgt":true,"beskrivelse":"beskrivelse"}]},"fjernesDato":null,"navInformasjon":{"navkontor":"Nav Oslo","navVeileder":{"navn":"~navAnsattNavn~","epost":"~navAnsattEpost~","telefon":"~navAnsattTelefon~"}},"veiledere":[{"ansattId":"2d5fc2f7-a9e6-4830-a987-4ff135a70c10","deltakerId":"977350f2-d6a5-49bb-a3a0-773f25f863d9","veiledertype":"VEILEDER","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn"},{"ansattId":"7c43b43b-43be-4d4b-8057-d907c5f1e5c5","deltakerId":"977350f2-d6a5-49bb-a3a0-773f25f863d9","veiledertype":"MEDVEILEDER","fornavn":"Per","mellomnavn":null,"etternavn":"Person"}],"aktiveForslag":[],"aktiveEndringsmeldinger":[],"historiskeEndringsmeldinger":[],"adresse":{"adressetype":"KONTAKTADRESSE","postnummer":"1234","poststed":"MOSS","tilleggsnavn":null,"adressenavn":"Gate 1"},"gjeldendeVurderingFraArrangor":{"vurderingstype":"OPPFYLLER_IKKE_KRAVENE","begrunnelse":"Mangler førerkort","gyldigFra":${
 				objectMapper.writeValueAsString(
 					gyldigFra,
 				)
 			},"gyldigTil":null},"adressebeskyttet":false,"kilde":"ARENA","historikk":[],"deltakelsesmengder":{"nesteDeltakelsesmengde":null,"sisteDeltakelsesmengde":null},"ulesteEndringer":[],"erManueltDeltMedArrangor":false,"erUnderOppfolging":true}
 			""".trimIndent().format()
 		response.code shouldBe 200
-		response.body?.string() shouldBe expectedJson
+		response.body.string() shouldBe expectedJson
 	}
 
 	@Test
@@ -301,7 +317,7 @@ class TiltaksarrangorAPITest(
 			[]
 			""".trimIndent().format()
 		response.code shouldBe 200
-		response.body?.string() shouldBe expectedJson
+		response.body.string() shouldBe expectedJson
 	}
 
 	@Test
@@ -387,7 +403,7 @@ class TiltaksarrangorAPITest(
 			[{"type":"EndringFraArrangor","id":"fe640f60-88ef-46d8-9bc4-148aecdef6da","opprettet":"2023-01-01T00:00:00","arrangorNavn":"Orgnavn","endring":{"type":"LeggTilOppstartsdato","startdato":"2023-02-01","sluttdato":null}}]
 			""".trimIndent().format()
 		response.code shouldBe 200
-		response.body?.string() shouldBe expectedJson
+		response.body.string() shouldBe expectedJson
 	}
 
 	@Test

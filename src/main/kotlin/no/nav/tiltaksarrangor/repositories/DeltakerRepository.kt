@@ -302,14 +302,76 @@ class DeltakerRepository(
 
 	fun getDeltakereMedDeltakerliste(deltakerIder: List<UUID>): List<DeltakerMedDeltakerlisteDbo> = template.query(
 		"""
-		SELECT deltaker.id as deltakerid,
+		SELECT
+			deltaker.id as deltakerid,
+			deltakerliste_id,
+			personident,
+			fornavn,
+			mellomnavn,
+			etternavn,
+			telefonnummer,
+			deltaker.epost,
+			er_skjermet,
+			adresse,
+			vurderinger,
+			deltaker.status as deltakerstatus,
+			status_gyldig_fra,
+			status_opprettet_dato,
+			aarsak,
+			dager_per_uke,
+			prosent_stilling,
+			deltaker.start_dato as deltaker_start_dato,
+			deltaker.slutt_dato as deltaker_slutt_dato,
+			innsokt_dato,
+			bestillingstekst,
+			innhold,
+			kilde,
+			historikk,
+			navkontor,
+			navveileder_id,
+			nav_ansatt.navn AS navveileder_navn,
+			nav_ansatt.epost AS navveileder_epost,
+			nav_ansatt.telefon AS navveileder_telefon,
+			skjult_av_ansatt_id,
+			skjult_dato,
+			adressebeskyttet,
+			deltakerliste.navn,
+			deltakerliste.status as deltakerliste_status,
+			arrangor_id,
+			tiltak_navn,
+			tiltak_type,
+			deltakerliste.start_dato as deltakerliste_start_dato,
+			deltakerliste.slutt_dato as deltakerliste_slutt_dato,
+			er_kurs,
+			oppstartstype,
+			tilgjengelig_fom,
+			deltaker.modified_at as modified_at,
+			forste_vedtak_fattet,
+			er_manuelt_delt_med_arrangor,
+			oppfolgingsperioder
+		FROM
+			deltaker
+			JOIN deltakerliste ON deltaker.deltakerliste_id = deltakerliste.id
+			LEFT JOIN nav_ansatt ON deltaker.navveileder_id = nav_ansatt.id
+		WHERE
+			deltaker.id IN (:ids);
+		""".trimIndent(),
+		sqlParameters("ids" to deltakerIder),
+		deltakerMedDeltakerlisteRowMapper,
+	)
+
+	fun getDeltakerMedDeltakerliste(deltakerId: UUID): DeltakerMedDeltakerlisteDbo? = template
+		.query(
+			"""
+			SELECT
+				deltaker.id as deltakerid,
 				deltakerliste_id,
 				personident,
 				fornavn,
 				mellomnavn,
 				etternavn,
 				telefonnummer,
-				epost,
+				deltaker.epost,
 				er_skjermet,
 				adresse,
 				vurderinger,
@@ -328,13 +390,13 @@ class DeltakerRepository(
 				historikk,
 				navkontor,
 				navveileder_id,
-				navveileder_navn,
-				navveileder_epost,
-				navveileder_telefon,
+				nav_ansatt.navn AS navveileder_navn,
+				nav_ansatt.epost AS navveileder_epost,
+				nav_ansatt.telefon AS navveileder_telefon,
 				skjult_av_ansatt_id,
 				skjult_dato,
 				adressebeskyttet,
-				navn,
+				deltakerliste.navn,
 				deltakerliste.status as deltakerliste_status,
 				arrangor_id,
 				tiltak_navn,
@@ -348,66 +410,12 @@ class DeltakerRepository(
 				forste_vedtak_fattet,
 				er_manuelt_delt_med_arrangor,
 				oppfolgingsperioder
-		FROM deltaker
-				 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
-		WHERE deltaker.id IN (:ids);
-		""".trimIndent(),
-		sqlParameters("ids" to deltakerIder),
-		deltakerMedDeltakerlisteRowMapper,
-	)
-
-	fun getDeltakerMedDeltakerliste(deltakerId: UUID): DeltakerMedDeltakerlisteDbo? = template
-		.query(
-			"""
-			SELECT deltaker.id as deltakerid,
-					deltakerliste_id,
-					personident,
-					fornavn,
-					mellomnavn,
-					etternavn,
-					telefonnummer,
-					epost,
-					er_skjermet,
-					adresse,
-					vurderinger,
-					deltaker.status as deltakerstatus,
-					status_gyldig_fra,
-					status_opprettet_dato,
-					aarsak,
-					dager_per_uke,
-					prosent_stilling,
-					deltaker.start_dato as deltaker_start_dato,
-					deltaker.slutt_dato as deltaker_slutt_dato,
-					innsokt_dato,
-					bestillingstekst,
-					innhold,
-					kilde,
-					historikk,
-					navkontor,
-					navveileder_id,
-					navveileder_navn,
-					navveileder_epost,
-					navveileder_telefon,
-					skjult_av_ansatt_id,
-					skjult_dato,
-					adressebeskyttet,
-					navn,
-					deltakerliste.status as deltakerliste_status,
-					arrangor_id,
-					tiltak_navn,
-					tiltak_type,
-					deltakerliste.start_dato as deltakerliste_start_dato,
-					deltakerliste.slutt_dato as deltakerliste_slutt_dato,
-					er_kurs,
-					oppstartstype,
-					tilgjengelig_fom,
-				    deltaker.modified_at as modified_at,
-					forste_vedtak_fattet,
-					er_manuelt_delt_med_arrangor,
-					oppfolgingsperioder
-			FROM deltaker
-					 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
-			WHERE deltaker.id = :id;
+			FROM
+				deltaker
+			 	JOIN deltakerliste ON deltaker.deltakerliste_id = deltakerliste.id
+			 	LEFT JOIN nav_ansatt ON deltaker.navveileder_id = nav_ansatt.id
+			WHERE
+				deltaker.id = :id;
 			""".trimIndent(),
 			sqlParameters("id" to deltakerId),
 			deltakerMedDeltakerlisteRowMapper,
@@ -472,18 +480,6 @@ class DeltakerRepository(
 			sqlParameters("navveileder_id" to navveilederId),
 			deltakerRowMapper,
 		).filter { it.skalVises() }
-
-	fun getDeltakereUtenOppfolgingsperiode(): List<UUID> {
-		val rm = RowMapper { rs, _ ->
-			UUID.fromString(rs.getString("id"))
-		}
-		val sql =
-			"""
-			SELECT id FROM deltaker where oppfolgingsperioder IS NULL OR jsonb_array_length(oppfolgingsperioder) = 0
-			""".trimIndent()
-
-		return template.query(sql, rm)
-	}
 
 	fun oppdaterEnhetsnavnForDeltakere(opprinneligEnhetsnavn: String, nyttEnhetsnavn: String) {
 		val sql =
