@@ -14,8 +14,8 @@ import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
-import no.nav.tiltaksarrangor.consumer.ConsumerUtils.erKometMasterForTiltakstype
 import no.nav.tiltaksarrangor.consumer.ConsumerUtils.getTiltakskodeFromDeltakerJsonPayload
+import no.nav.tiltaksarrangor.consumer.ConsumerUtils.tiltakskodeErStottet
 import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
@@ -112,7 +112,7 @@ class KafkaConsumerService(
 
 		// sjekker at tiltakskoden ikke er enkeltplass og at vi er komet-master for tiltakstypen
 		val tiltakskodeFromJson = getTiltakskodeFromDeltakerJsonPayload(deltakerPayloadJson)
-		if (!erKometMasterForTiltakstype(tiltakskodeFromJson)) {
+		if (!tiltakskodeErStottet(tiltakskodeFromJson)) {
 			log.info("Tiltakskode $tiltakskodeFromJson er ikke støttet.")
 			return
 		}

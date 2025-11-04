@@ -29,5 +29,5 @@ object ConsumerUtils {
 		Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
 	)
 
-	fun erKometMasterForTiltakstype(tiltakskode: String): Boolean = tiltakstyperKometErMasterFor.any { it.name == tiltakskode }
+	fun tiltakskodeErStottet(tiltakskode: String): Boolean = tiltakstyperKometErMasterFor.any { it.name == tiltakskode }
 }
