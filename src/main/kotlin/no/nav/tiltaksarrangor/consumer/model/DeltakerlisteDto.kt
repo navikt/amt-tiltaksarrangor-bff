@@ -7,7 +7,7 @@ import java.util.UUID
 
 data class DeltakerlisteDto(
 	val id: UUID,
-	val tiltakstype: Tiltakstype,
+	val tiltakstype: TiltakstypeDto,
 	val navn: String,
 	val startDato: LocalDate,
 	val sluttDato: LocalDate? = null,
@@ -16,7 +16,7 @@ data class DeltakerlisteDto(
 	val oppstart: Oppstartstype,
 	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
 ) {
-	data class Tiltakstype(
+	data class TiltakstypeDto(
 		val id: UUID,
 		val navn: String,
 		val arenaKode: String, // String tar høyde for andre tiltakstyper enn det vi støtter

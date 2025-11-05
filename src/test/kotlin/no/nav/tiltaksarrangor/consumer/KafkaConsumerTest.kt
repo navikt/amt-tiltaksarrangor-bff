@@ -3,7 +3,7 @@ package no.nav.tiltaksarrangor.consumer
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
@@ -224,7 +224,7 @@ class KafkaConsumerTest(
 			DeltakerlisteDto(
 				id = deltakerlisteId,
 				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
+					DeltakerlisteDto.TiltakstypeDto(
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = "DIGIOPPARB",
@@ -262,8 +262,8 @@ class KafkaConsumerTest(
 				navn = "Gjennomføring av tiltak",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = UUID.randomUUID(),
-				tiltakNavn = "Det flotte tiltaket",
-				tiltakType = ArenaKode.DIGIOPPARB,
+				tiltaksnavn = "Det flotte tiltaket",
+				tiltakskode = Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
 				startDato = LocalDate.of(2023, 5, 2),
 				sluttDato = null,
 				erKurs = false,
@@ -295,8 +295,8 @@ class KafkaConsumerTest(
 				navn = "Gjennomføring av tiltak",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = UUID.randomUUID(),
-				tiltakNavn = "Avsluttet tiltak",
-				tiltakType = ArenaKode.DIGIOPPARB,
+				tiltaksnavn = "Avsluttet tiltak",
+				tiltakskode = Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
 				startDato = LocalDate.now().minusYears(2),
 				sluttDato = null,
 				erKurs = false,
@@ -312,11 +312,11 @@ class KafkaConsumerTest(
 			DeltakerlisteDto(
 				id = deltakerlisteDbo.id,
 				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
+					DeltakerlisteDto.TiltakstypeDto(
 						id = UUID.randomUUID(),
-						navn = deltakerlisteDbo.tiltakNavn,
-						arenaKode = deltakerlisteDbo.tiltakType.name,
-						tiltakskode = deltakerlisteDbo.tiltakType.toTiltaksKode().toString(),
+						navn = deltakerlisteDbo.tiltaksnavn,
+						arenaKode = deltakerlisteDbo.tiltakskode.name,
+						tiltakskode = deltakerlisteDbo.tiltakskode.toString(),
 					),
 				navn = deltakerlisteDbo.navn,
 				startDato = deltakerlisteDbo.startDato!!,
@@ -347,7 +347,7 @@ class KafkaConsumerTest(
 		val enhetId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
 		with(DeltakerDtoCtx()) {
-			deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.deltakerlisteId, UUID.randomUUID()))
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.id, UUID.randomUUID()))
 			mockAmtPersonServer.addEnhetResponse(enhetId)
 			mockAmtPersonServer.addAnsattResponse(ansattId)
 			val avbrytDeltakelseEndring = DeltakerEndring.Endring.AvbrytDeltakelse(
@@ -413,7 +413,7 @@ class KafkaConsumerTest(
 	@Test
 	fun `listen - avsluttet deltaker-melding pa deltaker-topic og deltaker finnes i db - sletter deltaker fra db`() {
 		with(DeltakerDtoCtx()) {
-			deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.deltakerlisteId, UUID.randomUUID()))
+			deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.id, UUID.randomUUID()))
 
 			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))
 

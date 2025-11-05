@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.repositories.model
 
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import java.time.LocalDate
@@ -11,8 +11,8 @@ data class DeltakerlisteDbo(
 	val navn: String,
 	val status: DeltakerlisteStatus,
 	val arrangorId: UUID,
-	val tiltakNavn: String,
-	val tiltakType: ArenaKode,
+	val tiltaksnavn: String,
+	val tiltakskode: Tiltakskode,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
 	val erKurs: Boolean,
@@ -29,14 +29,14 @@ data class DeltakerlisteDbo(
 		false
 	}
 
-	fun skalViseAdresseForDeltaker(): Boolean = tiltakstyperMedAdresse.contains(tiltakType)
+	fun skalViseAdresseForDeltaker(): Boolean = tiltakstyperMedAdresse.contains(tiltakskode)
 
-	private val tiltakstyperMedAdresse: Set<ArenaKode> =
+	private val tiltakstyperMedAdresse: Set<Tiltakskode> =
 		setOf(
-			ArenaKode.INDOPPFAG,
-			ArenaKode.ARBFORB,
-			ArenaKode.AVKLARAG,
-			ArenaKode.VASV,
-			ArenaKode.ARBRRHDAG,
+			Tiltakskode.OPPFOLGING,
+			Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
+			Tiltakskode.AVKLARING,
+			Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+			Tiltakskode.ARBEIDSRETTET_REHABILITERING,
 		)
 }

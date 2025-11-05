@@ -6,7 +6,7 @@ import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.Oppfolgingsperiode
 import no.nav.amt.lib.models.person.address.Adresse
 import no.nav.amt.lib.models.person.address.Bostedsadresse
@@ -42,8 +42,8 @@ fun getDeltakerliste(id: UUID = UUID.randomUUID(), arrangorId: UUID): Deltakerli
 	navn = "Gjennomføring 1",
 	status = DeltakerlisteStatus.GJENNOMFORES,
 	arrangorId = arrangorId,
-	tiltakNavn = "Tiltaksnavnet",
-	tiltakType = ArenaKode.ARBFORB,
+	tiltaksnavn = "Tiltaksnavnet",
+	tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
 	startDato = LocalDate.now().minusDays(1),
 	sluttDato = null,
 	erKurs = false,

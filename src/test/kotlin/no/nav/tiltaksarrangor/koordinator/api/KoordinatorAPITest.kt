@@ -4,7 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
@@ -69,8 +69,8 @@ class KoordinatorAPITest(
 				navn = "Gjennomføring 1",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
-				tiltakNavn = "Tiltaksnavnet",
-				tiltakType = ArenaKode.ARBFORB,
+				tiltaksnavn = "Tiltaksnavnet",
+				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
 				startDato = LocalDate.of(2024, 1, 3),
 				sluttDato = null,
 				erKurs = false,
@@ -120,7 +120,7 @@ class KoordinatorAPITest(
 			{"veilederFor":{"veilederFor":2,"medveilederFor":3},"koordinatorFor":{"deltakerlister":[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Tiltaksnavnet","navn":"Gjennomføring 1","startdato":"2024-01-03","sluttdato":null,"erKurs":false}]}}
 			""".trimIndent()
 		response.code shouldBe 200
-		response.body?.string() shouldBe expectedJson
+		response.body.string() shouldBe expectedJson
 	}
 
 	@Test
@@ -144,8 +144,8 @@ class KoordinatorAPITest(
 				navn = "Gjennomføring 1",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
-				tiltakNavn = "Tiltaksnavnet",
-				tiltakType = ArenaKode.ARBFORB,
+				tiltaksnavn = "Tiltaksnavnet",
+				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
 				startDato = LocalDate.now(),
 				sluttDato = null,
 				erKurs = false,
@@ -202,7 +202,7 @@ class KoordinatorAPITest(
 			[{"ansattId":"29bf6799-bb56-4a86-857b-99b529b3dfc4","fornavn":"Fornavn1","mellomnavn":null,"etternavn":"Etternavn1"},{"ansattId":"e824dbfe-5317-491b-82ed-03b870eed963","fornavn":"Fornavn2","mellomnavn":null,"etternavn":"Etternavn2"}]
 			""".trimIndent()
 		response.code shouldBe 200
-		response.body?.string() shouldBe expectedJson
+		response.body.string() shouldBe expectedJson
 	}
 
 	@Test
@@ -240,8 +240,8 @@ class KoordinatorAPITest(
 				navn = "Gjennomføring 1",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
-				tiltakNavn = "Tiltaksnavnet",
-				tiltakType = ArenaKode.ARBFORB,
+				tiltaksnavn = "Tiltaksnavnet",
+				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
 				startDato = LocalDate.now(),
 				sluttDato = null,
 				erKurs = false,
@@ -354,8 +354,8 @@ class KoordinatorAPITest(
 				navn = "Gjennomføring 1",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
-				tiltakNavn = "Navn på tiltak",
-				tiltakType = ArenaKode.ARBFORB,
+				tiltaksnavn = "Navn på tiltak",
+				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
@@ -436,9 +436,9 @@ class KoordinatorAPITest(
 
 		val expectedJson =
 			"""
-			{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","navn":"Gjennomføring 1","tiltaksnavn":"Navn på tiltak","arrangorNavn":"Arrangør AS","startDato":"2023-02-01","sluttDato":null,"status":"GJENNOMFORES","koordinatorer":[{"fornavn":"Fornavn1","mellomnavn":null,"etternavn":"Etternavn1"},{"fornavn":"Fornavn2","mellomnavn":null,"etternavn":"Etternavn2"}],"deltakere":[{"id":"252428ac-37a6-4341-bb17-5bad412c9409","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","soktInnDato":"2023-01-15T00:00:00","startDato":"2023-02-01","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00","aarsak":null},"veiledere":[],"navKontor":"NAV Testheim","aktiveEndringsmeldinger":[],"gjeldendeVurderingFraArrangor":null,"adressebeskyttet":false,"erVeilederForDeltaker":false,"aktivEndring":null,"svarFraNav":false,"oppdateringFraNav":false,"nyDeltaker":false}],"erKurs":false,"tiltakType":"ARBFORB"}
+			{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","navn":"Gjennomføring 1","tiltaksnavn":"Navn på tiltak","arrangorNavn":"Arrangør AS","startDato":"2023-02-01","sluttDato":null,"status":"GJENNOMFORES","koordinatorer":[{"fornavn":"Fornavn1","mellomnavn":null,"etternavn":"Etternavn1"},{"fornavn":"Fornavn2","mellomnavn":null,"etternavn":"Etternavn2"}],"deltakere":[{"id":"252428ac-37a6-4341-bb17-5bad412c9409","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","soktInnDato":"2023-01-15T00:00:00","startDato":"2023-02-01","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00","aarsak":null},"veiledere":[],"navKontor":"NAV Testheim","aktiveEndringsmeldinger":[],"gjeldendeVurderingFraArrangor":null,"adressebeskyttet":false,"erVeilederForDeltaker":false,"aktivEndring":null,"svarFraNav":false,"oppdateringFraNav":false,"nyDeltaker":false}],"erKurs":false,"tiltakskode":"ARBEIDSFORBEREDENDE_TRENING"}
 			""".trimIndent()
 		response.code shouldBe 200
-		response.body?.string() shouldBe expectedJson
+		response.body.string() shouldBe expectedJson
 	}
 }

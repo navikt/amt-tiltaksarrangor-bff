@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.melding.endring
 
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import java.time.Duration
@@ -62,29 +62,27 @@ private fun validerVarighet(
 
 val HELLIGDAGER: Duration = weeks(1)
 
-private fun maxVarighet(deltakerliste: DeltakerlisteDbo): Duration? = when (deltakerliste.tiltakType) {
-	ArenaKode.GRUPPEAMO,
-	ArenaKode.GRUFAGYRKE,
+private fun maxVarighet(deltakerliste: DeltakerlisteDbo): Duration? = when (deltakerliste.tiltakskode) {
+	Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+	Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
 	-> years(3)
 
-	ArenaKode.DIGIOPPARB -> weeks(8) + HELLIGDAGER
-	ArenaKode.ARBFORB -> years(2)
+	Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8) + HELLIGDAGER
+	Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> years(2)
 
-	ArenaKode.AVKLARAG,
-	ArenaKode.ARBRRHDAG,
+	Tiltakskode.AVKLARING,
+	Tiltakskode.ARBEIDSRETTET_REHABILITERING,
 	-> weeks(12)
 
-	ArenaKode.INDOPPFAG -> years(1)
+	Tiltakskode.OPPFOLGING -> years(1)
 
-	ArenaKode.VASV,
-	ArenaKode.JOBBK,
+	Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+	Tiltakskode.JOBBKLUBB,
 	-> null
 
-	else -> throw NotImplementedError("maxVarighet for tiltakstype: ${deltakerliste.tiltakType} er ikke implementert")
+	else -> throw NotImplementedError("maxVarighet for tiltakstype: ${deltakerliste.tiltakskode} er ikke implementert")
 }
 
 private fun years(n: Long) = Duration.of(n * 365, ChronoUnit.DAYS)
-
-private fun months(n: Long) = Duration.of(n * 30, ChronoUnit.DAYS)
 
 private fun weeks(n: Long) = Duration.of(n * 7, ChronoUnit.DAYS)
