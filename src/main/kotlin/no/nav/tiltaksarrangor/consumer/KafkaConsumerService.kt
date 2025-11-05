@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.consumer
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
@@ -13,6 +14,8 @@ import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
+import no.nav.tiltaksarrangor.consumer.ConsumerUtils.getTiltakskodeFromDeltakerJsonPayload
+import no.nav.tiltaksarrangor.consumer.ConsumerUtils.tiltakskodeErStottet
 import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
@@ -39,6 +42,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.service.NavAnsattService
 import no.nav.tiltaksarrangor.service.NavEnhetService
+import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -99,12 +103,22 @@ class KafkaConsumerService(
 		}
 	}
 
-	fun lagreDeltaker(deltakerId: UUID, deltakerPayload: DeltakerKafkaPayload?) {
-		if (deltakerPayload == null) {
+	fun lagreDeltaker(deltakerId: UUID, deltakerPayloadJson: String?) {
+		if (deltakerPayloadJson == null) {
 			deltakerRepository.deleteDeltaker(deltakerId)
 			log.info("Slettet tombstonet deltaker med id $deltakerId")
 			return
 		}
+
+		// sjekker at tiltakskoden ikke er enkeltplass og at vi er komet-master for tiltakstypen
+		val tiltakskodeFromJson = getTiltakskodeFromDeltakerJsonPayload(deltakerPayloadJson)
+		if (!tiltakskodeErStottet(tiltakskodeFromJson)) {
+			log.info("Tiltakskode $tiltakskodeFromJson er ikke støttet.")
+			return
+		}
+
+		val deltakerPayload: DeltakerKafkaPayload = objectMapper.readValue(deltakerPayloadJson)
+
 		val lagretDeltaker = deltakerRepository.getDeltaker(deltakerId)
 		if (deltakerPayload.skalLagres(lagretDeltaker)) {
 			leggTilNavAnsattOgEnhetHistorikk(deltakerPayload)
