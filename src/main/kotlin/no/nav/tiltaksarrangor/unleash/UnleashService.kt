@@ -20,11 +20,8 @@ class UnleashService(
 		Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
 	)
 
-	private val tiltakstyperKometKanskjeErMasterFor = setOf(
-		Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
-		Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
-		Tiltakskode.HOYERE_UTDANNING,
-	)
+	// Enkelplasser skal ikke inn i tiltaksarrangor
+	private val tiltakstyperKometKanskjeErMasterFor = emptySet<Tiltakskode>()
 
 	fun erKometMasterForTiltakstype(tiltakstype: Tiltakskode): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFor ||
 		(unleash.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
