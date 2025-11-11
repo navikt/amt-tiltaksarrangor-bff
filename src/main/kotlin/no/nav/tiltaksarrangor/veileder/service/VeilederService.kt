@@ -63,15 +63,15 @@ class VeilederService(
 		endringsmeldinger: List<EndringsmeldingDbo>,
 		aktiveForslag: List<Forslag>,
 		ulesteEndringer: List<UlestEndring>,
-	): List<Deltaker> = deltakere.map { it ->
-		val erKometMasterForTiltakstype = unleashService.erKometMasterForTiltakstype(it.deltakerliste.tiltakType)
+	): List<Deltaker> = deltakere.map {
+		val erKometMasterForTiltakstype = unleashService.erKometMasterForTiltakstype(it.deltakerliste.tiltakskode)
 		val adressebeskyttet = it.deltaker.adressebeskyttet
 		Deltaker(
 			id = it.deltaker.id,
 			deltakerliste =
 				Deltaker.Deltakerliste(
 					id = it.deltakerliste.id,
-					type = it.deltakerliste.tiltakNavn,
+					type = it.deltakerliste.tiltaksnavn,
 					navn = it.deltakerliste.navn,
 				),
 			fornavn = if (adressebeskyttet) "" else it.deltaker.fornavn,

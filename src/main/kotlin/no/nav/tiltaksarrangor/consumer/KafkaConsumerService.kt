@@ -8,7 +8,7 @@ import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
@@ -403,8 +403,8 @@ class KafkaConsumerService(
 		navn = deltakerlisteDto.navn,
 		status = deltakerlisteDto.toDeltakerlisteStatus(),
 		arrangorId = getArrangorId(deltakerlisteDto.virksomhetsnummer),
-		tiltakNavn = getTiltakstypeNavn(deltakerlisteDto.tiltakstype),
-		tiltakType = ArenaKode.valueOf(deltakerlisteDto.tiltakstype.arenaKode),
+		tiltaksnavn = getTiltakstypeNavn(deltakerlisteDto.tiltakstype),
+		tiltakskode = Tiltakskode.valueOf(deltakerlisteDto.tiltakstype.tiltakskode),
 		startDato = deltakerlisteDto.startDato,
 		sluttDato = deltakerlisteDto.sluttDato,
 		erKurs = deltakerlisteDto.erKurs(),
@@ -412,7 +412,7 @@ class KafkaConsumerService(
 		tilgjengeligForArrangorFraOgMedDato = deltakerlisteDto.tilgjengeligForArrangorFraOgMedDato,
 	)
 
-	private fun getTiltakstypeNavn(tiltakstype: DeltakerlisteDto.Tiltakstype): String {
+	private fun getTiltakstypeNavn(tiltakstype: DeltakerlisteDto.TiltakstypeDto): String {
 		if (tiltakstype.navn == "Jobbklubb") {
 			return "Jobbsøkerkurs"
 		} else {

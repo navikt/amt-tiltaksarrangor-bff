@@ -125,7 +125,7 @@ class KafkaConsumerServiceTest {
 			DeltakerlisteDto(
 				id = deltakerlisteId,
 				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
+					DeltakerlisteDto.TiltakstypeDto(
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = "DIGIOPPARB",
@@ -152,7 +152,7 @@ class KafkaConsumerServiceTest {
 			DeltakerlisteDto(
 				id = deltakerlisteId,
 				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
+					DeltakerlisteDto.TiltakstypeDto(
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = "DIGIOPPARB",
@@ -180,7 +180,7 @@ class KafkaConsumerServiceTest {
 			DeltakerlisteDto(
 				id = deltakerlisteId,
 				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
+					DeltakerlisteDto.TiltakstypeDto(
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = "DIGIOPPARB",
@@ -207,7 +207,7 @@ class KafkaConsumerServiceTest {
 			DeltakerlisteDto(
 				id = deltakerlisteId,
 				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
+					DeltakerlisteDto.TiltakstypeDto(
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = "KODE_FINNES_IKKE",
@@ -234,7 +234,7 @@ class KafkaConsumerServiceTest {
 			DeltakerlisteDto(
 				id = deltakerlisteId,
 				tiltakstype =
-					DeltakerlisteDto.Tiltakstype(
+					DeltakerlisteDto.TiltakstypeDto(
 						id = UUID.randomUUID(),
 						navn = "Det flotte tiltaket",
 						arenaKode = ArenaKode.ENKELAMO.name,
@@ -269,7 +269,7 @@ class KafkaConsumerServiceTest {
 	internal fun `lagreDeltaker - enkeltplass type - lagres ikke i db `(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.DELTAR)
-			medDeltakerlisteType(Tiltakskode.AMO)
+			medDeltakerlisteType(Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING)
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 

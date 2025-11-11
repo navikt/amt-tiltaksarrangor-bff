@@ -1,6 +1,6 @@
 package no.nav.tiltaksarrangor.repositories
 
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
@@ -30,8 +30,8 @@ class DeltakerlisteRepository(
 				navn = rs.getString("navn"),
 				status = DeltakerlisteStatus.valueOf(rs.getString("status")),
 				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
-				tiltakNavn = rs.getString("tiltak_navn"),
-				tiltakType = rs.getString("tiltak_type").let { ArenaKode.valueOf(it) },
+				tiltaksnavn = rs.getString("tiltaksnavn"),
+				tiltakskode = rs.getString("tiltakskode").let { Tiltakskode.valueOf(it) },
 				startDato = rs.getNullableLocalDate("start_dato"),
 				sluttDato = rs.getNullableLocalDate("slutt_dato"),
 				erKurs = rs.getBoolean("er_kurs"),
@@ -49,8 +49,8 @@ class DeltakerlisteRepository(
 						navn = rs.getString("deltakerliste_navn"),
 						status = DeltakerlisteStatus.valueOf(rs.getString("status")),
 						arrangorId = UUID.fromString(rs.getString("arrangor_id")),
-						tiltakNavn = rs.getString("tiltak_navn"),
-						tiltakType = rs.getString("tiltak_type").let { ArenaKode.valueOf(it) },
+						tiltaksnavn = rs.getString("tiltaksnavn"),
+						tiltakskode = rs.getString("tiltakskode").let { Tiltakskode.valueOf(it) },
 						startDato = rs.getNullableLocalDate("start_dato"),
 						sluttDato = rs.getNullableLocalDate("slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),
@@ -70,13 +70,13 @@ class DeltakerlisteRepository(
 	fun insertOrUpdateDeltakerliste(deltakerlisteDbo: DeltakerlisteDbo) {
 		val sql =
 			"""
-			INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltak_navn, tiltak_type, start_dato, slutt_dato, er_kurs, oppstartstype, tilgjengelig_fom)
+			INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltaksnavn, tiltakskode, start_dato, slutt_dato, er_kurs, oppstartstype, tilgjengelig_fom)
 			VALUES (:id,
 					:navn,
 					:status,
 					:arrangor_id,
-					:tiltak_navn,
-					:tiltak_type,
+					:tiltaksnavn,
+					:tiltakskode,
 					:start_dato,
 					:slutt_dato,
 					:er_kurs,
@@ -86,8 +86,8 @@ class DeltakerlisteRepository(
 					navn     				= :navn,
 					status					= :status,
 					arrangor_id 			= :arrangor_id,
-					tiltak_navn				= :tiltak_navn,
-					tiltak_type				= :tiltak_type,
+					tiltaksnavn				= :tiltaksnavn,
+					tiltakskode				= :tiltakskode,
 					start_dato				= :start_dato,
 					slutt_dato				= :slutt_dato,
 					er_kurs					= :er_kurs,
@@ -102,8 +102,8 @@ class DeltakerlisteRepository(
 				"navn" to deltakerlisteDbo.navn,
 				"status" to deltakerlisteDbo.status.name,
 				"arrangor_id" to deltakerlisteDbo.arrangorId,
-				"tiltak_navn" to deltakerlisteDbo.tiltakNavn,
-				"tiltak_type" to deltakerlisteDbo.tiltakType.name,
+				"tiltaksnavn" to deltakerlisteDbo.tiltaksnavn,
+				"tiltakskode" to deltakerlisteDbo.tiltakskode.name,
 				"start_dato" to deltakerlisteDbo.startDato,
 				"slutt_dato" to deltakerlisteDbo.sluttDato,
 				"er_kurs" to deltakerlisteDbo.erKurs,
@@ -151,8 +151,8 @@ class DeltakerlisteRepository(
 					deltakerliste.navn as deltakerliste_navn,
 					status,
 					arrangor_id,
-					tiltak_navn,
-					tiltak_type,
+					tiltaksnavn,
+					tiltakskode,
 					start_dato,
 					slutt_dato,
 					er_kurs,
@@ -179,8 +179,8 @@ class DeltakerlisteRepository(
 					deltakerliste.navn as deltakerliste_navn,
 					status,
 					arrangor_id,
-					tiltak_navn,
-					tiltak_type,
+					tiltaksnavn,
+					tiltakskode,
 					start_dato,
 					slutt_dato,
 					er_kurs,
