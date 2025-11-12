@@ -14,7 +14,7 @@ import java.util.UUID
 @Component
 class KafkaConsumer(
 	private val kafkaConsumerService: KafkaConsumerService,
-	private val deltakerlisteHandler: DeltakerlisteHandler,
+	private val deltakerlisteConsumerService: DeltakerlisteConsumerService,
 	private val tiltakstypeRepository: TiltakstypeRepository,
 ) {
 	@KafkaListener(
@@ -44,7 +44,7 @@ class KafkaConsumer(
 				consumerRecord.value()?.let { objectMapper.readValue(it) },
 			)
 
-			DELTAKERLISTE_V2_TOPIC -> deltakerlisteHandler.lagreDeltakerliste(
+			DELTAKERLISTE_V2_TOPIC -> deltakerlisteConsumerService.lagreDeltakerliste(
 				deltakerlisteId = UUID.fromString(consumerRecord.key()),
 				value = consumerRecord.value(),
 			)

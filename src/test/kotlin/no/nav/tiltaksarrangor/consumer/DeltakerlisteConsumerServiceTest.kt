@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
-class DeltakerlisteHandlerTest {
+class DeltakerlisteConsumerServiceTest {
 	private val arrangorRepository = mockk<ArrangorRepository>()
 	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
 	private val tiltakstypeRepository = mockk<TiltakstypeRepository>()
@@ -31,7 +31,7 @@ class DeltakerlisteHandlerTest {
 	private val unleashToggle: UnleashToggle = mockk()
 
 	private val sut =
-		DeltakerlisteHandler(
+		DeltakerlisteConsumerService(
 			arrangorRepository = arrangorRepository,
 			deltakerlisteRepository = deltakerlisteRepository,
 			tiltakstypeRepository = tiltakstypeRepository,
