@@ -10,24 +10,17 @@ import java.util.UUID
 data class DeltakerlistePayload(
 	val type: String? = null, // finnes kun for v2, kan fjernes etter overgang til v2
 	val id: UUID,
-	val tiltakstype: Tiltakstype,
+	val tiltakskode: String? = null, // skal gjøres non-nullable
+	val tiltakstype: Tiltakstype? = null, // skal fjernes
 	val navn: String,
 	val startDato: LocalDate,
 	val sluttDato: LocalDate? = null,
 	val status: Status,
 	val oppstart: Oppstartstype,
 	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
-	val virksomhetsnummer: String? = null, // finnes kun for v1
-	val arrangor: Arrangor? = null, // finnes kun for v2
+	val arrangor: Arrangor,
 ) {
-	@get:JsonIgnore
-	val organisasjonsnummer: String
-		get() = setOfNotNull(arrangor?.organisasjonsnummer, virksomhetsnummer)
-			.firstOrNull()
-			?: throw IllegalStateException("Virksomhetsnummer mangler")
-
 	data class Tiltakstype(
-		val id: UUID,
 		val tiltakskode: String,
 	)
 
@@ -42,6 +35,11 @@ data class DeltakerlistePayload(
 		AVSLUTTET,
 	}
 
+	// erstattes av tiltakskode senere
+	@get:JsonIgnore
+	val effectiveTiltakskode: String
+		get() = tiltakskode ?: tiltakstype?.tiltakskode ?: throw IllegalStateException("Tiltakskode er ikke satt")
+
 	fun erKurs(): Boolean = oppstart == Oppstartstype.FELLES
 
 	fun toDeltakerlisteStatus(): DeltakerlisteStatus = when (status) {
@@ -55,8 +53,8 @@ data class DeltakerlistePayload(
 		navn = this.navn,
 		status = this.toDeltakerlisteStatus(),
 		arrangorId = arrangorId,
-		tiltakNavn = mapTiltakstypeNavn(navnTiltakstype),
-		tiltakType = Tiltakskode.valueOf(this.tiltakstype.tiltakskode).toArenaKode(),
+		tiltaksnavn = mapTiltakstypeNavn(navnTiltakstype),
+		tiltakskode = Tiltakskode.valueOf(this.effectiveTiltakskode),
 		startDato = this.startDato,
 		sluttDato = this.sluttDato,
 		erKurs = this.erKurs(),

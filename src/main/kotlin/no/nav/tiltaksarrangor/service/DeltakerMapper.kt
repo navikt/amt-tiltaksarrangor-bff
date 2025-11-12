@@ -3,7 +3,7 @@ package no.nav.tiltaksarrangor.service
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
@@ -47,9 +47,7 @@ class DeltakerMapper(
 
 		val aktiveForslag = forslagService.getAktiveForslag(deltaker.id).map { it.tilAktivtForslagResponse() }
 
-		val endringsmeldinger = if (unleashToggle.erKometMasterForTiltakstype(
-				deltakerliste.tiltakType.toTiltaksKode(),
-			) ||
+		val endringsmeldinger = if (unleashToggle.erKometMasterForTiltakstype(deltakerliste.tiltakskode) ||
 			(deltaker.adressebeskyttet && !ansattErVeileder)
 		) {
 			emptyList()

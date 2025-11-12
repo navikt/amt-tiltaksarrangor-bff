@@ -4,12 +4,11 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
-import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.DELTAKERLISTE_V2_TOPIC
+import no.nav.tiltaksarrangor.consumer.ConsumerUtils.tiltakskodeErStottet
 import no.nav.tiltaksarrangor.consumer.model.DeltakerlistePayload
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
-import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -20,28 +19,20 @@ class DeltakerlisteHandler(
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val tiltakstypeRepository: TiltakstypeRepository,
 	private val amtArrangorClient: AmtArrangorClient,
-	private val unleashToggle: UnleashToggle,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun lagreDeltakerliste(
-		topic: String,
-		deltakerlisteId: UUID,
-		value: String?,
-	) {
+	fun lagreDeltakerliste(deltakerlisteId: UUID, value: String?) {
 		if (value == null) {
 			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
 			log.info("Slettet tombstonet deltakerliste med id $deltakerlisteId")
 			return
 		}
 
-		if (topic == DELTAKERLISTE_V2_TOPIC && !unleashToggle.skalLeseGjennomforingerV2()) {
-			log.info("Unleash er ikke enabled for $DELTAKERLISTE_V2_TOPIC")
-			return
-		}
-
-		val tiltakskodeFromJson = getTiltakskodeFromMessageJson(value)
-		if (!unleashToggle.erKometMasterForTiltakstype(tiltakskodeFromJson)) {
+		val tiltakskodeFromJson =
+			getTiltakskodeFromDeltakerlisteJson(value)
+				?: getSecondaryTiltakskodeFromDeltakerlisteJson(value)
+		if (!tiltakskodeErStottet(tiltakskodeFromJson)) {
 			log.info("Tiltakskode $tiltakskodeFromJson er ikke støttet.")
 			return
 		}
@@ -51,9 +42,9 @@ class DeltakerlisteHandler(
 		if (deltakerlistePayload.skalLagres()) {
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(
 				deltakerlistePayload.toDeltakerlisteDbo(
-					arrangorId = hentArrangorId(deltakerlistePayload.organisasjonsnummer),
-					navnTiltakstype = tiltakstypeRepository.getById(deltakerlistePayload.tiltakstype.id)?.navn
-						?: throw IllegalStateException("Tiltakstype med id ${deltakerlistePayload.tiltakstype.id} finnes ikke i db"),
+					arrangorId = hentArrangorId(deltakerlistePayload.arrangor.organisasjonsnummer),
+					navnTiltakstype = tiltakstypeRepository.getByTiltakskode(deltakerlistePayload.effectiveTiltakskode)?.navn
+						?: throw IllegalStateException("Tiltakstype med tiltakskode ${deltakerlistePayload.effectiveTiltakskode} finnes ikke i db"),
 				),
 			)
 			log.info("Lagret deltakerliste med id $deltakerlisteId")
@@ -84,7 +75,12 @@ class DeltakerlisteHandler(
 		private const val TILTAKSKODE_KEY = "tiltakskode"
 		private const val FALLBACK_TILTAKSKODE = "UKJENT"
 
-		fun getTiltakskodeFromMessageJson(messageJson: String): String = objectMapper
+		fun getTiltakskodeFromDeltakerlisteJson(messageJson: String): String? = objectMapper
+			.readTree(messageJson)
+			.get(TILTAKSKODE_KEY)
+			?.asText()
+
+		fun getSecondaryTiltakskodeFromDeltakerlisteJson(messageJson: String): String = objectMapper
 			.readTree(messageJson)
 			.get(TILTAKSTYPE_KEY)
 			?.get(TILTAKSKODE_KEY)

@@ -14,10 +14,10 @@ class TiltakstypeRepository(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun getById(id: UUID): TiltakstypeDbo? = template
+	fun getByTiltakskode(tiltakskode: String): TiltakstypeDbo? = template
 		.query(
-			"SELECT id, navn, tiltakskode FROM tiltakstype WHERE id = :id",
-			mapOf("id" to id),
+			"SELECT id, navn, tiltakskode FROM tiltakstype WHERE tiltakskode = :tiltakskode",
+			mapOf("tiltakskode" to tiltakskode),
 			rowMapper,
 		).firstOrNull()
 

@@ -26,6 +26,7 @@ import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.address.Adressebeskyttelse
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
@@ -120,7 +121,7 @@ class KafkaConsumerServiceTest {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.DELTAR)
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 		}

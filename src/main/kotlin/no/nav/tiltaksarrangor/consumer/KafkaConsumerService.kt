@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.consumer
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
@@ -8,8 +9,11 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
+import no.nav.tiltaksarrangor.consumer.ConsumerUtils.getTiltakskodeFromDeltakerJsonPayload
+import no.nav.tiltaksarrangor.consumer.ConsumerUtils.tiltakskodeErStottet
 import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
@@ -74,8 +78,8 @@ class KafkaConsumerService(
 		}
 	}
 
-	fun lagreDeltaker(deltakerId: UUID, deltakerPayload: DeltakerKafkaPayload?) {
-		if (deltakerPayload == null) {
+	fun lagreDeltaker(deltakerId: UUID, deltakerPayloadJson: String?) {
+		if (deltakerPayloadJson == null) {
 			deltakerRepository.deleteDeltaker(deltakerId)
 			log.info("Slettet tombstonet deltaker med id $deltakerId")
 			return

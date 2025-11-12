@@ -13,7 +13,6 @@ import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.arrangorInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlisteIdInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlistePayloadInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.tiltakstypePayloadInTest
-import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.DELTAKERLISTE_V1_TOPIC
 import no.nav.tiltaksarrangor.consumer.model.DeltakerlistePayload
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
@@ -37,7 +36,6 @@ class DeltakerlisteHandlerTest {
 			deltakerlisteRepository = deltakerlisteRepository,
 			tiltakstypeRepository = tiltakstypeRepository,
 			amtArrangorClient = amtArrangorClient,
-			unleashToggle = unleashToggle,
 		)
 
 	@BeforeEach
@@ -47,7 +45,7 @@ class DeltakerlisteHandlerTest {
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
 		every { deltakerlisteRepository.getDeltakerliste(any()) } returns getDeltakerliste(arrangorInTest.id)
 		every { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(any()) } returns 1
-		every { tiltakstypeRepository.getById(any()) } returns tiltakstypePayloadInTest.toModel()
+		every { tiltakstypeRepository.getByTiltakskode(any()) } returns tiltakstypePayloadInTest.toModel()
 
 		every { arrangorRepository.getArrangor(arrangorInTest.organisasjonsnummer) } returns null
 		every { arrangorRepository.insertOrUpdateArrangor(any()) } just Runs
@@ -58,7 +56,6 @@ class DeltakerlisteHandlerTest {
 	@Test
 	fun `lagreDeltakerliste - status GJENNOMFORES - lagres i db `() {
 		sut.lagreDeltakerliste(
-			topic = DELTAKERLISTE_V1_TOPIC,
 			deltakerlisteId = deltakerlisteIdInTest,
 			value = objectMapper.writeValueAsString(deltakerlistePayloadInTest),
 		)
@@ -76,7 +73,6 @@ class DeltakerlisteHandlerTest {
 		)
 
 		sut.lagreDeltakerliste(
-			topic = DELTAKERLISTE_V1_TOPIC,
 			deltakerlisteId = deltakerlisteIdInTest,
 			value = objectMapper.writeValueAsString(deltakerlisteDto),
 		)
@@ -94,7 +90,6 @@ class DeltakerlisteHandlerTest {
 		)
 
 		sut.lagreDeltakerliste(
-			topic = DELTAKERLISTE_V1_TOPIC,
 			deltakerlisteId = deltakerlisteIdInTest,
 			value = objectMapper.writeValueAsString(deltakerlisteDto),
 		)
@@ -107,13 +102,10 @@ class DeltakerlisteHandlerTest {
 		every { unleashToggle.erKometMasterForTiltakstype("KODE_FINNES_IKKE") } returns false
 
 		val deltakerlisteDto = deltakerlistePayloadInTest.copy(
-			tiltakstype = deltakerlistePayloadInTest.tiltakstype.copy(
-				tiltakskode = "KODE_FINNES_IKKE",
-			),
+			tiltakskode = "KODE_FINNES_IKKE",
 		)
 
 		sut.lagreDeltakerliste(
-			topic = DELTAKERLISTE_V1_TOPIC,
 			deltakerlisteId = deltakerlisteIdInTest,
 			value = objectMapper.writeValueAsString(deltakerlisteDto),
 		)

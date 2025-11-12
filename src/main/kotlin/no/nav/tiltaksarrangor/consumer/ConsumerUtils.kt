@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.consumer
 
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
+import no.nav.amt.lib.utils.objectMapper
 
 object ConsumerUtils {
 	private const val DELTAKERLISTE_KEY = "deltakerliste"

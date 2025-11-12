@@ -21,7 +21,6 @@ class KafkaConsumer(
 		topics = [
 			ARRANGOR_TOPIC,
 			ARRANGOR_ANSATT_TOPIC,
-			DELTAKERLISTE_V1_TOPIC, // fjernes etter migrering til v2
 			DELTAKERLISTE_V2_TOPIC,
 			TILTAKSTYPE_TOPIC,
 			DELTAKER_TOPIC,
@@ -45,15 +44,7 @@ class KafkaConsumer(
 				consumerRecord.value()?.let { objectMapper.readValue(it) },
 			)
 
-			// fjernes etter migrering til v2
-			DELTAKERLISTE_V1_TOPIC -> deltakerlisteHandler.lagreDeltakerliste(
-				topic = DELTAKERLISTE_V1_TOPIC,
-				deltakerlisteId = UUID.fromString(consumerRecord.key()),
-				value = consumerRecord.value(),
-			)
-
 			DELTAKERLISTE_V2_TOPIC -> deltakerlisteHandler.lagreDeltakerliste(
-				topic = DELTAKERLISTE_V1_TOPIC,
 				deltakerlisteId = UUID.fromString(consumerRecord.key()),
 				value = consumerRecord.value(),
 			)
@@ -65,7 +56,7 @@ class KafkaConsumer(
 
 			DELTAKER_TOPIC -> kafkaConsumerService.lagreDeltaker(
 				UUID.fromString(consumerRecord.key()),
-				consumerRecord.value()?.let { objectMapper.readValue(it) },
+				consumerRecord.value(),
 			)
 
 			ENDRINGSMELDING_TOPIC -> kafkaConsumerService.lagreEndringsmelding(
@@ -97,7 +88,6 @@ class KafkaConsumer(
 	companion object {
 		const val ARRANGOR_TOPIC = "amt.arrangor-v1"
 		const val ARRANGOR_ANSATT_TOPIC = "amt.arrangor-ansatt-v1"
-		const val DELTAKERLISTE_V1_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
 		const val DELTAKERLISTE_V2_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v2"
 		const val TILTAKSTYPE_TOPIC = "team-mulighetsrommet.siste-tiltakstyper-v3"
 		const val DELTAKER_TOPIC = "amt.deltaker-v2"

@@ -16,10 +16,10 @@ class TiltakstypeRepositoryTest(
 	private val sut: TiltakstypeRepository,
 ) : RepositoryTestBase() {
 	@Nested
-	inner class Get {
+	inner class GetByTiltakskode {
 		@Test
 		fun `skal returnere null hvis tiltakstype ikke finnes`() {
-			val inDb = sut.getById(tiltakstypeInTest.id)
+			val inDb = sut.getByTiltakskode(tiltakstypeInTest.tiltakskode.name)
 
 			inDb shouldBe null
 		}
@@ -28,7 +28,7 @@ class TiltakstypeRepositoryTest(
 		fun `skal returnere tiltakstype hvis tiltakstype finnes`() {
 			sut.upsert(tiltakstypeInTest)
 
-			val inDb = sut.getById(tiltakstypeInTest.id)
+			val inDb = sut.getByTiltakskode(tiltakstypeInTest.tiltakskode.name)
 
 			assertSoftly(inDb.shouldNotBeNull()) {
 				id shouldBe tiltakstypeInTest.id
@@ -50,7 +50,7 @@ class TiltakstypeRepositoryTest(
 			)
 			sut.upsert(expectedTiltakstype)
 
-			val inDb = sut.getById(tiltakstypeInTest.id)
+			val inDb = sut.getByTiltakskode(expectedTiltakstype.tiltakskode.name)
 
 			assertSoftly(inDb.shouldNotBeNull()) {
 				navn shouldBe expectedTiltakstype.navn

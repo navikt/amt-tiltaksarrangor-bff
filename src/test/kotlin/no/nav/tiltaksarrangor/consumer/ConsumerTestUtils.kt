@@ -9,6 +9,8 @@ import java.time.LocalDate
 import java.util.UUID
 
 object ConsumerTestUtils {
+	// val test = lagArrangor("Test")
+
 	val arrangorInTest =
 		ArrangorMedOverordnetArrangor(
 			id = UUID.randomUUID(),
@@ -28,22 +30,17 @@ object ConsumerTestUtils {
 	val deltakerlistePayloadInTest =
 		DeltakerlistePayload(
 			id = deltakerlisteIdInTest,
+			tiltakskode = tiltakstypePayloadInTest.tiltakskode,
 			tiltakstype =
 				DeltakerlistePayload.Tiltakstype(
-					id = tiltakstypePayloadInTest.id,
 					tiltakskode = tiltakstypePayloadInTest.tiltakskode,
 				),
 			navn = "Gjennomføring av tiltak",
 			startDato = LocalDate.now().minusYears(2),
 			sluttDato = null,
 			status = DeltakerlistePayload.Status.GJENNOMFORES,
-			virksomhetsnummer = arrangorInTest.organisasjonsnummer,
 			oppstart = Oppstartstype.LOPENDE,
 			tilgjengeligForArrangorFraOgMedDato = LocalDate.now(),
+			arrangor = DeltakerlistePayload.Arrangor(arrangorInTest.organisasjonsnummer),
 		)
-
-	val deltakerlisteV2PayloadInTest = deltakerlistePayloadInTest.copy(
-		virksomhetsnummer = null,
-		arrangor = DeltakerlistePayload.Arrangor(arrangorInTest.organisasjonsnummer),
-	)
 }
