@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.consumer
 
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
+import no.nav.tiltaksarrangor.unleash.UnleashToggle.Companion.tiltakstyperKometAlltidErMasterFor
 
 object ConsumerUtils {
 	private const val DELTAKERLISTE_KEY = "deltakerliste"
@@ -17,17 +17,5 @@ object ConsumerUtils {
 		?.asText()
 		?: FALLBACK_TILTAKSKODE
 
-	private val tiltakstyperKometErMasterFor = setOf(
-		Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
-		Tiltakskode.OPPFOLGING,
-		Tiltakskode.AVKLARING,
-		Tiltakskode.ARBEIDSRETTET_REHABILITERING,
-		Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
-		Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-		Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
-		Tiltakskode.JOBBKLUBB,
-		Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
-	)
-
-	fun tiltakskodeErStottet(tiltakskode: String): Boolean = tiltakstyperKometErMasterFor.any { it.name == tiltakskode }
+	fun tiltakskodeErStottet(tiltakskode: String): Boolean = tiltakstyperKometAlltidErMasterFor.any { it.name == tiltakskode }
 }
