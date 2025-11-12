@@ -132,7 +132,7 @@ class KafkaConsumerServiceTest {
 			medStatus(DeltakerStatus.Type.DELTAR)
 			medDeltakerlisteType(Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING)
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 		}
@@ -143,7 +143,7 @@ class KafkaConsumerServiceTest {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART)
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 1) { amtPersonClient.hentOppdatertKontaktinfo(any<String>()) }
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
@@ -155,7 +155,7 @@ class KafkaConsumerServiceTest {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.FEILREGISTRERT)
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
@@ -168,7 +168,7 @@ class KafkaConsumerServiceTest {
 			medErManueltDeltMedArrangor()
 			medStatus(DeltakerStatus.Type.SOKT_INN)
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 		}
@@ -179,7 +179,7 @@ class KafkaConsumerServiceTest {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.SOKT_INN)
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
@@ -191,7 +191,7 @@ class KafkaConsumerServiceTest {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.HAR_SLUTTET, 41)
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
 		}
@@ -202,7 +202,7 @@ class KafkaConsumerServiceTest {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.HAR_SLUTTET, 39)
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 		}
@@ -215,7 +215,7 @@ class KafkaConsumerServiceTest {
 				every { deltakerRepository.getDeltaker(any()) } returns null
 				medStatus(DeltakerStatus.Type.IKKE_AKTUELL)
 				medDeltarPaKurs()
-				kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+				kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 				verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 				verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
@@ -228,7 +228,7 @@ class KafkaConsumerServiceTest {
 			medStatus(DeltakerStatus.Type.IKKE_AKTUELL)
 			medDeltarPaKurs()
 			every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerDto.id)
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 			verify(exactly = 0) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
@@ -243,7 +243,7 @@ class KafkaConsumerServiceTest {
 				medDeltarPaKurs()
 				every { deltakerRepository.getDeltaker(any()) } returns getDeltaker(deltakerDto.id)
 
-				kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+				kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 				verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 				verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
@@ -257,7 +257,7 @@ class KafkaConsumerServiceTest {
 				medStatus(DeltakerStatus.Type.HAR_SLUTTET, gyldigFraDagerSiden = 39)
 				medSluttdato(dagerSiden = 41)
 				every { deltakerRepository.getDeltaker(any()) } returns null
-				kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+				kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 				verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 				verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
@@ -269,7 +269,7 @@ class KafkaConsumerServiceTest {
 		with(DeltakerDtoCtx()) {
 			medAdressebeskyttelse()
 			every { deltakerRepository.getDeltaker(any()) } returns null
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(any()) }
 		}
@@ -288,7 +288,7 @@ class KafkaConsumerServiceTest {
 				)
 			every { deltakerRepository.getDeltaker(any()) } returns opprinneligDeltaker
 
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 1) { deltakerRepository.insertOrUpdateDeltaker(match { it.skjultDato == null && it.skjultAvAnsattId == null }) }
 		}
@@ -309,7 +309,7 @@ class KafkaConsumerServiceTest {
 				)
 			every { deltakerRepository.getDeltaker(any()) } returns opprinneligDeltaker
 
-			kafkaConsumerService.lagreDeltaker(deltakerDto.id, deltakerDto)
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
 			verify(exactly = 1) {
 				deltakerRepository.insertOrUpdateDeltaker(
@@ -322,7 +322,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - historikk inneholder svar pa forslag som ikke finnes i db - lagrer ulest endring i db `(): Unit =
+	internal fun `lagreDeltaker - historikk inneholder svar på forslag som ikke finnes i db - lagrer ulest endring i db `(): Unit =
 		runBlocking {
 			with(DeltakerDtoCtx()) {
 				val lagretDeltaker = deltakerDto.toDeltakerDbo()
@@ -342,7 +342,7 @@ class KafkaConsumerServiceTest {
 				every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 				every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
 				every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
-				kafkaConsumerService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
+				kafkaConsumerService.lagreDeltaker(nyDeltaker.id, objectMapper.writeValueAsString(nyDeltaker))
 
 				verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
 			}
@@ -370,7 +370,7 @@ class KafkaConsumerServiceTest {
 			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
 			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
-			kafkaConsumerService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
+			kafkaConsumerService.lagreDeltaker(nyDeltaker.id, objectMapper.writeValueAsString(nyDeltaker))
 
 			verify(exactly = 0) { ulestEndringRepository.insert(any(), any()) }
 		}
@@ -401,7 +401,7 @@ class KafkaConsumerServiceTest {
 			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
 			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
-			kafkaConsumerService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
+			kafkaConsumerService.lagreDeltaker(nyDeltaker.id, objectMapper.writeValueAsString(nyDeltaker))
 
 			verify(exactly = 0) { ulestEndringRepository.insert(any(), any()) }
 		}
@@ -434,7 +434,7 @@ class KafkaConsumerServiceTest {
 			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
 			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
 			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
-			kafkaConsumerService.lagreDeltaker(nyDeltaker.id, nyDeltaker)
+			kafkaConsumerService.lagreDeltaker(nyDeltaker.id, objectMapper.writeValueAsString(nyDeltaker))
 
 			verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
 		}

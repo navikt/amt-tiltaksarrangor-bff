@@ -31,7 +31,7 @@ class MeldingTilgangskontrollService(
 			?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
-		if (!unleashToggle.erKometMasterForTiltakstype(deltakerMedDeltakerliste.deltakerliste.tiltakType.toTiltaksKode())) {
+		if (!unleashToggle.erKometMasterForTiltakstype(deltakerMedDeltakerliste.deltakerliste.tiltakskode)) {
 			throw UnauthorizedException("Endepunkt er utilgjenglig")
 		}
 

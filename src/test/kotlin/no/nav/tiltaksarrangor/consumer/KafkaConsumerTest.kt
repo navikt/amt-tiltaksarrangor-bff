@@ -1,26 +1,10 @@
 package no.nav.tiltaksarrangor.consumer
 
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.utils.objectMapper
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.tiltaksarrangor.IntegrationTest
-import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
-import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.arrangorInTest
-import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlisteIdInTest
-import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlistePayloadInTest
-import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlisteV2PayloadInTest
-import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.tiltakstypePayloadInTest
-import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.ARRANGOR_ANSATT_TOPIC
-import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.ARRANGOR_TOPIC
-import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.DELTAKERLISTE_V1_TOPIC
-import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.DELTAKERLISTE_V2_TOPIC
-import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.DELTAKER_TOPIC
-import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.ENDRINGSMELDING_TOPIC
-import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.TILTAKSTYPE_TOPIC
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
@@ -409,6 +393,7 @@ class KafkaConsumerTest(
 		val enhetId = UUID.randomUUID()
 		val ansattId = UUID.randomUUID()
 		with(DeltakerDtoCtx()) {
+			// TODO:I main : deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.id, UUID.randomUUID()))
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.deltakerlisteId, UUID.randomUUID()))
 			mockAmtPersonServer.addEnhetResponse(enhetId)
 			mockAmtPersonServer.addAnsattResponse(ansattId)
@@ -475,6 +460,7 @@ class KafkaConsumerTest(
 	@Test
 	fun `listen - avsluttet deltaker-melding pa deltaker-topic og deltaker finnes i db - sletter deltaker fra db`() {
 		with(DeltakerDtoCtx()) {
+			//TODO: I main: deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.id, UUID.randomUUID()))
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(getDeltakerliste(id = deltakerDto.deltakerlisteId, UUID.randomUUID()))
 
 			deltakerRepository.insertOrUpdateDeltaker(deltakerDto.toDeltakerDbo(null))

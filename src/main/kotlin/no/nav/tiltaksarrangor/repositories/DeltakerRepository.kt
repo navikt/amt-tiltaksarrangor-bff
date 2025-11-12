@@ -120,8 +120,8 @@ class DeltakerRepository(
 						navn = rs.getString("navn"),
 						status = DeltakerlisteStatus.valueOf(rs.getString("deltakerliste_status")),
 						arrangorId = UUID.fromString(rs.getString("arrangor_id")),
-						tiltakNavn = rs.getString("tiltak_navn"),
-						tiltakType = rs.getString("tiltak_type").let { ArenaKode.valueOf(it) },
+						tiltaksnavn = rs.getString("tiltaksnavn"),
+						tiltakskode = rs.getString("tiltakskode").let { Tiltakskode.valueOf(it) },
 						startDato = rs.getNullableLocalDate("deltakerliste_start_dato"),
 						sluttDato = rs.getNullableLocalDate("deltakerliste_slutt_dato"),
 						erKurs = rs.getBoolean("er_kurs"),
@@ -332,8 +332,8 @@ class DeltakerRepository(
 				navn,
 				deltakerliste.status as deltakerliste_status,
 				arrangor_id,
-				tiltak_navn,
-				tiltak_type,
+				tiltaksnavn,
+				tiltakskode,
 				deltakerliste.start_dato as deltakerliste_start_dato,
 				deltakerliste.slutt_dato as deltakerliste_slutt_dato,
 				er_kurs,
@@ -389,8 +389,8 @@ class DeltakerRepository(
 					navn,
 					deltakerliste.status as deltakerliste_status,
 					arrangor_id,
-					tiltak_navn,
-					tiltak_type,
+					tiltaksnavn,
+					tiltakskode,
 					deltakerliste.start_dato as deltakerliste_start_dato,
 					deltakerliste.slutt_dato as deltakerliste_slutt_dato,
 					er_kurs,
@@ -467,18 +467,6 @@ class DeltakerRepository(
 			sqlParameters("navveileder_id" to navveilederId),
 			deltakerRowMapper,
 		).filter { it.skalVises() }
-
-	fun getDeltakereUtenOppfolgingsperiode(): List<UUID> {
-		val rm = RowMapper { rs, _ ->
-			UUID.fromString(rs.getString("id"))
-		}
-		val sql =
-			"""
-			SELECT id FROM deltaker where oppfolgingsperioder IS NULL OR jsonb_array_length(oppfolgingsperioder) = 0
-			""".trimIndent()
-
-		return template.query(sql, rm)
-	}
 
 	fun oppdaterEnhetsnavnForDeltakere(opprinneligEnhetsnavn: String, nyttEnhetsnavn: String) {
 		val sql =

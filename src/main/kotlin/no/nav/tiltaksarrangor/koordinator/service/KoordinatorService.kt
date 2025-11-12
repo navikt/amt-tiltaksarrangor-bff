@@ -203,13 +203,12 @@ class KoordinatorService(
 		val aktiveForslag = forslagRepository.getAktiveForslagForDeltakere(deltakere.map { it.id })
 		val ulesteEndringer = ulestEndringRepository.getUlesteForslagForDeltakere(deltakere.map { it.id })
 
-		val erKometMasterForTiltakstype =
-			unleashToggle.erKometMasterForTiltakstype(deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType.toTiltaksKode())
+		val erKometMasterForTiltakstype = unleashToggle.erKometMasterForTiltakstype(deltakerlisteMedArrangor.deltakerlisteDbo.tiltakskode)
 
 		return Deltakerliste(
 			id = deltakerlisteMedArrangor.deltakerlisteDbo.id,
 			navn = deltakerlisteMedArrangor.deltakerlisteDbo.navn,
-			tiltaksnavn = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakNavn,
+			tiltaksnavn = deltakerlisteMedArrangor.deltakerlisteDbo.tiltaksnavn,
 			arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn,
 			startDato = deltakerlisteMedArrangor.deltakerlisteDbo.startDato,
 			sluttDato = deltakerlisteMedArrangor.deltakerlisteDbo.sluttDato,
@@ -232,7 +231,7 @@ class KoordinatorService(
 				ulesteEndringer,
 			),
 			erKurs = deltakerlisteMedArrangor.deltakerlisteDbo.erKurs,
-			tiltakType = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakType,
+			tiltakskode = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakskode,
 		)
 	}
 
@@ -321,7 +320,7 @@ fun List<DeltakerlisteDbo>.toDeltakerliste(): List<KoordinatorFor.Deltakerliste>
 	KoordinatorFor.Deltakerliste(
 		id = it.id,
 		navn = it.navn,
-		type = it.tiltakNavn,
+		type = it.tiltaksnavn,
 		startdato = it.startDato,
 		sluttdato = it.sluttDato,
 		erKurs = it.erKurs,

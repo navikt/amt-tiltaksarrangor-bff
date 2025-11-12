@@ -9,7 +9,6 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
@@ -191,7 +190,7 @@ class TiltaksarrangorServiceTest(
 		deltaker.deltakerliste.id shouldBe deltakerliste.id
 		deltaker.dagerPerUke shouldBe null
 		deltaker.soktInnPa shouldBe deltakerliste.navn
-		deltaker.tiltakskode shouldBe deltakerliste.tiltakType
+		deltaker.tiltakskode shouldBe deltakerliste.tiltakskode
 		deltaker.aktiveEndringsmeldinger.size shouldBe 0
 		deltaker.veiledere.size shouldBe 0
 		deltaker.adresse?.adressetype shouldBe Adressetype.KONTAKTADRESSE
@@ -312,7 +311,7 @@ class TiltaksarrangorServiceTest(
 		deltaker.deltakerliste.id shouldBe deltakerliste.id
 		deltaker.dagerPerUke shouldBe null
 		deltaker.soktInnPa shouldBe deltakerliste.navn
-		deltaker.tiltakskode shouldBe deltakerliste.tiltakType
+		deltaker.tiltakskode shouldBe deltakerliste.tiltakskode
 		deltaker.aktiveEndringsmeldinger.size shouldBe 1
 		val endringsmelding = deltaker.aktiveEndringsmeldinger.first()
 		endringsmelding.type shouldBe Endringsmelding.Type.ENDRE_SLUTTDATO
@@ -383,7 +382,7 @@ class TiltaksarrangorServiceTest(
 		deltaker.deltakerliste.id shouldBe deltakerliste.id
 		deltaker.dagerPerUke shouldBe null
 		deltaker.soktInnPa shouldBe deltakerliste.navn
-		deltaker.tiltakskode shouldBe deltakerliste.tiltakType
+		deltaker.tiltakskode shouldBe deltakerliste.tiltakskode
 		deltaker.aktiveEndringsmeldinger.size shouldBe 0
 		deltaker.historiskeEndringsmeldinger.size shouldBe 0
 		deltaker.veiledere.size shouldBe 1
@@ -395,7 +394,7 @@ class TiltaksarrangorServiceTest(
 
 	@Test
 	fun `getDeltaker - deltaker har uleste forslag og ansatt har tilgang, komet er master - returnerer deltaker`() {
-		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns true
+		every { unleashService.erKometMasterForTiltakstype(any()) } returns true
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
 		arrangorRepository.insertOrUpdateArrangor(getArrangor(arrangorId))
@@ -513,7 +512,7 @@ class TiltaksarrangorServiceTest(
 		deltaker.bestillingTekst shouldNotBe null
 		deltaker.deltakerliste.id shouldBe deltakerliste.id
 		deltaker.soktInnPa shouldBe deltakerliste.navn
-		deltaker.tiltakskode shouldBe deltakerliste.tiltakType
+		deltaker.tiltakskode shouldBe deltakerliste.tiltakskode
 		deltaker.aktiveEndringsmeldinger.size shouldBe 1
 		deltaker.veiledere.size shouldBe 1
 		deltaker.adresse shouldBe null
@@ -584,7 +583,7 @@ class TiltaksarrangorServiceTest(
 		deltaker.bestillingTekst shouldBe null
 		deltaker.deltakerliste.id shouldBe deltakerliste.id
 		deltaker.soktInnPa shouldBe deltakerliste.navn
-		deltaker.tiltakskode shouldBe deltakerliste.tiltakType
+		deltaker.tiltakskode shouldBe deltakerliste.tiltakskode
 		deltaker.aktiveEndringsmeldinger.size shouldBe 0
 		deltaker.veiledere.size shouldBe 0
 		deltaker.adresse shouldBe null
@@ -954,7 +953,7 @@ class TiltaksarrangorServiceTest(
 	@Test
 	fun `getAdresse - deltaker har adresse, tiltakstype jobbklubb - returnerer null`() {
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = ArenaKode.JOBBK)
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakskode = Tiltakskode.JOBBKLUBB)
 		val deltakerId = UUID.randomUUID()
 		val deltaker = getDeltaker(deltakerId, deltakerliste.id)
 
@@ -966,7 +965,7 @@ class TiltaksarrangorServiceTest(
 	@Test
 	fun `getAdresse - deltaker har kontaktadresse, bostedsadresse og oppholdsadresse, tiltakstype AFT - returnerer kontaktadresse`() {
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = ArenaKode.ARBFORB)
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
 		val deltakerId = UUID.randomUUID()
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
@@ -1028,7 +1027,7 @@ class TiltaksarrangorServiceTest(
 	@Test
 	fun `getAdresse - deltaker har bostedsadresse og oppholdsadresse, tiltakstype AFT - returnerer oppholdsadresse`() {
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = ArenaKode.ARBFORB)
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
 		val deltakerId = UUID.randomUUID()
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
@@ -1080,7 +1079,7 @@ class TiltaksarrangorServiceTest(
 	@Test
 	fun `getAdresse - deltaker har bare bostedsadresse, tiltakstype AFT - returnerer bostedsadresse`() {
 		val arrangorId = UUID.randomUUID()
-		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakType = ArenaKode.ARBFORB)
+		val deltakerliste = getDeltakerliste(arrangorId).copy(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
 		val deltakerId = UUID.randomUUID()
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(

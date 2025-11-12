@@ -80,6 +80,16 @@ class KafkaConsumerService(
 			log.info("Slettet tombstonet deltaker med id $deltakerId")
 			return
 		}
+
+		// sjekker at tiltakskoden ikke er enkeltplass og at vi er komet-master for tiltakstypen
+		val tiltakskodeFromJson = getTiltakskodeFromDeltakerJsonPayload(deltakerPayloadJson)
+		if (!tiltakskodeErStottet(tiltakskodeFromJson)) {
+			log.info("Tiltakskode $tiltakskodeFromJson er ikke støttet.")
+			return
+		}
+
+		val deltakerPayload: DeltakerKafkaPayload = objectMapper.readValue(deltakerPayloadJson)
+
 		val lagretDeltaker = deltakerRepository.getDeltaker(deltakerId)
 		if (deltakerPayload.skalLagres(lagretDeltaker)) {
 			leggTilNavAnsattOgEnhetHistorikk(deltakerPayload)

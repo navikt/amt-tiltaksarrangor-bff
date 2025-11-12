@@ -24,7 +24,7 @@ import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.springframework.stereotype.Service
 
-val tiltakMedDeltakelsesmengder = setOf(ArenaKode.ARBFORB, ArenaKode.VASV)
+val tiltakMedDeltakelsesmengder = setOf(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING, Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET)
 
 @Service
 class DeltakerMapper(
@@ -58,7 +58,7 @@ class DeltakerMapper(
 		}
 		val veiledere = ansattService.getVeiledereForDeltaker(deltaker.id)
 
-		val deltakelsesmengder = if (deltakerliste.tiltakType in tiltakMedDeltakelsesmengder) {
+		val deltakelsesmengder = if (deltakerliste.tiltakskode in tiltakMedDeltakelsesmengder) {
 			deltaker.startdato?.let { deltaker.historikk.toDeltakelsesmengder().periode(it, deltaker.sluttdato) }
 				?: deltaker.historikk.toDeltakelsesmengder()
 		} else {
@@ -97,7 +97,7 @@ private fun tilDeltaker(
 				startDato = deltakerliste.startDato,
 				sluttDato = deltakerliste.sluttDato,
 				erKurs = deltakerliste.erKurs,
-				tiltakstype = deltakerliste.tiltakType,
+				tiltakskode = deltakerliste.tiltakskode,
 				oppstartstype = deltakerliste.oppstartstype,
 			),
 		fornavn = deltakerDbo.fornavn,
@@ -118,7 +118,7 @@ private fun tilDeltaker(
 		dagerPerUke = deltakerDbo.dagerPerUke,
 		soktInnPa = deltakerliste.navn,
 		soktInnDato = deltakerDbo.innsoktDato.atStartOfDay(),
-		tiltakskode = deltakerliste.tiltakType,
+		tiltakskode = deltakerliste.tiltakskode,
 		bestillingTekst = deltakerDbo.bestillingstekst,
 		innhold = deltakerDbo.innhold?.let {
 			if (deltakerDbo.innhold.innhold.isEmpty() && deltakerDbo.innhold.ledetekst == null) {

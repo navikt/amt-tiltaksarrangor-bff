@@ -2,7 +2,7 @@ package no.nav.tiltaksarrangor.koordinator.api
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
@@ -53,8 +53,8 @@ class DeltakerlisteAdminAPITest(
 				navn = "Gjennomføring 1",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
-				tiltakNavn = "Navn på tiltak",
-				tiltakType = ArenaKode.ARBFORB,
+				tiltaksnavn = "Navn på tiltak",
+				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
@@ -67,8 +67,8 @@ class DeltakerlisteAdminAPITest(
 				navn = "Gjennomføring 2",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
-				tiltakNavn = "Annet tiltak",
-				tiltakType = ArenaKode.INDOPPFAG,
+				tiltaksnavn = "Annet tiltak",
+				tiltakskode = Tiltakskode.OPPFOLGING,
 				startDato = LocalDate.of(2023, 5, 1),
 				sluttDato = LocalDate.of(2023, 6, 1),
 				erKurs = false,
@@ -102,7 +102,7 @@ class DeltakerlisteAdminAPITest(
 			[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","navn":"Gjennomføring 1","tiltaksnavn":"Navn på tiltak","arrangorNavn":"Arrangør AS","arrangorOrgnummer":"88888888","arrangorParentNavn":"Arrangør AS","startDato":"2023-02-01","sluttDato":null,"lagtTil":true},{"id":"fd70758a-44c5-4868-bdcb-b1ddd26cb5e9","navn":"Gjennomføring 2","tiltaksnavn":"Annet tiltak","arrangorNavn":"Arrangør AS","arrangorOrgnummer":"88888888","arrangorParentNavn":"Arrangør AS","startDato":"2023-05-01","sluttDato":"2023-06-01","lagtTil":false}]
 			""".trimIndent()
 		response.code shouldBe 200
-		response.body?.string() shouldBe expectedJson
+		response.body.string() shouldBe expectedJson
 	}
 
 	@Test
@@ -128,8 +128,8 @@ class DeltakerlisteAdminAPITest(
 				navn = "Gjennomføring 1",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
-				tiltakNavn = "Navn på tiltak",
-				tiltakType = ArenaKode.ARBFORB,
+				tiltaksnavn = "Navn på tiltak",
+				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,
@@ -189,8 +189,8 @@ class DeltakerlisteAdminAPITest(
 				navn = "Gjennomføring 1",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
-				tiltakNavn = "Navn på tiltak",
-				tiltakType = ArenaKode.ARBFORB,
+				tiltaksnavn = "Navn på tiltak",
+				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
 				startDato = LocalDate.of(2023, 2, 1),
 				sluttDato = null,
 				erKurs = false,

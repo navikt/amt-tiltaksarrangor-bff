@@ -3,7 +3,7 @@ package no.nav.tiltaksarrangor.veileder.api
 import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
@@ -50,8 +50,8 @@ class VeilederAPITest(
 				navn = "Gjennomføring 1",
 				status = DeltakerlisteStatus.GJENNOMFORES,
 				arrangorId = arrangorId,
-				tiltakNavn = "Arbeidsforberedende trening",
-				tiltakType = ArenaKode.ARBFORB,
+				tiltaksnavn = "Arbeidsforberedende trening",
+				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
 				startDato = LocalDate.now(),
 				sluttDato = null,
 				erKurs = false,
@@ -127,6 +127,6 @@ class VeilederAPITest(
 			[{"id":"977350f2-d6a5-49bb-a3a0-773f25f863d9","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","startDato":"2023-02-15","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00","aarsak":null},"deltakerliste":{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Arbeidsforberedende trening","navn":"Gjennomføring 1"},"veiledertype":"VEILEDER","aktiveEndringsmeldinger":[],"aktivEndring":null,"sistEndret":"2024-10-12T00:00:00","adressebeskyttet":false,"svarFraNav":false,"oppdateringFraNav":false,"nyDeltaker":false,"erUnderOppfolging":false}]
 			""".trimIndent()
 		response.code shouldBe 200
-		response.body?.string() shouldBe expectedJson
+		response.body.string() shouldBe expectedJson
 	}
 }

@@ -1,11 +1,11 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    val kotlinVersion = "2.2.20"
+    val kotlinVersion = "2.2.21"
 
-    id("org.springframework.boot") version "3.5.6"
+    id("org.springframework.boot") version "3.5.7"
     id("io.spring.dependency-management") version "1.1.7"
-    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
+    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 }
@@ -19,17 +19,17 @@ repositories {
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
-val logstashEncoderVersion = "8.1"
+val logstashEncoderVersion = "9.0"
 val kafkaClientsVersion = "4.1.0"
-val tokenSupportVersion = "5.0.34"
-val okHttpVersion = "5.1.0"
-val kotestVersion = "6.0.3"
+val tokenSupportVersion = "5.0.39"
+val okHttpVersion = "5.3.0"
+val kotestVersion = "6.0.4"
 val testcontainersVersion = "1.21.3"
 val mockkVersion = "1.14.6"
-val commonVersion = "3.2025.08.18_11.44-04fe318bd185"
-val unleashVersion = "11.1.0"
+val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
+val unleashVersion = "11.1.1"
 val ktlintVersion = "1.4.1"
-val amtLibVersion = "1.2025.10.08_09.09-4d8d4f2abb10"
+val amtLibVersion = "1.2025.11.04_07.48-1183a3751d73"
 val shedlockVersion = "6.10.0"
 val springmockkVersion = "4.0.2"
 
@@ -73,7 +73,6 @@ dependencies {
 
     implementation("no.nav.amt.lib:models:$amtLibVersion")
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
-    implementation("no.nav.amt.lib:utils:$amtLibVersion")
 
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlockVersion")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlockVersion")
@@ -83,7 +82,6 @@ dependencies {
         exclude("com.vaadin.external.google", "android-json")
     }
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
-    testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
