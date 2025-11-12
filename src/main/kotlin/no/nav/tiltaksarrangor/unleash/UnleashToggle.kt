@@ -8,28 +8,23 @@ import org.springframework.stereotype.Component
 class UnleashToggle(
 	private val unleashClient: Unleash,
 ) {
-	fun erKometMasterForTiltakstype(tiltakskode: String): Boolean = tiltakstyperKometErMasterFor.any { it.name == tiltakskode }
+	private val tiltakstyperKometAlltidErMasterFor = setOf(
+		Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
+		Tiltakskode.OPPFOLGING,
+		Tiltakskode.AVKLARING,
+		Tiltakskode.ARBEIDSRETTET_REHABILITERING,
+		Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
+		Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+		Tiltakskode.JOBBKLUBB,
+		Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+		Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+	)
 
-	fun erKometMasterForTiltakstype(tiltakskode: Tiltakskode): Boolean = erKometMasterForTiltakstype(tiltakskode.name)
+	// Enkelplasser skal ikke inn i tiltaksarrangor
+	private val tiltakstyperKometKanskjeErMasterFor = emptySet<Tiltakskode>()
+
+	fun erKometMasterForTiltakstype(tiltakstype: Tiltakskode): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFor ||
+		(unleashClient.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
 
 	fun getFeaturetoggles(features: List<String>): Map<String, Boolean> = features.associateWith { unleashClient.isEnabled(it) }
-
-	fun skalLeseGjennomforingerV2(): Boolean = unleashClient.isEnabled(LES_GJENNOMFORINGER_V2)
-
-	companion object {
-		const val ENABLE_KOMET_DELTAKERE = "amt.enable-komet-deltakere"
-		const val LES_GJENNOMFORINGER_V2 = "amt.les-gjennomforing-v2"
-
-		private val tiltakstyperKometErMasterFor = setOf(
-			Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
-			Tiltakskode.OPPFOLGING,
-			Tiltakskode.AVKLARING,
-			Tiltakskode.ARBEIDSRETTET_REHABILITERING,
-			Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
-			Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-			Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
-			Tiltakskode.JOBBKLUBB,
-			Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
-		)
-	}
 }

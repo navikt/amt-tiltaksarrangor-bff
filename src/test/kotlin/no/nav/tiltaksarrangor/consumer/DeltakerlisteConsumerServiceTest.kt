@@ -18,7 +18,6 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
-import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -28,7 +27,6 @@ class DeltakerlisteConsumerServiceTest {
 	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
 	private val tiltakstypeRepository = mockk<TiltakstypeRepository>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
-	private val unleashToggle: UnleashToggle = mockk()
 
 	private val sut =
 		DeltakerlisteConsumerService(
@@ -50,7 +48,6 @@ class DeltakerlisteConsumerServiceTest {
 		every { arrangorRepository.getArrangor(arrangorInTest.organisasjonsnummer) } returns null
 		every { arrangorRepository.insertOrUpdateArrangor(any()) } just Runs
 		coEvery { amtArrangorClient.getArrangor(arrangorInTest.organisasjonsnummer) } returns arrangorInTest
-		every { unleashToggle.erKometMasterForTiltakstype(any<String>()) } returns true
 	}
 
 	@Test
@@ -99,8 +96,6 @@ class DeltakerlisteConsumerServiceTest {
 
 	@Test
 	fun `lagreDeltakerliste - ikke stottet tiltakstype - lagres ikke i db `() {
-		every { unleashToggle.erKometMasterForTiltakstype("KODE_FINNES_IKKE") } returns false
-
 		val deltakerlisteDto = deltakerlistePayloadInTest.copy(
 			tiltakskode = "KODE_FINNES_IKKE",
 		)

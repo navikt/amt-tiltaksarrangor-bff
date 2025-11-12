@@ -394,7 +394,7 @@ class TiltaksarrangorServiceTest(
 
 	@Test
 	fun `getDeltaker - deltaker har uleste forslag og ansatt har tilgang, komet er master - returnerer deltaker`() {
-		every { unleashToggle.erKometMasterForTiltakstype(any<String>()) } returns true
+		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns true
 		val personIdent = "12345678910"
 		val arrangorId = UUID.randomUUID()
 		arrangorRepository.insertOrUpdateArrangor(getArrangor(arrangorId))
