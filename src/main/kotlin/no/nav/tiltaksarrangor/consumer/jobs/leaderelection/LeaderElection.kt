@@ -30,8 +30,14 @@ class LeaderElection(
 
 		val uriString =
 			UriComponentsBuilder
-				.fromHttpUrl(getHttpPath(electorPath))
-				.toUriString()
+				.fromUriString(
+					if (electorPath.startsWith("http://")) {
+						electorPath
+					} else {
+						"http://$electorPath"
+					},
+				).toUriString()
+
 		val request =
 			Request
 				.Builder()
@@ -51,11 +57,6 @@ class LeaderElection(
 				return leader.name == hostname
 			}
 		}
-	}
-
-	private fun getHttpPath(url: String): String = when (url.startsWith("http://")) {
-		true -> url
-		else -> "http://$url"
 	}
 
 	private data class Leader(
