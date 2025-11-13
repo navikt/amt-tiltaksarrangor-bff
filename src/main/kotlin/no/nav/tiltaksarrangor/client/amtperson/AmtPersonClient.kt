@@ -10,6 +10,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import java.util.UUID
 
@@ -66,26 +67,31 @@ class AmtPersonClient(
 		it[personident] ?: throw NoSuchElementException("Klarte ikke hente kontaktinformasjon for person med ident")
 	}
 
-	fun hentOppdatertKontaktinfo(personidenter: Set<String>): Result<KontakinformasjonForPersoner> {
-		val request =
-			Request
-				.Builder()
-				.url("$url/api/nav-bruker/kontaktinformasjon")
-				.post(objectMapper.writeValueAsString(personidenter).toRequestBody("application/json".toMediaType()))
-				.build()
+	fun hentOppdatertKontaktinfo(personidenter: Set<String>): Result<KontakinformasjonForPersoner> = runCatching {
+		val requestBody = objectMapper
+			.writeValueAsString(personidenter)
+			.toRequestBody(MediaType.APPLICATION_JSON_VALUE.toMediaType())
+
+		val request = Request
+			.Builder()
+			.url("$url/api/nav-bruker/kontaktinformasjon")
+			.post(requestBody)
+			.build()
 
 		amtPersonAADHttpClient.newCall(request).execute().use { response ->
+			val responseBodyString = response.body.string()
+
 			if (!response.isSuccessful) {
-				val feilmelding = "Kunne ikke hente kontakinformasjon fra amt-person-service."
-				log.error(
-					feilmelding +
-						" Status=${response.code} error=${response.body.string()}",
-				)
-				return Result.failure(RuntimeException(feilmelding))
+				log.error("$KONTAKTINFO_ERROR_MSG Status=${response.code} error=$responseBodyString")
+				throw RuntimeException(KONTAKTINFO_ERROR_MSG)
 			}
 
-			return objectMapper.readValue(response.body.string())
+			objectMapper.readValue<KontakinformasjonForPersoner>(responseBodyString)
 		}
+	}
+
+	companion object {
+		private const val KONTAKTINFO_ERROR_MSG = "Kunne ikke hente kontakinformasjon fra amt-person-service."
 	}
 }
 
