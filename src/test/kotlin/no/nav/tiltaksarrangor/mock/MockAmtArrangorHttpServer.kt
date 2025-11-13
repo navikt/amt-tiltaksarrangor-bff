@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.mock
 
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
@@ -7,7 +8,6 @@ import no.nav.tiltaksarrangor.consumer.model.NavnDto
 import no.nav.tiltaksarrangor.consumer.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.consumer.model.VeilederDto
 import no.nav.tiltaksarrangor.model.Veiledertype
-import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.mockwebserver.MockResponse
 import java.util.UUID
 
@@ -17,7 +17,7 @@ class MockAmtArrangorHttpServer : MockHttpServer(name = "Amt-Arrangor Mock Serve
 			path = "/api/ansatt",
 			MockResponse()
 				.setResponseCode(200)
-				.setBody(JsonUtils.objectMapper.writeValueAsString(getAnsatt(ansattId, personIdent))),
+				.setBody(objectMapper.writeValueAsString(getAnsatt(ansattId, personIdent))),
 		)
 	}
 

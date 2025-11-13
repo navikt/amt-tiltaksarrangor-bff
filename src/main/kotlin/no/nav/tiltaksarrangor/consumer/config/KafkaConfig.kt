@@ -14,12 +14,12 @@ import org.springframework.kafka.listener.ContainerProperties
 
 @Configuration
 class KafkaConfig(
-	@Value("\${KAFKA_BROKERS}") private val kafkaBrokers: String,
-	@Value("\${KAFKA_SECURITY_PROTOCOL:SSL}") private val kafkaSecurityProtocol: String,
-	@Value("\${KAFKA_TRUSTSTORE_PATH}") private val kafkaTruststorePath: String,
-	@Value("\${KAFKA_CREDSTORE_PASSWORD}") private val kafkaCredstorePassword: String,
-	@Value("\${KAFKA_KEYSTORE_PATH}") private val kafkaKeystorePath: String,
-	@Value("\${kafka.auto-offset-reset}") private val kafkaAutoOffsetReset: String,
+	@Value($$"${KAFKA_BROKERS}") private val kafkaBrokers: String,
+	@Value($$"${KAFKA_SECURITY_PROTOCOL:SSL}") private val kafkaSecurityProtocol: String,
+	@Value($$"${KAFKA_TRUSTSTORE_PATH}") private val kafkaTruststorePath: String,
+	@Value($$"${KAFKA_CREDSTORE_PASSWORD}") private val kafkaCredstorePassword: String,
+	@Value($$"${KAFKA_KEYSTORE_PATH}") private val kafkaKeystorePath: String,
+	@Value($$"${kafka.auto-offset-reset}") private val kafkaAutoOffsetReset: String,
 ) {
 	private val javaKeystore = "JKS"
 	private val pkcs12 = "PKCS12"

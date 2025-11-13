@@ -8,7 +8,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.TilgangskontrollService
 import no.nav.tiltaksarrangor.service.TokenService
-import no.nav.tiltaksarrangor.unleash.UnleashService
+import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -18,7 +18,7 @@ class MeldingTilgangskontrollService(
 	private val ansattService: AnsattService,
 	private val deltakerRepository: DeltakerRepository,
 	private val tilgangskontrollService: TilgangskontrollService,
-	private val unleashService: UnleashService,
+	private val unleashToggle: UnleashToggle,
 ) {
 	fun <T> medTilgangTilAnsattOgDeltaker(
 		deltakerId: UUID,
@@ -31,7 +31,7 @@ class MeldingTilgangskontrollService(
 			?.takeIf { it.deltakerliste.erTilgjengeligForArrangor() }
 			?: throw NoSuchElementException("Fant ikke deltaker med id $deltakerId")
 
-		if (!unleashService.erKometMasterForTiltakstype(deltakerMedDeltakerliste.deltakerliste.tiltakskode)) {
+		if (!unleashToggle.erKometMasterForTiltakstype(deltakerMedDeltakerliste.deltakerliste.tiltakskode)) {
 			throw UnauthorizedException("Endepunkt er utilgjenglig")
 		}
 

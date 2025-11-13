@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.consumer.jobs.leaderelection
 
-import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.amt.lib.utils.objectMapper
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.LoggerFactory
@@ -12,7 +13,7 @@ import java.net.InetAddress
 @Component
 class LeaderElection(
 	private val simpleHttpClient: OkHttpClient,
-	@Value("\${elector.path}") private val electorPath: String,
+	@Value($$"${elector.path}") private val electorPath: String,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -45,15 +46,11 @@ class LeaderElection(
 				throw RuntimeException(message)
 			}
 
-			response.body?.string()?.let {
-				val leader: Leader = fromJsonString<Leader>(it)
+			response.body.string().let {
+				val leader: Leader = objectMapper.readValue<Leader>(it)
 				return leader.name == hostname
 			}
 		}
-
-		val message = "Kall mot elector returnerer ikke data"
-		log.error(message)
-		throw RuntimeException(message)
 	}
 
 	private fun getHttpPath(url: String): String = when (url.startsWith("http://")) {

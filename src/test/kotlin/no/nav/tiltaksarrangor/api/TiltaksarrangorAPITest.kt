@@ -7,6 +7,7 @@ import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
@@ -28,7 +29,6 @@ import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getVurderinger
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
@@ -296,12 +296,9 @@ class TiltaksarrangorAPITest(
 				path = "/tiltaksarrangor/deltaker/$deltakerId/historikk",
 				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
-		val expectedJson =
-			"""
-			[]
-			""".trimIndent().format()
+
 		response.code shouldBe 200
-		response.body.string() shouldBe expectedJson
+		response.body.string() shouldBe "[ ]"
 	}
 
 	@Test
@@ -382,12 +379,14 @@ class TiltaksarrangorAPITest(
 				path = "/tiltaksarrangor/deltaker/$deltakerId/historikk",
 				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
+
 		val expectedJson =
 			"""
 			[{"type":"EndringFraArrangor","id":"fe640f60-88ef-46d8-9bc4-148aecdef6da","opprettet":"2023-01-01T00:00:00","arrangorNavn":"Orgnavn","endring":{"type":"LeggTilOppstartsdato","startdato":"2023-02-01","sluttdato":null}}]
 			""".trimIndent().format()
+
 		response.code shouldBe 200
-		response.body.string() shouldBe expectedJson
+		objectMapper.readTree(response.body.string()) shouldBe objectMapper.readTree(expectedJson)
 	}
 
 	@Test

@@ -8,10 +8,8 @@ import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
-import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
-import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
 import no.nav.tiltaksarrangor.consumer.ConsumerUtils.getTiltakskodeFromDeltakerJsonPayload
@@ -19,7 +17,6 @@ import no.nav.tiltaksarrangor.consumer.ConsumerUtils.tiltakskodeErStottet
 import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerlisteDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
@@ -34,15 +31,12 @@ import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
-import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
-import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.service.NavAnsattService
 import no.nav.tiltaksarrangor.service.NavEnhetService
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -54,10 +48,8 @@ import java.util.UUID
 class KafkaConsumerService(
 	private val arrangorRepository: ArrangorRepository,
 	private val ansattRepository: AnsattRepository,
-	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
-	private val amtArrangorClient: AmtArrangorClient,
 	private val forslagService: ForslagService,
 	private val navEnhetService: NavEnhetService,
 	private val navAnsattService: NavAnsattService,
@@ -83,23 +75,6 @@ class KafkaConsumerService(
 		} else {
 			ansattRepository.insertOrUpdateAnsatt(ansatt.toAnsattDbo())
 			log.info("Lagret ansatt med id $ansattId")
-		}
-	}
-
-	fun lagreDeltakerliste(deltakerlisteId: UUID, deltakerlisteDto: DeltakerlisteDto?) {
-		if (deltakerlisteDto == null) {
-			deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
-			log.info("Slettet tombstonet deltakerliste med id $deltakerlisteId")
-		} else if (deltakerlisteDto.skalLagres()) {
-			deltakerlisteRepository.insertOrUpdateDeltakerliste(toDeltakerlisteDbo(deltakerlisteDto))
-			log.info("Lagret deltakerliste med id $deltakerlisteId")
-		} else {
-			val antallSlettedeDeltakerlister = deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(deltakerlisteId)
-			if (antallSlettedeDeltakerlister > 0) {
-				log.info("Slettet deltakerliste med id $deltakerlisteId")
-			} else {
-				log.info("Ignorert deltakerliste med id $deltakerlisteId")
-			}
 		}
 	}
 
@@ -398,41 +373,6 @@ class KafkaConsumerService(
 		!LocalDateTime.now().isAfter(status.gyldigFra.plusDays(DAGER_AVSLUTTET_DELTAKER_VISES)) &&
 			(sluttdato == null || sluttdato!!.isAfter(LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES)))
 
-	private fun toDeltakerlisteDbo(deltakerlisteDto: DeltakerlisteDto): DeltakerlisteDbo = DeltakerlisteDbo(
-		id = deltakerlisteDto.id,
-		navn = deltakerlisteDto.navn,
-		status = deltakerlisteDto.toDeltakerlisteStatus(),
-		arrangorId = getArrangorId(deltakerlisteDto.virksomhetsnummer),
-		tiltaksnavn = getTiltakstypeNavn(deltakerlisteDto.tiltakstype),
-		tiltakskode = Tiltakskode.valueOf(deltakerlisteDto.tiltakstype.tiltakskode),
-		startDato = deltakerlisteDto.startDato,
-		sluttDato = deltakerlisteDto.sluttDato,
-		erKurs = deltakerlisteDto.erKurs(),
-		oppstartstype = deltakerlisteDto.oppstart,
-		tilgjengeligForArrangorFraOgMedDato = deltakerlisteDto.tilgjengeligForArrangorFraOgMedDato,
-	)
-
-	private fun getTiltakstypeNavn(tiltakstype: DeltakerlisteDto.TiltakstypeDto): String {
-		if (tiltakstype.navn == "Jobbklubb") {
-			return "Jobbsøkerkurs"
-		} else {
-			return tiltakstype.navn
-		}
-	}
-
-	private fun getArrangorId(organisasjonsnummer: String): UUID {
-		val arrangorId = arrangorRepository.getArrangor(organisasjonsnummer)?.id
-		if (arrangorId != null) {
-			return arrangorId
-		}
-		log.info("Fant ikke arrangør med orgnummer $organisasjonsnummer i databasen, henter fra amt-arrangør")
-		val arrangor =
-			amtArrangorClient.getArrangor(organisasjonsnummer)
-				?: throw RuntimeException("Kunne ikke hente arrangør med orgnummer $organisasjonsnummer")
-		arrangorRepository.insertOrUpdateArrangor(arrangor.toArrangorDbo())
-		return arrangor.id
-	}
-
 	fun handleMelding(id: UUID, melding: Melding?) {
 		if (melding == null) {
 			log.warn("Mottok tombstone for melding med id: $id")
@@ -486,22 +426,6 @@ private fun NavEnhetDto.toModel() = NavEnhet(
 	enhetsnummer = enhetId,
 	navn = navn,
 )
-
-fun DeltakerlisteDto.skalLagres(): Boolean {
-	if (!tiltakstype.erStottet()) return false
-
-	if (status == DeltakerlisteDto.Status.GJENNOMFORES) {
-		return true
-	} else if (status == DeltakerlisteDto.Status.AVSLUTTET &&
-		sluttDato != null &&
-		LocalDate
-			.now()
-			.isBefore(sluttDato.plusDays(15))
-	) {
-		return true
-	}
-	return false
-}
 
 fun EndringFraTiltakskoordinator.Avslag.Aarsak.toDeltakerStatusAarsak() = DeltakerStatusAarsakJsonDboDto(
 	type = DeltakerStatus.Aarsak.Type.valueOf(this.type.name),

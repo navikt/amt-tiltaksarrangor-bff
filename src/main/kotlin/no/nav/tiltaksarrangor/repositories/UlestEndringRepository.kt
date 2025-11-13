@@ -1,9 +1,10 @@
 package no.nav.tiltaksarrangor.repositories
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.melding.forslag.toPGObject
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.UlestEndring
-import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -18,7 +19,7 @@ class UlestEndringRepository(
 		UlestEndring(
 			id = UUID.fromString(rs.getString("id")),
 			deltakerId = UUID.fromString(rs.getString("deltaker_id")),
-			oppdatering = fromJsonString<Oppdatering>(rs.getString("oppdatering")),
+			oppdatering = objectMapper.readValue(rs.getString("oppdatering")),
 			oppdatert = rs.getDate("modified_at").toLocalDate(),
 		)
 	}

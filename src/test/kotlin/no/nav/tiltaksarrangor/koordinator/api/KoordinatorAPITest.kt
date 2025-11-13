@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
@@ -26,7 +27,6 @@ import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.getAdresse
 import no.nav.tiltaksarrangor.testutils.getDeltaker
-import no.nav.tiltaksarrangor.utils.JsonUtils
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
@@ -119,6 +119,7 @@ class KoordinatorAPITest(
 			"""
 			{"veilederFor":{"veilederFor":2,"medveilederFor":3},"koordinatorFor":{"deltakerlister":[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Tiltaksnavnet","navn":"Gjennomføring 1","startdato":"2024-01-03","sluttdato":null,"erKurs":false}]}}
 			""".trimIndent()
+
 		response.code shouldBe 200
 		response.body.string() shouldBe expectedJson
 	}
@@ -201,6 +202,7 @@ class KoordinatorAPITest(
 			"""
 			[{"ansattId":"29bf6799-bb56-4a86-857b-99b529b3dfc4","fornavn":"Fornavn1","mellomnavn":null,"etternavn":"Etternavn1"},{"ansattId":"e824dbfe-5317-491b-82ed-03b870eed963","fornavn":"Fornavn2","mellomnavn":null,"etternavn":"Etternavn2"}]
 			""".trimIndent()
+
 		response.code shouldBe 200
 		response.body.string() shouldBe expectedJson
 	}
@@ -224,7 +226,7 @@ class KoordinatorAPITest(
 			sendRequest(
 				method = "POST",
 				path = "/tiltaksarrangor/koordinator/veiledere?deltakerId=${UUID.randomUUID()}",
-				body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
+				body = objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
 			)
 
 		response.code shouldBe 401
@@ -309,7 +311,7 @@ class KoordinatorAPITest(
 			sendRequest(
 				method = "POST",
 				path = "/tiltaksarrangor/koordinator/veiledere?deltakerId=$deltakerId",
-				body = JsonUtils.objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
+				body = objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
 				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
@@ -438,6 +440,7 @@ class KoordinatorAPITest(
 			"""
 			{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","navn":"Gjennomføring 1","tiltaksnavn":"Navn på tiltak","arrangorNavn":"Arrangør AS","startDato":"2023-02-01","sluttDato":null,"status":"GJENNOMFORES","koordinatorer":[{"fornavn":"Fornavn1","mellomnavn":null,"etternavn":"Etternavn1"},{"fornavn":"Fornavn2","mellomnavn":null,"etternavn":"Etternavn2"}],"deltakere":[{"id":"252428ac-37a6-4341-bb17-5bad412c9409","fornavn":"Fornavn","mellomnavn":null,"etternavn":"Etternavn","fodselsnummer":"10987654321","soktInnDato":"2023-01-15T00:00:00","startDato":"2023-02-01","sluttDato":null,"status":{"type":"DELTAR","endretDato":"2023-02-01T00:00:00","aarsak":null},"veiledere":[],"navKontor":"NAV Testheim","aktiveEndringsmeldinger":[],"gjeldendeVurderingFraArrangor":null,"adressebeskyttet":false,"erVeilederForDeltaker":false,"aktivEndring":null,"svarFraNav":false,"oppdateringFraNav":false,"nyDeltaker":false}],"erKurs":false,"tiltakskode":"ARBEIDSFORBEREDENDE_TRENING"}
 			""".trimIndent()
+
 		response.code shouldBe 200
 		response.body.string() shouldBe expectedJson
 	}

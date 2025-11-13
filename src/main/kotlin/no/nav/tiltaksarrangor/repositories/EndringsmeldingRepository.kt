@@ -1,11 +1,11 @@
 package no.nav.tiltaksarrangor.repositories
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
-import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.postgresql.util.PGobject
 import org.slf4j.LoggerFactory
@@ -98,30 +98,16 @@ class EndringsmeldingRepository(
 			log.error("Kan ikke lese endringsmelding med type $type som mangler innhold")
 			throw IllegalStateException("Endringsmelding med type $type må ha innhold")
 		}
+
 		return when (type) {
-			EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO ->
-				fromJsonString<Innhold.LeggTilOppstartsdatoInnhold>(innholdJson)
-
-			EndringsmeldingType.ENDRE_OPPSTARTSDATO ->
-				fromJsonString<Innhold.EndreOppstartsdatoInnhold>(innholdJson)
-
-			EndringsmeldingType.FORLENG_DELTAKELSE ->
-				fromJsonString<Innhold.ForlengDeltakelseInnhold>(innholdJson)
-
-			EndringsmeldingType.AVSLUTT_DELTAKELSE ->
-				fromJsonString<Innhold.AvsluttDeltakelseInnhold>(innholdJson)
-
-			EndringsmeldingType.DELTAKER_IKKE_AKTUELL ->
-				fromJsonString<Innhold.DeltakerIkkeAktuellInnhold>(innholdJson)
-
-			EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT ->
-				fromJsonString<Innhold.EndreDeltakelseProsentInnhold>(innholdJson)
-
-			EndringsmeldingType.ENDRE_SLUTTDATO ->
-				fromJsonString<Innhold.EndreSluttdatoInnhold>(innholdJson)
-
-			EndringsmeldingType.ENDRE_SLUTTAARSAK ->
-				fromJsonString<Innhold.EndreSluttaarsakInnhold>(innholdJson)
+			EndringsmeldingType.LEGG_TIL_OPPSTARTSDATO -> objectMapper.readValue<Innhold.LeggTilOppstartsdatoInnhold>(innholdJson)
+			EndringsmeldingType.ENDRE_OPPSTARTSDATO -> objectMapper.readValue<Innhold.EndreOppstartsdatoInnhold>(innholdJson)
+			EndringsmeldingType.FORLENG_DELTAKELSE -> objectMapper.readValue<Innhold.ForlengDeltakelseInnhold>(innholdJson)
+			EndringsmeldingType.AVSLUTT_DELTAKELSE -> objectMapper.readValue<Innhold.AvsluttDeltakelseInnhold>(innholdJson)
+			EndringsmeldingType.DELTAKER_IKKE_AKTUELL -> objectMapper.readValue<Innhold.DeltakerIkkeAktuellInnhold>(innholdJson)
+			EndringsmeldingType.ENDRE_DELTAKELSE_PROSENT -> objectMapper.readValue<Innhold.EndreDeltakelseProsentInnhold>(innholdJson)
+			EndringsmeldingType.ENDRE_SLUTTDATO -> objectMapper.readValue<Innhold.EndreSluttdatoInnhold>(innholdJson)
+			EndringsmeldingType.ENDRE_SLUTTAARSAK -> objectMapper.readValue<Innhold.EndreSluttaarsakInnhold>(innholdJson)
 		}
 	}
 }

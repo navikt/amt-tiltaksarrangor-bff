@@ -4,7 +4,7 @@ import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
-import no.nav.tiltaksarrangor.utils.JsonUtils
+import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -26,19 +26,19 @@ class MeldingProducer(
 			is Forslag.Status.Erstattet,
 			is Forslag.Status.VenterPaSvar,
 			-> {
-				producer.produce(MELDING_TOPIC, forslag.id.toString(), JsonUtils.objectMapper.writeValueAsString(forslag))
+				producer.produce(MELDING_TOPIC, forslag.id.toString(), objectMapper.writeValueAsString(forslag))
 				log.info("Produserte forslag ${forslag.id} med status ${forslag.status::class.simpleName}")
 			}
 		}
 	}
 
 	fun produce(endring: EndringFraArrangor) {
-		producer.produce(MELDING_TOPIC, endring.id.toString(), JsonUtils.objectMapper.writeValueAsString(endring))
+		producer.produce(MELDING_TOPIC, endring.id.toString(), objectMapper.writeValueAsString(endring))
 		log.info("Produserte endring fra arrangør ${endring.id}")
 	}
 
 	fun produce(vurdering: Vurdering) {
-		producer.produce(MELDING_TOPIC, vurdering.id.toString(), JsonUtils.objectMapper.writeValueAsString(vurdering))
+		producer.produce(MELDING_TOPIC, vurdering.id.toString(), objectMapper.writeValueAsString(vurdering))
 		log.info("Produserte vurdering fra arrangør ${vurdering.id}")
 	}
 }

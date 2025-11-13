@@ -2,20 +2,15 @@ package no.nav.tiltaksarrangor.repositories
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
-import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.models.person.Oppfolgingsperiode
-import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakJsonDboDto
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
-import no.nav.tiltaksarrangor.utils.JsonUtils.fromJsonString
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import no.nav.tiltaksarrangor.utils.getNullableDouble
 import no.nav.tiltaksarrangor.utils.getNullableFloat
 import no.nav.tiltaksarrangor.utils.getNullableLocalDate
@@ -45,12 +40,12 @@ class DeltakerRepository(
 				telefonnummer = rs.getString("telefonnummer"),
 				epost = rs.getString("epost"),
 				erSkjermet = rs.getBoolean("er_skjermet"),
-				adresse = rs.getString("adresse")?.let { fromJsonString<AdresseJsonDbo>(it) },
+				adresse = rs.getString("adresse")?.let { objectMapper.readValue(it) },
 				vurderingerFraArrangor = rs.getString("vurderinger")?.let { objectMapper.readValue(it) },
 				status = DeltakerStatus.Type.valueOf(rs.getString("status")),
 				statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 				statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-				statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakJsonDboDto>(it) },
+				statusAarsak = rs.getString("aarsak")?.let { objectMapper.readValue(it) },
 				dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 				prosentStilling = rs.getNullableDouble("prosent_stilling"),
 				startdato = rs.getNullableLocalDate("start_dato"),
@@ -65,13 +60,13 @@ class DeltakerRepository(
 				skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 				skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
 				adressebeskyttet = rs.getBoolean("adressebeskyttet"),
-				innhold = rs.getString("innhold")?.let { fromJsonString(it) },
+				innhold = rs.getString("innhold")?.let { objectMapper.readValue(it) },
 				kilde = Kilde.valueOf(rs.getString("kilde")),
-				historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
+				historikk = objectMapper.readValue(rs.getString("historikk")),
 				sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 				forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
 				erManueltDeltMedArrangor = rs.getBoolean("er_manuelt_delt_med_arrangor"),
-				oppfolgingsperioder = rs.getString("oppfolgingsperioder")?.let { fromJsonString<List<Oppfolgingsperiode>>(it) }
+				oppfolgingsperioder = rs.getString("oppfolgingsperioder")?.let { objectMapper.readValue(it) }
 					?: emptyList(),
 			)
 		}
@@ -90,12 +85,12 @@ class DeltakerRepository(
 						telefonnummer = rs.getString("telefonnummer"),
 						epost = rs.getString("epost"),
 						erSkjermet = rs.getBoolean("er_skjermet"),
-						adresse = rs.getString("adresse")?.let { fromJsonString<AdresseJsonDbo>(it) },
+						adresse = rs.getString("adresse")?.let { objectMapper.readValue(it) },
 						vurderingerFraArrangor = rs.getString("vurderinger")?.let { objectMapper.readValue(it) },
 						status = DeltakerStatus.Type.valueOf(rs.getString("deltakerstatus")),
 						statusGyldigFraDato = rs.getTimestamp("status_gyldig_fra").toLocalDateTime(),
 						statusOpprettetDato = rs.getTimestamp("status_opprettet_dato").toLocalDateTime(),
-						statusAarsak = rs.getString("aarsak")?.let { fromJsonString<DeltakerStatusAarsakJsonDboDto>(it) },
+						statusAarsak = rs.getString("aarsak")?.let { objectMapper.readValue(it) },
 						dagerPerUke = rs.getNullableFloat("dager_per_uke"),
 						prosentStilling = rs.getNullableDouble("prosent_stilling"),
 						startdato = rs.getNullableLocalDate("deltaker_start_dato"),
@@ -110,13 +105,13 @@ class DeltakerRepository(
 						skjultAvAnsattId = rs.getNullableUUID("skjult_av_ansatt_id"),
 						skjultDato = rs.getNullableLocalDateTime("skjult_dato"),
 						adressebeskyttet = rs.getBoolean("adressebeskyttet"),
-						innhold = rs.getString("innhold")?.let { fromJsonString(it) },
+						innhold = rs.getString("innhold")?.let { objectMapper.readValue(it) },
 						kilde = Kilde.valueOf(rs.getString("kilde")),
-						historikk = fromJsonString<List<DeltakerHistorikk>>(rs.getString("historikk")),
+						historikk = objectMapper.readValue(rs.getString("historikk")),
 						sistEndret = rs.getTimestamp("modified_at").toLocalDateTime(),
 						forsteVedtakFattet = rs.getNullableLocalDate("forste_vedtak_fattet"),
 						erManueltDeltMedArrangor = rs.getBoolean("er_manuelt_delt_med_arrangor"),
-						oppfolgingsperioder = rs.getString("oppfolgingsperioder")?.let { fromJsonString<List<Oppfolgingsperiode>>(it) }
+						oppfolgingsperioder = rs.getString("oppfolgingsperioder")?.let { objectMapper.readValue(it) }
 							?: emptyList(),
 					),
 				deltakerliste =

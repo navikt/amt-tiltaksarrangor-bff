@@ -29,7 +29,7 @@ val mockkVersion = "1.14.6"
 val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
 val unleashVersion = "11.1.1"
 val ktlintVersion = "1.4.1"
-val amtLibVersion = "1.2025.11.04_07.48-1183a3751d73"
+val amtLibVersion = "1.2025.11.12_08.07-38f5421b4ee6"
 val shedlockVersion = "6.10.0"
 val springmockkVersion = "4.0.2"
 
@@ -73,6 +73,7 @@ dependencies {
 
     implementation("no.nav.amt.lib:models:$amtLibVersion")
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
+    implementation("no.nav.amt.lib:utils:$amtLibVersion")
 
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlockVersion")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlockVersion")
@@ -82,6 +83,7 @@ dependencies {
         exclude("com.vaadin.external.google", "android-json")
     }
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")

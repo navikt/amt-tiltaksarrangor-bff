@@ -2,8 +2,8 @@ package no.nav.tiltaksarrangor.client.amtperson
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
-import no.nav.tiltaksarrangor.utils.JsonUtils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -15,7 +15,7 @@ import java.util.UUID
 
 @Component
 class AmtPersonClient(
-	@Value("\${amt-person.url}") private val url: String,
+	@Value($$"${amt-person.url}") private val url: String,
 	private val amtPersonAADHttpClient: OkHttpClient,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
@@ -32,13 +32,12 @@ class AmtPersonClient(
 			if (!response.isSuccessful) {
 				log.error(
 					"Kunne ikke hente nav-enhet med id $id fra amt-person-service. " +
-						"Status=${response.code} error=${response.body?.string()}",
+						"Status=${response.code} error=${response.body.string()}",
 				)
 				error("Kunne ikke hente NAV-enhet fra amt-person-service")
 			}
-			val body = response.body ?: error("Body manglet i response")
 
-			return objectMapper.readValue<NavEnhetDto>(body.string()).toNavEnhet()
+			return objectMapper.readValue<NavEnhetDto>(response.body.string()).toNavEnhet()
 		}
 	}
 
@@ -54,13 +53,12 @@ class AmtPersonClient(
 			if (!response.isSuccessful) {
 				log.error(
 					"Kunne ikke hente nav-ansatt med id $id fra amt-person-service. " +
-						"Status=${response.code} error=${response.body?.string()}",
+						"Status=${response.code} error=${response.body.string()}",
 				)
 				error("Kunne ikke hente NAV-ansatt fra amt-person-service")
 			}
-			val body = response.body ?: error("Body manglet i response")
 
-			return objectMapper.readValue(body.string())
+			return objectMapper.readValue(response.body.string())
 		}
 	}
 
@@ -85,7 +83,8 @@ class AmtPersonClient(
 				)
 				return Result.failure(RuntimeException(feilmelding))
 			}
-			return runCatching { objectMapper.readValue(response.body.string()) }
+
+			return objectMapper.readValue(response.body.string())
 		}
 	}
 }
