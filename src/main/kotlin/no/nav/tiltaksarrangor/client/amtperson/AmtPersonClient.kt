@@ -87,12 +87,12 @@ class AmtPersonClient(
 				throw RuntimeException(KONTAKTINFO_ERROR_MSG)
 			}
 
-			val typeRef = object : TypeReference<Map<String, Kontaktinformasjon>>() {}
-			objectMapper.readValue(responseBodyString, typeRef)
+			objectMapper.readValue(responseBodyString, personIdentToKontaktinfoTypeRef)
 		}
 	}
 
 	companion object {
+		private val personIdentToKontaktinfoTypeRef = object : TypeReference<Map<String, Kontaktinformasjon>>() {}
 		private const val KONTAKTINFO_ERROR_MSG = "Kunne ikke hente kontakinformasjon fra amt-person-service."
 	}
 }
