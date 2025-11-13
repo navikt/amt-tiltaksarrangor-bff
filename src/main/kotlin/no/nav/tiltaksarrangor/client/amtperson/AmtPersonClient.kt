@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.client.amtperson
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
 import no.nav.amt.lib.utils.objectMapper
@@ -67,7 +68,7 @@ class AmtPersonClient(
 		it[personident] ?: throw NoSuchElementException("Klarte ikke hente kontaktinformasjon for person med ident")
 	}
 
-	fun hentOppdatertKontaktinfo(personidenter: Set<String>): Result<KontakinformasjonForPersoner> = runCatching {
+	fun hentOppdatertKontaktinfo(personidenter: Set<String>): Result<Map<String, Kontaktinformasjon>> = runCatching {
 		val requestBody = objectMapper
 			.writeValueAsString(personidenter)
 			.toRequestBody(MediaType.APPLICATION_JSON_VALUE.toMediaType())
@@ -86,7 +87,8 @@ class AmtPersonClient(
 				throw RuntimeException(KONTAKTINFO_ERROR_MSG)
 			}
 
-			objectMapper.readValue<KontakinformasjonForPersoner>(responseBodyString)
+			val typeRef = object : TypeReference<Map<String, Kontaktinformasjon>>() {}
+			objectMapper.readValue(responseBodyString, typeRef)
 		}
 	}
 
@@ -94,25 +96,3 @@ class AmtPersonClient(
 		private const val KONTAKTINFO_ERROR_MSG = "Kunne ikke hente kontakinformasjon fra amt-person-service."
 	}
 }
-
-data class NavAnsattResponse(
-	val id: UUID,
-	val navIdent: String,
-	val navn: String,
-	val epost: String?,
-	val telefon: String?,
-)
-
-data class NavEnhetDto(
-	val id: UUID,
-	val enhetId: String,
-	val navn: String,
-) {
-	fun toNavEnhet(): NavEnhet = NavEnhet(
-		id = id,
-		enhetsnummer = enhetId,
-		navn = navn,
-	)
-}
-
-typealias KontakinformasjonForPersoner = Map<String, Kontaktinformasjon>

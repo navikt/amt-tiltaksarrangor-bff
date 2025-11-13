@@ -29,7 +29,7 @@ class OppdaterKontaktinfoJob(
 		personidenterForOppdatering.chunked(250).forEach {
 			amtPersonClient
 				.hentOppdatertKontaktinfo(it.toSet())
-				.onSuccess { repository.oppdaterKontaktinformasjon(it) }
+				.onSuccess { personIdentTilKontaktInfoMap -> repository.oppdaterKontaktinformasjon(personIdentTilKontaktInfoMap) }
 				.onFailure { error ->
 					log.error("Feil ved oppdatering av kontaktinformasjon for deltakere: ${error.message}")
 				}
