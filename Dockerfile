@@ -4,7 +4,6 @@ ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
 
 ENV TZ="Europe/Oslo"
-ENV JDK_JAVA_OPTIONS="-XX:MaxRAMPercentage=75.0"
 
 EXPOSE 8080
 CMD ["-jar","app.jar"]
