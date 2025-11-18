@@ -56,7 +56,8 @@ sealed class DeltakerEndringEndringResponse {
 	data class EndreAvslutning(
 		val aarsak: Aarsak?,
 		val begrunnelse: String?,
-		val harFullfort: Boolean,
+		val harFullfort: Boolean?,
+		val sluttdato: LocalDate?,
 	) : DeltakerEndringEndringResponse()
 
 	data class EndreSluttarsak(
