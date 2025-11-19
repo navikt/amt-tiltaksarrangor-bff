@@ -21,7 +21,6 @@ import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
 import no.nav.amt.lib.models.deltaker.Navn
 import no.nav.amt.lib.models.deltaker.Personalia
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.NavAnsatt
@@ -639,7 +638,6 @@ class DeltakerDtoCtx {
 			navn = "Tiltak hos Arrangør",
 			tiltak = Tiltak(
 				navn = "Tralala",
-				arenaKode = ArenaKode.VASV,
 				tiltakskode = Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
 			),
 			startdato = null,
