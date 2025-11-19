@@ -40,7 +40,7 @@ class ForslagService(
 			is SluttarsakRequest -> Forslag.Sluttarsak(request.aarsak)
 			is StartdatoRequest -> Forslag.Startdato(request.startdato, request.sluttdato)
 			is FjernOppstartsdatoRequest -> Forslag.FjernOppstartsdato
-			is EndreAvslutningRequest -> Forslag.EndreAvslutning(request.aarsak, request.harDeltatt, request.harFullfort)
+			is EndreAvslutningRequest -> Forslag.EndreAvslutning(request.aarsak, request.harDeltatt, request.harFullfort, request.sluttdato)
 		}
 
 		val forslag = Forslag(
@@ -58,7 +58,7 @@ class ForslagService(
 		repository.upsert(forslag)
 		meldingProducer.produce(forslag)
 
-		log.info("Opprettet nytt forslag ${forslag.id}")
+		log.info("Opprettet nytt forslag ${forslag.id} for deltaker ${deltaker.id}")
 
 		return forslag
 	}

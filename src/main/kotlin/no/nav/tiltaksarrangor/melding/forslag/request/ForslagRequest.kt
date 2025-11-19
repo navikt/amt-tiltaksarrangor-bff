@@ -25,6 +25,7 @@ data class EndreAvslutningRequest(
 	override val begrunnelse: String?,
 	val harFullfort: Boolean?,
 	val harDeltatt: Boolean?,
+	val sluttdato: LocalDate?,
 ) : ForslagRequest
 
 data class IkkeAktuellRequest(
