@@ -13,7 +13,6 @@ import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
-import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.model.DeltakerStatusAarsakJsonDboDto
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
@@ -22,7 +21,6 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
-import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
@@ -45,7 +43,6 @@ class TiltaksarrangorAPITest(
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val arrangorRepository: ArrangorRepository,
-	private val navAnsattRepository: NavAnsattRepository,
 ) : IntegrationTest() {
 	private val mediaTypeJson = "application/json".toMediaType()
 
@@ -154,16 +151,6 @@ class TiltaksarrangorAPITest(
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")
 		val gyldigFra = LocalDateTime.now()
-
-		val navVeileder = NavAnsatt(
-			id = UUID.randomUUID(),
-			navident = "Z123456",
-			navn = "Veileder Veiledersen",
-			epost = "epost@nav.no",
-			telefon = "56565656",
-		)
-		navAnsattRepository.upsert(navVeileder)
-
 		val deltaker =
 			getDeltaker(deltakerId, deltakerliste.id).copy(
 				personident = "10987654321",
@@ -176,10 +163,10 @@ class TiltaksarrangorAPITest(
 				innsoktDato = LocalDate.of(2023, 1, 15),
 				bestillingstekst = "Tror deltakeren vil ha nytte av dette",
 				navKontor = "Nav Oslo",
-				navVeilederId = navVeileder.id,
-				navVeilederNavn = navVeileder.navn,
-				navVeilederTelefon = navVeileder.telefon,
-				navVeilederEpost = navVeileder.epost,
+				navVeilederId = UUID.randomUUID(),
+				navVeilederNavn = "Veileder Veiledersen",
+				navVeilederTelefon = "56565656",
+				navVeilederEpost = "epost@nav.no",
 				vurderingerFraArrangor = getVurderinger(deltakerId, gyldigFra),
 			)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
