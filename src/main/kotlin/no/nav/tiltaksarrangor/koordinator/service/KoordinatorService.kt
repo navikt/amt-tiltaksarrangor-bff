@@ -196,10 +196,12 @@ class KoordinatorService(
 			deltakerlisteMedArrangor.deltakerlisteDbo.id,
 		)
 
-		val veiledereForDeltakerliste = ansattService.getVeiledereForDeltakere(deltakere.map { it.id })
-		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltakere(deltakere.map { it.id })
-		val aktiveForslag = forslagRepository.getAktiveForslagForDeltakere(deltakere.map { it.id })
-		val ulesteEndringer = ulestEndringRepository.getUlesteForslagForDeltakere(deltakere.map { it.id })
+		val deltakerIdListe = deltakere.map { it.id }
+
+		val veiledereForDeltakerliste = ansattService.getVeiledereForDeltakere(deltakerIdListe)
+		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltakere(deltakerIdListe)
+		val aktiveForslag = forslagRepository.getAktiveForslagForDeltakere(deltakerIdListe)
+		val ulesteEndringer = ulestEndringRepository.getUlesteForslagForDeltakere(deltakerIdListe)
 
 		val erKometMasterForTiltakstype = unleashToggle.erKometMasterForTiltakstype(deltakerlisteMedArrangor.deltakerlisteDbo.tiltakskode)
 
@@ -262,41 +264,50 @@ class KoordinatorService(
 		aktiveForslag: List<Forslag>,
 		erKometMasterForTiltakstype: Boolean,
 		ulesteEndringer: List<UlestEndring>,
-	): List<Deltaker> = deltakere.map {
-		val adressebeskyttet = it.adressebeskyttet
-		val veiledereForDeltaker = getVeiledereForDeltaker(it.id, veiledere)
+	): List<Deltaker> = deltakere.map { deltaker ->
+		val adressebeskyttet = deltaker.adressebeskyttet
+		val veiledereForDeltaker = getVeiledereForDeltaker(deltaker.id, veiledere)
 		Deltaker(
-			id = it.id,
-			fornavn = if (adressebeskyttet) "" else it.fornavn,
-			mellomnavn = if (adressebeskyttet) null else it.mellomnavn,
-			etternavn = if (adressebeskyttet) "" else it.etternavn,
-			fodselsnummer = if (adressebeskyttet) "" else it.personident,
-			soktInnDato = if (it.forsteVedtakFattet != null) it.forsteVedtakFattet.atStartOfDay() else it.innsoktDato.atStartOfDay(),
-			startDato = it.startdato,
-			sluttDato = it.sluttdato,
+			id = deltaker.id,
+			fornavn = if (adressebeskyttet) "" else deltaker.fornavn,
+			mellomnavn = if (adressebeskyttet) null else deltaker.mellomnavn,
+			etternavn = if (adressebeskyttet) "" else deltaker.etternavn,
+			fodselsnummer = if (adressebeskyttet) "" else deltaker.personident,
+			soktInnDato = if (deltaker.forsteVedtakFattet != null) {
+				deltaker.forsteVedtakFattet.atStartOfDay()
+			} else {
+				deltaker.innsoktDato.atStartOfDay()
+			},
+			startDato = deltaker.startdato,
+			sluttDato = deltaker.sluttdato,
 			status =
 				DeltakerStatusInternalModel(
-					type = it.status,
-					endretDato = it.statusGyldigFraDato,
-					aarsak = it.statusAarsak,
+					type = deltaker.status,
+					endretDato = deltaker.statusGyldigFraDato,
+					aarsak = deltaker.statusAarsak,
 				),
 			veiledere = veiledereForDeltaker,
-			navKontor = if (adressebeskyttet) null else it.navKontor,
+			navKontor = if (adressebeskyttet) null else deltaker.navKontor,
 			aktiveEndringsmeldinger = if (adressebeskyttet || erKometMasterForTiltakstype) {
 				emptyList()
 			} else {
 				getEndringsmeldinger(
-					it.id,
-					endringsmeldinger,
+					deltakerId = deltaker.id,
+					endringsmeldinger = endringsmeldinger,
 				)
 			},
-			gjeldendeVurderingFraArrangor = if (adressebeskyttet) null else it.getGjeldendeVurdering(),
+			gjeldendeVurderingFraArrangor = if (adressebeskyttet) null else deltaker.getGjeldendeVurdering(),
 			adressebeskyttet = adressebeskyttet,
 			erVeilederForDeltaker = erVeilederForDeltaker(ansattId, veiledereForDeltaker),
-			aktivEndring = getAktivEndring(it.id, endringsmeldinger, aktiveForslag, erKometMasterForTiltakstype),
-			svarFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.id && ulestEndring.erSvarFraNav() },
-			oppdateringFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.id && ulestEndring.erOppdateringFraNav() },
-			nyDeltaker = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == it.id && ulestEndring.erNyDeltaker() },
+			aktivEndring = getAktivEndring(
+				deltakerId = deltaker.id,
+				endringsmeldinger = endringsmeldinger,
+				aktiveForslag = aktiveForslag,
+				erKometMasterForTiltakstype = erKometMasterForTiltakstype,
+			),
+			svarFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == deltaker.id && ulestEndring.erSvarFraNav() },
+			oppdateringFraNav = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == deltaker.id && ulestEndring.erOppdateringFraNav() },
+			nyDeltaker = ulesteEndringer.any { ulestEndring -> ulestEndring.deltakerId == deltaker.id && ulestEndring.erNyDeltaker() },
 		)
 	}
 

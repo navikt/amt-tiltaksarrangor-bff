@@ -292,17 +292,27 @@ class DeltakerRepository(
 			deltakerRowMapper,
 		).firstOrNull()
 
+	/**
+	 * Henter deltakere for en deltakerliste, filtrert på skjuling og slutt-dato.
+	 *
+	 * NB:
+	 *  - Denne metoden returnerer *ikke* informasjon om NAV-veileder.
+	 *  - Felt som navVeilederNavn/etc. fylles ikke ut her.
+	 *
+	 * Årsak:
+	 *  - For å redusere kompleksitet og gjøre spørringen raskere,
+	 *    gjøres det ikke JOIN mot tabellen `nav_ansatt`.
+	 */
 	fun getDeltakereForDeltakerliste(deltakerlisteId: UUID): List<DeltakerDbo> = template
 		.query(
 			"""
 			SELECT
 				deltaker.*,
-				nav_ansatt.navn AS navveileder_navn,
-				nav_ansatt.epost AS navveileder_epost,
-				nav_ansatt.telefon AS navveileder_telefon
+				NULL AS navveileder_navn,
+				NULL AS navveileder_epost,
+				NULL AS navveileder_telefon
 			FROM
 				deltaker
-				LEFT JOIN nav_ansatt ON deltaker.navveileder_id = nav_ansatt.id
 			WHERE
 				deltaker.deltakerliste_id = :deltakerliste_id
 				-- erstatter erSkjult()
