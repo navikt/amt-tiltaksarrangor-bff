@@ -138,8 +138,8 @@ class DeltakerRepository(
 				id, deltakerliste_id, personident, fornavn, mellomnavn, etternavn, telefonnummer, epost,
 				er_skjermet, status, status_gyldig_fra, status_opprettet_dato, aarsak, dager_per_uke, prosent_stilling,
 				start_dato, slutt_dato,
-				innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
-				navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
+				innsokt_dato, bestillingstekst, navkontor, navveileder_id,
+				skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
 				innhold, kilde, historikk, modified_at, forste_vedtak_fattet, er_manuelt_delt_med_arrangor, oppfolgingsperioder)
 			VALUES (
 				:id,
@@ -162,12 +162,7 @@ class DeltakerRepository(
 				:innsokt_dato,
 				:bestillingstekst,
 				:navkontor,
-
 				:navveileder_id,
-				:navveileder_navn,
-				:navveileder_epost,
-				:navveileder_telefon,
-
 				:skjult_av_ansatt_id,
 				:skjult_dato,
 				:adresse,
@@ -200,12 +195,7 @@ class DeltakerRepository(
 				innsokt_dato          = :innsokt_dato,
 				bestillingstekst      = :bestillingstekst,
 				navkontor             = :navkontor,
-
 				navveileder_id        = :navveileder_id,
-				navveileder_navn      = :navveileder_navn,
-				navveileder_epost     = :navveileder_epost,
-				navveileder_telefon   = :navveileder_telefon,
-
 				skjult_av_ansatt_id   = :skjult_av_ansatt_id,
 				skjult_dato           = :skjult_dato,
 				adresse				  = :adresse,
@@ -244,9 +234,6 @@ class DeltakerRepository(
 				"bestillingstekst" to deltakerDbo.bestillingstekst,
 				"navkontor" to deltakerDbo.navKontor,
 				"navveileder_id" to deltakerDbo.navVeilederId,
-				"navveileder_navn" to deltakerDbo.navVeilederNavn,
-				"navveileder_epost" to deltakerDbo.navVeilederEpost,
-				"navveileder_telefon" to deltakerDbo.navVeilederTelefon,
 				"skjult_av_ansatt_id" to deltakerDbo.skjultAvAnsattId,
 				"skjult_dato" to deltakerDbo.skjultDato,
 				"adresse" to deltakerDbo.adresse?.toPGObject(),
@@ -288,14 +275,36 @@ class DeltakerRepository(
 
 	fun getDeltaker(deltakerId: UUID): DeltakerDbo? = template
 		.query(
-			"SELECT * FROM deltaker WHERE id = :id",
+			"""
+			SELECT
+				deltaker.*,
+				nav_ansatt.navn AS navveileder_navn,
+				nav_ansatt.epost AS navveileder_epost,
+				nav_ansatt.telefon AS navveileder_telefon
+			FROM
+				deltaker
+				LEFT JOIN nav_ansatt ON deltaker.navveileder_id = nav_ansatt.id
+			WHERE
+				deltaker.id = :id
+			""".trimIndent(),
 			sqlParameters("id" to deltakerId),
 			deltakerRowMapper,
 		).firstOrNull()
 
 	fun getDeltakereForDeltakerliste(deltakerlisteId: UUID): List<DeltakerDbo> = template
 		.query(
-			"SELECT * FROM deltaker WHERE deltakerliste_id = :deltakerliste_id",
+			"""
+			SELECT
+				deltaker.*,
+				nav_ansatt.navn AS navveileder_navn,
+				nav_ansatt.epost AS navveileder_epost,
+				nav_ansatt.telefon AS navveileder_telefon
+			FROM
+				deltaker
+				LEFT JOIN nav_ansatt ON deltaker.navveileder_id = nav_ansatt.id
+			WHERE
+				deltaker.deltakerliste_id = :deltakerliste_id
+			""".trimIndent(),
 			sqlParameters("deltakerliste_id" to deltakerlisteId),
 			deltakerRowMapper,
 		).filter { it.skalVises() }
