@@ -8,6 +8,7 @@ import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -304,10 +305,17 @@ class DeltakerRepository(
 				LEFT JOIN nav_ansatt ON deltaker.navveileder_id = nav_ansatt.id
 			WHERE
 				deltaker.deltakerliste_id = :deltakerliste_id
+				-- erstatter erSkjult()
+				AND deltaker.skjult_dato IS NULL
+				-- erstatter skalVises()
+			  	AND (deltaker.slutt_dato IS NULL OR deltaker.slutt_dato > :min_sluttdato_for_visning)
 			""".trimIndent(),
-			sqlParameters("deltakerliste_id" to deltakerlisteId),
+			sqlParameters(
+				"deltakerliste_id" to deltakerlisteId,
+				"min_sluttdato_for_visning" to LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES),
+			),
 			deltakerRowMapper,
-		).filter { it.skalVises() }
+		)
 
 	fun getDeltakereMedDeltakerliste(deltakerIder: List<UUID>): List<DeltakerMedDeltakerlisteDbo> = template.query(
 		"""

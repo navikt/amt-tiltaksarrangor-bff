@@ -192,11 +192,9 @@ class KoordinatorService(
 					arrangorId = deltakerlisteMedArrangor.arrangorDbo.id,
 				).sortedBy { it.etternavn } // sorteringen er kun for KoordinatorControllerTest sin skyld
 
-		val deltakere =
-			deltakerRepository
-				.getDeltakereForDeltakerliste(deltakerlisteMedArrangor.deltakerlisteDbo.id)
-				.filter { !it.erSkjult() }
-				.filter { it.skalVises() }
+		val deltakere = deltakerRepository.getDeltakereForDeltakerliste(
+			deltakerlisteMedArrangor.deltakerlisteDbo.id,
+		)
 
 		val veiledereForDeltakerliste = ansattService.getVeiledereForDeltakere(deltakere.map { it.id })
 		val endringsmeldinger = endringsmeldingRepository.getEndringsmeldingerForDeltakere(deltakere.map { it.id })
