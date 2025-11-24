@@ -289,8 +289,8 @@ class KafkaConsumerService(
 	private fun lagreUlestEndringNavOppdatering(navAnsattId: UUID) {
 		val lagretNavAnsatt = navAnsattService.hentNavAnsatt(navAnsattId)
 		if (lagretNavAnsatt != null) {
-			deltakerRepository.getDeltakereMedNavAnsatt(navAnsattId).forEach {
-				lagreNavOppdateringer(it, lagretNavAnsatt)
+			deltakerRepository.getDeltakereMedNavAnsatt(navAnsattId).forEach { deltaker ->
+				lagreNavOppdateringer(deltaker, lagretNavAnsatt)
 			}
 		}
 	}

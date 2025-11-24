@@ -56,6 +56,7 @@ fun getDeltaker(
 	deltakerlisteId: UUID = UUID.randomUUID(),
 	adressebeskyttet: Boolean = false,
 	status: DeltakerStatus.Type = DeltakerStatus.Type.DELTAR,
+	navVeilederId: UUID = UUID.randomUUID(),
 ): DeltakerDbo = DeltakerDbo(
 	id = deltakerId,
 	deltakerlisteId = deltakerlisteId,
@@ -79,7 +80,7 @@ fun getDeltaker(
 	innsoktDato = LocalDate.now(),
 	bestillingstekst = "tekst",
 	navKontor = "1234",
-	navVeilederId = UUID.randomUUID(),
+	navVeilederId = navVeilederId,
 	navVeilederEpost = "epost@nav.no",
 	navVeilederNavn = "Foo Bar",
 	navVeilederTelefon = "1234",

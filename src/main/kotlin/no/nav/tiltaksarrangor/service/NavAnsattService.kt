@@ -12,38 +12,31 @@ import java.util.UUID
 
 @Service
 class NavAnsattService(
-	private val repository: NavAnsattRepository,
+	private val navAnsattRepository: NavAnsattRepository,
 	private val amtPersonClient: AmtPersonClient,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun hentNavAnsatt(id: UUID): NavAnsatt? {
-		repository
-			.get(id)
-			?.let { return it }
-		return null
-	}
+	fun hentNavAnsatt(id: UUID): NavAnsatt? = navAnsattRepository.get(id)
 
 	fun hentEllerOpprettNavAnsatt(id: UUID): NavAnsatt {
-		repository
-			.get(id)
-			?.let { return it }
+		navAnsattRepository.get(id)?.let { return it }
 
-		log.info("Fant ikke oppdatert nav-ansatt med nummer $id, henter fra amt-person-service")
+		log.info("Fant ikke oppdatert Nav-ansatt med nummer $id, henter fra amt-person-service")
 		return fetchNavAnsatt(id)
 	}
 
 	private fun fetchNavAnsatt(id: UUID): NavAnsatt {
 		val navAnsatt = amtPersonClient.hentNavAnsatt(id).toModel()
 
-		repository.upsert(navAnsatt)
+		navAnsattRepository.upsert(navAnsatt)
 		log.info("Lagret nav-ansatt $id")
 
 		return navAnsatt
 	}
 
 	fun upsert(navAnsatt: NavAnsatt) {
-		repository.upsert(navAnsatt)
+		navAnsattRepository.upsert(navAnsatt)
 		log.info("Lagret nav-ansatt med id ${navAnsatt.id}")
 	}
 
@@ -52,7 +45,7 @@ class NavAnsattService(
 		return hentAnsatte(ider)
 	}
 
-	private fun hentAnsatte(veilederIder: List<UUID>) = repository.getMany(veilederIder).associateBy { it.id }
+	private fun hentAnsatte(veilederIder: List<UUID>) = navAnsattRepository.getMany(veilederIder).associateBy { it.id }
 
 	fun hentAnsatteForUlesteEndringer(ulesteEndringer: List<UlestEndring>): Map<UUID, NavAnsatt> {
 		val ider = ulesteEndringer.mapNotNull { it.hentNavAnsattId() }.distinct()

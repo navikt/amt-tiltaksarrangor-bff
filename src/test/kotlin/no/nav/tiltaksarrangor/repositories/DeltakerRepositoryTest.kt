@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.repositories
 
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.RepositoryTestBase
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
@@ -15,6 +16,15 @@ import java.time.LocalDateTime
 class DeltakerRepositoryTest(
 	private val sut: DeltakerRepository,
 ) : RepositoryTestBase() {
+	@Test
+	fun `getDeltakereMedNavAnsatt, skal returnere deltaker`() {
+		with(DeltakerContext(applicationContext)) {
+			val deltakere = sut.getDeltakereMedNavAnsatt(deltaker.navVeilederId.shouldNotBeNull())
+
+			deltakere.size shouldBe 1
+		}
+	}
+
 	@Test
 	fun `oppdaterEnhetsnavnForDeltakere - nytt enhetsnavn - oppdaterer`() {
 		with(DeltakerContext(applicationContext)) {
