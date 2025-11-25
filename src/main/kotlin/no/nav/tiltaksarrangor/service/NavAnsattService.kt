@@ -17,27 +17,15 @@ class NavAnsattService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun hentNavAnsatt(id: UUID): NavAnsatt? = navAnsattRepository.get(id)
-
 	fun hentEllerOpprettNavAnsatt(id: UUID): NavAnsatt {
 		navAnsattRepository.get(id)?.let { return it }
 
-		log.info("Fant ikke oppdatert Nav-ansatt med nummer $id, henter fra amt-person-service")
-		return fetchNavAnsatt(id)
-	}
+		log.info("Fant ikke Nav-ansatt med id $id i databasen, henter fra amt-person-service")
 
-	private fun fetchNavAnsatt(id: UUID): NavAnsatt {
-		val navAnsatt = amtPersonClient.hentNavAnsatt(id).toModel()
-
-		navAnsattRepository.upsert(navAnsatt)
-		log.info("Lagret nav-ansatt $id")
-
-		return navAnsatt
-	}
-
-	fun upsert(navAnsatt: NavAnsatt) {
-		navAnsattRepository.upsert(navAnsatt)
-		log.info("Lagret nav-ansatt med id ${navAnsatt.id}")
+		return amtPersonClient.hentNavAnsatt(id).toModel().also { navAnsatt ->
+			navAnsattRepository.upsert(navAnsatt)
+			log.info("Lagret Nav-ansatt $id")
+		}
 	}
 
 	fun hentAnsatteForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavAnsatt> {
@@ -45,12 +33,14 @@ class NavAnsattService(
 		return hentAnsatte(ider)
 	}
 
-	private fun hentAnsatte(veilederIder: List<UUID>) = navAnsattRepository.getMany(veilederIder).associateBy { it.id }
-
 	fun hentAnsatteForUlesteEndringer(ulesteEndringer: List<UlestEndring>): Map<UUID, NavAnsatt> {
 		val ider = ulesteEndringer.mapNotNull { it.hentNavAnsattId() }.distinct()
 		return hentAnsatte(ider)
 	}
+
+	private fun hentAnsatte(veilederIder: List<UUID>): Map<UUID, NavAnsatt> = navAnsattRepository
+		.getMany(veilederIder)
+		.associateBy { it.id }
 }
 
 fun NavAnsattResponse.toModel() = NavAnsatt(

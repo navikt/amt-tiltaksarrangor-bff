@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Forslag.Status
@@ -94,11 +93,7 @@ sealed interface Oppdatering {
 		val navVeilederEpost: String?,
 		val navVeilederTelefonnummer: String?,
 		val navEnhet: String?,
-	) : Oppdatering {
-		@get:JsonIgnore
-		val harEndringer: Boolean
-			get() = setOfNotNull(navVeilederNavn, navVeilederEpost, navVeilederTelefonnummer, navEnhet).isNotEmpty()
-	}
+	) : Oppdatering
 
 	data class NyDeltaker(
 		val opprettetAvNavn: String?,

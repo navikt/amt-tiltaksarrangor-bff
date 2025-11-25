@@ -505,24 +505,6 @@ class DeltakerRepository(
 		)
 	}
 
-	fun getDeltakereMedNavAnsatt(navveilederId: UUID): List<DeltakerDbo> = template
-		.query(
-			"""
-			SELECT
-				deltaker.*,
-				nav_ansatt.navn AS navveileder_navn,
-				nav_ansatt.epost AS navveileder_epost,
-				nav_ansatt.telefon AS navveileder_telefon
-			FROM
-				nav_ansatt
-				JOIN deltaker ON nav_ansatt.id = deltaker.navveileder_id
-			WHERE
-				nav_ansatt.id = :navveileder_id
-			""".trimMargin(),
-			sqlParameters("navveileder_id" to navveilederId),
-			deltakerRowMapper,
-		).filter { it.skalVises() }
-
 	fun oppdaterEnhetsnavnForDeltakere(opprinneligEnhetsnavn: String, nyttEnhetsnavn: String) {
 		val sql =
 			"""
