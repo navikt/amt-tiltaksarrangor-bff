@@ -22,15 +22,15 @@ repositories {
 val logstashEncoderVersion = "9.0"
 val kafkaClientsVersion = "4.1.1"
 val tokenSupportVersion = "5.0.39"
-val okHttpVersion = "5.3.1"
-val kotestVersion = "6.0.4"
+val okHttpVersion = "5.3.2"
+val kotestVersion = "6.0.5"
 val testcontainersVersion = "1.21.3"
 val mockkVersion = "1.14.6"
 val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
 val unleashVersion = "11.1.1"
 val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.11.19_09.28-aa476c365a8f"
-val shedlockVersion = "7.0.0"
+val shedlockVersion = "7.2.0"
 val springmockkVersion = "4.0.2"
 
 dependencies {
