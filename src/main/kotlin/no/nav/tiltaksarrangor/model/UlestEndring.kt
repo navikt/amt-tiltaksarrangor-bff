@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Forslag.Status
@@ -34,6 +35,7 @@ data class UlestEndring(
 		is Oppdatering.DeltMedArrangor,
 		is Oppdatering.NyDeltaker,
 		-> true
+
 		else -> false
 	}
 
@@ -92,7 +94,11 @@ sealed interface Oppdatering {
 		val navVeilederEpost: String?,
 		val navVeilederTelefonnummer: String?,
 		val navEnhet: String?,
-	) : Oppdatering
+	) : Oppdatering {
+		@get:JsonIgnore
+		val harEndringer: Boolean
+			get() = setOfNotNull(navVeilederNavn, navVeilederEpost, navVeilederTelefonnummer, navEnhet).isNotEmpty()
+	}
 
 	data class NyDeltaker(
 		val opprettetAvNavn: String?,
@@ -120,15 +126,16 @@ sealed interface Oppdatering {
 		val begrunnelse: String?,
 	) : Oppdatering
 
-	val id get() = when (this) {
-		is DeltakelsesEndring -> endring.id
-		is AvvistForslag -> forslag.id
-		is NavBrukerEndring,
-		is NavEndring,
-		is NyDeltaker,
-		is DeltMedArrangor,
-		is TildeltPlass,
-		is Avslag,
-		-> UUID.randomUUID()
-	}
+	val id
+		get() = when (this) {
+			is DeltakelsesEndring -> endring.id
+			is AvvistForslag -> forslag.id
+			is NavBrukerEndring,
+			is NavEndring,
+			is NyDeltaker,
+			is DeltMedArrangor,
+			is TildeltPlass,
+			is Avslag,
+			-> UUID.randomUUID()
+		}
 }

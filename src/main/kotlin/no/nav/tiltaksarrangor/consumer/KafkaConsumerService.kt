@@ -280,39 +280,35 @@ class KafkaConsumerService(
 			?.forEach { id -> navAnsattService.hentEllerOpprettNavAnsatt(id) }
 	}
 
-	fun lagreNavAnsatt(id: UUID, navAnsatt: NavAnsatt) {
-		lagreUlestEndringNavOppdatering(id)
+	fun lagreNavAnsatt(navAnsatt: NavAnsatt) {
+		lagreUlestEndringNavOppdatering(navAnsatt)
 
 		navAnsattService.upsert(navAnsatt)
 	}
 
-	private fun lagreUlestEndringNavOppdatering(navAnsattId: UUID) {
-		val lagretNavAnsatt = navAnsattService.hentNavAnsatt(navAnsattId)
-		if (lagretNavAnsatt != null) {
-			deltakerRepository.getDeltakereMedNavAnsatt(navAnsattId).forEach { deltaker ->
-				lagreNavOppdateringer(deltaker, lagretNavAnsatt)
-			}
+	private fun lagreUlestEndringNavOppdatering(navAnsatt: NavAnsatt) {
+		// hvis ansatt ikke finnes fra før, er varsling av endring unødvendig
+		if (navAnsattService.hentNavAnsatt(navAnsatt.id) == null) return
+
+		deltakerRepository.getDeltakereMedNavAnsatt(navAnsatt.id).forEach { deltaker ->
+			lagreNavOppdateringer(deltaker, navAnsatt)
 		}
 	}
 
 	private fun lagreNavOppdateringer(deltaker: DeltakerDbo, navAnsatt: NavAnsatt) {
-		val endretNavn = navAnsatt.navn != deltaker.navVeilederNavn
-		val endretEpost = navAnsatt.epost != deltaker.navVeilederEpost
-		val endretTelefonnummer = navAnsatt.telefon != deltaker.navVeilederTelefon
-		val harEndringer = endretNavn || endretEpost || endretTelefonnummer
-		if (!harEndringer) {
-			return
-		}
+		val navEndring = Oppdatering.NavEndring(
+			nyNavVeileder = false,
+			navVeilederNavn = navAnsatt.navn.takeIf { deltaker.navVeilederNavn != it },
+			navVeilederEpost = navAnsatt.epost.takeIf { deltaker.navVeilederEpost != it },
+			navVeilederTelefonnummer = navAnsatt.telefon.takeIf { deltaker.navVeilederTelefon != it },
+			navEnhet = null,
+		)
+
+		if (!navEndring.harEndringer) return
 
 		ulestEndringRepository.insert(
-			deltaker.id,
-			Oppdatering.NavEndring(
-				nyNavVeileder = false,
-				navVeilederNavn = if (endretNavn) navAnsatt.navn else null,
-				navVeilederEpost = if (endretEpost) navAnsatt.epost else null,
-				navVeilederTelefonnummer = if (endretTelefonnummer) navAnsatt.telefon else null,
-				navEnhet = null,
-			),
+			deltakerId = deltaker.id,
+			oppdatering = navEndring,
 		)
 	}
 

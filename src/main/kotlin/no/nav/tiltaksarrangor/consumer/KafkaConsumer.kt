@@ -65,7 +65,6 @@ class KafkaConsumer(
 			)
 
 			NAV_ANSATT_TOPIC -> kafkaConsumerService.lagreNavAnsatt(
-				UUID.fromString(consumerRecord.key()),
 				objectMapper.readValue(consumerRecord.value()),
 			)
 

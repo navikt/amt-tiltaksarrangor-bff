@@ -487,8 +487,9 @@ class KafkaConsumerServiceTest {
 		val navAnsatt = getNavAnsatt()
 
 		every { navAnsattService.hentNavAnsatt(any()) } returns null
+		every { deltakerRepository.getDeltakereMedNavAnsatt(any()) } returns emptyList()
 
-		kafkaConsumerService.lagreNavAnsatt(navAnsatt.id, navAnsatt)
+		kafkaConsumerService.lagreNavAnsatt(navAnsatt)
 
 		verify(exactly = 1) { navAnsattService.upsert(navAnsatt) }
 	}
