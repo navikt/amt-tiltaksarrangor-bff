@@ -15,9 +15,9 @@ import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.kafka.stringStringConsumer
 import no.nav.tiltaksarrangor.melding.MELDING_TOPIC
 import no.nav.tiltaksarrangor.melding.endring.request.LeggTilOppstartsdatoRequest
-import no.nav.tiltaksarrangor.testutils.AsyncUtils
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.unleash.UnleashToggle
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -90,7 +90,7 @@ fun <T : EndringFraArrangor.Endring> assertProducedEndring(deltakerId: UUID, end
 
 	consumer.start()
 
-	AsyncUtils.eventually {
+	await().untilAsserted {
 		val endring = cache.firstNotNullOf {
 			when (val endring = it.value) {
 				is EndringFraArrangor -> {

@@ -46,7 +46,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin") // må beholde Jackson 2 inntil videre
+    implementation("tools.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
 
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("io.micrometer:micrometer-registry-prometheus")
@@ -55,8 +56,6 @@ dependencies {
     implementation("no.nav.common:log:$commonVersion") {
         exclude("com.squareup.okhttp3", "okhttp")
     }
-
-    implementation("tools.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
 
     implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
 

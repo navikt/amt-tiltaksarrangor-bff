@@ -16,7 +16,6 @@ import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
-import no.nav.tiltaksarrangor.testutils.AsyncUtils
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.testutils.getArrangor
 import no.nav.tiltaksarrangor.testutils.getDeltaker
@@ -24,6 +23,7 @@ import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getKoordinator
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import no.nav.tiltaksarrangor.testutils.getNavEnhet
+import org.awaitility.Awaitility.await
 import org.springframework.context.ApplicationContext
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -150,7 +150,7 @@ fun <T : Forslag.Endring> assertProducedForslag(forslagId: UUID, endringstype: K
 
 	consumer.start()
 
-	AsyncUtils.eventually {
+	await().untilAsserted {
 		val cachedForslag = cache[forslagId]!! as Forslag
 		cachedForslag.id shouldBe forslagId
 		cachedForslag.endring::class shouldBe endringstype
@@ -168,9 +168,10 @@ fun getProducedForslag(id: UUID): Forslag {
 
 	consumer.start()
 
-	AsyncUtils.eventually {
+	await().untilAsserted {
 		cache[id] shouldNotBe null
 	}
+
 	consumer.stop()
 
 	return cache[id]!! as Forslag
