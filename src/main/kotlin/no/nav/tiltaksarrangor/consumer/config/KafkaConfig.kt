@@ -55,7 +55,7 @@ class KafkaConfig(
 		val consumerFactory = DefaultKafkaConsumerFactory<String, String>(config)
 
 		val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-		factory.consumerFactory = consumerFactory
+		factory.setConsumerFactory(consumerFactory)
 		factory.setCommonErrorHandler(kafkaErrorHandler)
 		factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL_IMMEDIATE
 		return factory

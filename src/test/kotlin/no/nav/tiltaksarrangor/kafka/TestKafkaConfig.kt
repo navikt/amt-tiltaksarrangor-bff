@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.kafka
 
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
-import no.nav.amt.lib.testing.SingletonKafkaProvider
+import no.nav.tiltaksarrangor.IntegrationTest.Companion.kafkaContainer
 import no.nav.tiltaksarrangor.consumer.config.KafkaConfig
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -9,16 +9,15 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 
-@Configuration
+@TestConfiguration(proxyBeanMethods = false)
 class TestKafkaConfig(
 	private val kafkaConfig: KafkaConfig,
 ) {
-	fun testConsumerProps(groupId: String) = mapOf(
+	private fun testConsumerProps(groupId: String) = mapOf(
 		ConsumerConfig.GROUP_ID_CONFIG to groupId,
 		ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
 		ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
@@ -44,11 +43,7 @@ class TestKafkaConfig(
 			) + kafkaConfig.commonConfig()
 		return KafkaProducer(config)
 	}
-}
 
-@Configuration
-@Profile("test")
-class TestKafkaProducerConfig {
 	@Bean
-	fun testConfig(): no.nav.amt.lib.kafka.config.KafkaConfig = LocalKafkaConfig(SingletonKafkaProvider.getHost())
+	fun localKafkaConfig(): no.nav.amt.lib.kafka.config.KafkaConfig = LocalKafkaConfig(kafkaContainer.bootstrapServers)
 }

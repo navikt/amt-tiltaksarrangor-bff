@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
-import no.nav.amt.lib.testing.AsyncUtils
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
@@ -17,6 +16,7 @@ import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.testutils.AsyncUtils
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
 import no.nav.tiltaksarrangor.testutils.getArrangor
 import no.nav.tiltaksarrangor.testutils.getDeltaker

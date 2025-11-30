@@ -6,11 +6,11 @@ import io.kotest.assertions.json.schema.shouldMatchSchema
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlistePayloadInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.tiltakstypePayloadInTest
 import no.nav.tiltaksarrangor.consumer.model.DeltakerlistePayloadJsonSchemas.deltakerlistePayloadV2Schema
+import no.nav.tiltaksarrangor.testutils.getArrangor
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -89,7 +89,7 @@ class DeltakerlistePayloadTest {
 	}
 
 	companion object {
-		private val arrangorInTest = lagArrangor()
+		private val arrangorInTest = getArrangor()
 		private val arrangorDtoInTest = DeltakerlistePayload.Arrangor(arrangorInTest.organisasjonsnummer)
 
 		private val fullyPopulatedV2PayloadInTest = deltakerlistePayloadInTest.copy(

@@ -14,8 +14,7 @@ import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.springframework.dao.PessimisticLockingFailureException
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.retry.annotation.Backoff
-import org.springframework.retry.annotation.Retryable
+import org.springframework.resilience.annotation.Retryable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -161,8 +160,11 @@ class AnsattRepository(
 	}
 
 	@Retryable(
-		include = [PessimisticLockingFailureException::class],
-		backoff = Backoff(delay = 250L, multiplier = 2.0, random = true),
+		includes = [PessimisticLockingFailureException::class],
+		maxRetries = 2,
+		delay = 250,
+		multiplier = 2.0,
+		jitter = 250,
 	)
 	@Transactional
 	fun insertOrUpdateAnsatt(ansattDbo: AnsattDbo) {

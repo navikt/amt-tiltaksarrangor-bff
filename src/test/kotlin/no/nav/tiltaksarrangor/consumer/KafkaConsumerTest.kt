@@ -196,7 +196,7 @@ class KafkaConsumerTest(
 				),
 			).get()
 
-		await().atMost(5, TimeUnit.SECONDS).until {
+		await().until {
 			arrangorRepository.getArrangor(arrangorId) != null
 		}
 	}
