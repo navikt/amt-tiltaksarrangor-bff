@@ -43,9 +43,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-flyway")
     implementation("org.springframework.boot:spring-boot-kafka")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin") // må beholde Jackson 2 inntil videre
     implementation("tools.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
 
