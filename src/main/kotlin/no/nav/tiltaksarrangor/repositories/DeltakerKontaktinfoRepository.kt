@@ -12,8 +12,7 @@ class DeltakerKontaktinfoRepository(
 	fun getPersonerForOppdatering(hour: Int): List<String> = template.query(
 		"""
 		SELECT distinct personident FROM deltaker
-		WHERE MOD(personident::bigint, 24) = :hour
-		ORDER BY personident;
+		WHERE MOD(personident::bigint, 24) = :hour;
 		""",
 		sqlParameters("hour" to hour),
 	) { rs, _ -> rs.getString("personident") }

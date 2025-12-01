@@ -8,6 +8,7 @@ import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
+import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
@@ -134,85 +135,80 @@ class DeltakerRepository(
 	fun insertOrUpdateDeltaker(deltakerDbo: DeltakerDbo) {
 		val sql =
 			"""
-			INSERT INTO deltaker(id, deltakerliste_id, personident, fornavn, mellomnavn, etternavn, telefonnummer, epost,
-								 er_skjermet, status, status_gyldig_fra, status_opprettet_dato, aarsak, dager_per_uke, prosent_stilling,
-								 start_dato, slutt_dato,
-								 innsokt_dato, bestillingstekst, navkontor, navveileder_id, navveileder_navn, navveileder_epost,
-								 navveileder_telefon, skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
-								 innhold, kilde, historikk, modified_at, forste_vedtak_fattet, er_manuelt_delt_med_arrangor, oppfolgingsperioder)
-			VALUES (:id,
-					:deltakerliste_id,
-					:personident,
-					:fornavn,
-					:mellomnavn,
-					:etternavn,
-					:telefonnummer,
-					:epost,
-					:er_skjermet,
-					:status,
-					:status_gyldig_fra,
-					:status_opprettet_dato,
-					:aarsak,
-					:dager_per_uke,
-					:prosent_stilling,
-					:start_dato,
-					:slutt_dato,
-					:innsokt_dato,
-					:bestillingstekst,
-					:navkontor,
-					:navveileder_id,
-					:navveileder_navn,
-					:navveileder_epost,
-					:navveileder_telefon,
-					:skjult_av_ansatt_id,
-					:skjult_dato,
-					:adresse,
-					:vurderinger,
-					:adressebeskyttet,
-					:innhold,
-					:kilde,
-					:historikk,
-					:modified_at,
-					:forste_vedtak_fattet,
-					:er_manuelt_delt_med_arrangor,
-					:oppfolgingsperioder
-					)
-			ON CONFLICT (id) DO UPDATE SET deltakerliste_id      = :deltakerliste_id,
-										   personident           = :personident,
-										   fornavn               = :fornavn,
-										   mellomnavn            = :mellomnavn,
-										   etternavn             = :etternavn,
-										   telefonnummer         = :telefonnummer,
-										   epost                 = :epost,
-										   er_skjermet           = :er_skjermet,
-										   status                = :status,
-										   status_gyldig_fra     = :status_gyldig_fra,
-										   status_opprettet_dato = :status_opprettet_dato,
-										   aarsak				 = :aarsak,
-										   dager_per_uke         = :dager_per_uke,
-										   prosent_stilling      = :prosent_stilling,
-										   start_dato            = :start_dato,
-										   slutt_dato            = :slutt_dato,
-										   innsokt_dato          = :innsokt_dato,
-										   bestillingstekst      = :bestillingstekst,
-										   navkontor             = :navkontor,
-										   navveileder_id        = :navveileder_id,
-										   navveileder_navn      = :navveileder_navn,
-										   navveileder_epost     = :navveileder_epost,
-										   navveileder_telefon   = :navveileder_telefon,
-										   skjult_av_ansatt_id   = :skjult_av_ansatt_id,
-										   skjult_dato           = :skjult_dato,
-										   adresse				 = :adresse,
-										   vurderinger			 = :vurderinger,
-										   adressebeskyttet		 = :adressebeskyttet,
-										   innhold 				 = :innhold,
-										   kilde		 		 = :kilde,
-										   historikk             = :historikk,
-										   modified_at           = :modified_at,
-										   forste_vedtak_fattet  = :forste_vedtak_fattet,
-										   er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor,
-										   oppfolgingsperioder = :oppfolgingsperioder
-
+			INSERT INTO deltaker(
+				id, deltakerliste_id, personident, fornavn, mellomnavn, etternavn, telefonnummer, epost,
+				er_skjermet, status, status_gyldig_fra, status_opprettet_dato, aarsak, dager_per_uke, prosent_stilling,
+				start_dato, slutt_dato,
+				innsokt_dato, bestillingstekst, navkontor, navveileder_id,
+				skjult_av_ansatt_id, skjult_dato, adresse, vurderinger, adressebeskyttet,
+				innhold, kilde, historikk, modified_at, forste_vedtak_fattet, er_manuelt_delt_med_arrangor, oppfolgingsperioder)
+			VALUES (
+				:id,
+				:deltakerliste_id,
+				:personident,
+				:fornavn,
+				:mellomnavn,
+				:etternavn,
+				:telefonnummer,
+				:epost,
+				:er_skjermet,
+				:status,
+				:status_gyldig_fra,
+				:status_opprettet_dato,
+				:aarsak,
+				:dager_per_uke,
+				:prosent_stilling,
+				:start_dato,
+				:slutt_dato,
+				:innsokt_dato,
+				:bestillingstekst,
+				:navkontor,
+				:navveileder_id,
+				:skjult_av_ansatt_id,
+				:skjult_dato,
+				:adresse,
+				:vurderinger,
+				:adressebeskyttet,
+				:innhold,
+				:kilde,
+				:historikk,
+				:modified_at,
+				:forste_vedtak_fattet,
+				:er_manuelt_delt_med_arrangor,
+				:oppfolgingsperioder)
+			ON CONFLICT (id) DO UPDATE SET
+				deltakerliste_id      = :deltakerliste_id,
+				personident           = :personident,
+				fornavn               = :fornavn,
+				mellomnavn            = :mellomnavn,
+				etternavn             = :etternavn,
+				telefonnummer         = :telefonnummer,
+				epost                 = :epost,
+				er_skjermet           = :er_skjermet,
+				status                = :status,
+				status_gyldig_fra     = :status_gyldig_fra,
+				status_opprettet_dato = :status_opprettet_dato,
+				aarsak				  = :aarsak,
+				dager_per_uke         = :dager_per_uke,
+				prosent_stilling      = :prosent_stilling,
+				start_dato            = :start_dato,
+				slutt_dato            = :slutt_dato,
+				innsokt_dato          = :innsokt_dato,
+				bestillingstekst      = :bestillingstekst,
+				navkontor             = :navkontor,
+				navveileder_id        = :navveileder_id,
+				skjult_av_ansatt_id   = :skjult_av_ansatt_id,
+				skjult_dato           = :skjult_dato,
+				adresse				  = :adresse,
+				vurderinger			  = :vurderinger,
+				adressebeskyttet	  = :adressebeskyttet,
+				innhold 			  = :innhold,
+				kilde		 		  = :kilde,
+				historikk             = :historikk,
+				modified_at           = :modified_at,
+				forste_vedtak_fattet  = :forste_vedtak_fattet,
+				er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor,
+				oppfolgingsperioder = :oppfolgingsperioder
 			""".trimIndent()
 
 		template.update(
@@ -239,9 +235,6 @@ class DeltakerRepository(
 				"bestillingstekst" to deltakerDbo.bestillingstekst,
 				"navkontor" to deltakerDbo.navKontor,
 				"navveileder_id" to deltakerDbo.navVeilederId,
-				"navveileder_navn" to deltakerDbo.navVeilederNavn,
-				"navveileder_epost" to deltakerDbo.navVeilederEpost,
-				"navveileder_telefon" to deltakerDbo.navVeilederTelefon,
 				"skjult_av_ansatt_id" to deltakerDbo.skjultAvAnsattId,
 				"skjult_dato" to deltakerDbo.skjultDato,
 				"adresse" to deltakerDbo.adresse?.toPGObject(),
@@ -283,28 +276,131 @@ class DeltakerRepository(
 
 	fun getDeltaker(deltakerId: UUID): DeltakerDbo? = template
 		.query(
-			"SELECT * FROM deltaker WHERE id = :id",
+			"""
+			SELECT
+				deltaker.*,
+				nav_ansatt.navn AS navveileder_navn,
+				nav_ansatt.epost AS navveileder_epost,
+				nav_ansatt.telefon AS navveileder_telefon
+			FROM
+				deltaker
+				LEFT JOIN nav_ansatt ON deltaker.navveileder_id = nav_ansatt.id
+			WHERE
+				deltaker.id = :id
+			""".trimIndent(),
 			sqlParameters("id" to deltakerId),
 			deltakerRowMapper,
 		).firstOrNull()
 
+	/**
+	 * Henter deltakere for en deltakerliste, filtrert på skjuling og slutt-dato.
+	 *
+	 * NB:
+	 *  - Denne metoden returnerer *ikke* informasjon om NAV-veileder.
+	 *  - Felt som navVeilederNavn/etc. fylles ikke ut her.
+	 *
+	 * Årsak:
+	 *  - For å redusere kompleksitet og gjøre spørringen raskere,
+	 *    gjøres det ikke JOIN mot tabellen `nav_ansatt`.
+	 */
 	fun getDeltakereForDeltakerliste(deltakerlisteId: UUID): List<DeltakerDbo> = template
 		.query(
-			"SELECT * FROM deltaker WHERE deltakerliste_id = :deltakerliste_id",
-			sqlParameters("deltakerliste_id" to deltakerlisteId),
+			"""
+			SELECT
+				deltaker.*,
+				NULL AS navveileder_navn,
+				NULL AS navveileder_epost,
+				NULL AS navveileder_telefon
+			FROM
+				deltaker
+			WHERE
+				deltaker.deltakerliste_id = :deltakerliste_id
+				-- erstatter erSkjult()
+				AND deltaker.skjult_dato IS NULL
+				-- erstatter skalVises()
+			  	AND (deltaker.slutt_dato IS NULL OR deltaker.slutt_dato > :min_sluttdato_for_visning)
+			""".trimIndent(),
+			sqlParameters(
+				"deltakerliste_id" to deltakerlisteId,
+				"min_sluttdato_for_visning" to LocalDate.now().minusDays(DAGER_AVSLUTTET_DELTAKER_VISES),
+			),
 			deltakerRowMapper,
-		).filter { it.skalVises() }
+		)
 
 	fun getDeltakereMedDeltakerliste(deltakerIder: List<UUID>): List<DeltakerMedDeltakerlisteDbo> = template.query(
 		"""
-		SELECT deltaker.id as deltakerid,
+		SELECT
+			deltaker.id as deltakerid,
+			deltakerliste_id,
+			personident,
+			fornavn,
+			mellomnavn,
+			etternavn,
+			telefonnummer,
+			deltaker.epost,
+			er_skjermet,
+			adresse,
+			vurderinger,
+			deltaker.status as deltakerstatus,
+			status_gyldig_fra,
+			status_opprettet_dato,
+			aarsak,
+			dager_per_uke,
+			prosent_stilling,
+			deltaker.start_dato as deltaker_start_dato,
+			deltaker.slutt_dato as deltaker_slutt_dato,
+			innsokt_dato,
+			bestillingstekst,
+			innhold,
+			kilde,
+			historikk,
+			navkontor,
+
+			navveileder_id,
+			nav_ansatt.navn AS navveileder_navn,
+			nav_ansatt.epost AS navveileder_epost,
+			nav_ansatt.telefon AS navveileder_telefon,
+
+			skjult_av_ansatt_id,
+			skjult_dato,
+			adressebeskyttet,
+			deltakerliste.navn,
+			deltakerliste.status as deltakerliste_status,
+			arrangor_id,
+			tiltaksnavn,
+			tiltakskode,
+			deltakerliste.start_dato as deltakerliste_start_dato,
+			deltakerliste.slutt_dato as deltakerliste_slutt_dato,
+			er_kurs,
+			oppstartstype,
+			tilgjengelig_fom,
+			deltaker.modified_at as modified_at,
+			forste_vedtak_fattet,
+			er_manuelt_delt_med_arrangor,
+			oppfolgingsperioder
+		FROM
+			deltaker
+			JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
+			LEFT JOIN nav_ansatt ON deltaker.navveileder_id = nav_ansatt.id
+		WHERE
+			deltaker.id IN (:ids);
+		""".trimIndent(),
+		sqlParameters("ids" to deltakerIder),
+		deltakerMedDeltakerlisteRowMapper,
+	)
+
+	fun getDeltakerMedDeltakerliste(deltakerId: UUID): DeltakerMedDeltakerlisteDbo? = template
+		.query(
+			"""
+			SELECT
+				deltaker.id as deltakerid,
 				deltakerliste_id,
 				personident,
 				fornavn,
 				mellomnavn,
 				etternavn,
 				telefonnummer,
-				epost,
+				deltaker.epost,
 				er_skjermet,
 				adresse,
 				vurderinger,
@@ -322,14 +418,16 @@ class DeltakerRepository(
 				kilde,
 				historikk,
 				navkontor,
+
 				navveileder_id,
-				navveileder_navn,
-				navveileder_epost,
-				navveileder_telefon,
+				nav_ansatt.navn AS navveileder_navn,
+				nav_ansatt.epost AS navveileder_epost,
+				nav_ansatt.telefon AS navveileder_telefon,
+
 				skjult_av_ansatt_id,
 				skjult_dato,
 				adressebeskyttet,
-				navn,
+				deltakerliste.navn,
 				deltakerliste.status as deltakerliste_status,
 				arrangor_id,
 				tiltaksnavn,
@@ -343,66 +441,12 @@ class DeltakerRepository(
 				forste_vedtak_fattet,
 				er_manuelt_delt_med_arrangor,
 				oppfolgingsperioder
-		FROM deltaker
-				 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
-		WHERE deltaker.id IN (:ids);
-		""".trimIndent(),
-		sqlParameters("ids" to deltakerIder),
-		deltakerMedDeltakerlisteRowMapper,
-	)
-
-	fun getDeltakerMedDeltakerliste(deltakerId: UUID): DeltakerMedDeltakerlisteDbo? = template
-		.query(
-			"""
-			SELECT deltaker.id as deltakerid,
-					deltakerliste_id,
-					personident,
-					fornavn,
-					mellomnavn,
-					etternavn,
-					telefonnummer,
-					epost,
-					er_skjermet,
-					adresse,
-					vurderinger,
-					deltaker.status as deltakerstatus,
-					status_gyldig_fra,
-					status_opprettet_dato,
-					aarsak,
-					dager_per_uke,
-					prosent_stilling,
-					deltaker.start_dato as deltaker_start_dato,
-					deltaker.slutt_dato as deltaker_slutt_dato,
-					innsokt_dato,
-					bestillingstekst,
-					innhold,
-					kilde,
-					historikk,
-					navkontor,
-					navveileder_id,
-					navveileder_navn,
-					navveileder_epost,
-					navveileder_telefon,
-					skjult_av_ansatt_id,
-					skjult_dato,
-					adressebeskyttet,
-					navn,
-					deltakerliste.status as deltakerliste_status,
-					arrangor_id,
-					tiltaksnavn,
-					tiltakskode,
-					deltakerliste.start_dato as deltakerliste_start_dato,
-					deltakerliste.slutt_dato as deltakerliste_slutt_dato,
-					er_kurs,
-					oppstartstype,
-					tilgjengelig_fom,
-				    deltaker.modified_at as modified_at,
-					forste_vedtak_fattet,
-					er_manuelt_delt_med_arrangor,
-					oppfolgingsperioder
-			FROM deltaker
-					 INNER JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
-			WHERE deltaker.id = :id;
+			FROM
+				deltaker
+			 	JOIN deltakerliste ON deltakerliste.id = deltaker.deltakerliste_id
+			 	LEFT JOIN nav_ansatt ON deltaker.navveileder_id = nav_ansatt.id
+			WHERE
+				deltaker.id = :id;
 			""".trimIndent(),
 			sqlParameters("id" to deltakerId),
 			deltakerMedDeltakerlisteRowMapper,
@@ -460,13 +504,6 @@ class DeltakerRepository(
 			),
 		)
 	}
-
-	fun getDeltakereMedNavAnsatt(navveilederId: UUID): List<DeltakerDbo> = template
-		.query(
-			"SELECT * FROM deltaker WHERE navveileder_id = :navveileder_id",
-			sqlParameters("navveileder_id" to navveilederId),
-			deltakerRowMapper,
-		).filter { it.skalVises() }
 
 	fun oppdaterEnhetsnavnForDeltakere(opprinneligEnhetsnavn: String, nyttEnhetsnavn: String) {
 		val sql =

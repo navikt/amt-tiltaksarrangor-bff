@@ -34,6 +34,7 @@ data class UlestEndring(
 		is Oppdatering.DeltMedArrangor,
 		is Oppdatering.NyDeltaker,
 		-> true
+
 		else -> false
 	}
 
@@ -120,15 +121,16 @@ sealed interface Oppdatering {
 		val begrunnelse: String?,
 	) : Oppdatering
 
-	val id get() = when (this) {
-		is DeltakelsesEndring -> endring.id
-		is AvvistForslag -> forslag.id
-		is NavBrukerEndring,
-		is NavEndring,
-		is NyDeltaker,
-		is DeltMedArrangor,
-		is TildeltPlass,
-		is Avslag,
-		-> UUID.randomUUID()
-	}
+	val id
+		get() = when (this) {
+			is DeltakelsesEndring -> endring.id
+			is AvvistForslag -> forslag.id
+			is NavBrukerEndring,
+			is NavEndring,
+			is NyDeltaker,
+			is DeltMedArrangor,
+			is TildeltPlass,
+			is Avslag,
+			-> UUID.randomUUID()
+		}
 }

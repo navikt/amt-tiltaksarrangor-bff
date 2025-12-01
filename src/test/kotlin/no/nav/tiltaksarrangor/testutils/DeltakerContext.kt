@@ -1,11 +1,13 @@
 package no.nav.tiltaksarrangor.testutils
 
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
@@ -21,7 +23,8 @@ import java.util.UUID
 
 open class DeltakerContext(
 	val applicationContext: ApplicationContext,
-	var deltaker: DeltakerDbo = getDeltaker(UUID.randomUUID()),
+	val navVeileder: NavAnsatt = getNavAnsatt(),
+	var deltaker: DeltakerDbo = getDeltaker(deltakerId = UUID.randomUUID(), navVeilederId = navVeileder.id),
 	val arrangor: ArrangorDbo = getArrangor(),
 	val deltakerliste: DeltakerlisteDbo = getDeltakerliste(deltaker.deltakerlisteId, arrangorId = arrangor.id),
 	val koordinator: AnsattDbo = getKoordinator(
@@ -49,6 +52,7 @@ open class DeltakerContext(
 	private val ansattRepository = getOrCreateBean { template -> AnsattRepository(template) }
 	private val arrangorRepository = getOrCreateBean { template -> ArrangorRepository(template) }
 	private val endringsmeldingRepository = getOrCreateBean { template -> EndringsmeldingRepository(template) }
+	private val navAnsattRepository = getOrCreateBean { template -> NavAnsattRepository(template) }
 
 	init {
 		arrangorRepository.insertOrUpdateArrangor(arrangor)
@@ -56,6 +60,7 @@ open class DeltakerContext(
 		ansattRepository.insertOrUpdateAnsatt(koordinator)
 		ansattRepository.insertOrUpdateAnsatt(veileder)
 		deltakerRepository.insertOrUpdateDeltaker(deltaker)
+		navAnsattRepository.upsert(navVeileder)
 	}
 
 	fun setKoordinatorDeltakerliste(id: UUID) {

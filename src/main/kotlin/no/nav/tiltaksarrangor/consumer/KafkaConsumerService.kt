@@ -32,6 +32,7 @@ import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
 import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
@@ -55,6 +56,7 @@ class KafkaConsumerService(
 	private val navAnsattService: NavAnsattService,
 	private val ulestEndringRepository: UlestEndringRepository,
 	private val amtPersonClient: AmtPersonClient,
+	private val navAnsattRepository: NavAnsattRepository,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -147,7 +149,7 @@ class KafkaConsumerService(
 				ulestEndringRepository.insert(
 					deltakerId,
 					Oppdatering.NyDeltaker(
-						opprettetAvNavn = navAnsattService.hentNavAnsatt(it.opprettetAv)?.navn,
+						opprettetAvNavn = navAnsattRepository.get(it.opprettetAv)?.navn,
 						opprettetAvEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(it.opprettetAvEnhet).navn,
 						opprettet = it.opprettet.toLocalDate(),
 					),
@@ -280,40 +282,9 @@ class KafkaConsumerService(
 			?.forEach { id -> navAnsattService.hentEllerOpprettNavAnsatt(id) }
 	}
 
-	fun lagreNavAnsatt(id: UUID, navAnsatt: NavAnsatt) {
-		lagreUlestEndringNavOppdatering(id)
-
-		navAnsattService.upsert(navAnsatt)
-	}
-
-	private fun lagreUlestEndringNavOppdatering(navAnsattId: UUID) {
-		val lagretNavAnsatt = navAnsattService.hentNavAnsatt(navAnsattId)
-		if (lagretNavAnsatt != null) {
-			deltakerRepository.getDeltakereMedNavAnsatt(navAnsattId).forEach {
-				lagreNavOppdateringer(it, lagretNavAnsatt)
-			}
-		}
-	}
-
-	private fun lagreNavOppdateringer(deltaker: DeltakerDbo, navAnsatt: NavAnsatt) {
-		val endretNavn = navAnsatt.navn != deltaker.navVeilederNavn
-		val endretEpost = navAnsatt.epost != deltaker.navVeilederEpost
-		val endretTelefonnummer = navAnsatt.telefon != deltaker.navVeilederTelefon
-		val harEndringer = endretNavn || endretEpost || endretTelefonnummer
-		if (!harEndringer) {
-			return
-		}
-
-		ulestEndringRepository.insert(
-			deltaker.id,
-			Oppdatering.NavEndring(
-				nyNavVeileder = false,
-				navVeilederNavn = if (endretNavn) navAnsatt.navn else null,
-				navVeilederEpost = if (endretEpost) navAnsatt.epost else null,
-				navVeilederTelefonnummer = if (endretTelefonnummer) navAnsatt.telefon else null,
-				navEnhet = null,
-			),
-		)
+	fun lagreNavAnsatt(navAnsatt: NavAnsatt) {
+		navAnsattRepository.upsert(navAnsatt)
+		log.info("Lagret nav-ansatt med id ${navAnsatt.id}")
 	}
 
 	private fun lagreOppdateringNavEndring(
@@ -417,7 +388,7 @@ class KafkaConsumerService(
 		}
 
 		navEnhetService.upsert(enhet.toModel())
-		log.info("Lagret nav-enhet med id $id")
+		log.info("Lagret Nav-enhet med id $id")
 	}
 }
 

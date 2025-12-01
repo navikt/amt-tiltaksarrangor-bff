@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.consumer
 
 import io.mockk.Runs
-import io.mockk.clearMocks
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -43,6 +43,7 @@ import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
+import no.nav.tiltaksarrangor.repositories.NavAnsattRepository
 import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.service.NavAnsattService
 import no.nav.tiltaksarrangor.service.NavEnhetService
@@ -60,6 +61,7 @@ import java.util.UUID
 class KafkaConsumerServiceTest {
 	private val arrangorRepository = mockk<ArrangorRepository>()
 	private val ansattRepository = mockk<AnsattRepository>()
+	private val navAnsattRepository = mockk<NavAnsattRepository>()
 	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val endringsmeldingRepository = mockk<EndringsmeldingRepository>()
@@ -80,6 +82,7 @@ class KafkaConsumerServiceTest {
 			navAnsattService,
 			ulestEndringRepository,
 			amtPersonClient,
+			navAnsattRepository,
 		)
 
 	private val arrangor =
@@ -92,14 +95,8 @@ class KafkaConsumerServiceTest {
 
 	@BeforeEach
 	internal fun resetMocks() {
-		clearMocks(
-			arrangorRepository,
-			ansattRepository,
-			deltakerlisteRepository,
-			deltakerRepository,
-			endringsmeldingRepository,
-			amtArrangorClient,
-		)
+		clearAllMocks()
+
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
 		every { deltakerlisteRepository.getDeltakerliste(any()) } returns getDeltakerliste(arrangor.id)
 		every { deltakerlisteRepository.deleteDeltakerlisteOgDeltakere(any()) } returns 1
@@ -322,7 +319,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - historikk inneholder svar på forslag som ikke finnes i db - lagrer ulest endring i db `(): Unit =
+	internal fun `lagreDeltaker - historikk inneholder svar pa forslag som ikke finnes i db - lagrer ulest endring i db `(): Unit =
 		runBlocking {
 			with(DeltakerDtoCtx()) {
 				val lagretDeltaker = deltakerDto.toDeltakerDbo()
@@ -486,11 +483,11 @@ class KafkaConsumerServiceTest {
 	internal fun `lagreNavAnsatt - ny ansatt - lagres`() {
 		val navAnsatt = getNavAnsatt()
 
-		every { navAnsattService.hentNavAnsatt(any()) } returns null
+		every { navAnsattRepository.upsert(any()) } just Runs
 
-		kafkaConsumerService.lagreNavAnsatt(navAnsatt.id, navAnsatt)
+		kafkaConsumerService.lagreNavAnsatt(navAnsatt)
 
-		verify(exactly = 1) { navAnsattService.upsert(navAnsatt) }
+		verify(exactly = 1) { navAnsattRepository.upsert(navAnsatt) }
 	}
 
 	@Test
