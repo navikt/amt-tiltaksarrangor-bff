@@ -14,19 +14,17 @@ import org.springframework.context.annotation.Bean
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 
 @TestConfiguration(proxyBeanMethods = false)
-class TestKafkaConfig(
+class KafkaTestConfiguration(
 	private val kafkaConfig: KafkaConfig,
 ) {
-	private fun testConsumerProps(groupId: String) = mapOf(
-		ConsumerConfig.GROUP_ID_CONFIG to groupId,
-		ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
-		ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
-		ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
-	) + kafkaConfig.commonConfig()
-
 	@Bean
 	fun testKafkaConsumer(): Consumer<String, String> = DefaultKafkaConsumerFactory(
-		testConsumerProps("bff-consumer"),
+		mapOf(
+			ConsumerConfig.GROUP_ID_CONFIG to "bff-consumer",
+			ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
+			ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
+			ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
+		) + kafkaConfig.commonConfig(),
 		StringDeserializer(),
 		StringDeserializer(),
 	).createConsumer()
