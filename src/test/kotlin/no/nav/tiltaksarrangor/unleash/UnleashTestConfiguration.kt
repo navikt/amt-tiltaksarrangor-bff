@@ -8,9 +8,7 @@ import org.springframework.context.annotation.Bean
 @TestConfiguration
 class UnleashTestConfiguration {
 	@Bean
-	fun unleashClient(): Unleash {
-		val fakeUnleash = FakeUnleash()
-		fakeUnleash.enableAll()
-		return fakeUnleash
+	fun unleashClient(): Unleash = FakeUnleash().apply {
+		enableAll()
 	}
 }
