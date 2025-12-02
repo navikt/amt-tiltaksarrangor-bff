@@ -4,7 +4,7 @@ import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
-import no.nav.amt.lib.utils.objectMapper
+import no.nav.tiltaksarrangor.utils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 

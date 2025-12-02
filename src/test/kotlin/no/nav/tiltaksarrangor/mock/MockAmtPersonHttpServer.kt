@@ -1,9 +1,9 @@
 package no.nav.tiltaksarrangor.mock
 
 import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtperson.NavAnsattResponse
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
+import no.nav.tiltaksarrangor.utils.objectMapper
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import java.util.UUID

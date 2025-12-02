@@ -1,13 +1,13 @@
 package no.nav.tiltaksarrangor.consumer.jobs.leaderelection
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.lib.utils.objectMapper
+import no.nav.tiltaksarrangor.utils.objectMapper
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.util.UriComponentsBuilder
+import tools.jackson.module.kotlin.readValue
 import java.net.InetAddress
 
 @Component

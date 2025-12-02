@@ -1,7 +1,5 @@
 package no.nav.tiltaksarrangor.consumer
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.consumer.ConsumerUtils.tiltakskodeErStottet
@@ -9,8 +7,10 @@ import no.nav.tiltaksarrangor.consumer.model.DeltakerlistePayload
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
+import no.nav.tiltaksarrangor.utils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import tools.jackson.module.kotlin.readValue
 import java.util.UUID
 
 @Service
@@ -78,12 +78,12 @@ class DeltakerlisteConsumerService(
 		fun getTiltakskodeFromDeltakerlisteJson(messageJson: String): String? = objectMapper
 			.readTree(messageJson)
 			.get(TILTAKSKODE_KEY)
-			?.asText()
+			?.asString()
 
 		fun getSecondaryTiltakskodeFromDeltakerlisteJson(messageJson: String): String = objectMapper
 			.readTree(messageJson)
 			.get(TILTAKSTYPE_KEY)
 			?.get(TILTAKSKODE_KEY)
-			?.asText() ?: FALLBACK_TILTAKSKODE
+			?.asString() ?: FALLBACK_TILTAKSKODE
 	}
 }
