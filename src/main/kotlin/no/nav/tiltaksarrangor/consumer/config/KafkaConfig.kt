@@ -12,7 +12,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.listener.ContainerProperties
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class KafkaConfig(
 	@Value($$"${KAFKA_BROKERS}") private val kafkaBrokers: String,
 	@Value($$"${KAFKA_SECURITY_PROTOCOL:SSL}") private val kafkaSecurityProtocol: String,
@@ -21,25 +21,22 @@ class KafkaConfig(
 	@Value($$"${KAFKA_KEYSTORE_PATH}") private val kafkaKeystorePath: String,
 	@Value($$"${kafka.auto-offset-reset}") private val kafkaAutoOffsetReset: String,
 ) {
-	private val javaKeystore = "JKS"
-	private val pkcs12 = "PKCS12"
-
-	fun commonConfig() = mapOf(
-		BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
-	) + securityConfig()
-
-	private fun securityConfig() = mapOf(
+	private val securityConfig = mapOf(
 		CommonClientConfigs.SECURITY_PROTOCOL_CONFIG to kafkaSecurityProtocol,
 		// Disable server host name verification
 		SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG to "",
-		SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG to javaKeystore,
-		SslConfigs.SSL_KEYSTORE_TYPE_CONFIG to pkcs12,
+		SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG to JAVA_KEY_STORE,
+		SslConfigs.SSL_KEYSTORE_TYPE_CONFIG to PKCS12,
 		SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG to kafkaTruststorePath,
 		SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG to kafkaCredstorePassword,
 		SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG to kafkaKeystorePath,
 		SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG to kafkaCredstorePassword,
 		SslConfigs.SSL_KEY_PASSWORD_CONFIG to kafkaCredstorePassword,
 	)
+
+	val commonKafkaConfig = mapOf(
+		BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
+	) + securityConfig
 
 	@Bean
 	fun kafkaListenerContainerFactory(kafkaErrorHandler: KafkaErrorHandler): ConcurrentKafkaListenerContainerFactory<String, String> {
@@ -51,13 +48,19 @@ class KafkaConfig(
 				ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
 				ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
 				ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
-			) + commonConfig()
+			) + commonKafkaConfig
+
 		val consumerFactory = DefaultKafkaConsumerFactory<String, String>(config)
 
-		val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-		factory.setConsumerFactory(consumerFactory)
-		factory.setCommonErrorHandler(kafkaErrorHandler)
-		factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL_IMMEDIATE
-		return factory
+		return ConcurrentKafkaListenerContainerFactory<String, String>().apply {
+			setConsumerFactory(consumerFactory)
+			setCommonErrorHandler(kafkaErrorHandler)
+			containerProperties.ackMode = ContainerProperties.AckMode.MANUAL_IMMEDIATE
+		}
+	}
+
+	companion object {
+		private const val JAVA_KEY_STORE = "JKS"
+		private const val PKCS12 = "PKCS12"
 	}
 }

@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
 
 @EnableOAuth2Client(cacheEnabled = true)
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class HttpClientConfig {
 	@Bean
 	fun amtArrangorHttpClient(

@@ -24,7 +24,7 @@ class KafkaTestConfiguration(
 			ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
 			ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
 			ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
-		) + kafkaConfig.commonConfig(),
+		) + kafkaConfig.commonKafkaConfig,
 		StringDeserializer(),
 		StringDeserializer(),
 	).createConsumer()
@@ -38,7 +38,7 @@ class KafkaTestConfiguration(
 				ProducerConfig.ACKS_CONFIG to "all",
 				ProducerConfig.RETRIES_CONFIG to 10,
 				ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100,
-			) + kafkaConfig.commonConfig()
+			) + kafkaConfig.commonKafkaConfig
 		return KafkaProducer(config)
 	}
 
