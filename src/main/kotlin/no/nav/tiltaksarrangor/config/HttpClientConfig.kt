@@ -6,13 +6,12 @@ import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
 
 @EnableOAuth2Client(cacheEnabled = true)
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class HttpClientConfig {
 	@Bean
 	fun amtArrangorHttpClient(
@@ -25,7 +24,6 @@ class HttpClientConfig {
 
 	@Bean
 	fun amtArrangorAADHttpClient(
-		restTemplateBuilder: RestTemplateBuilder,
 		clientConfigurationProperties: ClientConfigurationProperties,
 		oAuth2AccessTokenService: OAuth2AccessTokenService,
 	): OkHttpClient {

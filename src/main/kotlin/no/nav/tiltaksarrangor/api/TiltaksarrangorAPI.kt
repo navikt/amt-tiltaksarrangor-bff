@@ -1,12 +1,12 @@
 package no.nav.tiltaksarrangor.api
 
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.model.Deltaker
 import no.nav.tiltaksarrangor.service.TiltaksarrangorService
 import no.nav.tiltaksarrangor.service.TokenService
 import no.nav.tiltaksarrangor.utils.Issuer
+import no.nav.tiltaksarrangor.utils.objectMapper
 import no.nav.tiltaksarrangor.utils.writePolymorphicListAsString
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -41,7 +41,7 @@ class TiltaksarrangorAPI(
 
 	@GetMapping("/deltaker/{deltakerId}/historikk")
 	@ProtectedWithClaims(issuer = Issuer.TOKEN_X)
-	suspend fun getDeltakerhistorikk(
+	fun getDeltakerhistorikk(
 		@PathVariable deltakerId: UUID,
 	): String {
 		val personIdent = tokenService.getPersonligIdentTilInnloggetAnsatt()

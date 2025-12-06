@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.mock
 
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
@@ -8,6 +7,7 @@ import no.nav.tiltaksarrangor.consumer.model.NavnDto
 import no.nav.tiltaksarrangor.consumer.model.TilknyttetArrangorDto
 import no.nav.tiltaksarrangor.consumer.model.VeilederDto
 import no.nav.tiltaksarrangor.model.Veiledertype
+import no.nav.tiltaksarrangor.utils.objectMapper
 import okhttp3.mockwebserver.MockResponse
 import java.util.UUID
 

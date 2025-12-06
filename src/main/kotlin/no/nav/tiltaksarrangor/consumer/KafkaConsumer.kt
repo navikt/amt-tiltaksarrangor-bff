@@ -1,14 +1,14 @@
 package no.nav.tiltaksarrangor.consumer
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.TiltakstypePayload
 import no.nav.tiltaksarrangor.melding.MELDING_TOPIC
 import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
+import no.nav.tiltaksarrangor.utils.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
+import tools.jackson.module.kotlin.readValue
 import java.util.UUID
 
 @Component

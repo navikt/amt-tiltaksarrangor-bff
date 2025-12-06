@@ -1,9 +1,9 @@
 package no.nav.tiltaksarrangor.consumer.model
 
 import no.nav.amt.lib.models.person.address.Oppholdsadresse
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.model.Adresse
 import no.nav.tiltaksarrangor.model.Adressetype
+import no.nav.tiltaksarrangor.utils.objectMapper
 import org.postgresql.util.PGobject
 
 // Alt dette er duplikater fra lib men iom at dette brukes til å lagre json i databasen så beholder jeg datastrukturene

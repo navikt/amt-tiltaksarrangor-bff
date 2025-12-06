@@ -1,11 +1,9 @@
 package no.nav.tiltaksarrangor.melding.forslag
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.models.arrangor.melding.EndringAarsak
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.melding.forslag.request.AvsluttDeltakelseRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.DeltakelsesmengdeRequest
@@ -19,12 +17,14 @@ import no.nav.tiltaksarrangor.melding.forslag.request.SluttdatoRequest
 import no.nav.tiltaksarrangor.melding.forslag.request.StartdatoRequest
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
+import no.nav.tiltaksarrangor.utils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import tools.jackson.module.kotlin.readValue
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID

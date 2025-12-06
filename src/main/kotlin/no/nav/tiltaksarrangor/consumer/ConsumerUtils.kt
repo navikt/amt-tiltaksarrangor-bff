@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.consumer
 
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.unleash.UnleashToggle.Companion.tiltakstyperKometAlltidErMasterFor
+import no.nav.tiltaksarrangor.utils.objectMapper
 
 object ConsumerUtils {
 	private const val DELTAKERLISTE_KEY = "deltakerliste"
@@ -14,7 +14,7 @@ object ConsumerUtils {
 		.get(DELTAKERLISTE_KEY)
 		?.get(TILTAKSTYPE_KEY)
 		?.get(TILTAKSKODE_KEY)
-		?.asText()
+		?.asString()
 		?: FALLBACK_TILTAKSKODE
 
 	fun tiltakskodeErStottet(tiltakskode: String): Boolean = tiltakstyperKometAlltidErMasterFor.any { it.name == tiltakskode }

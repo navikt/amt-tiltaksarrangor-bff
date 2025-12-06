@@ -1,14 +1,14 @@
 package no.nav.tiltaksarrangor
 
-import io.getunleash.FakeUnleash
-import io.getunleash.Unleash
 import io.kotest.matchers.shouldBe
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
+import no.nav.tiltaksarrangor.kafka.KafkaTestConfiguration
 import no.nav.tiltaksarrangor.mock.MockAmtArrangorHttpServer
 import no.nav.tiltaksarrangor.mock.MockAmtPersonHttpServer
 import no.nav.tiltaksarrangor.testutils.DeltakerContext
+import no.nav.tiltaksarrangor.unleash.UnleashTestConfiguration
 import no.nav.tiltaksarrangor.utils.Issuer
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -19,10 +19,7 @@ import okhttp3.Response
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.kafka.KafkaContainer
@@ -32,14 +29,15 @@ import java.util.UUID
 
 @EnableMockOAuth2Server
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(KafkaTestConfiguration::class, UnleashTestConfiguration::class)
 abstract class IntegrationTest : RepositoryTestBase() {
 	@Autowired
 	protected lateinit var mockOAuth2Server: MockOAuth2Server
 
 	@LocalServerPort
-	private var port: Int = 0
+	private var localServerPort: Int = 0
 
-	fun serverUrl() = "http://localhost:$port"
+	fun serverUrl() = "http://localhost:$localServerPort"
 
 	val client = OkHttpClient.Builder().callTimeout(Duration.ofMinutes(5)).build()
 
@@ -47,9 +45,7 @@ abstract class IntegrationTest : RepositoryTestBase() {
 		val mockAmtArrangorServer = MockAmtArrangorHttpServer()
 		val mockAmtPersonServer = MockAmtPersonHttpServer()
 
-		@ServiceConnection
-		@Suppress("unused")
-		val kafkacontainer = KafkaContainer(DockerImageName.parse("apache/kafka")).apply {
+		val kafkaContainer = KafkaContainer(DockerImageName.parse("apache/kafka")).apply {
 			// workaround for https://github.com/testcontainers/testcontainers-java/issues/9506
 			withEnv("KAFKA_LISTENERS", "PLAINTEXT://:9092,BROKER://:9093,CONTROLLER://:9094")
 			start()
@@ -155,16 +151,5 @@ abstract class IntegrationTest : RepositoryTestBase() {
 
 			response.code shouldBe 400
 		}
-	}
-}
-
-@Profile("test")
-@Configuration
-class UnleashConfig {
-	@Bean
-	fun unleashClient(): Unleash {
-		val fakeUnleash = FakeUnleash()
-		fakeUnleash.enableAll()
-		return fakeUnleash
 	}
 }
