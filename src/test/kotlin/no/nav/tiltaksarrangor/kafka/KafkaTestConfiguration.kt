@@ -24,23 +24,21 @@ class KafkaTestConfiguration(
 			ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
 			ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
 			ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
-		) + kafkaConfig.commonKafkaConfig,
+		).plus(kafkaConfig.commonKafkaConfig),
 		StringDeserializer(),
 		StringDeserializer(),
 	).createConsumer()
 
 	@Bean
-	fun testKafkaProducer(): KafkaProducer<String, String> {
-		val config =
-			mapOf(
-				ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
-				ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
-				ProducerConfig.ACKS_CONFIG to "all",
-				ProducerConfig.RETRIES_CONFIG to 10,
-				ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100,
-			) + kafkaConfig.commonKafkaConfig
-		return KafkaProducer(config)
-	}
+	fun testKafkaProducer(): KafkaProducer<String, String> = KafkaProducer(
+		mapOf(
+			ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+			ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+			ProducerConfig.ACKS_CONFIG to "all",
+			ProducerConfig.RETRIES_CONFIG to 10,
+			ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100,
+		).plus(kafkaConfig.commonKafkaConfig),
+	)
 
 	@Bean
 	fun localKafkaConfig(): no.nav.amt.lib.kafka.config.KafkaConfig = LocalKafkaConfig(kafkaContainer.bootstrapServers)

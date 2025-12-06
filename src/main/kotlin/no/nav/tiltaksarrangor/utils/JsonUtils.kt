@@ -7,7 +7,7 @@ import tools.jackson.module.kotlin.KotlinModule
 
 val objectMapper: ObjectMapper = JsonMapper
 	.builder()
-	.apply { addModule(KotlinModule.Builder().build()) }
+	.addModule(KotlinModule.Builder().build())
 	.build()
 
 /**
