@@ -31,7 +31,7 @@ val unleashVersion = "11.1.1"
 val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.12.06_12.56-a9fdb0b96ea0"
 val shedlockVersion = "7.2.0"
-val springmockkVersion = "4.0.2"
+val springmockkVersion = "5.0.1"
 
 // fjernes ved neste release av org.apache.kafka:kafka-clients
 configurations.configureEach {
