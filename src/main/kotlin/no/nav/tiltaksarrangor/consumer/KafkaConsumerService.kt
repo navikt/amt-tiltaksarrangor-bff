@@ -129,14 +129,17 @@ class KafkaConsumerService(
 
 	fun lagreNyDeltakerUlestEndring(deltakerPayload: DeltakerKafkaPayload, deltakerId: UUID) {
 		val vedtak = deltakerPayload.historikk?.filterIsInstance<DeltakerHistorikk.Vedtak>()
-		val endring = deltakerPayload.historikk?.filterIsInstance<DeltakerHistorikk.EndringFraTiltakskoordinator>()
+		val endringer = deltakerPayload.historikk?.filterIsInstance<DeltakerHistorikk.EndringFraTiltakskoordinator>()
 
-		if (!endring.isNullOrEmpty()) {
-			getNyDeltakerEndringFraTiltakskoordinator(endring)?.let {
-				lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(it.endringFraTiltakskoordinator, deltakerId)
-			}
-		} else if (deltakerPayload.historikk == null || vedtak.isNullOrEmpty()) {
-			ulestEndringRepository.insert(
+		when {
+			!endringer.isNullOrEmpty() ->
+				endringer
+					.getNyDeltakerEndringFraTiltakskoordinator()
+					?.let {
+						lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(it.endringFraTiltakskoordinator, deltakerId)
+					}
+
+			deltakerPayload.historikk == null || vedtak.isNullOrEmpty() -> ulestEndringRepository.insert(
 				deltakerId,
 				Oppdatering.NyDeltaker(
 					opprettetAvNavn = null,
@@ -144,8 +147,8 @@ class KafkaConsumerService(
 					opprettet = deltakerPayload.innsoktDato,
 				),
 			)
-		} else {
-			vedtak.minBy { it.vedtak.opprettet }.vedtak.let {
+
+			else -> vedtak.minBy { it.vedtak.opprettet }.vedtak.let {
 				ulestEndringRepository.insert(
 					deltakerId,
 					Oppdatering.NyDeltaker(
@@ -156,17 +159,6 @@ class KafkaConsumerService(
 				)
 			}
 		}
-	}
-
-	private fun getNyDeltakerEndringFraTiltakskoordinator(
-		endringer: List<DeltakerHistorikk.EndringFraTiltakskoordinator>?,
-	): DeltakerHistorikk.EndringFraTiltakskoordinator? {
-		if (endringer.isNullOrEmpty()) return null
-		return endringer
-			.filter {
-				it.endringFraTiltakskoordinator.endring is EndringFraTiltakskoordinator.TildelPlass ||
-					it.endringFraTiltakskoordinator.endring is EndringFraTiltakskoordinator.DelMedArrangor
-			}.maxByOrNull { it.endringFraTiltakskoordinator.endret }
 	}
 
 	private fun lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(endring: EndringFraTiltakskoordinator, deltakerId: UUID) {
