@@ -127,12 +127,12 @@ class KafkaConsumerService(
 		}
 	}
 
-	private fun lagreNyDeltakerUlestEndring(deltakerPayload: DeltakerKafkaPayload, deltakerId: UUID) {
+	fun lagreNyDeltakerUlestEndring(deltakerPayload: DeltakerKafkaPayload, deltakerId: UUID) {
 		val vedtak = deltakerPayload.historikk?.filterIsInstance<DeltakerHistorikk.Vedtak>()
 		val endring = deltakerPayload.historikk?.filterIsInstance<DeltakerHistorikk.EndringFraTiltakskoordinator>()
 
 		if (!endring.isNullOrEmpty()) {
-			endring.forEach {
+			getNyDeltakerEndringFraTiltakskoordinator(endring)?.let {
 				lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(it.endringFraTiltakskoordinator, deltakerId)
 			}
 		} else if (deltakerPayload.historikk == null || vedtak.isNullOrEmpty()) {
@@ -156,6 +156,17 @@ class KafkaConsumerService(
 				)
 			}
 		}
+	}
+
+	private fun getNyDeltakerEndringFraTiltakskoordinator(
+		endringer: List<DeltakerHistorikk.EndringFraTiltakskoordinator>?,
+	): DeltakerHistorikk.EndringFraTiltakskoordinator? {
+		if (endringer.isNullOrEmpty()) return null
+		return endringer
+			.filter {
+				it.endringFraTiltakskoordinator.endring is EndringFraTiltakskoordinator.TildelPlass ||
+					it.endringFraTiltakskoordinator.endring is EndringFraTiltakskoordinator.DelMedArrangor
+			}.maxByOrNull { it.endringFraTiltakskoordinator.endret }
 	}
 
 	private fun lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(endring: EndringFraTiltakskoordinator, deltakerId: UUID) {

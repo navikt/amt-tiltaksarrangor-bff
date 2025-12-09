@@ -25,6 +25,7 @@ import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.address.Adressebeskyttelse
+import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
@@ -38,6 +39,7 @@ import no.nav.tiltaksarrangor.consumer.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -572,6 +574,170 @@ class KafkaConsumerServiceTest {
 		verify(exactly = 1) { navEnhetService.upsert(match { it.navn == nyttNavn }) }
 		verify(exactly = 1) { deltakerRepository.oppdaterEnhetsnavnForDeltakere(gammeltNavn, nyttNavn) }
 	}
+
+	@Test
+	internal fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - DeltMedArrangor`() {
+		with(DeltakerDtoCtx()) {
+			// Arrange
+			val deltakerId = UUID.randomUUID()
+			val endretAv = UUID.randomUUID()
+			val endretAvEnhet = UUID.randomUUID()
+			val endretDato = LocalDate.of(2023, 5, 5).atStartOfDay()
+			val endring = EndringFraTiltakskoordinator(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				endring = EndringFraTiltakskoordinator.DelMedArrangor,
+				endretAv = endretAv,
+				endretAvEnhet = endretAvEnhet,
+				endret = endretDato,
+			)
+			val historikk = listOf(DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring))
+			medHistorikk(historikk)
+
+			every { navAnsattService.hentEllerOpprettNavAnsatt(endretAv).navn } returns "Navn"
+			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet).navn } returns "EnhetNavn"
+
+			// Act
+			kafkaConsumerService.lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
+
+			// Assert
+			verify {
+				ulestEndringRepository.insert(
+					deltakerId,
+					match {
+						it is Oppdatering.DeltMedArrangor &&
+							it.deltAvNavn == "Navn" &&
+							it.deltAvEnhet == "EnhetNavn" &&
+							it.delt == endretDato.toLocalDate()
+					},
+				)
+			}
+		}
+	}
+
+	@Test
+	internal fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - TildeltPlass`() {
+		with(DeltakerDtoCtx()) {
+			// Arrange
+			val deltakerId = UUID.randomUUID()
+			val endretAv = UUID.randomUUID()
+			val endretAvEnhet = UUID.randomUUID()
+			val endretDato = LocalDate.of(2023, 5, 5).atStartOfDay()
+			val endring = EndringFraTiltakskoordinator(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				endring = EndringFraTiltakskoordinator.TildelPlass,
+				endretAv = endretAv,
+				endretAvEnhet = endretAvEnhet,
+				endret = endretDato,
+			)
+			val historikk = listOf(DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring))
+			medHistorikk(historikk)
+
+			every { navAnsattService.hentEllerOpprettNavAnsatt(endretAv).navn } returns "Navn"
+			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet).navn } returns "EnhetNavn"
+
+			// Act
+			kafkaConsumerService.lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
+
+			// Assert
+			verify {
+				ulestEndringRepository.insert(
+					deltakerId,
+					match {
+						it is Oppdatering.TildeltPlass &&
+							it.tildeltPlassAvNavn == "Navn" &&
+							it.tildeltPlassAvEnhet == "EnhetNavn" &&
+							it.tildeltPlass == endretDato.toLocalDate()
+					},
+				)
+			}
+		}
+	}
+
+	@Test
+	internal fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - SettPaaVenteliste - lagrer ikke`() {
+		with(DeltakerDtoCtx()) {
+			// Arrange
+			val deltakerId = UUID.randomUUID()
+			val endretAv = UUID.randomUUID()
+			val endretAvEnhet = UUID.randomUUID()
+			val endretDato = LocalDate.of(2023, 5, 5).atStartOfDay()
+			val endring = EndringFraTiltakskoordinator(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				endring = EndringFraTiltakskoordinator.SettPaaVenteliste,
+				endretAv = endretAv,
+				endretAvEnhet = endretAvEnhet,
+				endret = endretDato,
+			)
+			val historikk = listOf(DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring))
+			medHistorikk(historikk)
+
+			every { navAnsattService.hentEllerOpprettNavAnsatt(endretAv).navn } returns "Navn"
+			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet).navn } returns "EnhetNavn"
+
+			// Act
+			kafkaConsumerService.lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
+
+			// Assert
+			verify(exactly = 0) {
+				ulestEndringRepository.insert(
+					deltakerId,
+					any(),
+				)
+			}
+		}
+	}
+
+	@Test
+	internal fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - TildeltPlass og DelMedArrangor - lagrer den nyeste`() {
+		with(DeltakerDtoCtx()) {
+			val deltakerId = UUID.randomUUID()
+			val endretAv = UUID.randomUUID()
+			val endretAvEnhet = UUID.randomUUID()
+			val endretDato1 = LocalDate.of(2023, 5, 5).atStartOfDay()
+			val endring1 = EndringFraTiltakskoordinator(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				endring = EndringFraTiltakskoordinator.DelMedArrangor,
+				endretAv = endretAv,
+				endretAvEnhet = endretAvEnhet,
+				endret = endretDato1,
+			)
+			val endretDato2 = LocalDate.of(2024, 5, 5).atStartOfDay()
+			val endring2 = EndringFraTiltakskoordinator(
+				id = UUID.randomUUID(),
+				deltakerId = deltakerId,
+				endring = EndringFraTiltakskoordinator.TildelPlass,
+				endretAv = endretAv,
+				endretAvEnhet = endretAvEnhet,
+				endret = endretDato2,
+			)
+			val historikk = listOf(
+				DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring1),
+				DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring2),
+			)
+			medHistorikk(historikk)
+
+			every { navAnsattService.hentEllerOpprettNavAnsatt(endretAv).navn } returns "Navn"
+			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet).navn } returns "EnhetNavn"
+
+			kafkaConsumerService.lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
+
+			verify {
+				ulestEndringRepository.insert(
+					deltakerId,
+					match {
+						it is Oppdatering.TildeltPlass &&
+							it.tildeltPlassAvNavn == "Navn" &&
+							it.tildeltPlassAvEnhet == "EnhetNavn" &&
+							it.tildeltPlass == endretDato2.toLocalDate()
+					},
+				)
+			}
+		}
+	}
 }
 
 class DeltakerDtoCtx {
@@ -694,6 +860,10 @@ class DeltakerDtoCtx {
 
 	fun medVurderinger() {
 		deltakerDto = deltakerDto.copy(vurderingerFraArrangor = getVurderinger(deltakerDto.id))
+	}
+
+	fun medHistorikk(historikk: List<DeltakerHistorikk>) {
+		deltakerDto = deltakerDto.copy(historikk = historikk)
 	}
 
 	fun medErManueltDeltMedArrangor() {
