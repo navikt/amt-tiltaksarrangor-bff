@@ -31,8 +31,7 @@ val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.11.19_09.28-aa476c365a8f"
 val shedlockVersion = "7.0.0"
 val springmockkVersion = "4.0.2"
-val jacksonModuleKotlinVersion = "3.0.2"
-val testcontainersVersion = "2.0.2"
+val jacksonModuleKotlinVersion = "3.0.3"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
