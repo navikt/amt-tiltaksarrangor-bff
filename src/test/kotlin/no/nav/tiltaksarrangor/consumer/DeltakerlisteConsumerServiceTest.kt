@@ -88,7 +88,7 @@ class DeltakerlisteConsumerServiceTest {
 
 		sut.lagreDeltakerliste(
 			deltakerlisteId = deltakerlisteIdInTest,
-			value = objectMapper.writeValueAsString(deltakerlisteDto).replace("TODO1", "TODO2"),
+			value = objectMapper.writeValueAsString(deltakerlisteDto),
 		)
 
 		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
