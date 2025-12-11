@@ -64,6 +64,8 @@ spec:
   envFrom:
     - secret: amt-tiltaksarrangor-bff-unleash-api-token
   env:
+    - name: JDK_JAVA_OPTIONS
+      value: "-XX:MaxRAMPercentage=70.0"
     - name: AMT_TILTAK_TOKENX_CLIENT_ID
       value: dev-gcp:amt:amt-tiltak
     - name: AMT_ARRANGOR_TOKENX_CLIENT_ID
