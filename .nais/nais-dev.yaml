@@ -38,9 +38,9 @@ spec:
   resources:
     requests:
       cpu: 10m
-      memory: 512Mi
+      memory: 256Mi
     limits:
-      memory: 2048Mi
+      memory: 1Gi
   kafka:
     pool: nav-dev
   tokenx:
