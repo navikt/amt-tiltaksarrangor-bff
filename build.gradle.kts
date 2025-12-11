@@ -23,14 +23,26 @@ val logstashEncoderVersion = "9.0"
 val kafkaClientsVersion = "4.1.1"
 val tokenSupportVersion = "6.0.0"
 val okHttpVersion = "5.3.1"
-val kotestVersion = "6.0.4"
+val kotestVersion = "6.0.7"
 val mockkVersion = "1.14.6"
 val commonVersion = "3.2025.11.10_14.07-a9f44944d7bc"
 val unleashVersion = "11.1.1"
 val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.12.11_15.52-8354cbba204d"
-val shedlockVersion = "7.2.0"
-val springmockkVersion = "4.0.2"
+val shedlockVersion = "7.2.1"
+val springmockkVersion = "5.0.1"
+val jacksonModuleKotlinVersion = "3.0.3"
+
+// fjernes ved neste release av org.apache.kafka:kafka-clients
+configurations.configureEach {
+    resolutionStrategy {
+        capabilitiesResolution {
+            withCapability("org.lz4:lz4-java") {
+                select(candidates.first { (it.id as ModuleComponentIdentifier).group == "at.yawk.lz4" })
+            }
+        }
+    }
+}
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")

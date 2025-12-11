@@ -8,6 +8,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.arrangorInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlisteIdInTest
