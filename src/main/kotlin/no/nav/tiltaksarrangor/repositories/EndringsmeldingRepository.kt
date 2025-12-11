@@ -1,17 +1,17 @@
 package no.nav.tiltaksarrangor.repositories
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
+import no.nav.tiltaksarrangor.utils.objectMapper
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.postgresql.util.PGobject
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
+import tools.jackson.module.kotlin.readValue
 import java.util.UUID
 
 @Component

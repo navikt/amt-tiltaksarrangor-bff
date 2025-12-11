@@ -1,13 +1,13 @@
 package no.nav.tiltaksarrangor.melding.forslag
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.amt.lib.utils.objectMapper
+import no.nav.tiltaksarrangor.utils.objectMapper
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.postgresql.util.PGobject
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
+import tools.jackson.module.kotlin.readValue
 import java.util.UUID
 
 @Component
@@ -61,7 +61,6 @@ class ForslagRepository(
 			"created_at" to forslag.opprettet,
 		)
 		return template.queryForObject(sql, params, rowMapper)
-			?: throw NoSuchElementException("Noe gikk galt med upsert av forslag ${forslag.id}")
 	}
 
 	fun get(id: UUID): Result<Forslag> {

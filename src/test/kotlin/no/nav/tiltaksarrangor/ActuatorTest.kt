@@ -5,11 +5,14 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.resttestclient.TestRestTemplate
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate
+import org.springframework.boot.resttestclient.getForEntity
 import org.springframework.boot.test.web.server.LocalManagementPort
 import org.springframework.http.HttpStatus
 import org.springframework.web.util.UriComponentsBuilder
 
+@AutoConfigureTestRestTemplate
 class ActuatorTest(
 	@LocalManagementPort private val managementPort: Int,
 	private val restTemplate: TestRestTemplate,
@@ -23,7 +26,7 @@ class ActuatorTest(
 				.buildAndExpand(managementPort, probeName)
 				.toUri()
 
-		val response = restTemplate.getForEntity(uri, String::class.java)
+		val response = restTemplate.getForEntity<String>(uri)
 
 		assertSoftly(response) {
 			statusCode shouldBe HttpStatus.OK
@@ -39,7 +42,7 @@ class ActuatorTest(
 				.buildAndExpand(managementPort)
 				.toUri()
 
-		val response = restTemplate.getForEntity(uri, String::class.java)
+		val response = restTemplate.getForEntity<String>(uri)
 
 		response.statusCode shouldBe HttpStatus.OK
 	}
@@ -52,7 +55,7 @@ class ActuatorTest(
 				.buildAndExpand(managementPort)
 				.toUri()
 
-		val response = restTemplate.getForEntity(uri, String::class.java)
+		val response = restTemplate.getForEntity<String>(uri)
 
 		// GlobalExceptionHandler er satt opp til å gi INTERNAL_SERVER_ERROR for NOT_FOUND
 		response.statusCode shouldBe HttpStatus.INTERNAL_SERVER_ERROR

@@ -8,22 +8,23 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 
 @Profile("default")
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class UnleashConfig {
 	@Bean
 	fun unleashClient(
 		@Value($$"${app.env.unleashUrl}") unleashUrl: String,
 		@Value($$"${app.env.unleashApiToken}") unleashApiToken: String,
-	): DefaultUnleash {
-		val appName = "amt-tiltaksarrangor-bff"
-		val config =
-			UnleashConfig
-				.builder()
-				.appName(appName)
-				.instanceId(appName)
-				.unleashAPI(unleashUrl)
-				.apiKey(unleashApiToken)
-				.build()
-		return DefaultUnleash(config)
+	) = DefaultUnleash(
+		UnleashConfig
+			.builder()
+			.appName(APP_NAME)
+			.instanceId(APP_NAME)
+			.unleashAPI(unleashUrl)
+			.apiKey(unleashApiToken)
+			.build(),
+	)
+
+	companion object {
+		const val APP_NAME = "amt-tiltaksarrangor-bff"
 	}
 }

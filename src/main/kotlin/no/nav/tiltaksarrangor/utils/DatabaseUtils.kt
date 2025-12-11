@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.utils
 
-import no.nav.amt.lib.utils.objectMapper
 import org.postgresql.util.PGobject
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import java.sql.ResultSet
