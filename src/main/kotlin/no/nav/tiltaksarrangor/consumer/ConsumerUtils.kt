@@ -18,4 +18,35 @@ object ConsumerUtils {
 		?: FALLBACK_TILTAKSKODE
 
 	fun tiltakskodeErStottet(tiltakskode: String): Boolean = tiltakstyperKometAlltidErMasterFor.any { it.name == tiltakskode }
+
+	private fun mapTiltakstypeNavn(tiltakstypeNavn: String): String = if (tiltakstypeNavn == "Jobbklubb") {
+		"Jobbsøkerkurs"
+	} else {
+		tiltakstypeNavn
+	}
+
+	fun GjennomforingV2KafkaPayload.Gruppe.toDeltakerlisteDbo(arrangorId: UUID, navnTiltakstype: String): DeltakerlisteDbo = DeltakerlisteDbo(
+		id = id,
+		navn = navn,
+		status = status,
+		arrangorId = arrangorId,
+		tiltaksnavn = mapTiltakstypeNavn(navnTiltakstype),
+		tiltakskode = tiltakskode,
+		startDato = startDato,
+		sluttDato = sluttDato,
+		erKurs = oppstart == Oppstartstype.FELLES,
+		oppstartstype = this.oppstart,
+		tilgjengeligForArrangorFraOgMedDato = this.tilgjengeligForArrangorFraOgMedDato,
+	)
+
+	fun GjennomforingV2KafkaPayload.Gruppe.skalLagres(): Boolean = when (this.status) {
+		GjennomforingStatusType.GJENNOMFORES -> true
+
+		GjennomforingStatusType.AVSLUTTET ->
+			sluttDato
+				?.let { LocalDate.now().isBefore(it.plusDays(15)) }
+				?: false
+
+		else -> false
+	}
 }

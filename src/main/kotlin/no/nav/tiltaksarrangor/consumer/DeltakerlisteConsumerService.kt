@@ -1,16 +1,15 @@
 package no.nav.tiltaksarrangor.consumer
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.consumer.ConsumerUtils.tiltakskodeErStottet
-import no.nav.tiltaksarrangor.consumer.model.DeltakerlistePayload
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
-import no.nav.tiltaksarrangor.utils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import tools.jackson.module.kotlin.readValue
 import java.util.UUID
 
 @Service
@@ -37,14 +36,16 @@ class DeltakerlisteConsumerService(
 			return
 		}
 
-		val deltakerlistePayload: DeltakerlistePayload = objectMapper.readValue(value)
+		val deltakerlistePayload: GjennomforingV2KafkaPayload.Gruppe = objectMapper.readValue(value)
 
 		if (deltakerlistePayload.skalLagres()) {
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(
 				deltakerlistePayload.toDeltakerlisteDbo(
 					arrangorId = hentArrangorId(deltakerlistePayload.arrangor.organisasjonsnummer),
-					navnTiltakstype = tiltakstypeRepository.getByTiltakskode(deltakerlistePayload.effectiveTiltakskode)?.navn
-						?: throw IllegalStateException("Tiltakstype med tiltakskode ${deltakerlistePayload.effectiveTiltakskode} finnes ikke i db"),
+					navnTiltakstype = tiltakstypeRepository
+						.getByTiltakskode(deltakerlistePayload.tiltakskode.name)
+						?.navn
+						?: throw IllegalStateException("Tiltakstype med tiltakskode ${deltakerlistePayload.tiltakskode} finnes ikke i db"),
 				),
 			)
 			log.info("Lagret deltakerliste med id $deltakerlisteId")

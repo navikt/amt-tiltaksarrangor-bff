@@ -5,9 +5,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.jobs.leaderelection.LeaderElection
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
@@ -35,7 +35,7 @@ class RyddejobbTest(
 		with(DeltakerContext(applicationContext)) {
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(
 				deltakerliste.copy(
-					status = DeltakerlisteStatus.AVSLUTTET,
+					status = GjennomforingStatusType.AVSLUTTET,
 					sluttDato = LocalDate.now().minusDays(42),
 				),
 			)
@@ -51,7 +51,7 @@ class RyddejobbTest(
 	@Test
 	fun `slettUtdaterteDeltakerlisterOgDeltakere - deltakerliste avsluttet for 38 dager siden - sletter ikke deltakerliste`() {
 		val deltakerliste = getDeltakerliste(UUID.randomUUID()).copy(
-			status = DeltakerlisteStatus.AVSLUTTET,
+			status = GjennomforingStatusType.AVSLUTTET,
 			sluttDato = LocalDate.now().minusDays(38),
 		)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)

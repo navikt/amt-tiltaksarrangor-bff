@@ -1,7 +1,7 @@
 package no.nav.tiltaksarrangor.koordinator.model
 
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import java.time.LocalDate
 import java.util.UUID
 
@@ -12,7 +12,7 @@ data class Deltakerliste(
 	val arrangorNavn: String,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
-	val status: DeltakerlisteStatus,
+	val status: GjennomforingStatusType,
 	val koordinatorer: List<Koordinator>,
 	val deltakere: List<Deltaker>,
 	val erKurs: Boolean,

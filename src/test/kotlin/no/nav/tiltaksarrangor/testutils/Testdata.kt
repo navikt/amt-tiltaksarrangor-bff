@@ -6,6 +6,8 @@ import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.Oppfolgingsperiode
 import no.nav.amt.lib.models.person.address.Adresse
@@ -19,8 +21,6 @@ import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
@@ -40,7 +40,7 @@ fun getDeltakerliste(arrangorId: UUID) = getDeltakerliste(id = UUID.randomUUID()
 fun getDeltakerliste(id: UUID = UUID.randomUUID(), arrangorId: UUID): DeltakerlisteDbo = DeltakerlisteDbo(
 	id = id,
 	navn = "Gjennomføring 1",
-	status = DeltakerlisteStatus.GJENNOMFORES,
+	status = GjennomforingStatusType.GJENNOMFORES,
 	arrangorId = arrangorId,
 	tiltaksnavn = "Tiltaksnavnet",
 	tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,

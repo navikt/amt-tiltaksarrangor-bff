@@ -1,15 +1,15 @@
 package no.nav.tiltaksarrangor.repositories.model
 
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import java.time.LocalDate
 import java.util.UUID
 
 data class DeltakerlisteDbo(
 	val id: UUID,
 	val navn: String,
-	val status: DeltakerlisteStatus,
+	val status: GjennomforingStatusType,
 	val arrangorId: UUID,
 	val tiltaksnavn: String,
 	val tiltakskode: Tiltakskode,

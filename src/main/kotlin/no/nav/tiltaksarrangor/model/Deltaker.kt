@@ -4,9 +4,9 @@ import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
 import java.time.LocalDate
 import java.time.LocalDateTime

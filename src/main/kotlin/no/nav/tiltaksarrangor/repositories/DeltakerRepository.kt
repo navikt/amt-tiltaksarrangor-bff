@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.repositories
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde

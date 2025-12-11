@@ -3,12 +3,12 @@ package no.nav.tiltaksarrangor.veileder.api
 import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.consumer.model.AdresseJsonDbo
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -48,7 +48,7 @@ class VeilederAPITest(
 			DeltakerlisteDbo(
 				id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Arbeidsforberedende trening",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,

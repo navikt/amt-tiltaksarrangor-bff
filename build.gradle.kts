@@ -28,10 +28,9 @@ val mockkVersion = "1.14.6"
 val commonVersion = "3.2025.11.10_14.07-a9f44944d7bc"
 val unleashVersion = "11.1.1"
 val ktlintVersion = "1.4.1"
-val amtLibVersion = "1.2025.11.19_09.28-aa476c365a8f"
-val shedlockVersion = "7.0.0"
+val amtLibVersion = "1.2025.12.11_15.52-8354cbba204d"
+val shedlockVersion = "7.2.0"
 val springmockkVersion = "4.0.2"
-val jacksonModuleKotlinVersion = "3.0.3"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -64,7 +63,6 @@ dependencies {
 
     implementation("no.nav.amt.lib:models:$amtLibVersion")
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
-    // implementation("no.nav.amt.lib:utils:$amtLibVersion")
 
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlockVersion")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlockVersion")
