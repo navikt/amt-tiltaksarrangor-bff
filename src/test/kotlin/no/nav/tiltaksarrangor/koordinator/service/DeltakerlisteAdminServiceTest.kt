@@ -8,12 +8,12 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.exceptions.UnauthorizedException
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
@@ -107,7 +107,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -121,7 +121,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 2",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId2,
 				tiltaksnavn = "Annet tiltak",
 				tiltakskode = Tiltakskode.OPPFOLGING,
@@ -196,7 +196,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -245,7 +245,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = UUID.randomUUID(),
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -270,7 +270,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -309,7 +309,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -353,7 +353,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -403,7 +403,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = UUID.randomUUID(),
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -428,7 +428,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -467,7 +467,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,

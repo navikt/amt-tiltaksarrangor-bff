@@ -3,7 +3,7 @@ package no.nav.tiltaksarrangor.api.response
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.amt.lib.models.deltaker.DeltakerEndring.Aarsak
 import no.nav.amt.lib.models.deltaker.Innhold
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import java.time.LocalDate
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")

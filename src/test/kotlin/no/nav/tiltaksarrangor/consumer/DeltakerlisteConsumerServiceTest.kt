@@ -7,13 +7,14 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.arrangorInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlisteIdInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlistePayloadInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.tiltakstypePayloadInTest
-import no.nav.tiltaksarrangor.consumer.model.DeltakerlistePayload
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
@@ -65,8 +66,7 @@ class DeltakerlisteConsumerServiceTest {
 		val deltakerlisteDto = deltakerlistePayloadInTest.copy(
 			navn = "Avsluttet tiltak",
 			sluttDato = LocalDate.now().minusMonths(6),
-			status = DeltakerlistePayload.Status.AVSLUTTET,
-			tiltakstype = deltakerlistePayloadInTest.tiltakstype,
+			status = GjennomforingStatusType.AVSLUTTET,
 		)
 
 		sut.lagreDeltakerliste(
@@ -83,12 +83,12 @@ class DeltakerlisteConsumerServiceTest {
 		val deltakerlisteDto = deltakerlistePayloadInTest.copy(
 			navn = "Avsluttet tiltak",
 			sluttDato = LocalDate.now().minusWeeks(1),
-			status = DeltakerlistePayload.Status.AVSLUTTET,
+			status = GjennomforingStatusType.AVSLUTTET,
 		)
 
 		sut.lagreDeltakerliste(
 			deltakerlisteId = deltakerlisteIdInTest,
-			value = objectMapper.writeValueAsString(deltakerlisteDto),
+			value = objectMapper.writeValueAsString(deltakerlisteDto).replace("TODO1", "TODO2"),
 		)
 
 		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
@@ -97,7 +97,7 @@ class DeltakerlisteConsumerServiceTest {
 	@Test
 	fun `lagreDeltakerliste - ikke stottet tiltakstype - lagres ikke i db `() {
 		val deltakerlisteDto = deltakerlistePayloadInTest.copy(
-			tiltakskode = "KODE_FINNES_IKKE",
+			tiltakskode = Tiltakskode.STUDIESPESIALISERING,
 		)
 
 		sut.lagreDeltakerliste(

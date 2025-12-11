@@ -4,10 +4,10 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
@@ -119,7 +119,7 @@ class DeltakerRepository(
 					DeltakerlisteDbo(
 						id = UUID.fromString(rs.getString("deltakerliste_id")),
 						navn = rs.getString("navn"),
-						status = DeltakerlisteStatus.valueOf(rs.getString("deltakerliste_status")),
+						status = GjennomforingStatusType.valueOf(rs.getString("deltakerliste_status")),
 						arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 						tiltaksnavn = rs.getString("tiltaksnavn"),
 						tiltakskode = rs.getString("tiltakskode").let { Tiltakskode.valueOf(it) },

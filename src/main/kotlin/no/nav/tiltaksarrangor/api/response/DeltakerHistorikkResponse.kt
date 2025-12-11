@@ -13,10 +13,10 @@ import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.InnsokPaaFellesOppstart
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.VurderingFraArrangorData
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID

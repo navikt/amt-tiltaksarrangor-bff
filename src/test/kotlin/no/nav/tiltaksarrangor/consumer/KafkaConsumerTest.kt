@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.IntegrationTest
@@ -13,6 +14,7 @@ import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.arrangorInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlisteIdInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlistePayloadInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.tiltakstypePayloadInTest
+import no.nav.tiltaksarrangor.consumer.ConsumerUtils.toDeltakerlisteDbo
 import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.ARRANGOR_ANSATT_TOPIC
 import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.ARRANGOR_TOPIC
 import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.DELTAKERLISTE_V2_TOPIC
@@ -23,7 +25,6 @@ import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattPersonaliaDto
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
-import no.nav.tiltaksarrangor.consumer.model.DeltakerlistePayload
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingDto
 import no.nav.tiltaksarrangor.consumer.model.EndringsmeldingType
 import no.nav.tiltaksarrangor.consumer.model.Innhold
@@ -156,7 +157,7 @@ class KafkaConsumerTest(
 			deltakerRepository.insertOrUpdateDeltaker(deltaker)
 			deltakerRepository.getDeltaker(deltaker.id) shouldNotBe null
 
-			val avsluttetDeltakerlisteDto = deltakerlistePayloadInTest.copy(status = DeltakerlistePayload.Status.AVSLUTTET)
+			val avsluttetDeltakerlisteDto = deltakerlistePayloadInTest.copy(status = GjennomforingStatusType.AVSLUTTET)
 
 			testKafkaProducer
 				.send(

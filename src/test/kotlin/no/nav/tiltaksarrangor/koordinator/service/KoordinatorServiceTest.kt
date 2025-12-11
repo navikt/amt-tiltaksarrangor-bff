@@ -12,18 +12,18 @@ import io.mockk.just
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
 import no.nav.tiltaksarrangor.koordinator.model.LeggTilVeiledereRequest
 import no.nav.tiltaksarrangor.koordinator.model.VeilederRequest
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.AktivEndring
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.Veiledertype
@@ -260,7 +260,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -315,7 +315,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -347,7 +347,7 @@ class KoordinatorServiceTest(
 		koordinatorsDeltakerliste.arrangorNavn shouldBe "Overordnet arrangør AS"
 		koordinatorsDeltakerliste.startDato shouldBe LocalDate.of(2023, 2, 1)
 		koordinatorsDeltakerliste.sluttDato shouldBe null
-		koordinatorsDeltakerliste.status shouldBe DeltakerlisteStatus.GJENNOMFORES
+		koordinatorsDeltakerliste.status shouldBe GjennomforingStatusType.GJENNOMFORES
 		koordinatorsDeltakerliste.koordinatorer.size shouldBe 1
 		koordinatorsDeltakerliste.koordinatorer.find { it.fornavn == "Fornavn" && it.etternavn == "Etternavn" } shouldNotBe null
 		koordinatorsDeltakerliste.deltakere.size shouldBe 0
@@ -380,7 +380,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -856,7 +856,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -930,7 +930,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1038,7 +1038,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1108,7 +1108,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1159,7 +1159,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1197,7 +1197,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1233,7 +1233,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1303,7 +1303,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1347,7 +1347,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1397,7 +1397,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1445,7 +1445,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1495,7 +1495,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
@@ -1588,7 +1588,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
-				status = DeltakerlisteStatus.GJENNOMFORES,
+				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
 				tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,

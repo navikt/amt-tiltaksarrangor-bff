@@ -1,8 +1,8 @@
 package no.nav.tiltaksarrangor.repositories
 
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.tiltaksarrangor.consumer.model.Oppstartstype
-import no.nav.tiltaksarrangor.model.DeltakerlisteStatus
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteMedArrangorDbo
@@ -28,7 +28,7 @@ class DeltakerlisteRepository(
 			DeltakerlisteDbo(
 				id = UUID.fromString(rs.getString("id")),
 				navn = rs.getString("navn"),
-				status = DeltakerlisteStatus.valueOf(rs.getString("status")),
+				status = GjennomforingStatusType.valueOf(rs.getString("status")),
 				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 				tiltaksnavn = rs.getString("tiltaksnavn"),
 				tiltakskode = rs.getString("tiltakskode").let { Tiltakskode.valueOf(it) },
@@ -47,7 +47,7 @@ class DeltakerlisteRepository(
 					DeltakerlisteDbo(
 						id = UUID.fromString(rs.getString("deltakerliste_id")),
 						navn = rs.getString("deltakerliste_navn"),
-						status = DeltakerlisteStatus.valueOf(rs.getString("status")),
+						status = GjennomforingStatusType.valueOf(rs.getString("status")),
 						arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 						tiltaksnavn = rs.getString("tiltaksnavn"),
 						tiltakskode = rs.getString("tiltakskode").let { Tiltakskode.valueOf(it) },
