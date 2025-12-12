@@ -43,6 +43,7 @@ object ConsumerUtils {
 	fun GjennomforingV2KafkaPayload.Gruppe.toDeltakerlisteDbo(arrangorId: UUID, navnTiltakstype: String): DeltakerlisteDbo = DeltakerlisteDbo(
 		id = id,
 		navn = navn,
+		gjennomforingstype = gjennomforingType,
 		status = status,
 		arrangorId = arrangorId,
 		tiltaksnavn = mapTiltakstypeNavn(navnTiltakstype),
