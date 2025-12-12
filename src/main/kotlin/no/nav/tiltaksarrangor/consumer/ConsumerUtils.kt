@@ -15,6 +15,15 @@ object ConsumerUtils {
 	private const val TILTAKSKODE_KEY = "tiltakskode"
 	private const val FALLBACK_TILTAKSKODE = "UKJENT"
 
+	const val GJENNOMFORINGSTYPE_KEY = "type"
+	private const val FALLBACK_GJENNOMFORINGSTYPE = "UKJENT"
+
+	fun getGjennomforingstypeFromJson(messageJson: String): String = objectMapper
+		.readTree(messageJson)
+		.get(GJENNOMFORINGSTYPE_KEY)
+		?.asText()
+		?: FALLBACK_GJENNOMFORINGSTYPE
+
 	fun getTiltakskodeFromDeltakerJsonPayload(messageJson: String): String = objectMapper
 		.readTree(messageJson)
 		.get(DELTAKERLISTE_KEY)
