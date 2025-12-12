@@ -25,6 +25,7 @@ import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.address.Adressebeskyttelse
+import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.ArrangorMedOverordnetArrangor
@@ -38,6 +39,7 @@ import no.nav.tiltaksarrangor.consumer.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.melding.forslag.ForslagService
 import no.nav.tiltaksarrangor.melding.forslag.forlengDeltakelseForslag
 import no.nav.tiltaksarrangor.model.Endringsmelding
+import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerRepository
@@ -53,6 +55,7 @@ import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import no.nav.tiltaksarrangor.testutils.getVurderinger
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -572,6 +575,123 @@ class KafkaConsumerServiceTest {
 		verify(exactly = 1) { navEnhetService.upsert(match { it.navn == nyttNavn }) }
 		verify(exactly = 1) { deltakerRepository.oppdaterEnhetsnavnForDeltakere(gammeltNavn, nyttNavn) }
 	}
+
+	@Nested
+	inner class LagreNyDeltakerUlestEndringTests {
+		val deltakerId: UUID = UUID.randomUUID()
+		val endretAv: UUID = UUID.randomUUID()
+		val endretAvEnhet: UUID = UUID.randomUUID()
+		val endretDato: LocalDateTime = LocalDateTime.now()
+
+		val endringInTest = EndringFraTiltakskoordinator(
+			id = UUID.randomUUID(),
+			deltakerId = deltakerId,
+			endring = EndringFraTiltakskoordinator.DelMedArrangor,
+			endretAv = endretAv,
+			endretAvEnhet = endretAvEnhet,
+			endret = endretDato,
+		)
+
+		@BeforeEach
+		fun beforeEach() {
+			every { navAnsattService.hentEllerOpprettNavAnsatt(endretAv).navn } returns "Navn"
+			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet).navn } returns "EnhetNavn"
+		}
+
+		@Test
+		internal fun `endring fra tiltakskoordinator - DeltMedArrangor`() {
+			with(DeltakerDtoCtx()) {
+				val historikk = listOf(DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endringInTest))
+				medHistorikk(historikk)
+
+				kafkaConsumerService.lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
+
+				verify {
+					ulestEndringRepository.insert(
+						deltakerId,
+						match {
+							it is Oppdatering.DeltMedArrangor &&
+								it.deltAvNavn == "Navn" &&
+								it.deltAvEnhet == "EnhetNavn" &&
+								it.delt == endretDato.toLocalDate()
+						},
+					)
+				}
+			}
+		}
+
+		@Test
+		internal fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - TildeltPlass`() {
+			with(DeltakerDtoCtx()) {
+				val endring = endringInTest.copy(endring = EndringFraTiltakskoordinator.TildelPlass)
+				val historikk = listOf(DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring))
+
+				medHistorikk(historikk)
+
+				kafkaConsumerService.lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
+
+				verify {
+					ulestEndringRepository.insert(
+						deltakerId,
+						match {
+							it is Oppdatering.TildeltPlass &&
+								it.tildeltPlassAvNavn == "Navn" &&
+								it.tildeltPlassAvEnhet == "EnhetNavn" &&
+								it.tildeltPlass == endretDato.toLocalDate()
+						},
+					)
+				}
+			}
+		}
+
+		@Test
+		internal fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - SettPaaVenteliste - lagrer ikke`() {
+			with(DeltakerDtoCtx()) {
+				val endring = endringInTest.copy(endring = EndringFraTiltakskoordinator.SettPaaVenteliste)
+				val historikk = listOf(DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring))
+				medHistorikk(historikk)
+
+				kafkaConsumerService.lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
+
+				verify(exactly = 0) {
+					ulestEndringRepository.insert(
+						deltakerId,
+						any(),
+					)
+				}
+			}
+		}
+
+		@Test
+		internal fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - TildeltPlass og DelMedArrangor - lagrer den nyeste`() {
+			with(DeltakerDtoCtx()) {
+				val endretDato2 = LocalDateTime.now().plusDays(10)
+
+				val endring1 = endringInTest.copy(endring = EndringFraTiltakskoordinator.DelMedArrangor)
+				val endring2 = endringInTest.copy(endring = EndringFraTiltakskoordinator.TildelPlass, endret = endretDato2)
+
+				val historikk = listOf(
+					DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring1),
+					DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring2),
+				)
+				medHistorikk(historikk)
+
+				kafkaConsumerService.lagreNyDeltakerUlestEndring(deltakerDto, deltakerId)
+
+				verify {
+					ulestEndringRepository.insert(
+						deltakerId,
+						match {
+							it is Oppdatering.TildeltPlass &&
+								it.tildeltPlassAvNavn == "Navn" &&
+								it.tildeltPlassAvEnhet == "EnhetNavn" &&
+								it.tildeltPlass == endretDato2.toLocalDate()
+						},
+					)
+				}
+			}
+		}
+	}
 }
 
 class DeltakerDtoCtx {
@@ -694,6 +814,10 @@ class DeltakerDtoCtx {
 
 	fun medVurderinger() {
 		deltakerDto = deltakerDto.copy(vurderingerFraArrangor = getVurderinger(deltakerDto.id))
+	}
+
+	fun medHistorikk(historikk: List<DeltakerHistorikk>) {
+		deltakerDto = deltakerDto.copy(historikk = historikk)
 	}
 
 	fun medErManueltDeltMedArrangor() {
