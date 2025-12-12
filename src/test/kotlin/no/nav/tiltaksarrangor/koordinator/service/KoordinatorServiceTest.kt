@@ -13,6 +13,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
@@ -260,6 +261,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -315,6 +317,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -380,6 +383,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -830,7 +834,7 @@ class KoordinatorServiceTest(
 	}
 
 	@Test
-	fun `getDeltakerliste - har tilgang, deltaker har både innsoktdato og forsteVedtakFattet, setter sokt inn til forsteVedtakFattet`() {
+	fun `getDeltakerliste - har tilgang, deltaker har bade innsoktdato og forsteVedtakFattet, setter sokt inn til forsteVedtakFattet`() {
 		val personIdent = "12345678910"
 		val deltakerlisteId = UUID.randomUUID()
 		val overordnetArrangorId = UUID.randomUUID()
@@ -856,6 +860,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -930,6 +935,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1038,6 +1044,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1108,6 +1115,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1159,6 +1167,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1197,6 +1206,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1233,6 +1243,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1303,6 +1314,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1347,6 +1359,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1397,6 +1410,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1445,6 +1459,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1495,6 +1510,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1588,6 +1604,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",

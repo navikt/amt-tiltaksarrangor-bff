@@ -5,6 +5,7 @@ import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
@@ -119,6 +120,7 @@ class DeltakerRepository(
 					DeltakerlisteDbo(
 						id = UUID.fromString(rs.getString("deltakerliste_id")),
 						navn = rs.getString("navn"),
+						gjennomforingstype = GjennomforingType.valueOf(rs.getString("gjennomforingstype")),
 						status = GjennomforingStatusType.valueOf(rs.getString("deltakerliste_status")),
 						arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 						tiltaksnavn = rs.getString("tiltaksnavn"),
@@ -365,6 +367,7 @@ class DeltakerRepository(
 			skjult_dato,
 			adressebeskyttet,
 			deltakerliste.navn,
+			deltakerliste.gjennomforingstype,
 			deltakerliste.status as deltakerliste_status,
 			arrangor_id,
 			tiltaksnavn,
@@ -428,6 +431,7 @@ class DeltakerRepository(
 				skjult_dato,
 				adressebeskyttet,
 				deltakerliste.navn,
+				deltakerliste.gjennomforingstype,
 				deltakerliste.status as deltakerliste_status,
 				arrangor_id,
 				tiltaksnavn,

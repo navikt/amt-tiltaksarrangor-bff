@@ -8,12 +8,12 @@ import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
-import no.nav.tiltaksarrangor.consumer.ConsumerUtils.getTiltakskodeFromDeltakerJsonPayload
-import no.nav.tiltaksarrangor.consumer.ConsumerUtils.tiltakskodeErStottet
+import no.nav.tiltaksarrangor.consumer.ConsumerUtils.getGjennomforingstypeFromDeltakerJsonPayload
 import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
@@ -87,10 +87,10 @@ class KafkaConsumerService(
 			return
 		}
 
-		// sjekker at tiltakskoden ikke er enkeltplass og at vi er komet-master for tiltakstypen
-		val tiltakskodeFromJson = getTiltakskodeFromDeltakerJsonPayload(deltakerPayloadJson)
-		if (!tiltakskodeErStottet(tiltakskodeFromJson)) {
-			log.info("Tiltakskode $tiltakskodeFromJson er ikke støttet.")
+		// sjekker at gjennomføringstype er støttet før deserialisering
+		val gjennomforingstypeFromJson = getGjennomforingstypeFromDeltakerJsonPayload(deltakerPayloadJson)
+		if (gjennomforingstypeFromJson != GjennomforingType.Gruppe.name) {
+			log.info("Gjennomføringstype $gjennomforingstypeFromJson er ikke støttet.")
 			return
 		}
 

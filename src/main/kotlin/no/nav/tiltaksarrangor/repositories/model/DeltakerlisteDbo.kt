@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.repositories.model
 
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
@@ -11,6 +12,7 @@ data class DeltakerlisteDbo(
 	val navn: String,
 	val status: GjennomforingStatusType,
 	val arrangorId: UUID,
+	val gjennomforingstype: GjennomforingType,
 	val tiltaksnavn: String,
 	val tiltakskode: Tiltakskode,
 	val startDato: LocalDate?,

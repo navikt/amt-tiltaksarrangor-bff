@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
@@ -67,6 +68,7 @@ class KoordinatorAPITest(
 			DeltakerlisteDbo(
 				id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Tiltaksnavnet",
@@ -143,6 +145,7 @@ class KoordinatorAPITest(
 			DeltakerlisteDbo(
 				id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Tiltaksnavnet",
@@ -240,6 +243,7 @@ class KoordinatorAPITest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Tiltaksnavnet",
@@ -354,6 +358,7 @@ class KoordinatorAPITest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
