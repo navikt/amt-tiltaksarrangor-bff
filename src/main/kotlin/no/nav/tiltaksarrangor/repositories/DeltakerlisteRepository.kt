@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.repositories
 
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
@@ -28,6 +29,7 @@ class DeltakerlisteRepository(
 			DeltakerlisteDbo(
 				id = UUID.fromString(rs.getString("id")),
 				navn = rs.getString("navn"),
+				gjennomforingstype = GjennomforingType.valueOf(rs.getString("gjennomforingstype")),
 				status = GjennomforingStatusType.valueOf(rs.getString("status")),
 				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 				tiltaksnavn = rs.getString("tiltaksnavn"),
@@ -47,6 +49,7 @@ class DeltakerlisteRepository(
 					DeltakerlisteDbo(
 						id = UUID.fromString(rs.getString("deltakerliste_id")),
 						navn = rs.getString("deltakerliste_navn"),
+						gjennomforingstype = GjennomforingType.valueOf(rs.getString("gjennomforingstype")),
 						status = GjennomforingStatusType.valueOf(rs.getString("status")),
 						arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 						tiltaksnavn = rs.getString("tiltaksnavn"),
@@ -70,9 +73,10 @@ class DeltakerlisteRepository(
 	fun insertOrUpdateDeltakerliste(deltakerlisteDbo: DeltakerlisteDbo) {
 		val sql =
 			"""
-			INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltaksnavn, tiltakskode, start_dato, slutt_dato, er_kurs, oppstartstype, tilgjengelig_fom)
+			INSERT INTO deltakerliste(id, navn, gjennomforingstype, status, arrangor_id, tiltaksnavn, tiltakskode, start_dato, slutt_dato, er_kurs, oppstartstype, tilgjengelig_fom)
 			VALUES (:id,
 					:navn,
+					:gjennomforingstype,
 					:status,
 					:arrangor_id,
 					:tiltaksnavn,
@@ -84,6 +88,7 @@ class DeltakerlisteRepository(
 					:tilgjengelig_fom)
 			ON CONFLICT (id) DO UPDATE SET
 					navn     				= :navn,
+					gjennomforingstype		= :gjennomforingstype,
 					status					= :status,
 					arrangor_id 			= :arrangor_id,
 					tiltaksnavn				= :tiltaksnavn,
@@ -100,6 +105,7 @@ class DeltakerlisteRepository(
 			sqlParameters(
 				"id" to deltakerlisteDbo.id,
 				"navn" to deltakerlisteDbo.navn,
+				"gjennomforingstype" to deltakerlisteDbo.gjennomforingstype.name,
 				"status" to deltakerlisteDbo.status.name,
 				"arrangor_id" to deltakerlisteDbo.arrangorId,
 				"tiltaksnavn" to deltakerlisteDbo.tiltaksnavn,
@@ -149,6 +155,7 @@ class DeltakerlisteRepository(
 			"""
 			SELECT deltakerliste.id as deltakerliste_id,
 					deltakerliste.navn as deltakerliste_navn,
+					gjennomforingstype,
 					status,
 					arrangor_id,
 					tiltaksnavn,
@@ -177,6 +184,7 @@ class DeltakerlisteRepository(
 			"""
 			SELECT deltakerliste.id as deltakerliste_id,
 					deltakerliste.navn as deltakerliste_navn,
+					gjennomforingstype,
 					status,
 					arrangor_id,
 					tiltaksnavn,

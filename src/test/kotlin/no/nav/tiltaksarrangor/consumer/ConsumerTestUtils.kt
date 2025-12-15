@@ -29,7 +29,7 @@ object ConsumerTestUtils {
 
 	val deltakerlisteIdInTest: UUID = UUID.randomUUID()
 
-	val deltakerlistePayloadInTest =
+	val gjennomforingPayloadInTest =
 		GjennomforingV2KafkaPayload.Gruppe(
 			id = deltakerlisteIdInTest,
 			tiltakskode = Tiltakskode.valueOf(tiltakstypePayloadInTest.tiltakskode),

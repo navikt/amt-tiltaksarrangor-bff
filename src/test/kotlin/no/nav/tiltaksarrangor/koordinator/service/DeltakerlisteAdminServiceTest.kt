@@ -9,6 +9,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
@@ -107,6 +108,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -121,6 +123,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 2",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId2,
 				tiltaksnavn = "Annet tiltak",
@@ -196,6 +199,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -245,6 +249,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = UUID.randomUUID(),
 				tiltaksnavn = "Navn på tiltak",
@@ -270,6 +275,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -309,6 +315,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -353,6 +360,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -403,6 +411,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = UUID.randomUUID(),
 				tiltaksnavn = "Navn på tiltak",
@@ -428,6 +437,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -467,6 +477,7 @@ class DeltakerlisteAdminServiceTest(
 			DeltakerlisteDbo(
 				id = UUID.randomUUID(),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
