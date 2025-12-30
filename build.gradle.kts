@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    val kotlinVersion = "2.2.21"
+    val kotlinVersion = "2.3.0"
 
     id("org.springframework.boot") version "3.5.7"
     id("io.spring.dependency-management") version "1.1.7"
@@ -24,13 +24,13 @@ val kafkaClientsVersion = "4.1.1"
 val tokenSupportVersion = "5.0.39"
 val okHttpVersion = "5.3.2"
 val kotestVersion = "6.0.7"
-val testcontainersVersion = "1.21.3"
+val testcontainersVersion = "1.21.4"
 val mockkVersion = "1.14.7"
 val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
-val unleashVersion = "11.1.1"
+val unleashVersion = "11.2.1"
 val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2025.12.12_11.03-2e0d1281814d"
-val shedlockVersion = "7.2.1"
+val shedlockVersion = "7.4.0"
 val springmockkVersion = "5.0.1"
 
 // fjernes ved neste release av org.apache.kafka:kafka-clients
