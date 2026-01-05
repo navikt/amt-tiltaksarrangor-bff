@@ -8,6 +8,7 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
@@ -118,6 +119,7 @@ class DeltakerlisteAdminServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		val deltakerliste2 =
 			DeltakerlisteDbo(
@@ -133,6 +135,7 @@ class DeltakerlisteAdminServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 4, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste1)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste2)
@@ -209,6 +212,7 @@ class DeltakerlisteAdminServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -259,6 +263,7 @@ class DeltakerlisteAdminServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 
@@ -285,6 +290,7 @@ class DeltakerlisteAdminServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -325,6 +331,7 @@ class DeltakerlisteAdminServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()
@@ -370,6 +377,7 @@ class DeltakerlisteAdminServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().plusDays(2),
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()
@@ -421,6 +429,7 @@ class DeltakerlisteAdminServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 
@@ -447,6 +456,7 @@ class DeltakerlisteAdminServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -487,6 +497,7 @@ class DeltakerlisteAdminServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()

@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.repositories
 
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
@@ -39,6 +40,7 @@ class DeltakerlisteRepository(
 				erKurs = rs.getBoolean("er_kurs"),
 				oppstartstype = Oppstartstype.valueOf(rs.getString("oppstartstype")),
 				tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
+				pameldingstype = rs.getString("pameldingstype")?.let { GjennomforingPameldingType.valueOf(it) },
 			)
 		}
 
@@ -59,6 +61,7 @@ class DeltakerlisteRepository(
 						erKurs = rs.getBoolean("er_kurs"),
 						oppstartstype = Oppstartstype.valueOf(rs.getString("oppstartstype")),
 						tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
+						pameldingstype = rs.getString("pameldingstype")?.let { GjennomforingPameldingType.valueOf(it) },
 					),
 				arrangorDbo =
 					ArrangorDbo(
@@ -73,31 +76,47 @@ class DeltakerlisteRepository(
 	fun insertOrUpdateDeltakerliste(deltakerlisteDbo: DeltakerlisteDbo) {
 		val sql =
 			"""
-			INSERT INTO deltakerliste(id, navn, gjennomforingstype, status, arrangor_id, tiltaksnavn, tiltakskode, start_dato, slutt_dato, er_kurs, oppstartstype, tilgjengelig_fom)
-			VALUES (:id,
-					:navn,
-					:gjennomforingstype,
-					:status,
-					:arrangor_id,
-					:tiltaksnavn,
-					:tiltakskode,
-					:start_dato,
-					:slutt_dato,
-					:er_kurs,
-					:oppstartstype,
-					:tilgjengelig_fom)
+			INSERT INTO deltakerliste (
+				id,
+				navn,
+				gjennomforingstype,
+				status,
+				arrangor_id,
+				tiltaksnavn,
+				tiltakskode,
+				start_dato,
+				slutt_dato,
+				er_kurs,
+				oppstartstype,
+				tilgjengelig_fom,
+				pameldingstype)
+			VALUES (
+				:id,
+				:navn,
+				:gjennomforingstype,
+				:status,
+				:arrangor_id,
+				:tiltaksnavn,
+				:tiltakskode,
+				:start_dato,
+				:slutt_dato,
+				:er_kurs,
+				:oppstartstype,
+				:tilgjengelig_fom,
+				:pameldingstype)
 			ON CONFLICT (id) DO UPDATE SET
-					navn     				= :navn,
-					gjennomforingstype		= :gjennomforingstype,
-					status					= :status,
-					arrangor_id 			= :arrangor_id,
-					tiltaksnavn				= :tiltaksnavn,
-					tiltakskode				= :tiltakskode,
-					start_dato				= :start_dato,
-					slutt_dato				= :slutt_dato,
-					er_kurs					= :er_kurs,
-					oppstartstype			= :oppstartstype,
-					tilgjengelig_fom		= :tilgjengelig_fom
+				navn     				= :navn,
+				gjennomforingstype		= :gjennomforingstype,
+				status					= :status,
+				arrangor_id 			= :arrangor_id,
+				tiltaksnavn				= :tiltaksnavn,
+				tiltakskode				= :tiltakskode,
+				start_dato				= :start_dato,
+				slutt_dato				= :slutt_dato,
+				er_kurs					= :er_kurs,
+				oppstartstype			= :oppstartstype,
+				tilgjengelig_fom		= :tilgjengelig_fom,
+				pameldingstype			= :pameldingstype
 			""".trimIndent()
 
 		template.update(
@@ -115,6 +134,7 @@ class DeltakerlisteRepository(
 				"er_kurs" to deltakerlisteDbo.erKurs,
 				"oppstartstype" to deltakerlisteDbo.oppstartstype.name,
 				"tilgjengelig_fom" to deltakerlisteDbo.tilgjengeligForArrangorFraOgMedDato,
+				"pameldingstype" to deltakerlisteDbo.pameldingstype?.name,
 			),
 		)
 	}
@@ -153,23 +173,26 @@ class DeltakerlisteRepository(
 	fun getDeltakerlisteMedArrangor(deltakerlisteId: UUID): DeltakerlisteMedArrangorDbo? = template
 		.query(
 			"""
-			SELECT deltakerliste.id as deltakerliste_id,
-					deltakerliste.navn as deltakerliste_navn,
-					gjennomforingstype,
-					status,
-					arrangor_id,
-					tiltaksnavn,
-					tiltakskode,
-					start_dato,
-					slutt_dato,
-					er_kurs,
-					oppstartstype,
-					tilgjengelig_fom,
-					a.navn as arrangor_navn,
-					a.organisasjonsnummer,
-					a.overordnet_arrangor_id
-			FROM deltakerliste
-					 INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
+			SELECT
+				deltakerliste.id AS deltakerliste_id,
+				deltakerliste.navn AS deltakerliste_navn,
+				gjennomforingstype,
+				status,
+				arrangor_id,
+				tiltaksnavn,
+				tiltakskode,
+				start_dato,
+				slutt_dato,
+				er_kurs,
+				oppstartstype,
+				tilgjengelig_fom,
+				pameldingstype,
+				a.navn as arrangor_navn,
+				a.organisasjonsnummer,
+				a.overordnet_arrangor_id
+			FROM
+				deltakerliste
+				INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
 			WHERE deltakerliste.id = :id;
 			""".trimIndent(),
 			sqlParameters("id" to deltakerlisteId),
@@ -182,24 +205,27 @@ class DeltakerlisteRepository(
 		}
 		return template.query(
 			"""
-			SELECT deltakerliste.id as deltakerliste_id,
-					deltakerliste.navn as deltakerliste_navn,
-					gjennomforingstype,
-					status,
-					arrangor_id,
-					tiltaksnavn,
-					tiltakskode,
-					start_dato,
-					slutt_dato,
-					er_kurs,
-					oppstartstype,
-					tilgjengelig_fom,
-					a.navn as arrangor_navn,
-					a.organisasjonsnummer,
-					a.overordnet_arrangor_id
-			FROM deltakerliste
-					 INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
-			WHERE a.id in (:arrangorIds);
+			SELECT
+				deltakerliste.id AS deltakerliste_id,
+				deltakerliste.navn AS deltakerliste_navn,
+				gjennomforingstype,
+				status,
+				arrangor_id,
+				tiltaksnavn,
+				tiltakskode,
+				start_dato,
+				slutt_dato,
+				er_kurs,
+				oppstartstype,
+				tilgjengelig_fom,
+				pameldingstype,
+				a.navn as arrangor_navn,
+				a.organisasjonsnummer,
+				a.overordnet_arrangor_id
+			FROM
+				deltakerliste
+				INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
+			WHERE a.id IN (:arrangorIds);
 			""".trimIndent(),
 			sqlParameters("arrangorIds" to arrangorIder),
 			deltakerlisteMedArrangorRowMapper,

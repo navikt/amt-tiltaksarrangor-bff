@@ -45,8 +45,9 @@ object ConsumerUtils {
 		startDato = startDato,
 		sluttDato = sluttDato,
 		erKurs = oppstart == Oppstartstype.FELLES,
-		oppstartstype = this.oppstart,
-		tilgjengeligForArrangorFraOgMedDato = this.tilgjengeligForArrangorFraOgMedDato,
+		oppstartstype = oppstart,
+		tilgjengeligForArrangorFraOgMedDato = tilgjengeligForArrangorFraOgMedDato,
+		pameldingstype = pameldingType,
 	)
 
 	fun GjennomforingV2KafkaPayload.Gruppe.skalLagres(): Boolean = when (this.status) {

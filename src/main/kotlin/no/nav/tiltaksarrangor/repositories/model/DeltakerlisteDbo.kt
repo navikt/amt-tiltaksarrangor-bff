@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.repositories.model
 
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
@@ -20,6 +21,7 @@ data class DeltakerlisteDbo(
 	val erKurs: Boolean,
 	val oppstartstype: Oppstartstype,
 	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
+	val pameldingstype: GjennomforingPameldingType?, // skal gjøres  non-nullable etter relast
 ) {
 	fun erTilgjengeligForArrangor(): Boolean = if (startDato != null) {
 		if (tilgjengeligForArrangorFraOgMedDato != null) {
