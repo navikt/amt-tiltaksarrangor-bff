@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
@@ -130,6 +131,7 @@ class DeltakerRepository(
 						erKurs = rs.getBoolean("er_kurs"),
 						oppstartstype = Oppstartstype.valueOf(rs.getString("oppstartstype")),
 						tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
+						pameldingstype = rs.getString("pameldingstype")?.let { GjennomforingPameldingType.valueOf(it) },
 					),
 			)
 		}
@@ -377,6 +379,8 @@ class DeltakerRepository(
 			er_kurs,
 			oppstartstype,
 			tilgjengelig_fom,
+			pameldingstype,
+
 			deltaker.modified_at as modified_at,
 			forste_vedtak_fattet,
 			er_manuelt_delt_med_arrangor,
@@ -441,6 +445,8 @@ class DeltakerRepository(
 				er_kurs,
 				oppstartstype,
 				tilgjengelig_fom,
+				pameldingstype,
+
 				deltaker.modified_at as modified_at,
 				forste_vedtak_fattet,
 				er_manuelt_delt_med_arrangor,

@@ -12,6 +12,7 @@ import io.mockk.just
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
@@ -271,6 +272,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -327,6 +329,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -393,6 +396,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().plusDays(7),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -870,6 +874,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		val deltaker =
 			getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(
@@ -945,6 +950,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
 		val deltaker2 = getDeltaker(UUID.randomUUID(), deltakerliste.id)
@@ -1054,6 +1060,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1125,6 +1132,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1177,6 +1185,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -1216,6 +1225,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -1253,6 +1263,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId1 = UUID.randomUUID()
@@ -1324,6 +1335,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -1369,6 +1381,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -1420,6 +1433,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -1469,6 +1483,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -1520,6 +1535,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -1614,6 +1630,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()

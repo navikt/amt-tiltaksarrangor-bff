@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.veileder.api
 import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
@@ -59,6 +60,7 @@ class VeilederAPITest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")

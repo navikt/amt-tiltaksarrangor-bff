@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.koordinator.api
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
@@ -62,6 +63,7 @@ class DeltakerlisteAdminAPITest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		val deltakerliste2 =
 			DeltakerlisteDbo(
@@ -77,6 +79,7 @@ class DeltakerlisteAdminAPITest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().minusYears(1),
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste1)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste2)
@@ -139,6 +142,7 @@ class DeltakerlisteAdminAPITest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()
@@ -201,6 +205,7 @@ class DeltakerlisteAdminAPITest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId = UUID.randomUUID()
