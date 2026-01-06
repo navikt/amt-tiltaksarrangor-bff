@@ -1,12 +1,10 @@
 package no.nav.tiltaksarrangor.melding.forslag
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import kotlinx.coroutines.runBlocking
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
-import no.nav.amt.lib.testing.AsyncUtils
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
 import no.nav.tiltaksarrangor.kafka.stringStringConsumer

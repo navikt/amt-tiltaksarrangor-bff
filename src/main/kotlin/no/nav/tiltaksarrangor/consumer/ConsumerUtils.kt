@@ -3,8 +3,8 @@ package no.nav.tiltaksarrangor.consumer
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
+import no.nav.tiltaksarrangor.utils.objectMapper
 import java.time.LocalDate
 import java.util.UUID
 
@@ -18,14 +18,14 @@ object ConsumerUtils {
 	fun getGjennomforingstypeFromJson(messageJson: String): String = objectMapper
 		.readTree(messageJson)
 		.get(GJENNOMFORINGSTYPE_KEY)
-		?.asText()
+		?.asString()
 		?: FALLBACK_GJENNOMFORINGSTYPE
 
 	fun getGjennomforingstypeFromDeltakerJsonPayload(messageJson: String): String = objectMapper
 		.readTree(messageJson)
 		.get(DELTAKERLISTE_KEY)
 		?.get(LISTE_GJENNOMFORINGSTYPE_KEY)
-		?.asText()
+		?.asString()
 		?: FALLBACK_GJENNOMFORINGSTYPE
 
 	private fun mapTiltakstypeNavn(tiltakstypeNavn: String): String = if (tiltakstypeNavn == "Jobbklubb") {

@@ -31,6 +31,7 @@ val ktlintVersion = "1.4.1"
 val amtLibVersion = "1.2026.01.06_11.22-66976913bedb"
 val shedlockVersion = "7.2.1"
 val springmockkVersion = "5.0.1"
+val jacksonModuleKotlinVersion = "3.0.3"
 
 // fjernes ved neste release av org.apache.kafka:kafka-clients
 configurations.configureEach {
