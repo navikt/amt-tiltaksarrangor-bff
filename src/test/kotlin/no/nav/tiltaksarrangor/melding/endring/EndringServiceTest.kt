@@ -31,7 +31,7 @@ class EndringServiceTest(
 	@MockkBean @Suppress("unused") private val amtArrangorClient: AmtArrangorClient,
 ) : IntegrationTest() {
 	@BeforeEach
-	internal fun setup() {
+	fun setup() {
 		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns false
 	}
 

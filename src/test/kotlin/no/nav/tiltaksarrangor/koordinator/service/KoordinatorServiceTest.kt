@@ -73,12 +73,12 @@ class KoordinatorServiceTest(
 	@MockkBean private val unleashToggle: UnleashToggle,
 ) : IntegrationTest() {
 	@BeforeEach
-	internal fun setup() {
+	fun setup() {
 		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns false
 	}
 
 	@AfterEach
-	internal fun tearDown() {
+	fun tearDown() {
 		clearMocks(amtArrangorClient)
 	}
 

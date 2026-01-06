@@ -98,7 +98,7 @@ class KafkaConsumerServiceTest {
 		)
 
 	@BeforeEach
-	internal fun resetMocks() {
+	fun resetMocks() {
 		clearAllMocks()
 
 		every { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) } just Runs
@@ -117,7 +117,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - feil gjennomforingstype - skal ikke lagre`(): Unit = runBlocking {
+	fun `lagreDeltaker - feil gjennomforingstype - skal ikke lagre`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.DELTAR)
 
@@ -131,7 +131,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status DELTAR - lagres i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - status DELTAR - lagres i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.DELTAR)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -142,7 +142,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - enkeltplass type - lagres ikke i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - enkeltplass type - lagres ikke i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.DELTAR)
 			medDeltakerlisteType(Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING)
@@ -154,7 +154,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - ny deltaker - henter kontaktinfo`(): Unit = runBlocking {
+	fun `lagreDeltaker - ny deltaker - henter kontaktinfo`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -166,7 +166,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status FEILREGISTRERT - lagres ikke i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - status FEILREGISTRERT - lagres ikke i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.FEILREGISTRERT)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -178,7 +178,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status SOKT_INN - lagres hvis er delt med arrangor`(): Unit = runBlocking {
+	fun `lagreDeltaker - status SOKT_INN - lagres hvis er delt med arrangor`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medErManueltDeltMedArrangor()
 			medStatus(DeltakerStatus.Type.SOKT_INN)
@@ -190,7 +190,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status SOKT_INN - lagres ikke hvis ikke er delt med arrangor`(): Unit = runBlocking {
+	fun `lagreDeltaker - status SOKT_INN - lagres ikke hvis ikke er delt med arrangor`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.SOKT_INN)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -202,7 +202,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status HAR_SLUTTET for mer enn 40 dager siden - lagres ikke i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - status HAR_SLUTTET for mer enn 40 dager siden - lagres ikke i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.HAR_SLUTTET, 41)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -213,7 +213,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status HAR_SLUTTET for mindre enn 40 dager siden - lagres i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - status HAR_SLUTTET for mindre enn 40 dager siden - lagres i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.HAR_SLUTTET, 39)
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -224,7 +224,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes ikke i db fra for - lagres ikke i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes ikke i db fra for - lagres ikke i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			every { deltakerRepository.getDeltaker(any()) } returns null
 			medStatus(DeltakerStatus.Type.IKKE_AKTUELL)
@@ -237,7 +237,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes i db fra for - lagres i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - status IKKE_AKTUELL og deltar pa kurs og finnes i db fra for - lagres i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.IKKE_AKTUELL)
 			medDeltarPaKurs()
@@ -250,7 +250,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - status IKKE_AKTUELL for mer enn 40 dager siden, deltar pa kurs, finnes i db - lagres ikke i db`(): Unit =
+	fun `lagreDeltaker - status IKKE_AKTUELL for mer enn 40 dager siden, deltar pa kurs, finnes i db - lagres ikke i db`(): Unit =
 		runBlocking {
 			with(DeltakerDtoCtx()) {
 				medStatus(DeltakerStatus.Type.IKKE_AKTUELL, 42)
@@ -265,21 +265,20 @@ class KafkaConsumerServiceTest {
 		}
 
 	@Test
-	internal fun `lagreDeltaker - status HAR_SLUTTET mindre enn 40 dager siden, sluttdato mer enn 40 dager - lagres ikke i db`(): Unit =
-		runBlocking {
-			with(DeltakerDtoCtx()) {
-				medStatus(DeltakerStatus.Type.HAR_SLUTTET, gyldigFraDagerSiden = 39)
-				medSluttdato(dagerSiden = 41)
-				every { deltakerRepository.getDeltaker(any()) } returns null
-				kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
+	fun `lagreDeltaker - status HAR_SLUTTET mindre enn 40 dager siden, sluttdato mer enn 40 dager - lagres ikke i db`(): Unit = runBlocking {
+		with(DeltakerDtoCtx()) {
+			medStatus(DeltakerStatus.Type.HAR_SLUTTET, gyldigFraDagerSiden = 39)
+			medSluttdato(dagerSiden = 41)
+			every { deltakerRepository.getDeltaker(any()) } returns null
+			kafkaConsumerService.lagreDeltaker(deltakerDto.id, objectMapper.writeValueAsString(deltakerDto))
 
-				verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
-				verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
-			}
+			verify(exactly = 0) { deltakerRepository.insertOrUpdateDeltaker(any()) }
+			verify(exactly = 1) { deltakerRepository.deleteDeltaker(deltakerDto.id) }
 		}
+	}
 
 	@Test
-	internal fun `lagreDeltaker - har adressebeskyttelse - lagres i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - har adressebeskyttelse - lagres i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medAdressebeskyttelse()
 			every { deltakerRepository.getDeltaker(any()) } returns null
@@ -290,7 +289,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - skjult, ny status DELTAR - fjerner skjuling i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - skjult, ny status DELTAR - fjerner skjuling i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.DELTAR)
 
@@ -309,7 +308,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - skjult, samme status - beholder skjuling i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - skjult, samme status - beholder skjuling i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			medStatus(DeltakerStatus.Type.HAR_SLUTTET)
 
@@ -336,34 +335,33 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - historikk inneholder svar pa forslag som ikke finnes i db - lagrer ulest endring i db`(): Unit =
-		runBlocking {
-			with(DeltakerDtoCtx()) {
-				val lagretDeltaker = deltakerDto.toDeltakerDbo()
-				val forslag = forlengDeltakelseForslag(
-					status = Forslag.Status.Avvist(
-						Forslag.NavAnsatt(
-							UUID.randomUUID(),
-							UUID.randomUUID(),
-						),
-						LocalDateTime.now(),
-						"Fordi...",
+	fun `lagreDeltaker - historikk inneholder svar pa forslag som ikke finnes i db - lagrer ulest endring i db`(): Unit = runBlocking {
+		with(DeltakerDtoCtx()) {
+			val lagretDeltaker = deltakerDto.toDeltakerDbo()
+			val forslag = forlengDeltakelseForslag(
+				status = Forslag.Status.Avvist(
+					Forslag.NavAnsatt(
+						UUID.randomUUID(),
+						UUID.randomUUID(),
 					),
-				)
-				val nyDeltaker = deltakerDto.copy(
-					historikk = listOf(DeltakerHistorikk.Forslag(forslag)),
-				)
-				every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
-				every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
-				every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
-				kafkaConsumerService.lagreDeltaker(nyDeltaker.id, objectMapper.writeValueAsString(nyDeltaker))
+					LocalDateTime.now(),
+					"Fordi...",
+				),
+			)
+			val nyDeltaker = deltakerDto.copy(
+				historikk = listOf(DeltakerHistorikk.Forslag(forslag)),
+			)
+			every { deltakerRepository.getDeltaker(any()) } returns lagretDeltaker
+			every { navEnhetService.hentOpprettEllerOppdaterNavEnhet(any()) } returns mockk()
+			every { navAnsattService.hentEllerOpprettNavAnsatt(any()) } returns mockk()
+			kafkaConsumerService.lagreDeltaker(nyDeltaker.id, objectMapper.writeValueAsString(nyDeltaker))
 
-				verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
-			}
+			verify(exactly = 1) { ulestEndringRepository.insert(any(), any()) }
 		}
+	}
 
 	@Test
-	internal fun `lagreDeltaker - historikk inneholder endring fra arrangor - lagrer ikke i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - historikk inneholder endring fra arrangor - lagrer ikke i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			val lagretDeltaker = deltakerDto.toDeltakerDbo()
 			val endringFraArrangor = DeltakerHistorikk.EndringFraArrangor(
@@ -391,7 +389,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - historikk inneholder svar pa forslag som  finnes i db - lagrer ikke endring i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - historikk inneholder svar pa forslag som  finnes i db - lagrer ikke endring i db`(): Unit = runBlocking {
 		val forslag = DeltakerHistorikk.Forslag(
 			forlengDeltakelseForslag(
 				status = Forslag.Status.Godkjent(
@@ -422,7 +420,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreDeltaker - deltaker har ny Nav-veileder og nytt kontor - lagrer i db`(): Unit = runBlocking {
+	fun `lagreDeltaker - deltaker har ny Nav-veileder og nytt kontor - lagrer i db`(): Unit = runBlocking {
 		with(DeltakerDtoCtx()) {
 			val lagretDeltaker = getDeltaker(deltakerDto.id).copy(
 				personident = "10987654321",
@@ -455,7 +453,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreEndringsmelding - status AKTIV - lagres i db`() {
+	fun `lagreEndringsmelding - status AKTIV - lagres i db`() {
 		val endringsmeldingId = UUID.randomUUID()
 		val endringsmeldingDto =
 			EndringsmeldingDto(
@@ -476,7 +474,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreEndringsmelding - status UTDATERT - lagres i db`() {
+	fun `lagreEndringsmelding - status UTDATERT - lagres i db`() {
 		val endringsmeldingId = UUID.randomUUID()
 		val endringsmeldingDto =
 			EndringsmeldingDto(
@@ -497,7 +495,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreNavAnsatt - ny ansatt - lagres`() {
+	fun `lagreNavAnsatt - ny ansatt - lagres`() {
 		val navAnsatt = getNavAnsatt()
 
 		every { navAnsattRepository.upsert(any()) } just Runs
@@ -508,7 +506,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `handleForslag - forslaget er aktivt - gjor ingenting`() {
+	fun `handleForslag - forslaget er aktivt - gjor ingenting`() {
 		val forslag = forlengDeltakelseForslag()
 
 		kafkaConsumerService.handleMelding(forslag.id, forslag)
@@ -517,7 +515,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `handleForslag - forslaget er tilbakekalt - gjor ingenting`() {
+	fun `handleForslag - forslaget er tilbakekalt - gjor ingenting`() {
 		val forslag = forlengDeltakelseForslag(
 			status = Forslag.Status.Tilbakekalt(
 				UUID.randomUUID(),
@@ -531,7 +529,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `handleForslag - forslaget er godkjent - sletter`() {
+	fun `handleForslag - forslaget er godkjent - sletter`() {
 		val forslag = forlengDeltakelseForslag(
 			status = Forslag.Status.Godkjent(
 				Forslag.NavAnsatt(
@@ -548,7 +546,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `handleForslag - forslaget er avvist - sletter`() {
+	fun `handleForslag - forslaget er avvist - sletter`() {
 		val forslag = forlengDeltakelseForslag(
 			status = Forslag.Status.Avvist(
 				Forslag.NavAnsatt(
@@ -566,7 +564,7 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	internal fun `lagreNavEnhet - enhet har nytt navn - oppdaterer deltakere og lagrer`() {
+	fun `lagreNavEnhet - enhet har nytt navn - oppdaterer deltakere og lagrer`() {
 		val id = UUID.randomUUID()
 		val gammeltNavn = "NAV Bærum"
 		val nyttNavn = "NAV Asker"
@@ -613,7 +611,7 @@ class KafkaConsumerServiceTest {
 		}
 
 		@Test
-		internal fun `endring fra tiltakskoordinator - DeltMedArrangor`() {
+		fun `endring fra tiltakskoordinator - DeltMedArrangor`() {
 			with(DeltakerDtoCtx()) {
 				val historikk = listOf(DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endringInTest))
 				medHistorikk(historikk)
@@ -635,7 +633,7 @@ class KafkaConsumerServiceTest {
 		}
 
 		@Test
-		internal fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - TildeltPlass`() {
+		fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - TildeltPlass`() {
 			with(DeltakerDtoCtx()) {
 				val endring = endringInTest.copy(endring = EndringFraTiltakskoordinator.TildelPlass)
 				val historikk = listOf(DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring))
@@ -659,7 +657,7 @@ class KafkaConsumerServiceTest {
 		}
 
 		@Test
-		internal fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - SettPaaVenteliste - lagrer ikke`() {
+		fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - SettPaaVenteliste - lagrer ikke`() {
 			with(DeltakerDtoCtx()) {
 				val endring = endringInTest.copy(endring = EndringFraTiltakskoordinator.SettPaaVenteliste)
 				val historikk = listOf(DeltakerHistorikk.EndringFraTiltakskoordinator(endringFraTiltakskoordinator = endring))
@@ -677,7 +675,7 @@ class KafkaConsumerServiceTest {
 		}
 
 		@Test
-		internal fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - TildeltPlass og DelMedArrangor - lagrer den nyeste`() {
+		fun `lagreNyDeltakerUlestEndring - endring fra tiltakskoordinator - TildeltPlass og DelMedArrangor - lagrer den nyeste`() {
 			with(DeltakerDtoCtx()) {
 				val endretDato2 = LocalDateTime.now().plusDays(10)
 

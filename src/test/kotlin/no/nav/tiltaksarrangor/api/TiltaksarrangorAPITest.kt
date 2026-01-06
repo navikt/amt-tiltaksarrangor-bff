@@ -50,7 +50,7 @@ class TiltaksarrangorAPITest(
 	private val mediaTypeJson = "application/json".toMediaType()
 
 	@AfterEach
-	internal fun tearDown() {
+	fun tearDown() {
 		mockAmtArrangorServer.resetHttpServer()
 	}
 

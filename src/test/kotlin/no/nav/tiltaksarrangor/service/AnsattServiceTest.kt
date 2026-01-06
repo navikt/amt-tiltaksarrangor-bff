@@ -34,7 +34,7 @@ class AnsattServiceTest(
 	@MockkBean private val amtArrangorClient: AmtArrangorClient,
 ) : IntegrationTest() {
 	@AfterEach
-	internal fun tearDown() {
+	fun tearDown() {
 		clearMocks(amtArrangorClient)
 	}
 

@@ -69,7 +69,7 @@ class KafkaConsumerTest(
 	private val testKafkaConsumer: Consumer<String, String>,
 ) : IntegrationTest() {
 	@BeforeEach
-	internal fun subscribe() {
+	fun subscribe() {
 		testKafkaConsumer.subscribeHvisIkkeSubscribed(
 			ARRANGOR_TOPIC,
 			ARRANGOR_ANSATT_TOPIC,
