@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.consumer
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -8,12 +9,14 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.arrangorInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlisteIdInTest
-import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlistePayloadInTest
+import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.gjennomforingPayloadInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.tiltakstypePayloadInTest
+import no.nav.tiltaksarrangor.consumer.ConsumerUtils.GJENNOMFORINGSTYPE_KEY
 import no.nav.tiltaksarrangor.repositories.ArrangorRepository
 import no.nav.tiltaksarrangor.repositories.DeltakerlisteRepository
 import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
@@ -55,7 +58,7 @@ class DeltakerlisteConsumerServiceTest {
 	fun `lagreDeltakerliste - status GJENNOMFORES - lagres i db `() {
 		sut.lagreDeltakerliste(
 			deltakerlisteId = deltakerlisteIdInTest,
-			value = objectMapper.writeValueAsString(deltakerlistePayloadInTest),
+			value = objectMapper.writeValueAsString(gjennomforingPayloadInTest),
 		)
 
 		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
@@ -63,7 +66,7 @@ class DeltakerlisteConsumerServiceTest {
 
 	@Test
 	fun `lagreDeltakerliste - status AVSLUTTET for 6 mnd siden - lagres ikke`() {
-		val deltakerlisteDto = deltakerlistePayloadInTest.copy(
+		val deltakerlisteDto = gjennomforingPayloadInTest.copy(
 			navn = "Avsluttet tiltak",
 			sluttDato = LocalDate.now().minusMonths(6),
 			status = GjennomforingStatusType.AVSLUTTET,
@@ -80,7 +83,7 @@ class DeltakerlisteConsumerServiceTest {
 
 	@Test
 	fun `lagreDeltakerliste - status AVSLUTTET for 1 uke siden - lagres i db`() {
-		val deltakerlisteDto = deltakerlistePayloadInTest.copy(
+		val deltakerlisteDto = gjennomforingPayloadInTest.copy(
 			navn = "Avsluttet tiltak",
 			sluttDato = LocalDate.now().minusWeeks(1),
 			status = GjennomforingStatusType.AVSLUTTET,
@@ -95,14 +98,17 @@ class DeltakerlisteConsumerServiceTest {
 	}
 
 	@Test
-	fun `lagreDeltakerliste - ikke stottet tiltakstype - lagres ikke i db `() {
-		val deltakerlisteDto = deltakerlistePayloadInTest.copy(
+	fun `lagreDeltakerliste - ikke stottet gjennomforingstype - lagres ikke i db `() {
+		val gjennomforingPayload = gjennomforingPayloadInTest.copy(
 			tiltakskode = Tiltakskode.STUDIESPESIALISERING,
 		)
 
+		val jsonAsMap = objectMapper.readValue<MutableMap<String, Any>>(objectMapper.writeValueAsString(gjennomforingPayload))
+		jsonAsMap[GJENNOMFORINGSTYPE_KEY] = GjennomforingV2KafkaPayload.ENKELTPLASS_V2_TYPE
+
 		sut.lagreDeltakerliste(
 			deltakerlisteId = deltakerlisteIdInTest,
-			value = objectMapper.writeValueAsString(deltakerlisteDto),
+			value = objectMapper.writeValueAsString(jsonAsMap),
 		)
 
 		verify(exactly = 0) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }

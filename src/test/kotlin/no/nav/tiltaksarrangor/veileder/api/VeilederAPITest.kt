@@ -3,7 +3,9 @@ package no.nav.tiltaksarrangor.veileder.api
 import io.kotest.matchers.shouldBe
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
@@ -48,6 +50,7 @@ class VeilederAPITest(
 			DeltakerlisteDbo(
 				id = UUID.fromString("9987432c-e336-4b3b-b73e-b7c781a0823a"),
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Arbeidsforberedende trening",
@@ -57,6 +60,7 @@ class VeilederAPITest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = null,
+				pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.fromString("977350f2-d6a5-49bb-a3a0-773f25f863d9")

@@ -3,7 +3,9 @@ package no.nav.tiltaksarrangor.repositories
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
@@ -119,6 +121,7 @@ class DeltakerRepository(
 					DeltakerlisteDbo(
 						id = UUID.fromString(rs.getString("deltakerliste_id")),
 						navn = rs.getString("navn"),
+						gjennomforingstype = GjennomforingType.valueOf(rs.getString("gjennomforingstype")),
 						status = GjennomforingStatusType.valueOf(rs.getString("deltakerliste_status")),
 						arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 						tiltaksnavn = rs.getString("tiltaksnavn"),
@@ -128,6 +131,7 @@ class DeltakerRepository(
 						erKurs = rs.getBoolean("er_kurs"),
 						oppstartstype = Oppstartstype.valueOf(rs.getString("oppstartstype")),
 						tilgjengeligForArrangorFraOgMedDato = rs.getNullableLocalDate("tilgjengelig_fom"),
+						pameldingstype = rs.getString("pameldingstype")?.let { GjennomforingPameldingType.valueOf(it) },
 					),
 			)
 		}
@@ -365,6 +369,7 @@ class DeltakerRepository(
 			skjult_dato,
 			adressebeskyttet,
 			deltakerliste.navn,
+			deltakerliste.gjennomforingstype,
 			deltakerliste.status as deltakerliste_status,
 			arrangor_id,
 			tiltaksnavn,
@@ -374,6 +379,8 @@ class DeltakerRepository(
 			er_kurs,
 			oppstartstype,
 			tilgjengelig_fom,
+			pameldingstype,
+
 			deltaker.modified_at as modified_at,
 			forste_vedtak_fattet,
 			er_manuelt_delt_med_arrangor,
@@ -428,6 +435,7 @@ class DeltakerRepository(
 				skjult_dato,
 				adressebeskyttet,
 				deltakerliste.navn,
+				deltakerliste.gjennomforingstype,
 				deltakerliste.status as deltakerliste_status,
 				arrangor_id,
 				tiltaksnavn,
@@ -437,6 +445,8 @@ class DeltakerRepository(
 				er_kurs,
 				oppstartstype,
 				tilgjengelig_fom,
+				pameldingstype,
+
 				deltaker.modified_at as modified_at,
 				forste_vedtak_fattet,
 				er_manuelt_delt_med_arrangor,

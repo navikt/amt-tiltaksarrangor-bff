@@ -7,11 +7,11 @@ import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.tiltaksarrangor.client.amtperson.AmtPersonClient
 import no.nav.tiltaksarrangor.client.amtperson.NavEnhetDto
-import no.nav.tiltaksarrangor.consumer.ConsumerUtils.getTiltakskodeFromDeltakerJsonPayload
-import no.nav.tiltaksarrangor.consumer.ConsumerUtils.tiltakskodeErStottet
+import no.nav.tiltaksarrangor.consumer.ConsumerUtils.getGjennomforingstypeFromDeltakerJsonPayload
 import no.nav.tiltaksarrangor.consumer.model.AVSLUTTENDE_STATUSER
 import no.nav.tiltaksarrangor.consumer.model.AnsattDto
 import no.nav.tiltaksarrangor.consumer.model.ArrangorDto
@@ -87,10 +87,10 @@ class KafkaConsumerService(
 			return
 		}
 
-		// sjekker at tiltakskoden ikke er enkeltplass og at vi er komet-master for tiltakstypen
-		val tiltakskodeFromJson = getTiltakskodeFromDeltakerJsonPayload(deltakerPayloadJson)
-		if (!tiltakskodeErStottet(tiltakskodeFromJson)) {
-			log.info("Tiltakskode $tiltakskodeFromJson er ikke støttet.")
+		// sjekker at gjennomføringstype er støttet før deserialisering
+		val gjennomforingstypeFromJson = getGjennomforingstypeFromDeltakerJsonPayload(deltakerPayloadJson)
+		if (gjennomforingstypeFromJson != GjennomforingType.Gruppe.name) {
+			log.info("Gjennomføringstype $gjennomforingstypeFromJson er ikke støttet.")
 			return
 		}
 
@@ -127,16 +127,19 @@ class KafkaConsumerService(
 		}
 	}
 
-	private fun lagreNyDeltakerUlestEndring(deltakerPayload: DeltakerKafkaPayload, deltakerId: UUID) {
+	fun lagreNyDeltakerUlestEndring(deltakerPayload: DeltakerKafkaPayload, deltakerId: UUID) {
 		val vedtak = deltakerPayload.historikk?.filterIsInstance<DeltakerHistorikk.Vedtak>()
-		val endring = deltakerPayload.historikk?.filterIsInstance<DeltakerHistorikk.EndringFraTiltakskoordinator>()
+		val endringer = deltakerPayload.historikk?.filterIsInstance<DeltakerHistorikk.EndringFraTiltakskoordinator>()
 
-		if (!endring.isNullOrEmpty()) {
-			endring.forEach {
-				lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(it.endringFraTiltakskoordinator, deltakerId)
-			}
-		} else if (deltakerPayload.historikk == null || vedtak.isNullOrEmpty()) {
-			ulestEndringRepository.insert(
+		when {
+			!endringer.isNullOrEmpty() ->
+				endringer
+					.getNyDeltakerEndringFraTiltakskoordinator()
+					?.let {
+						lagreNyDeltakerUlestEndringForTiltakskoordinatorEndring(it.endringFraTiltakskoordinator, deltakerId)
+					}
+
+			deltakerPayload.historikk == null || vedtak.isNullOrEmpty() -> ulestEndringRepository.insert(
 				deltakerId,
 				Oppdatering.NyDeltaker(
 					opprettetAvNavn = null,
@@ -144,8 +147,8 @@ class KafkaConsumerService(
 					opprettet = deltakerPayload.innsoktDato,
 				),
 			)
-		} else {
-			vedtak.minBy { it.vedtak.opprettet }.vedtak.let {
+
+			else -> vedtak.minBy { it.vedtak.opprettet }.vedtak.let {
 				ulestEndringRepository.insert(
 					deltakerId,
 					Oppdatering.NyDeltaker(

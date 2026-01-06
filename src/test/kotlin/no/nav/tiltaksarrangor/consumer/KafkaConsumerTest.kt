@@ -11,7 +11,7 @@ import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.arrangorInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlisteIdInTest
-import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.deltakerlistePayloadInTest
+import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.gjennomforingPayloadInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.tiltakstypePayloadInTest
 import no.nav.tiltaksarrangor.consumer.ConsumerUtils.toDeltakerlisteDbo
 import no.nav.tiltaksarrangor.consumer.KafkaConsumer.Companion.ARRANGOR_ANSATT_TOPIC
@@ -110,7 +110,7 @@ class KafkaConsumerTest(
 						DELTAKERLISTE_V2_TOPIC,
 						null,
 						deltakerlisteIdInTest.toString(),
-						objectMapper.writeValueAsString(deltakerlistePayloadInTest),
+						objectMapper.writeValueAsString(gjennomforingPayloadInTest),
 					),
 				).get()
 
@@ -122,7 +122,7 @@ class KafkaConsumerTest(
 		@Test
 		fun `skal slette deltakerliste i database`() {
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(
-				deltakerlistePayloadInTest.toDeltakerlisteDbo(
+				gjennomforingPayloadInTest.toDeltakerlisteDbo(
 					arrangorId = arrangorInTest.id,
 					navnTiltakstype = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING.name,
 				),
@@ -146,7 +146,7 @@ class KafkaConsumerTest(
 		@Test
 		fun `skal slette deltakerliste og deltaker i database`() {
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(
-				deltakerlistePayloadInTest.toDeltakerlisteDbo(
+				gjennomforingPayloadInTest.toDeltakerlisteDbo(
 					arrangorId = arrangorInTest.id,
 					navnTiltakstype = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING.name,
 				),
@@ -157,7 +157,7 @@ class KafkaConsumerTest(
 			deltakerRepository.insertOrUpdateDeltaker(deltaker)
 			deltakerRepository.getDeltaker(deltaker.id) shouldNotBe null
 
-			val avsluttetDeltakerlisteDto = deltakerlistePayloadInTest.copy(status = GjennomforingStatusType.AVSLUTTET)
+			val avsluttetDeltakerlisteDto = gjennomforingPayloadInTest.copy(status = GjennomforingStatusType.AVSLUTTET)
 
 			testKafkaProducer
 				.send(

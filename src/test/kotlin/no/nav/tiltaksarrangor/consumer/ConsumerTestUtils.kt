@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.consumer
 
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
@@ -29,7 +30,7 @@ object ConsumerTestUtils {
 
 	val deltakerlisteIdInTest: UUID = UUID.randomUUID()
 
-	val deltakerlistePayloadInTest =
+	val gjennomforingPayloadInTest =
 		GjennomforingV2KafkaPayload.Gruppe(
 			id = deltakerlisteIdInTest,
 			tiltakskode = Tiltakskode.valueOf(tiltakstypePayloadInTest.tiltakskode),
@@ -46,5 +47,6 @@ object ConsumerTestUtils {
 			antallPlasser = 42,
 			oppmoteSted = null,
 			deltidsprosent = 100.0,
+			pameldingType = GjennomforingPameldingType.TRENGER_GODKJENNING,
 		)
 }

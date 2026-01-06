@@ -110,5 +110,5 @@ fun <T : EndringFraArrangor.Endring> assertProducedEndring(deltakerId: UUID, end
 		endring.endring::class shouldBe endringstype
 	}
 
-	consumer.stop()
+	runBlocking { consumer.close() }
 }

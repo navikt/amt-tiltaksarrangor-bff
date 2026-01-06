@@ -12,7 +12,9 @@ import io.mockk.just
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.IntegrationTest
@@ -260,6 +262,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -269,6 +272,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -315,6 +319,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -324,6 +329,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -380,6 +386,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -389,6 +396,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.now().plusDays(7),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -830,7 +838,7 @@ class KoordinatorServiceTest(
 	}
 
 	@Test
-	fun `getDeltakerliste - har tilgang, deltaker har både innsoktdato og forsteVedtakFattet, setter sokt inn til forsteVedtakFattet`() {
+	fun `getDeltakerliste - har tilgang, deltaker har bade innsoktdato og forsteVedtakFattet, setter sokt inn til forsteVedtakFattet`() {
 		val personIdent = "12345678910"
 		val deltakerlisteId = UUID.randomUUID()
 		val overordnetArrangorId = UUID.randomUUID()
@@ -856,6 +864,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -865,6 +874,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		val deltaker =
 			getDeltaker(UUID.randomUUID(), deltakerliste.id).copy(
@@ -930,6 +940,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -939,6 +950,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
 		val deltaker2 = getDeltaker(UUID.randomUUID(), deltakerliste.id)
@@ -1038,6 +1050,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1047,6 +1060,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1108,6 +1122,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1117,6 +1132,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2025, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		val deltaker = getDeltaker(UUID.randomUUID(), deltakerliste.id)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
@@ -1159,6 +1175,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1168,6 +1185,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -1197,6 +1215,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1206,6 +1225,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		ansattRepository.insertOrUpdateAnsatt(
@@ -1233,6 +1253,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1242,6 +1263,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val ansattId1 = UUID.randomUUID()
@@ -1303,6 +1325,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1312,6 +1335,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -1347,6 +1371,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1356,6 +1381,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -1397,6 +1423,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1406,6 +1433,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -1445,6 +1473,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1454,6 +1483,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -1495,6 +1525,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1504,6 +1535,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()
@@ -1588,6 +1620,7 @@ class KoordinatorServiceTest(
 			DeltakerlisteDbo(
 				id = deltakerlisteId,
 				navn = "Gjennomføring 1",
+				gjennomforingstype = GjennomforingType.Gruppe,
 				status = GjennomforingStatusType.GJENNOMFORES,
 				arrangorId = arrangorId,
 				tiltaksnavn = "Navn på tiltak",
@@ -1597,6 +1630,7 @@ class KoordinatorServiceTest(
 				erKurs = false,
 				oppstartstype = Oppstartstype.LOPENDE,
 				tilgjengeligForArrangorFraOgMedDato = LocalDate.of(2023, 1, 1),
+				pameldingstype = GjennomforingPameldingType.DIREKTE_VEDTAK,
 			)
 		deltakerlisteRepository.insertOrUpdateDeltakerliste(deltakerliste)
 		val deltakerId = UUID.randomUUID()

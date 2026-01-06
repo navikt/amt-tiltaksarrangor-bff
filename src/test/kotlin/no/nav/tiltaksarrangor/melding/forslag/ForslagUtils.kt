@@ -1,9 +1,12 @@
 package no.nav.tiltaksarrangor.melding.forslag
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
+import no.nav.amt.lib.testing.AsyncUtils
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.consumer.model.NavAnsatt
 import no.nav.tiltaksarrangor.consumer.model.NavEnhet
 import no.nav.tiltaksarrangor.kafka.stringStringConsumer
@@ -156,7 +159,7 @@ fun <T : Forslag.Endring> assertProducedForslag(forslagId: UUID, endringstype: K
 		cachedForslag.endring::class shouldBe endringstype
 	}
 
-	consumer.stop()
+	runBlocking { consumer.close() }
 }
 
 fun getProducedForslag(id: UUID): Forslag {
@@ -172,7 +175,7 @@ fun getProducedForslag(id: UUID): Forslag {
 		cache[id] shouldNotBe null
 	}
 
-	consumer.stop()
+	runBlocking { consumer.close() }
 
 	return cache[id]!! as Forslag
 }

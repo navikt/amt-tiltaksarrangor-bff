@@ -6,7 +6,9 @@ import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.Oppfolgingsperiode
@@ -40,6 +42,7 @@ fun getDeltakerliste(arrangorId: UUID) = getDeltakerliste(id = UUID.randomUUID()
 fun getDeltakerliste(id: UUID = UUID.randomUUID(), arrangorId: UUID): DeltakerlisteDbo = DeltakerlisteDbo(
 	id = id,
 	navn = "Gjennomføring 1",
+	gjennomforingstype = GjennomforingType.Gruppe,
 	status = GjennomforingStatusType.GJENNOMFORES,
 	arrangorId = arrangorId,
 	tiltaksnavn = "Tiltaksnavnet",
@@ -49,6 +52,7 @@ fun getDeltakerliste(id: UUID = UUID.randomUUID(), arrangorId: UUID): Deltakerli
 	erKurs = false,
 	oppstartstype = Oppstartstype.LOPENDE,
 	tilgjengeligForArrangorFraOgMedDato = null,
+	pameldingstype = GjennomforingPameldingType.TRENGER_GODKJENNING,
 )
 
 fun getDeltaker(
