@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.melding.forslag
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import kotlinx.coroutines.runBlocking
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Melding
 import no.nav.amt.lib.testing.AsyncUtils
@@ -156,7 +157,7 @@ fun <T : Forslag.Endring> assertProducedForslag(forslagId: UUID, endringstype: K
 		cachedForslag.endring::class shouldBe endringstype
 	}
 
-	consumer.stop()
+	runBlocking { consumer.close() }
 }
 
 fun getProducedForslag(id: UUID): Forslag {
@@ -171,7 +172,8 @@ fun getProducedForslag(id: UUID): Forslag {
 	AsyncUtils.eventually {
 		cache[id] shouldNotBe null
 	}
-	consumer.stop()
+
+	runBlocking { consumer.close() }
 
 	return cache[id]!! as Forslag
 }

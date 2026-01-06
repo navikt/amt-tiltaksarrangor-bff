@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ninjasquad.springmockk.MockkBean
 import io.kotest.matchers.shouldBe
 import io.mockk.every
+import kotlinx.coroutines.runBlocking
 import no.nav.amt.lib.kafka.config.KafkaConfig
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
@@ -120,5 +121,5 @@ fun <T : EndringFraArrangor.Endring> assertProducedEndring(deltakerId: UUID, end
 		endring.endring::class shouldBe endringstype
 	}
 
-	consumer.stop()
+	runBlocking { consumer.close() }
 }

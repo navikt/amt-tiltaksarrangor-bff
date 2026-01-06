@@ -29,7 +29,7 @@ val mockkVersion = "1.14.7"
 val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
 val unleashVersion = "11.1.1"
 val ktlintVersion = "1.4.1"
-val amtLibVersion = "1.2025.12.17_13.22-54978daf1a13"
+val amtLibVersion = "1.2026.01.06_11.22-66976913bedb"
 val shedlockVersion = "7.2.1"
 val springmockkVersion = "5.0.1"
 
