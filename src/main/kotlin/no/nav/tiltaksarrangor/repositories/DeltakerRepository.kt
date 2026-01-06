@@ -1,6 +1,5 @@
 package no.nav.tiltaksarrangor.repositories
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
@@ -9,7 +8,6 @@ import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.repositories.model.DAGER_AVSLUTTET_DELTAKER_VISES
 import no.nav.tiltaksarrangor.repositories.model.DeltakerDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
@@ -19,11 +17,13 @@ import no.nav.tiltaksarrangor.utils.getNullableFloat
 import no.nav.tiltaksarrangor.utils.getNullableLocalDate
 import no.nav.tiltaksarrangor.utils.getNullableLocalDateTime
 import no.nav.tiltaksarrangor.utils.getNullableUUID
+import no.nav.tiltaksarrangor.utils.objectMapper
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import no.nav.tiltaksarrangor.utils.toPGObject
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
+import tools.jackson.module.kotlin.readValue
 import java.time.LocalDate
 import java.util.UUID
 

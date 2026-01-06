@@ -1,14 +1,14 @@
 package no.nav.tiltaksarrangor.repositories
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.melding.forslag.toPGObject
 import no.nav.tiltaksarrangor.model.Oppdatering
 import no.nav.tiltaksarrangor.model.UlestEndring
+import no.nav.tiltaksarrangor.utils.objectMapper
 import no.nav.tiltaksarrangor.utils.sqlParameters
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
+import tools.jackson.module.kotlin.readValue
 import java.util.UUID
 
 @Component
@@ -45,7 +45,7 @@ class UlestEndringRepository(
 			"oppdatering" to toPGObject(oppdatering),
 		)
 
-		return template.queryForObject(sql, params, rowMapper) ?: throw RuntimeException("Failed to insert ulest endring")
+		return template.queryForObject(sql, params, rowMapper)
 	}
 
 	fun getMany(deltakerId: UUID): List<UlestEndring> {

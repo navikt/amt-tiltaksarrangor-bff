@@ -41,7 +41,7 @@ class DeltakerlisteAdminServiceTest(
 	@Suppress("unused") @MockkBean(relaxed = true) private val metricsService: MetricsService,
 ) : IntegrationTest() {
 	@AfterEach
-	internal fun tearDown() {
+	fun tearDown() {
 		clearMocks(amtArrangorClient)
 	}
 

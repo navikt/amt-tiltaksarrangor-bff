@@ -74,7 +74,7 @@ class TiltaksarrangorServiceTest(
 	@MockkBean(relaxUnitFun = true) @Suppress("unused") private val meldingProducer: MeldingProducer,
 ) : IntegrationTest() {
 	@BeforeEach
-	internal fun setup() {
+	fun setup() {
 		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns false
 	}
 

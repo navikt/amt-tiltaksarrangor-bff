@@ -7,7 +7,6 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.toArrangorDbo
 import no.nav.tiltaksarrangor.consumer.ConsumerTestUtils.arrangorInTest
@@ -46,6 +45,7 @@ import no.nav.tiltaksarrangor.repositories.EndringsmeldingRepository
 import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
+import no.nav.tiltaksarrangor.utils.objectMapper
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -69,7 +69,7 @@ class KafkaConsumerTest(
 	private val testKafkaConsumer: Consumer<String, String>,
 ) : IntegrationTest() {
 	@BeforeEach
-	internal fun subscribe() {
+	fun subscribe() {
 		testKafkaConsumer.subscribeHvisIkkeSubscribed(
 			ARRANGOR_TOPIC,
 			ARRANGOR_ANSATT_TOPIC,
@@ -197,7 +197,7 @@ class KafkaConsumerTest(
 				),
 			).get()
 
-		await().atMost(5, TimeUnit.SECONDS).until {
+		await().until {
 			arrangorRepository.getArrangor(arrangorId) != null
 		}
 	}

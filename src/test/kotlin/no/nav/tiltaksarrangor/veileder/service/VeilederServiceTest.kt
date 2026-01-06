@@ -8,7 +8,6 @@ import io.mockk.every
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
@@ -28,6 +27,7 @@ import no.nav.tiltaksarrangor.repositories.UlestEndringRepository
 import no.nav.tiltaksarrangor.repositories.model.AnsattDbo
 import no.nav.tiltaksarrangor.repositories.model.AnsattRolleDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
+import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
@@ -53,12 +53,12 @@ class VeilederServiceTest(
 	@MockkBean(relaxed = true) private val unleashToggle: UnleashToggle,
 ) : IntegrationTest() {
 	@BeforeEach
-	internal fun setup() {
+	fun setup() {
 		every { unleashToggle.erKometMasterForTiltakstype(any<Tiltakskode>()) } returns false
 	}
 
 	@AfterEach
-	internal fun tearDown() {
+	fun tearDown() {
 		clearMocks(amtArrangorClient, unleashToggle)
 	}
 
@@ -149,7 +149,7 @@ class VeilederServiceTest(
 		minDeltaker1?.veiledertype shouldBe Veiledertype.VEILEDER
 		minDeltaker1?.aktiveEndringsmeldinger?.size shouldBe 2
 		minDeltaker1?.adressebeskyttet shouldBe false
-		minDeltaker1?.sistEndret shouldBeCloseTo deltaker.sistEndret
+		minDeltaker1?.sistEndret?.shouldBeCloseTo(deltaker.sistEndret)
 		minDeltaker1?.aktivEndring?.type shouldBe AktivEndring.Type.Endringsmelding
 		minDeltaker1?.aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
 
@@ -158,7 +158,7 @@ class VeilederServiceTest(
 		minDeltaker2?.deltakerliste?.id shouldBe deltakerliste.id
 		minDeltaker2?.veiledertype shouldBe Veiledertype.MEDVEILEDER
 		minDeltaker2?.aktiveEndringsmeldinger?.size shouldBe 0
-		minDeltaker2?.sistEndret shouldBeCloseTo deltaker2.sistEndret
+		minDeltaker2?.sistEndret?.shouldBeCloseTo(deltaker2.sistEndret)
 		minDeltaker2?.aktivEndring shouldBe null
 
 		val minDeltaker3 = mineDeltakere.find { it.id == deltaker3.id }
@@ -166,7 +166,7 @@ class VeilederServiceTest(
 		minDeltaker3?.deltakerliste?.id shouldBe deltakerliste2.id
 		minDeltaker3?.veiledertype shouldBe Veiledertype.VEILEDER
 		minDeltaker3?.aktiveEndringsmeldinger?.size shouldBe 0
-		minDeltaker3?.sistEndret shouldBeCloseTo deltaker3.sistEndret
+		minDeltaker3?.sistEndret?.shouldBeCloseTo(deltaker3.sistEndret)
 		minDeltaker3?.aktivEndring?.type shouldBe AktivEndring.Type.Forslag
 		minDeltaker3?.aktivEndring?.endingsType shouldBe AktivEndring.EndringsType.ForlengDeltakelse
 	}
@@ -221,7 +221,7 @@ class VeilederServiceTest(
 		minDeltaker1?.veiledertype shouldBe Veiledertype.VEILEDER
 		minDeltaker1?.aktiveEndringsmeldinger?.size shouldBe 0
 		minDeltaker1?.adressebeskyttet shouldBe false
-		minDeltaker1?.sistEndret shouldBeCloseTo deltaker.sistEndret
+		minDeltaker1?.sistEndret?.shouldBeCloseTo(deltaker.sistEndret)
 		minDeltaker1?.aktivEndring shouldBe null
 	}
 

@@ -26,7 +26,7 @@ class RyddejobbTest(
 	@MockkBean private val leaderElection: LeaderElection,
 ) : IntegrationTest() {
 	@BeforeEach
-	internal fun setUp() {
+	fun setUp() {
 		every { leaderElection.isLeader() } returns true
 	}
 

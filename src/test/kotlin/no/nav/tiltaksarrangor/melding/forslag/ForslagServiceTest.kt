@@ -1,18 +1,12 @@
 package no.nav.tiltaksarrangor.melding.forslag
 
 import io.kotest.matchers.shouldBe
-import no.nav.amt.lib.kafka.config.KafkaConfig
-import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.amt.lib.testing.SingletonKafkaProvider
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.melding.forslag.request.ForlengDeltakelseRequest
 import no.nav.tiltaksarrangor.testutils.DbTestDataUtils.shouldBeCloseTo
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Primary
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -20,13 +14,6 @@ class ForslagServiceTest(
 	private val repository: ForslagRepository,
 	private val forslagService: ForslagService,
 ) : IntegrationTest() {
-	@TestConfiguration
-	class TestConfig {
-		@Bean
-		@Primary
-		fun localKafkaConfig(): KafkaConfig = LocalKafkaConfig(SingletonKafkaProvider.getHost())
-	}
-
 	@Test
 	fun `opprettForslag - forlengelse - produserer og returnerer nytt forslag`() {
 		with(ForslagCtx(applicationContext, forlengDeltakelseForslag())) {
@@ -43,7 +30,10 @@ class ForslagServiceTest(
 			opprettetForslag.begrunnelse shouldBe begrunnelse
 			opprettetForslag.opprettet shouldBeCloseTo LocalDateTime.now()
 
-			assertProducedForslag(opprettetForslag.id, opprettetForslag.endring::class)
+			assertProducedForslag(
+				forslagId = opprettetForslag.id,
+				endringstype = opprettetForslag.endring::class,
+			)
 		}
 	}
 
@@ -68,7 +58,10 @@ class ForslagServiceTest(
 			status.erstattetMedForslagId shouldBe opprettetForslag.id
 			status.erstattet shouldBeCloseTo opprettetForslag.opprettet
 
-			assertProducedForslag(opprettetForslag.id, opprettetForslag.endring::class)
+			assertProducedForslag(
+				forslagId = opprettetForslag.id,
+				endringstype = opprettetForslag.endring::class,
+			)
 		}
 	}
 

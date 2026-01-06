@@ -7,7 +7,6 @@ import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
@@ -31,6 +30,7 @@ import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getVurderinger
+import no.nav.tiltaksarrangor.utils.objectMapper
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
@@ -50,7 +50,7 @@ class TiltaksarrangorAPITest(
 	private val mediaTypeJson = "application/json".toMediaType()
 
 	@AfterEach
-	internal fun tearDown() {
+	fun tearDown() {
 		mockAmtArrangorServer.resetHttpServer()
 	}
 
@@ -311,7 +311,7 @@ class TiltaksarrangorAPITest(
 			)
 
 		response.code shouldBe 200
-		response.body.string() shouldBe "[ ]"
+		response.body.string() shouldBe "[]"
 	}
 
 	@Test
