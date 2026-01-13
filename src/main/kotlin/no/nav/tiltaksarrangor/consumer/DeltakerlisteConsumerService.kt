@@ -41,6 +41,8 @@ class DeltakerlisteConsumerService(
 		val deltakerlistePayload: GjennomforingV2KafkaPayload.Gruppe = objectMapper.readValue(value)
 
 		if (deltakerlistePayload.skalLagres()) {
+			deltakerlistePayload.assertPameldingstypeIsValid()
+
 			deltakerlisteRepository.insertOrUpdateDeltakerliste(
 				deltakerlistePayload.toDeltakerlisteDbo(
 					arrangorId = hentArrangorId(deltakerlistePayload.arrangor.organisasjonsnummer),

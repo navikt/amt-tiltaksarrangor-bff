@@ -30,6 +30,6 @@ class UnleashAPITest : IntegrationTest() {
 			{"amt-tiltaksarrangor-flate.driftsmelding":true,"amt-tiltaksarrangor-flate.eksponer-kurs":true}
 			""".trimIndent()
 		response.code shouldBe 200
-		response.body?.string() shouldBe expectedJson
+		response.body.string() shouldBe expectedJson
 	}
 }

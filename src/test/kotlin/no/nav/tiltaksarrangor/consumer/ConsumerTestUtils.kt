@@ -47,6 +47,6 @@ object ConsumerTestUtils {
 			antallPlasser = 42,
 			oppmoteSted = null,
 			deltidsprosent = 100.0,
-			pameldingType = GjennomforingPameldingType.TRENGER_GODKJENNING,
+			pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK,
 		)
 }

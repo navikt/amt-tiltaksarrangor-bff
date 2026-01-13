@@ -7,6 +7,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
@@ -58,7 +59,11 @@ class DeltakerlisteConsumerServiceTest {
 	fun `lagreDeltakerliste - status GJENNOMFORES - lagres i db `() {
 		sut.lagreDeltakerliste(
 			deltakerlisteId = deltakerlisteIdInTest,
-			value = objectMapper.writeValueAsString(gjennomforingPayloadInTest),
+			value = objectMapper.writeValueAsString(
+				gjennomforingPayloadInTest.copy(
+					pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK,
+				),
+			),
 		)
 
 		verify(exactly = 1) { deltakerlisteRepository.insertOrUpdateDeltakerliste(any()) }
@@ -87,6 +92,7 @@ class DeltakerlisteConsumerServiceTest {
 			navn = "Avsluttet tiltak",
 			sluttDato = LocalDate.now().minusWeeks(1),
 			status = GjennomforingStatusType.AVSLUTTET,
+			pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK,
 		)
 
 		sut.lagreDeltakerliste(
