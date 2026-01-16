@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.service
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
 import no.nav.tiltaksarrangor.melding.forslag.AktivtForslagResponse
@@ -97,6 +98,7 @@ private fun tilDeltaker(
 				erKurs = deltakerliste.erKurs,
 				tiltakskode = deltakerliste.tiltakskode,
 				oppstartstype = deltakerliste.oppstartstype,
+				pameldingstype = deltakerliste.pameldingstype ?: GjennomforingPameldingType.TRENGER_GODKJENNING,
 			),
 		fornavn = deltakerDbo.fornavn,
 		mellomnavn = deltakerDbo.mellomnavn,

@@ -4,6 +4,7 @@ import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
@@ -54,6 +55,7 @@ data class Deltaker(
 		val erKurs: Boolean,
 		val oppstartstype: Oppstartstype,
 		val tiltakskode: Tiltakskode,
+		val pameldingstype: GjennomforingPameldingType,
 	)
 }
 
