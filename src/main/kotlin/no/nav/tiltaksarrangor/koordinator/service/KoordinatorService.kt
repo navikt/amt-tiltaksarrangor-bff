@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.koordinator.service
 
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
@@ -232,6 +233,8 @@ class KoordinatorService(
 			),
 			erKurs = deltakerlisteMedArrangor.deltakerlisteDbo.erKurs,
 			tiltakskode = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakskode,
+			oppstartstype = deltakerlisteMedArrangor.deltakerlisteDbo.oppstartstype,
+			pameldingstype = deltakerlisteMedArrangor.deltakerlisteDbo.pameldingstype ?: GjennomforingPameldingType.TRENGER_GODKJENNING,
 		)
 	}
 
