@@ -121,7 +121,7 @@ class KoordinatorAPITest(
 
 		val expectedJson =
 			"""
-			{"veilederFor":{"veilederFor":2,"medveilederFor":3},"koordinatorFor":{"deltakerlister":[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Tiltaksnavnet","navn":"Gjennomføring 1","startdato":"2024-01-03","sluttdato":null,"erKurs":false}]}}
+			{"veilederFor":{"veilederFor":2,"medveilederFor":3},"koordinatorFor":{"deltakerlister":[{"id":"9987432c-e336-4b3b-b73e-b7c781a0823a","type":"Tiltaksnavnet","navn":"Gjennomføring 1","startdato":"2024-01-03","sluttdato":null,"erKurs":false,"oppstartstype":"LOPENDE"}]}}
 			""".trimIndent()
 
 		response.code shouldBe 200

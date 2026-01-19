@@ -336,5 +336,6 @@ fun List<DeltakerlisteDbo>.toDeltakerliste(): List<KoordinatorFor.Deltakerliste>
 		startdato = it.startDato,
 		sluttdato = it.sluttDato,
 		erKurs = it.erKurs,
+		oppstartstype = it.oppstartstype,
 	)
 }

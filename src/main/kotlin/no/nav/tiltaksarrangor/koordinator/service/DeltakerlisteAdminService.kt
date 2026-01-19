@@ -50,6 +50,7 @@ class DeltakerlisteAdminService(
 					ansatt.deltakerlister.find { koordinatorDeltakerliste ->
 						koordinatorDeltakerliste.deltakerlisteId == it.deltakerlisteDbo.id
 					} != null,
+				oppstartstype = it.deltakerlisteDbo.oppstartstype,
 			)
 		}
 	}
