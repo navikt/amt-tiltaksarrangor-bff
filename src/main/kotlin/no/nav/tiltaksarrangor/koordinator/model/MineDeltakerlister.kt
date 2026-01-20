@@ -1,5 +1,6 @@
 package no.nav.tiltaksarrangor.koordinator.model
 
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import java.time.LocalDate
 import java.util.UUID
 
@@ -23,5 +24,6 @@ data class KoordinatorFor(
 		val startdato: LocalDate?,
 		val sluttdato: LocalDate?,
 		val erKurs: Boolean,
+		val oppstartstype: Oppstartstype,
 	)
 }

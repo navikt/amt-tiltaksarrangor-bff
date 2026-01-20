@@ -1,6 +1,8 @@
 package no.nav.tiltaksarrangor.koordinator.model
 
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
 import java.util.UUID
@@ -17,4 +19,6 @@ data class Deltakerliste(
 	val deltakere: List<Deltaker>,
 	val erKurs: Boolean,
 	val tiltakskode: Tiltakskode,
+	val oppstartstype: Oppstartstype,
+	val pameldingstype: GjennomforingPameldingType,
 )
