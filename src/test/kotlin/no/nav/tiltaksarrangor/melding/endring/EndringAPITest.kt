@@ -12,6 +12,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpHeaders
 import tools.jackson.module.kotlin.readValue
 import java.time.LocalDate
 import java.util.UUID
@@ -93,7 +94,7 @@ class EndringAPITest : IntegrationTest() {
 			method = "POST",
 			path = path,
 			body = objectMapper.writeValueAsString(this).toRequestBody(mediaTypeJson),
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
+			headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
 		)
 	}
 }

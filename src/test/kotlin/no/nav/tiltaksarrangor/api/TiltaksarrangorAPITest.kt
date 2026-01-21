@@ -35,6 +35,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpHeaders
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -74,7 +75,7 @@ class TiltaksarrangorAPITest(
 			sendRequest(
 				method = "GET",
 				path = "/tiltaksarrangor/meg/roller",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		response.code shouldBe 200
@@ -128,7 +129,7 @@ class TiltaksarrangorAPITest(
 			sendRequest(
 				method = "GET",
 				path = "/tiltaksarrangor/deltaker/$deltakerId",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		response.code shouldBe 403
@@ -220,7 +221,7 @@ class TiltaksarrangorAPITest(
 			sendRequest(
 				method = "GET",
 				path = "/tiltaksarrangor/deltaker/$deltakerId",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		val expectedJson =
@@ -307,7 +308,7 @@ class TiltaksarrangorAPITest(
 			sendRequest(
 				method = "GET",
 				path = "/tiltaksarrangor/deltaker/$deltakerId/historikk",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		response.code shouldBe 200
@@ -390,7 +391,7 @@ class TiltaksarrangorAPITest(
 			sendRequest(
 				method = "GET",
 				path = "/tiltaksarrangor/deltaker/$deltakerId/historikk",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		val expectedJson =
@@ -481,7 +482,7 @@ class TiltaksarrangorAPITest(
 			sendRequest(
 				method = "POST",
 				path = "/tiltaksarrangor/deltaker/$deltakerId/vurdering",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 				body = objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
 			)
 
@@ -548,7 +549,7 @@ class TiltaksarrangorAPITest(
 			sendRequest(
 				method = "DELETE",
 				path = "/tiltaksarrangor/deltaker/$deltakerId",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		response.code shouldBe 200

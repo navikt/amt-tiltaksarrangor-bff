@@ -22,6 +22,7 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.testutils.getAdresse
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpHeaders
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -123,7 +124,7 @@ class VeilederAPITest(
 			sendRequest(
 				method = "GET",
 				path = "/tiltaksarrangor/veileder/mine-deltakere",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		val expectedJson =

@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpHeaders
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.kafka.KafkaContainer
@@ -115,7 +116,7 @@ abstract class IntegrationTest : RepositoryTestBase() {
 				.newCall(
 					it
 						.header(
-							name = "Authorization",
+							name = HttpHeaders.AUTHORIZATION,
 							value = "Bearer ${mockOAuth2Server.issueToken("ikke-azuread").serialize()}",
 						).build(),
 				).execute()

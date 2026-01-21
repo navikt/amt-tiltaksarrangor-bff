@@ -24,6 +24,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpHeaders
 import tools.jackson.module.kotlin.readValue
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -226,7 +227,7 @@ class ForslagAPITest : IntegrationTest() {
 			method = "POST",
 			path = path,
 			body = objectMapper.writeValueAsString(this).toRequestBody(mediaTypeJson),
-			headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
+			headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
 		)
 	}
 
@@ -238,6 +239,6 @@ class ForslagAPITest : IntegrationTest() {
 		method = "POST",
 		path = "${url(deltakerId)}/$forslagId/tilbakekall",
 		body = emptyRequest(),
-		headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
+		headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = ansattIdent)}"),
 	)
 }

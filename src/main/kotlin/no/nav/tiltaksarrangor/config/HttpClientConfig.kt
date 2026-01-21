@@ -8,6 +8,7 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpHeaders
 import java.util.concurrent.TimeUnit
 
 @EnableOAuth2Client(cacheEnabled = true)
@@ -81,7 +82,7 @@ class HttpClientConfig {
 			val requestWithToken =
 				request
 					.newBuilder()
-					.addHeader("Authorization", "Bearer ${accessTokenResponse.access_token}")
+					.addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${accessTokenResponse.access_token}")
 					.build()
 			chain.proceed(requestWithToken)
 		}

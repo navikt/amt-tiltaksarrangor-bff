@@ -3,6 +3,7 @@ package no.nav.tiltaksarrangor.unleash
 import io.kotest.matchers.shouldBe
 import no.nav.tiltaksarrangor.IntegrationTest
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpHeaders
 
 class UnleashAPITest : IntegrationTest() {
 	@Test
@@ -22,7 +23,7 @@ class UnleashAPITest : IntegrationTest() {
 			sendRequest(
 				method = "GET",
 				path = "/unleash/api/feature?feature=amt-tiltaksarrangor-flate.driftsmelding&feature=amt-tiltaksarrangor-flate.eksponer-kurs",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = "12345678910")}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = "12345678910")}"),
 			)
 
 		val expectedJson =

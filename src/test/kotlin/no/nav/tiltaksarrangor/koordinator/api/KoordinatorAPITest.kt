@@ -33,6 +33,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpHeaders
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -116,7 +117,7 @@ class KoordinatorAPITest(
 			sendRequest(
 				method = "GET",
 				path = "/tiltaksarrangor/koordinator/mine-deltakerlister",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		val expectedJson =
@@ -201,7 +202,7 @@ class KoordinatorAPITest(
 			sendRequest(
 				method = "GET",
 				path = "/tiltaksarrangor/koordinator/${deltakerliste.id}/veiledere",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		val expectedJson =
@@ -320,7 +321,7 @@ class KoordinatorAPITest(
 				method = "POST",
 				path = "/tiltaksarrangor/koordinator/veiledere?deltakerId=$deltakerId",
 				body = objectMapper.writeValueAsString(requestBody).toRequestBody(mediaTypeJson),
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		response.code shouldBe 200
@@ -443,7 +444,7 @@ class KoordinatorAPITest(
 			sendRequest(
 				method = "GET",
 				path = "/tiltaksarrangor/koordinator/deltakerliste/$deltakerlisteId",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		val expectedJson =

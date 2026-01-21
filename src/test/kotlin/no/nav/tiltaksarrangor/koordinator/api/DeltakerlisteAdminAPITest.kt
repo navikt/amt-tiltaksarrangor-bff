@@ -18,6 +18,7 @@ import no.nav.tiltaksarrangor.repositories.model.ArrangorDbo
 import no.nav.tiltaksarrangor.repositories.model.DeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.KoordinatorDeltakerlisteDbo
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpHeaders
 import java.time.LocalDate
 import java.util.UUID
 
@@ -100,7 +101,7 @@ class DeltakerlisteAdminAPITest(
 			sendRequest(
 				method = "GET",
 				path = "/tiltaksarrangor/koordinator/admin/deltakerlister",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		val expectedJson =
@@ -165,7 +166,7 @@ class DeltakerlisteAdminAPITest(
 				method = "POST",
 				path = "/tiltaksarrangor/koordinator/admin/deltakerliste/$deltakerlisteId",
 				body = emptyRequest(),
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		response.code shouldBe 200
@@ -227,7 +228,7 @@ class DeltakerlisteAdminAPITest(
 			sendRequest(
 				method = "DELETE",
 				path = "/tiltaksarrangor/koordinator/admin/deltakerliste/$deltakerlisteId",
-				headers = mapOf("Authorization" to "Bearer ${getTokenxToken(fnr = personIdent)}"),
+				headers = mapOf(HttpHeaders.AUTHORIZATION to "Bearer ${getTokenxToken(fnr = personIdent)}"),
 			)
 
 		response.code shouldBe 200
