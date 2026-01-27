@@ -65,6 +65,7 @@ val HELLIGDAGER: Duration = weeks(1)
 private fun maxVarighet(deltakerliste: DeltakerlisteDbo): Duration? = when (deltakerliste.tiltakskode) {
 	Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
 	Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+	Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
 	-> years(3)
 
 	Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8) + HELLIGDAGER
@@ -75,6 +76,14 @@ private fun maxVarighet(deltakerliste: DeltakerlisteDbo): Duration? = when (delt
 	-> weeks(12)
 
 	Tiltakskode.OPPFOLGING -> years(1)
+
+	Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+	Tiltakskode.STUDIESPESIALISERING,
+	Tiltakskode.HOYERE_UTDANNING,
+	Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
+	-> years(4)
+	Tiltakskode.FAG_OG_YRKESOPPLAERING,
+	-> years(5)
 
 	Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
 	Tiltakskode.JOBBKLUBB,
