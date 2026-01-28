@@ -2,13 +2,9 @@ package no.nav.tiltaksarrangor.utils
 
 import tools.jackson.core.type.TypeReference
 import tools.jackson.databind.ObjectMapper
-import tools.jackson.databind.json.JsonMapper
-import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
-val objectMapper: ObjectMapper = JsonMapper
-	.builder()
-	.addModule(KotlinModule.Builder().build())
-	.build()
+val objectMapper: ObjectMapper = jacksonObjectMapper()
 
 /**
  * Inkluderer type informasjon som er definert av @JsonTypeInfo i lister og andre samlinger
