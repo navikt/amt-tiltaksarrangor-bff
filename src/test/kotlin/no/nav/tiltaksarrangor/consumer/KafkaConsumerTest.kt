@@ -34,7 +34,6 @@ import no.nav.tiltaksarrangor.consumer.model.toAnsattDbo
 import no.nav.tiltaksarrangor.consumer.model.toArrangorDbo
 import no.nav.tiltaksarrangor.consumer.model.toDeltakerDbo
 import no.nav.tiltaksarrangor.consumer.model.toEndringsmeldingDbo
-import no.nav.tiltaksarrangor.kafka.subscribeHvisIkkeSubscribed
 import no.nav.tiltaksarrangor.model.Endringsmelding
 import no.nav.tiltaksarrangor.model.Veiledertype
 import no.nav.tiltaksarrangor.repositories.AnsattRepository
@@ -46,11 +45,9 @@ import no.nav.tiltaksarrangor.repositories.TiltakstypeRepository
 import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.utils.objectMapper
-import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.awaitility.Awaitility.await
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -66,20 +63,7 @@ class KafkaConsumerTest(
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val tiltakstypeRepository: TiltakstypeRepository,
 	private val testKafkaProducer: KafkaProducer<String, String>,
-	private val testKafkaConsumer: Consumer<String, String>,
 ) : IntegrationTest() {
-	@BeforeEach
-	fun subscribe() {
-		testKafkaConsumer.subscribeHvisIkkeSubscribed(
-			ARRANGOR_TOPIC,
-			ARRANGOR_ANSATT_TOPIC,
-			DELTAKERLISTE_V2_TOPIC,
-			TILTAKSTYPE_TOPIC,
-			DELTAKER_TOPIC,
-			ENDRINGSMELDING_TOPIC,
-		)
-	}
-
 	@Test
 	fun `skal lagre tiltakstype i database`() {
 		testKafkaProducer

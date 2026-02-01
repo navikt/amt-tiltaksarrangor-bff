@@ -71,7 +71,7 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("io.getunleash:unleash-client-java:$unleashVersion")
 
-    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.postgresql:postgresql")
 
     implementation("no.nav.amt.lib:models:$amtLibVersion")
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
