@@ -17,7 +17,6 @@ data class Deltakerliste(
 	val status: GjennomforingStatusType,
 	val koordinatorer: List<Koordinator>,
 	val deltakere: List<Deltaker>,
-	val erKurs: Boolean,
 	val tiltakskode: Tiltakskode,
 	val oppstartstype: Oppstartstype,
 	val pameldingstype: GjennomforingPameldingType,

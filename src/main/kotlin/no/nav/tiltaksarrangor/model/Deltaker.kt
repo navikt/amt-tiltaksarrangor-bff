@@ -52,7 +52,6 @@ data class Deltaker(
 		val id: UUID,
 		val startDato: LocalDate?,
 		val sluttDato: LocalDate?,
-		val erKurs: Boolean,
 		val oppstartstype: Oppstartstype,
 		val tiltakskode: Tiltakskode,
 		val pameldingstype: GjennomforingPameldingType,

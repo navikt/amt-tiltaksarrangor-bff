@@ -4,6 +4,7 @@ import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.DeltakerHistorikkResponse
 import no.nav.tiltaksarrangor.api.response.UlestEndringResponse
@@ -113,7 +114,7 @@ class TiltaksarrangorService(
 
 		val arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn
 		return historikk
-			.filterNot { deltaker.deltakerliste.erKurs && it is DeltakerHistorikk.Vedtak }
+			.filterNot { deltaker.deltakerliste.pameldingstype == GjennomforingPameldingType.TRENGER_GODKJENNING && it is DeltakerHistorikk.Vedtak }
 			.toResponse(ansatte, toTitleCase(arrangorNavn), enheter, deltaker.deltakerliste.oppstartstype)
 	}
 
