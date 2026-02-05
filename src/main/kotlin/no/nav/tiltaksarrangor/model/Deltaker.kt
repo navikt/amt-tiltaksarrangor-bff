@@ -55,9 +55,7 @@ data class Deltaker(
 		val oppstartstype: Oppstartstype,
 		val tiltakskode: Tiltakskode,
 		val pameldingstype: GjennomforingPameldingType,
-	) {
-		val trengerGodkjenning get() = pameldingstype == GjennomforingPameldingType.TRENGER_GODKJENNING
-	}
+	)
 }
 
 data class Adresse(
