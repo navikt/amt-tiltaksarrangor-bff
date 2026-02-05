@@ -95,7 +95,6 @@ private fun tilDeltaker(
 				id = deltakerliste.id,
 				startDato = deltakerliste.startDato,
 				sluttDato = deltakerliste.sluttDato,
-				erKurs = deltakerliste.erKurs,
 				tiltakskode = deltakerliste.tiltakskode,
 				oppstartstype = deltakerliste.oppstartstype,
 				pameldingstype = deltakerliste.pameldingstype ?: GjennomforingPameldingType.TRENGER_GODKJENNING,

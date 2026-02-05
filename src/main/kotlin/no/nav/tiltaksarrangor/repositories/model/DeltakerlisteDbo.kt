@@ -18,7 +18,7 @@ data class DeltakerlisteDbo(
 	val tiltakskode: Tiltakskode,
 	val startDato: LocalDate?,
 	val sluttDato: LocalDate?,
-	val erKurs: Boolean,
+	val erKurs: Boolean, // Brukes ikke mer. Kan fjernes fra db
 	val oppstartstype: Oppstartstype,
 	val tilgjengeligForArrangorFraOgMedDato: LocalDate?,
 	val pameldingstype: GjennomforingPameldingType?, // skal gjøres  non-nullable etter relast

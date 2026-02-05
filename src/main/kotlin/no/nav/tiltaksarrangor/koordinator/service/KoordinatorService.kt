@@ -231,7 +231,6 @@ class KoordinatorService(
 				erKometMasterForTiltakstype,
 				ulesteEndringer,
 			),
-			erKurs = deltakerlisteMedArrangor.deltakerlisteDbo.erKurs,
 			tiltakskode = deltakerlisteMedArrangor.deltakerlisteDbo.tiltakskode,
 			oppstartstype = deltakerlisteMedArrangor.deltakerlisteDbo.oppstartstype,
 			pameldingstype = deltakerlisteMedArrangor.deltakerlisteDbo.pameldingstype ?: GjennomforingPameldingType.TRENGER_GODKJENNING,
@@ -335,7 +334,6 @@ fun List<DeltakerlisteDbo>.toDeltakerliste(): List<KoordinatorFor.Deltakerliste>
 		type = it.tiltaksnavn,
 		startdato = it.startDato,
 		sluttdato = it.sluttDato,
-		erKurs = it.erKurs,
 		oppstartstype = it.oppstartstype,
 	)
 }

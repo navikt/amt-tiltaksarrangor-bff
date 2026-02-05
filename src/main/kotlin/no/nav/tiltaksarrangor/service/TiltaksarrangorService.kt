@@ -113,7 +113,7 @@ class TiltaksarrangorService(
 
 		val arrangorNavn = overordnetArrangor?.navn ?: deltakerlisteMedArrangor.arrangorDbo.navn
 		return historikk
-			.filterNot { deltaker.deltakerliste.erKurs && it is DeltakerHistorikk.Vedtak }
+			.filterNot { deltaker.deltakerliste.trengerGodkjenning && it is DeltakerHistorikk.Vedtak }
 			.toResponse(ansatte, toTitleCase(arrangorNavn), enheter, deltaker.deltakerliste.oppstartstype)
 	}
 

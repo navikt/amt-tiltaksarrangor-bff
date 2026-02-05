@@ -357,7 +357,6 @@ class KoordinatorServiceTest(
 		koordinatorsDeltakerliste.koordinatorer.size shouldBe 1
 		koordinatorsDeltakerliste.koordinatorer.find { it.fornavn == "Fornavn" && it.etternavn == "Etternavn" } shouldNotBe null
 		koordinatorsDeltakerliste.deltakere.size shouldBe 0
-		koordinatorsDeltakerliste.erKurs shouldBe false
 	}
 
 	@Test
