@@ -333,7 +333,7 @@ class KafkaConsumerService(
 			return false
 		} else if (status.type in SKJULES_ALLTID_STATUSER) {
 			return false
-		} else if (status.type == DeltakerStatus.Type.IKKE_AKTUELL && deltarPaKurs && lagretDeltaker == null) {
+		} else if (status.type == DeltakerStatus.Type.IKKE_AKTUELL && lagretDeltaker == null) {
 			return false
 		} else if (status.type in AVSLUTTENDE_STATUSER) {
 			return harNyligSluttet()
