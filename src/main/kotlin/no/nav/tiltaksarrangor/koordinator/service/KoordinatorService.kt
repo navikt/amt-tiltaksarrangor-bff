@@ -2,6 +2,7 @@ package no.nav.tiltaksarrangor.koordinator.service
 
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.koordinator.model.Deltaker
 import no.nav.tiltaksarrangor.koordinator.model.Deltakerliste
@@ -36,7 +37,6 @@ import no.nav.tiltaksarrangor.repositories.model.VeilederForDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
 import no.nav.tiltaksarrangor.service.MetricsService
 import no.nav.tiltaksarrangor.service.getGjeldendeVurdering
-import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -51,7 +51,7 @@ class KoordinatorService(
 	private val metricsService: MetricsService,
 	private val forslagRepository: ForslagRepository,
 	private val ulestEndringRepository: UlestEndringRepository,
-	private val unleashToggle: UnleashToggle,
+	private val unleashToggle: CommonUnleashToggle,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 

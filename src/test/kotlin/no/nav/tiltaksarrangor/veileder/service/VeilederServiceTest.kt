@@ -8,6 +8,7 @@ import io.mockk.every
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
@@ -32,7 +33,6 @@ import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
 import no.nav.tiltaksarrangor.testutils.getForslag
-import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -50,7 +50,7 @@ class VeilederServiceTest(
 	private val forslagRepository: ForslagRepository,
 	private val ulestEndringRepository: UlestEndringRepository,
 	@MockkBean(relaxed = true) private val amtArrangorClient: AmtArrangorClient,
-	@MockkBean(relaxed = true) private val unleashToggle: UnleashToggle,
+	@MockkBean(relaxed = true) private val unleashToggle: CommonUnleashToggle,
 ) : IntegrationTest() {
 	@BeforeEach
 	fun setup() {

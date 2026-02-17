@@ -4,13 +4,14 @@ import io.getunleash.Unleash
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
 class UnleashToggleTest {
 	private val unleashClient: Unleash = mockk(relaxed = true)
-	private val sut = UnleashToggle(unleashClient)
+	private val sut = CommonUnleashToggle(unleashClient)
 
 	@Nested
 	inner class ErKometMasterForTiltakstype {
