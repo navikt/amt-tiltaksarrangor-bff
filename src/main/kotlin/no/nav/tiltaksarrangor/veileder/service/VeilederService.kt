@@ -1,6 +1,7 @@
 package no.nav.tiltaksarrangor.veileder.service
 
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import no.nav.tiltaksarrangor.consumer.model.AnsattRolle
 import no.nav.tiltaksarrangor.melding.forslag.ForslagRepository
 import no.nav.tiltaksarrangor.model.DeltakerStatusInternalModel
@@ -16,7 +17,6 @@ import no.nav.tiltaksarrangor.repositories.model.DeltakerMedDeltakerlisteDbo
 import no.nav.tiltaksarrangor.repositories.model.EndringsmeldingDbo
 import no.nav.tiltaksarrangor.repositories.model.VeilederDeltakerDbo
 import no.nav.tiltaksarrangor.service.AnsattService
-import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import no.nav.tiltaksarrangor.veileder.model.Deltaker
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -28,7 +28,7 @@ class VeilederService(
 	private val forslagRepository: ForslagRepository,
 	private val endringsmeldingRepository: EndringsmeldingRepository,
 	private val ulestEndringRepository: UlestEndringRepository,
-	private val unleashToggle: UnleashToggle,
+	private val unleashToggle: CommonUnleashToggle,
 ) {
 	fun getMineDeltakere(personIdent: String): List<Deltaker> {
 		val ansatt = ansattService.getAnsatt(personIdent) ?: throw UnauthorizedException("Ansatt finnes ikke")

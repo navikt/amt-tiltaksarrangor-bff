@@ -10,6 +10,7 @@ import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.api.request.RegistrerVurderingRequest
 import no.nav.tiltaksarrangor.api.response.OppdateringResponse
@@ -49,7 +50,6 @@ import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getNavAnsatt
 import no.nav.tiltaksarrangor.testutils.getNavEnhet
-import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -70,7 +70,7 @@ class TiltaksarrangorServiceTest(
 	@MockkBean(relaxed = true) @Suppress("unused") private val auditLoggerService: AuditLoggerService,
 	@MockkBean(relaxUnitFun = true) private val navAnsattService: NavAnsattService,
 	@MockkBean(relaxUnitFun = true) private val navEnhetService: NavEnhetService,
-	@MockkBean private val unleashToggle: UnleashToggle,
+	@MockkBean private val unleashToggle: CommonUnleashToggle,
 	@MockkBean(relaxUnitFun = true) @Suppress("unused") private val meldingProducer: MeldingProducer,
 ) : IntegrationTest() {
 	@BeforeEach

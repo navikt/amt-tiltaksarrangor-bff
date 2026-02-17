@@ -17,6 +17,7 @@ import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import no.nav.tiltaksarrangor.IntegrationTest
 import no.nav.tiltaksarrangor.client.amtarrangor.AmtArrangorClient
 import no.nav.tiltaksarrangor.client.amtarrangor.dto.VeilederAnsatt
@@ -49,7 +50,6 @@ import no.nav.tiltaksarrangor.testutils.getDeltaker
 import no.nav.tiltaksarrangor.testutils.getDeltakerliste
 import no.nav.tiltaksarrangor.testutils.getEndringsmelding
 import no.nav.tiltaksarrangor.testutils.getForslag
-import no.nav.tiltaksarrangor.unleash.UnleashToggle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -70,7 +70,7 @@ class KoordinatorServiceTest(
 	private val koordinatorService: KoordinatorService,
 	@MockkBean private val amtArrangorClient: AmtArrangorClient,
 	@Suppress("unused") @MockkBean(relaxed = true) private val metricsService: MetricsService,
-	@MockkBean private val unleashToggle: UnleashToggle,
+	@MockkBean private val unleashToggle: CommonUnleashToggle,
 ) : IntegrationTest() {
 	@BeforeEach
 	fun setup() {

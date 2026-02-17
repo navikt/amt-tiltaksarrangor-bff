@@ -1,7 +1,9 @@
 package no.nav.tiltaksarrangor.config
 
 import io.getunleash.DefaultUnleash
+import io.getunleash.Unleash
 import io.getunleash.util.UnleashConfig
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -23,6 +25,9 @@ class UnleashConfig {
 			.apiKey(unleashApiToken)
 			.build(),
 	)
+
+	@Bean
+	fun commonUnleashToggle(unleash: Unleash): CommonUnleashToggle = CommonUnleashToggle(unleash)
 
 	companion object {
 		const val APP_NAME = "amt-tiltaksarrangor-bff"
