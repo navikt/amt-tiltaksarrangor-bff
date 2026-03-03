@@ -33,17 +33,6 @@ val shedlockVersion = "7.6.0"
 val springmockkVersion = "5.0.1"
 val jacksonModuleKotlinVersion = "3.1.0"
 
-// fjernes ved neste release av org.apache.kafka:kafka-clients
-configurations.configureEach {
-    resolutionStrategy {
-        capabilitiesResolution {
-            withCapability("org.lz4:lz4-java") {
-                select(candidates.first { (it.id as ModuleComponentIdentifier).group == "at.yawk.lz4" })
-            }
-        }
-    }
-}
-
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
