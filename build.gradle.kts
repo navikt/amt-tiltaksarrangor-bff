@@ -28,7 +28,7 @@ val mockkVersion = "1.14.9"
 val commonVersion = "3.2026.03.03_07.58-86d37775258a"
 val unleashVersion = "12.1.2"
 val ktlintVersion = "1.4.1"
-val amtLibVersion = "1.2026.02.17_13.55-de9b1752e174"
+val amtLibVersion = "1.2026.03.01_23.16-831b1856e93b"
 val shedlockVersion = "7.6.0"
 val springmockkVersion = "5.0.1"
 val jacksonModuleKotlinVersion = "3.1.0"
@@ -62,9 +62,9 @@ dependencies {
 
     implementation("org.postgresql:postgresql")
 
-    implementation("no.nav.amt.lib:models:$amtLibVersion")
-    implementation("no.nav.amt.lib:kafka:$amtLibVersion")
-    implementation("no.nav.amt.lib:utils:$amtLibVersion")
+    implementation("no.nav.amt.deltakelser.lib:models:$amtLibVersion")
+    implementation("no.nav.amt.deltakelser.lib:kafka:$amtLibVersion")
+    implementation("no.nav.amt.deltakelser.lib:utils:$amtLibVersion")
 
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlockVersion")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlockVersion")
