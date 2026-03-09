@@ -12,7 +12,7 @@ plugins {
 
 group = "no.nav.amt-tiltaksarrangor-bff"
 version = "0.0.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_21
+java.sourceCompatibility = JavaVersion.VERSION_25
 
 repositories {
     mavenCentral()
@@ -28,7 +28,7 @@ val mockkVersion = "1.14.9"
 val commonVersion = "3.2026.03.03_07.58-86d37775258a"
 val unleashVersion = "12.1.2"
 val ktlintVersion = "1.4.1"
-val amtLibVersion = "1.2026.03.01_23.16-831b1856e93b"
+val amtLibVersion = "1.2026.03.09_08.53-79eac2a4df2a"
 val shedlockVersion = "7.6.0"
 val springmockkVersion = "5.0.1"
 val jacksonModuleKotlinVersion = "3.1.0"
@@ -92,7 +92,7 @@ kotlin {
             "-Xannotation-default-target=param-property",
             "-Xwarning-level=IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE:disabled",
         )
-        jvmTarget = JvmTarget.JVM_21
+        jvmTarget = JvmTarget.JVM_25
     }
 }
 
